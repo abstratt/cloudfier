@@ -133,7 +133,7 @@ public class RestHelper extends TestCase {
 		PostMethod init = new PostMethod(getApiUri().resolve(Paths.DATA).toString());
 		try {
 			int result = httpClient.executeMethod(init);
-			assertEquals(HttpURLConnection.HTTP_OK, result);
+			assertTrue(result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
 		} finally {
 			init.releaseConnection();
 		}

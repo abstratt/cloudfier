@@ -2,7 +2,6 @@ package com.abstratt.kirra.mdd.rest;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +36,16 @@ public class ServiceInvocationResource extends AbstractKirraRepositoryResource {
 	public Representation runQuery(boolean queryParameters) throws IOException {
 		String actionName = (String) getRequestAttributes().get("retrieverName");
 		List<Object> result = executeOperation(getEntityNamespace(), getEntityName(), actionName, null, queryParameters);
-		List<TupleJSONRepresentation> asTuples = new ArrayList<TupleJSONRepresentation>();
+		List<Object> asTuples = new ArrayList<Object>();
 		if (!result.isEmpty()) {
 	        TupleType tupleType = null;
 			for (Object object : result) {
-	            TupleJSONRepresentation asTuple = new TupleJSONRepresentation();
-				asTuple.build(null, tupleType, (Tuple) object);
-				asTuples.add(asTuple);
+	            if (object instanceof Tuple) {
+	            	TupleJSONRepresentation asTuple = new TupleJSONRepresentation();
+	            	asTuple.build(null, tupleType, (Tuple) object);
+	            	asTuples.add(asTuple);
+	            } else
+	            	asTuples.add(object); 
 			}
 		}
 		Map<String, Object> response = new LinkedHashMap<String, Object>();

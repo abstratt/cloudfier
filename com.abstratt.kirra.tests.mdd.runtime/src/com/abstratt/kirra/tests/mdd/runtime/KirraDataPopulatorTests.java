@@ -72,8 +72,8 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         FixtureHelper.assertCompilationSuccessful(parseData(contents));
         
         DataPopulator populator = new DataPopulator(kirra);
-        boolean status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        assertTrue(status);
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        assertEquals(1, status);
 
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
         assertEquals(1, instances.size());
@@ -106,8 +106,8 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         Repository kirra = getKirra();
         
         DataPopulator populator = new DataPopulator(kirra);
-        boolean status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        assertTrue(status);
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        assertEquals(2 + 4, status);
 
         Map<String, Instance> accounts = toMap(kirra.getInstances("banking", "Account", false), "number");
         assertEquals(accounts.keySet(), new HashSet<String>(Arrays.asList("123", "456", "ABC", "DEF")));
@@ -149,8 +149,8 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         FixtureHelper.assertCompilationSuccessful(parseData(contents));
         
         DataPopulator populator = new DataPopulator(kirra);
-        boolean status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        assertTrue(status);
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        assertEquals(3 + 2, status);
 
         Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", false), "name");
         assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Mary", "Bill")));
@@ -199,16 +199,32 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         contents += "{\n";
         contents += "  banking: {\n";
         contents += "    Account: [\n";
-        contents += "      { balance: 'foobar'}\n";
+        contents += "      { number: '119', balance: 20},\n";
+        contents += "      { number: '120', balance: 20},\n";
+        contents += "      { number: '121', balance: 20},\n";
+        contents += "      { number: '122', balance: 'foobar'},\n";
+        contents += "      { number: '123', balance: 20}\n";
         contents += "    ]\n";
         contents += "  }\n";
         contents += "}\n";
         
         IProblem[] result = parseData(contents);
         FixtureHelper.assertTrue(result, result.length == 1);
+        
+        Repository kirra = getKirra();
+        DataPopulator populator = new DataPopulator(kirra);
+        try {
+            populator.populate(new ByteArrayInputStream(contents.getBytes()));
+            fail("KirraException expected");
+        } catch (KirraException e) {
+        	assertEquals(KirraException.Kind.VALIDATION, e.getKind());
+        }
+        // normally we would rollback the transaction but at this point we expect the first 3 rows only
+        List<Instance> instances = kirra.getInstances("banking", "Account", false);
+        assertEquals(3, instances.size());
     }
 
-    public void testEmpty() throws CoreException {
+    public void testEmptyDataReturnsZero() throws CoreException {
         parseAndCheck(accountModel);
         Repository kirra = getKirra();
 
@@ -216,29 +232,68 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         contents += "{\n";
         contents += "  banking: {\n";
         contents += "    Account: [\n";
-        contents += "      { foo: 100, balance: 20},\n";
-        contents += "      { balance: 'bar'},\n";
-        contents += "      { }\n";
+        contents += "    ]\n";
+        contents += "  }\n";
+        contents += "}\n";
+       
+        IProblem[] result = parseData(contents);
+        FixtureHelper.assertTrue(result, result.length == 0);
+        
+        DataPopulator populator = new DataPopulator(kirra);
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        assertEquals(0, status);
+        
+        List<Instance> instances = kirra.getInstances("banking", "Account", false);
+        assertEquals(0, instances.size());
+    }
+
+    public void testInvalidJSONThrowsException() throws CoreException {
+        parseAndCheck(accountModel);
+        Repository kirra = getKirra();
+
+        String contents = "";
+        contents += "{ [ a : 1 ] }\n";
+       
+        IProblem[] result = parseData(contents);
+        FixtureHelper.assertTrue(result, result.length == 1);
+        
+        DataPopulator populator = new DataPopulator(kirra);
+        try {
+            populator.populate(new ByteArrayInputStream(contents.getBytes()));
+            fail("KirraException expected");
+        } catch (KirraException e) {
+        	assertEquals(KirraException.Kind.VALIDATION, e.getKind());
+        }
+    }
+
+    
+    public void testIgnoreUnknownSlots() throws CoreException {
+        parseAndCheck(accountModel);
+        Repository kirra = getKirra();
+
+        String contents = "";
+        contents += "{\n";
+        contents += "  banking: {\n";
+        contents += "    Account: [\n";
+        contents += "      { foo: 100, balance: 20}\n";
         contents += "    ]\n";
         contents += "  }\n";
         contents += "}\n";
         
         IProblem[] result = parseData(contents);
         // invalid property, wrong type for balance
-        FixtureHelper.assertTrue(result, result.length == 2);
+        FixtureHelper.assertTrue(result, result.length == 1);
         
         DataPopulator populator = new DataPopulator(kirra);
-        try {
-            populator.populate(new ByteArrayInputStream(contents.getBytes()));
-            fail("population should have failed, there's an error in the data");
-        } catch (KirraException e) {
-        	// expected
-        }
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        assertEquals(1, status);
+        
+        // data went through
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
         assertEquals(1, instances.size());
         assertEquals(Collections.singletonMap("balance", 20d), instances.get(0).getValues());
-
     }
+    
     
     public void testNonExistingClass() throws CoreException {
         parseAndCheck(accountModel);

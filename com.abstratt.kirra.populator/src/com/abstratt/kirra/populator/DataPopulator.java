@@ -1,6 +1,7 @@
 package com.abstratt.kirra.populator;
 
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -10,7 +11,6 @@ import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,6 +24,7 @@ import org.codehaus.jackson.JsonParseException;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
@@ -38,47 +39,50 @@ public class DataPopulator {
     	this.repository = repository;
     }
     
-    public boolean populate() {
-		// load the sample data
-        File repositoryPath;
+    public int populate() {
+    	File dataFile = getDataFile();
+		InputStream in = null;
 		try {
-		 	repositoryPath = FileUtils.toFile(this.repository.getRepositoryURI().toURL());
-			File dataFile = new File(repositoryPath, "data.json");
-			InputStream in = null;
-			try {
-				in = new BufferedInputStream(new FileInputStream(dataFile), 8192);
-				if (!populate(in))
-					return false;
-			} catch (IOException e) {
-				LogUtils.logWarning(ID, "Error loading " + dataFile, e);
-			} finally {
-				IOUtils.closeQuietly(in);
-			}
-			return true;
-		} catch (MalformedURLException e) {
-			LogUtils.logWarning(ID, "Unhandled exception", e);
-			return false;
+			// populate with empty data set if data.json not found
+			in = new BufferedInputStream(dataFile.isFile() ? new FileInputStream(dataFile) : new ByteArrayInputStream("{}".getBytes()), 8192);
+			return populate(in);
+		} catch (IOException e) {
+			LogUtils.logWarning(ID, "Error loading " + dataFile, e);
+			return -1;
+		} finally {
+			IOUtils.closeQuietly(in);
 		}
     }
 
-    public boolean populate(InputStream contents) {
+	public File getDataFile() {
+		// load the sample data
+		File repositoryPath;
+		try {
+			repositoryPath = FileUtils.toFile(this.repository.getRepositoryURI().toURL());
+		} catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+		}
+		File dataFile = new File(repositoryPath, "data.json");
+		return dataFile;
+	}
+
+    public int populate(InputStream contents) {
         try {
             JsonNode tree = DataParser.parse(new InputStreamReader(contents));
             if (tree == null || !tree.isObject())
-                return false;
+                return 0;
             return new Loader().processTree(tree);
         } catch (JsonParseException e) {
-            LogUtils.logWarning(ID, "Error parsing JSON contents", e);
+            throw new KirraException("Error parsing JSON contents", e, KirraException.Kind.VALIDATION);
         } catch (IOException e) {
-            LogUtils.logWarning(ID, "Error reading contents", e);
+            throw new KirraException("Error reading contents", e, KirraException.Kind.VALIDATION);
         }
-        return false;
     }
 
     class Loader {
         private Map<String, Map<String, List<String>>> instances = new HashMap<String, Map<String, List<String>>>();
 
-        private boolean processTree(JsonNode tree) {
+        private int processTree(JsonNode tree) {
             for (String namespace : repository.getNamespaces())
                 instances.put(namespace, new HashMap<String, List<String>>());
             int count = 0;
@@ -92,7 +96,7 @@ public class DataPopulator {
                     }
                 }
             }
-            return count > 0;
+            return count;
         }
 
         private int processEntity(String namespace, final Entry<String, JsonNode> entityNode) {

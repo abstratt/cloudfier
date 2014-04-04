@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,6 @@ import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.auth.AuthenticationService;
 import com.abstratt.mdd.core.RepositoryService;
-import com.abstratt.mdd.core.runtime.RuntimeClass;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.Task;
@@ -364,7 +362,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
 		assertNotNull(jsonInstance.get("type"));
     	executeMethod(200, new GetMethod(jsonInstance.get("type").toString()));
 
-    	assertEquals(NullNode.instance, ((ObjectNode) jsonInstance.get("values")).get("attr1"));
+    	assertNull(((ObjectNode) jsonInstance.get("values")).get("attr1"));
     	assertEquals(5, ((ObjectNode) jsonInstance.get("values")).get("attr2").asLong());
 	}
 	
@@ -439,8 +437,8 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
     	assertEquals("foo", created.get("values").get("attr1").asText());
     	assertEquals(5, created.get("values").get("attr2").asLong());
     	assertEquals(100, created.get("values").get("attr3").asLong());
-    	assertEquals(NullNode.instance, created.get("values").get("attr4"));
-    	assertEquals(NullNode.instance, created.get("values").get("attr5"));
+    	assertNull(created.get("values").get("attr4"));
+    	assertNull(created.get("values").get("attr5"));
 	}
 
 	public void testDeleteInstance() throws CoreException,IOException {
