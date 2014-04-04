@@ -22,6 +22,7 @@
 					<testClass>com.abstratt.kirra.tests.mdd.runtime.AllKirraMDDRuntimeTests</testClass>
 					<systemProperties>
 						<org.eclipse.equinox.http.jetty.http.port>8091</org.eclipse.equinox.http.jetty.http.port>
+                                                <cloudfier.api.externalBaseUri>http://localhost:8091/mdd/</cloudfier.api.externalBaseUri>
 						<mdd.noAuthentication>true</mdd.noAuthentication>
 						<eclipse.consoleLog>true</eclipse.consoleLog>
 						<org.eclipse.uml2.common.util.CacheAdapter.ThreadLocal />
