@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Automated Testing Facade
+Bundle-SymbolicName: com.abstratt.mdd.tests
+Bundle-Version: 1.4.0.qualifier
+Bundle-Vendor: Abstratt Technologies
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: com.abstratt.mdd.core.tests,
+ com.abstratt.mdd.core.tests.runtime,
+ com.abstratt.mdd.core.tests.harness,
+ com.abstratt.mdd.frontend.tests.textuml,
+ com.abstratt.mdd.target.tests,
+ org.junit4

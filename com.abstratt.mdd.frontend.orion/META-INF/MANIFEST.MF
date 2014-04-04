@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Orion Plug-ins
+Bundle-SymbolicName: com.abstratt.mdd.frontend.orion;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Eclipse-BundleShape: dir

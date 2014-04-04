@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.6"?>
+
+<target name="Kirra Dependencies" sequenceNumber="4">
+	<locations>
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="org.eclipse.platform.feature.group" version="0.0.0" />
+			<unit id="org.junit" version="0.0.0" />
+                        <unit id="org.eclipse.equinox.executable.feature.group" version="0.0.0" />
+			<unit id="org.eclipse.emf.query.sdk.feature.group" version="0.0.0" />
+			<unit id="org.eclipse.ocl.all.sdk.feature.group" version="0.0.0" />
+			<unit id="org.eclipse.uml2.sdk.feature.group" version="0.0.0" />
+                        <!-- Specific release to avoid Eclipse bug 430375 -->
+			<repository location="http://download.eclipse.org/releases/kepler/201402280900" />
+		</location>
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="org.apache.commons.lang" version="0.0.0" />
+			<unit id="org.apache.commons.io" version="0.0.0" />
+			<unit id="org.apache.commons.fileupload" version="0.0.0" />
+			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140114142710/repository" />
+		</location>
+				
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="org.restlet" version="0.0.0" />
+			<unit id="org.restlet.ext.servlet" version="0.0.0" />
+			<unit id="org.restlet.ext.xml" version="0.0.0" />
+			<unit id="org.restlet.ext.fileupload" version="0.0.0" />
+			<unit id="org.restlet.ext.crypto" version="0.0.0" />
+			<repository location="http://p2.restlet.org/2.1/" />
+		</location>
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="org.eclipse.jetty.client" version="0.0.0" />
+			<unit id="org.eclipse.jetty.continuation" version="0.0.0" />
+			<unit id="org.eclipse.jetty.http" version="0.0.0" />
+			<unit id="org.eclipse.jetty.io" version="0.0.0" />
+			<unit id="org.eclipse.jetty.server" version="0.0.0" />
+			<unit id="org.eclipse.jetty.servlet" version="0.0.0" />
+			<unit id="org.eclipse.jetty.servlets" version="0.0.0" />
+			<unit id="org.eclipse.jetty.server" version="0.0.0" />
+			<unit id="org.eclipse.jetty.util" version="0.0.0" />
+			<unit id="org.eclipse.jetty.security" version="0.0.0" />
+			<repository
+				location="http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.14.v20131031" />
+
+		</location>
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="org.codehaus.groovy21.feature.feature.group" version="0.0.0" />
+			<repository location="http://dist.springsource.org/release/GRECLIPSE/e4.3/" />
+		</location>
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="org.springframework.ide.eclipse.security.feature.feature.group" version="0.0.0" />
+			<repository location="http://dist.springsource.com/release/TOOLS/update/e4.3/" />
+		</location>
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.pluginutils" version="0.0.0" />
+            <repository location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/1.120.1/com.abstratt.eclipsegraphviz.repository-1.120.1.zip!/" />				
+		</location>
+		
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.mdd.frontend.toolkit.feature.feature.group"
+				version="0.0.0" />
+			<repository
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/1.120.1/com.abstratt.mdd.oss.repository-1.120.1.zip!/" />
+		</location>		
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.mdd.core.tests.harness" version="0.0.0" />
+			<repository
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.tests.repository/1.120.1/com.abstratt.mdd.tests.repository-1.120.1.zip!/" />
+		</location>
+	</locations>
+</target>

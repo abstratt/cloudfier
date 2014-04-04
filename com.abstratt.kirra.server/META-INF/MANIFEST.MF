@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kirra Server Application
+Bundle-SymbolicName: com.abstratt.kirra.server;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: com.abstratt.pluginutils,
+ org.eclipse.equinox.app,
+ org.eclipse.core.runtime;bundle-version="3.4.0"
+Bundle-ActivationPolicy: lazy
+Export-Package: com.abstratt.kirra.server
+Import-Package: org.osgi.framework;version="1.4.0",
+ org.osgi.service.http;version="1.2.0"
+Bundle-Activator: com.abstratt.kirra.server.Activator

@@ -1,0 +1,21 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MDD Web-based Front-end Tests
+Bundle-SymbolicName: com.abstratt.mdd.frontend.web.tests
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: Abstratt Technologies
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.junit,
+ com.abstratt.mdd.core.tests.harness,
+ org.apache.commons.httpclient,
+ com.abstratt.mdd.frontend.web,
+ org.eclipse.core.runtime,
+ org.apache.commons.io,
+ com.abstratt.mdd.frontend.textuml.core,
+ org.eclipse.equinox.http.jetty,
+ org.eclipse.equinox.http.registry,
+ jackson-core-asl,
+ jackson-mapper-asl
+Bundle-Activator: com.abstratt.mdd.frontend.web.tests.Activator
+Bundle-ActivationPolicy: lazy
+Export-Package: com.abstratt.mdd.frontend.web.tests

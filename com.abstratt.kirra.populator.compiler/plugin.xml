@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.abstratt.mdd.frontend.core.frontEndLanguage">
+      <language
+            compiler="com.abstratt.kirra.populator.compiler.DataCompiler"
+            file-extension="data.json"
+            auxiliary="true"
+            name="Data Population validator">
+      </language>
+   </extension>
+</plugin>

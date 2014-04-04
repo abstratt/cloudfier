@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<genmodel:GenModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:genmodel="http://www.eclipse.org/uml2/2.2.0/GenModel" modelDirectory="/com.abstratt.mdd.target.query/src-model"
+    modelPluginID="com.abstratt.mdd.target.query" modelName="Query" importerID="org.eclipse.uml2.uml.ecore.importer"
+    containmentProxies="true" complianceLevel="5.0" copyrightFields="false" usedGenPackages="platform:/plugin/org.eclipse.emf.ecore/model/Ecore.genmodel#//ecore platform:/plugin/org.eclipse.uml2.uml/model/UML.genmodel#//uml">
+  <genAnnotations source="http://www.eclipse.org/emf/2002/GenModel/importer/org.eclipse.uml2.uml.ecore.importer">
+    <details key="ECORE_TAGGED_VALUES" value="PROCESS"/>
+    <details key="UNION_PROPERTIES" value="PROCESS"/>
+    <details key="DUPLICATE_FEATURES" value="PROCESS"/>
+    <details key="SUBSETTING_PROPERTIES" value="PROCESS"/>
+    <details key="COMMENTS" value="PROCESS"/>
+    <details key="DUPLICATE_FEATURE_INHERITANCE" value="PROCESS"/>
+    <details key="DUPLICATE_OPERATIONS" value="PROCESS"/>
+    <details key="INVARIANT_CONSTRAINTS" value="PROCESS"/>
+    <details key="REDEFINING_PROPERTIES" value="PROCESS"/>
+    <details key="ANNOTATION_DETAILS" value="PROCESS"/>
+    <details key="DUPLICATE_OPERATION_INHERITANCE" value="PROCESS"/>
+    <details key="REDEFINING_OPERATIONS" value="PROCESS"/>
+    <details key="DERIVED_FEATURES" value="PROCESS"/>
+    <details key="OPERATION_BODIES" value="PROCESS"/>
+    <details key="CAMEL_CASE_NAMES" value="PROCESS"/>
+    <details key="SUPER_CLASS_ORDER" value="PROCESS"/>
+  </genAnnotations>
+  <foreignModel>query.uml</foreignModel>
+  <genPackages xsi:type="genmodel:GenPackage" prefix="Query" basePackage="com.abstratt.mdd.target"
+      disposableProviderFactory="true" ecorePackage="query.ecore#/" operationsPackage="com.abstratt.mdd.target.query.operations">
+    <genClasses xsi:type="genmodel:GenClass" ecoreClass="query.ecore#//Query">
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//Query/sourceType"/>
+      <genFeatures xsi:type="genmodel:GenFeature" property="None" children="true"
+          createChild="true" ecoreFeature="ecore:EReference query.ecore#//Query/joins"/>
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//Query/filters"/>
+      <genOperations xsi:type="genmodel:GenOperation" ecoreOperation="query.ecore#//Query/getTargetType"/>
+    </genClasses>
+    <genClasses xsi:type="genmodel:GenClass" ecoreClass="query.ecore#//Join">
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//Join/source"/>
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//Join/target"/>
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//Join/association"/>
+    </genClasses>
+    <genClasses xsi:type="genmodel:GenClass" ecoreClass="query.ecore#//PropertyReference">
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//PropertyReference/property"/>
+    </genClasses>
+    <genClasses xsi:type="genmodel:GenClass" ecoreClass="query.ecore#//VariableReference">
+      <genFeatures xsi:type="genmodel:GenFeature" notify="false" createChild="false"
+          propertySortChoices="true" ecoreFeature="ecore:EReference query.ecore#//VariableReference/variable"/>
+    </genClasses>
+  </genPackages>
+</genmodel:GenModel>

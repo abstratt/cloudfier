@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Gstring
+Bundle-SymbolicName: com.abstratt.mdd.target.engine.gstring;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: 
+ org.codehaus.groovy,
+ com.abstratt.mdd.target.core,
+ org.apache.commons.io,
+ org.apache.commons.lang,
+ com.abstratt.kirra.mdd.core;visibility:=reexport
+Export-Package: com.abstratt.mdd.target.engine.gstring
+Eclipse-BuddyPolicy: registered
+ 

@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MDD Runtime Core
+Bundle-SymbolicName: com.abstratt.mdd.runtime.core;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: Abstratt Technologies
+Require-Bundle: com.abstratt.mdd.core;visibility:=reexport,
+ org.eclipse.equinox.registry
+Import-Package: com.abstratt.nodestore,
+ com.abstratt.resman,
+ org.apache.commons.lang
+Export-Package: com.abstratt.mdd.core.runtime,
+ com.abstratt.mdd.core.runtime.action,
+ com.abstratt.mdd.core.runtime.external,
+ com.abstratt.mdd.core.runtime.types
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

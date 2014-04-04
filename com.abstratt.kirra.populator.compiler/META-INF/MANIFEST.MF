@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Data Populator Compiler
+Bundle-SymbolicName: com.abstratt.kirra.populator.compiler;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: com.abstratt.kirra.populator,
+ com.abstratt.mdd.frontend.core,
+ com.abstratt.mdd.frontend.core.spi,
+ org.eclipse.core.runtime,
+ org.codehaus.jackson,
+ com.abstratt.kirra.mdd.runtime,
+ com.abstratt.mdd.core.runtime, 
+ com.abstratt.kirra,
+ com.abstratt.mdd.core,
+ com.abstratt.pluginutils

@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kirra Authentication LDAP Service
+Bundle-SymbolicName: com.abstratt.kirra.auth.ldap;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.framework, 
+ org.osgi.service.http,
+ org.osgi.util.tracker,
+ org.eclipse.osgi.service.resolver,
+ com.abstratt.pluginutils,
+ com.abstratt.kirra.auth,
+ org.apache.commons.collections.map,
+ org.apache.commons.codec.digest,
+ org.apache.commons.codec.binary,
+ org.apache.commons.httpclient,
+ org.apache.commons.httpclient.methods,
+ org.apache.commons.httpclient.auth,
+ org.apache.commons.httpclient.params
+Bundle-Activator: com.abstratt.kirra.internal.auth.ldap.Activator

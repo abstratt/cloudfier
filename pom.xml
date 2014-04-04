@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.abstratt.mdd.kirra</groupId>
+	<artifactId>plugins</artifactId>
+	<version>1.120.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<artifactId>master</artifactId>
+		<groupId>com.abstratt</groupId>
+		<version>1.3</version>
+	</parent>
+
+
+	<repositories>
+		<repository>
+			<id>Abstratt-OSS</id>
+			<name>Abstratt OSS Repo</name>
+			<url>http://repository-textuml.forge.cloudbees.com/snapshot/</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<!-- 3rd-party POM-first dependencies for modules -->
+	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-mapper-asl</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.codehaus.jackson</groupId>
+			<artifactId>jackson-core-asl</artifactId>
+			<version>1.9.2</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.abstratt.wrapped</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>1.120.1-SNAPSHOT</version>
+		</dependency>
+		
+	</dependencies>
+
+	<modules>
+		<module>com.abstratt.nodestore</module>
+		<module>com.abstratt.nodestore.jdbc</module>
+		<module>com.abstratt.kirra.api</module>
+		<module>com.abstratt.kirra.auth</module>
+		<module>com.abstratt.kirra.auth.ldap</module>
+		<module>com.abstratt.mdd.runtime.core</module>
+		<module>com.abstratt.kirra.populator</module>
+		<module>com.abstratt.kirra.populator.compiler</module>
+		<module>com.abstratt.kirra.mdd.runtime</module>
+		<module>com.abstratt.kirra.server</module>
+		<module>com.abstratt.mdd.target.core</module>
+		<module>com.abstratt.mdd.target.query</module>
+<!-- 		<module>com.abstratt.mdd.target.engine.st</module> -->
+		<module>com.abstratt.mdd.target.engine.gstring</module>
+		<module>com.abstratt.kirra.mdd.rest</module>
+		<module>com.abstratt.kirra.mdd.ui</module>
+		<module>com.abstratt.mdd.frontend.web</module>
+		<module>com.abstratt.mdd.frontend.orion</module>
+		<module>com.abstratt.nodestore.tests</module>
+		<module>com.abstratt.mdd.core.tests.runtime</module>
+		<module>com.abstratt.kirra.tests.mdd.runtime</module>
+		<module>com.abstratt.mdd.target.tests</module>
+		<module>com.abstratt.mdd.frontend.web.tests</module>
+		<module>com.abstratt.kirra.server.product</module>
+		<module>kirra-dependencies</module>
+	</modules>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<pomDependencies>consider</pomDependencies>
+					<target>
+						<artifact>
+							<groupId>com.abstratt.mdd.kirra</groupId>
+							<artifactId>kirra-dependencies</artifactId>
+							<version>1.120.1-SNAPSHOT</version>
+							<classifier>kirra-dependencies</classifier>
+						</artifact>
+					</target>
+                    <environments>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86</arch>
+						</environment>
+						<environment>
+							<os>linux</os>
+							<ws>gtk</ws>
+							<arch>x86_64</arch>
+						</environment>
+                    </environments>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
+

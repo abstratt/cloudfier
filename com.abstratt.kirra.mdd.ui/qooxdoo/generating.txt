@@ -1,0 +1,3 @@
+The list of requirements is obtained with this:
+
+grep "\(qx\.[a-zA-Z\.]*\.[A-Z][a-zA-Z]*\)" ../src/ui-js.gt  | sed -E 's/.*(qx\.([a-zA-Z]*\.)+[A-Z][a-zA-Z]*).*/ #require(\1)/' | sort | uniq

@@ -1,0 +1,5 @@
+<plugin>
+	<extension-point id="targetPlatform" name="Target Platform" schema="schema/targetPlatform.exsd"/>
+	<extension-point id="transformationEngine" name="Transformation Engine"/>
+    <extension-point id="actionMapper" name="Action Mapper" schema="schema/actionMapper.exsd"/>
+</plugin>

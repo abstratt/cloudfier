@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.abstratt.resman.features">
+      <feature
+            provider="com.abstratt.kirra.mdd.runtime.KirraRepositoryProvider"/>
+      <feature
+            provider="com.abstratt.kirra.mdd.runtime.KirraSchemaProvider"/>
+      <feature
+            provider="com.abstratt.kirra.mdd.runtime.KirraApplicationProvider"/>
+   </extension>
+
+</plugin>

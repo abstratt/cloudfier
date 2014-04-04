@@ -1,0 +1,22 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MDD-based Kirra
+Bundle-SymbolicName: com.abstratt.kirra.mdd.runtime;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: com.abstratt.mdd.runtime.core,
+ com.abstratt.mdd.core,
+ com.abstratt.kirra.api;visibility:=reexport,
+ org.apache.commons.logging,
+ com.abstratt.kirra.populator,
+ com.abstratt.kirra.mdd.core;visibility:=reexport,
+ com.abstratt.mdd.core,
+ com.abstratt.pluginutils,
+ org.apache.commons.io,
+ org.eclipse.core.runtime,
+ org.eclipse.emf.common ,
+ com.abstratt.nodestore.jdbc
+Import-Package: com.abstratt.nodestore,
+ com.abstratt.resman 
+Export-Package: com.abstratt.kirra.mdd.runtime

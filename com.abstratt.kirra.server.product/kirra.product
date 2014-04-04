@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?pde version="3.5"?>
+
+<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" useFeatures="false" includeLaunchers="true">
+
+
+   <configIni use="default">
+   </configIni>
+
+   <launcherArgs>
+      <programArgs>-console -consolelog</programArgs>
+      <vmArgs>-Declipse.ignoreApp=false 
+-Dosgi.noShutdown=true
+-Dorg.eclipse.jetty.LEVEL=DEBUG 
+-DDEBUG_PATTERNS=main,org.mortbay.http 
+-DDEBUG_VERBOSE=1
+-Xmx400m
+-Dorg.eclipse.uml2.common.util.CacheAdapter.ThreadLocal
+-Dcloudfier.api.internalBaseUri=http://localhost:8081/mdd/
+-Dcloudfier.api.externalBaseUri=http://localhost/services/
+-Dorg.eclipse.equinox.http.jetty.http.port=8081
+-Dcloudfier.database.username=cloudfier</vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+   </launcherArgs>
+
+   <windowImages/>
+
+
+   <launcher name="kirra-server">
+      <solaris/>
+      <win useIco="false">
+         <bmp/>
+      </win>
+   </launcher>
+
+
+   <vm>
+   </vm>
+
+
+   <plugins>
+      <plugin id="com.abstratt.kirra.api"/>
+      <plugin id="com.abstratt.kirra.auth"/>
+      <plugin id="com.abstratt.kirra.auth.ldap"/>
+      <plugin id="com.abstratt.kirra.mdd.core"/>
+      <plugin id="com.abstratt.kirra.mdd.rest"/>
+      <plugin id="com.abstratt.kirra.mdd.runtime"/>
+      <plugin id="com.abstratt.kirra.mdd.ui"/>
+      <plugin id="com.abstratt.kirra.populator"/>
+      <plugin id="com.abstratt.kirra.populator.compiler"/>
+      <plugin id="com.abstratt.kirra.server"/>
+      <plugin id="com.abstratt.mdd.core"/>
+      <plugin id="com.abstratt.mdd.frontend.core"/>
+      <plugin id="com.abstratt.mdd.frontend.orion"/>
+      <plugin id="com.abstratt.mdd.frontend.textuml.core"/>
+      <plugin id="com.abstratt.mdd.frontend.web"/>
+      <plugin id="com.abstratt.mdd.runtime.core"/>
+      <plugin id="com.abstratt.mdd.target.core"/>
+      <plugin id="com.abstratt.mdd.target.engine.gstring"/>
+      <plugin id="com.abstratt.modelrenderer"/>
+      <plugin id="com.abstratt.nodestore"/>
+      <plugin id="com.abstratt.nodestore.jdbc"/>
+      <plugin id="com.abstratt.pluginutils"/>
+      <plugin id="com.abstratt.resman"/>
+      <plugin id="com.abstratt.wrapped.postgresql"/>
+      <plugin id="com.ibm.icu"/>
+      <plugin id="jackson-core-asl"/>
+      <plugin id="jackson-mapper-asl"/>
+      <plugin id="javax.servlet"/>
+      <plugin id="org.apache.ant"/>
+      <plugin id="org.apache.commons.beanutils"/>
+      <plugin id="org.apache.commons.codec"/>
+      <plugin id="org.apache.commons.collections"/>
+      <plugin id="org.apache.commons.fileupload"/>
+      <plugin id="org.apache.commons.httpclient"/>
+      <plugin id="org.apache.commons.io"/>
+      <plugin id="org.apache.commons.lang"/>
+      <plugin id="org.apache.commons.logging"/>
+      <plugin id="org.apache.felix.gogo.command"/>
+      <plugin id="org.apache.felix.gogo.runtime"/>
+      <plugin id="org.apache.felix.gogo.shell"/>
+      <plugin id="org.codehaus.groovy"/>
+      <plugin id="org.eclipse.core.contenttype"/>
+      <plugin id="org.eclipse.core.filesystem"/>
+      <plugin id="org.eclipse.core.jobs"/>
+      <plugin id="org.eclipse.core.runtime"/>
+      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
+      <plugin id="org.eclipse.emf.common"/>
+      <plugin id="org.eclipse.emf.ecore"/>
+      <plugin id="org.eclipse.emf.ecore.xmi"/>
+      <plugin id="org.eclipse.emf.mapping.ecore2xml"/>
+      <plugin id="org.eclipse.emf.query"/>
+      <plugin id="org.eclipse.equinox.app"/>
+      <plugin id="org.eclipse.equinox.common"/>
+      <plugin id="org.eclipse.equinox.console"/>
+      <plugin id="org.eclipse.equinox.http.jetty"/>
+      <plugin id="org.eclipse.equinox.http.registry"/>
+      <plugin id="org.eclipse.equinox.http.servlet"/>
+      <plugin id="org.eclipse.equinox.preferences"/>
+      <plugin id="org.eclipse.equinox.registry"/>
+      <plugin id="org.eclipse.jetty.continuation"/>
+      <plugin id="org.eclipse.jetty.http"/>
+      <plugin id="org.eclipse.jetty.io"/>
+      <plugin id="org.eclipse.jetty.security"/>
+      <plugin id="org.eclipse.jetty.server"/>
+      <plugin id="org.eclipse.jetty.servlet"/>
+      <plugin id="org.eclipse.jetty.util"/>
+      <plugin id="org.eclipse.osgi"/>
+      <plugin id="org.eclipse.osgi.services"/>
+      <plugin id="org.eclipse.uml2.common"/>
+      <plugin id="org.eclipse.uml2.types"/>
+      <plugin id="org.eclipse.uml2.uml"/>
+      <plugin id="org.eclipse.uml2.uml.profile.l2"/>
+      <plugin id="org.eclipse.uml2.uml.profile.l3"/>
+      <plugin id="org.eclipse.uml2.uml.resources"/>
+      <plugin id="org.hamcrest.core"/>
+      <plugin id="org.junit"/>
+      <plugin id="org.restlet"/>
+      <plugin id="org.restlet.ext.crypto"/>
+      <plugin id="org.restlet.ext.fileupload"/>
+      <plugin id="org.restlet.ext.servlet"/>
+      <plugin id="org.restlet.ext.xml"/>
+   </plugins>
+
+   <configurations>
+      <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="1" />
+   </configurations>
+
+</product>

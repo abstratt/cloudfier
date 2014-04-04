@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Tests for the Simple ObjectStore implementation
+Bundle-SymbolicName: com.abstratt.nodestore.tests
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Import-Package: 
+ junit.framework
+Require-Bundle: com.abstratt.mdd.core.tests.harness,
+ com.abstratt.mdd.core.tests.runtime,
+ com.abstratt.kirra.mdd.runtime,
+ com.abstratt.nodestore,
+ com.abstratt.nodestore.jdbc,
+ org.apache.commons.lang
+Export-Package: com.abstratt.nodestore.tests

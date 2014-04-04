@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kirra Authentication Service
+Bundle-SymbolicName: com.abstratt.kirra.auth;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-ActivationPolicy: lazy
+Import-Package: org.osgi.framework, 
+ org.osgi.service.http,
+ org.osgi.util.tracker,
+ org.eclipse.osgi.service.resolver,
+ com.abstratt.pluginutils
+Export-Package: com.abstratt.kirra.auth

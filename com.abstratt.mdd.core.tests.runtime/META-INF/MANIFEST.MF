@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Runtime Tests Plug-in
+Bundle-SymbolicName: com.abstratt.mdd.core.tests.runtime
+Bundle-Version: 1.120.1.qualifier
+Require-Bundle: com.abstratt.mdd.runtime.core;visibility:=reexport,
+ com.abstratt.mdd.frontend.textuml.core,
+ com.abstratt.mdd.core.tests.harness;visibility:=reexport,
+ com.abstratt.nodestore,
+ com.abstratt.nodestore.jdbc,
+ com.abstratt.kirra.api,
+ com.abstratt.kirra.mdd.runtime,
+ com.abstratt.kirra.mdd.rest
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Export-Package: com.abstratt.mdd.core.tests.runtime

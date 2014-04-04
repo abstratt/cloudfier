@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Kirra Populator
+Bundle-SymbolicName: com.abstratt.kirra.populator;singleton:=true
+Bundle-Version: 1.120.1.qualifier
+Bundle-Vendor: Abstratt Technologies
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.eclipse.emf.common,
+ jackson-core-asl;bundle-version="1.9.2",
+ jackson-mapper-asl;bundle-version="1.9.2"
+Import-Package: com.abstratt.kirra,
+ com.abstratt.mdd.core,
+ com.abstratt.mdd.core.runtime,
+ com.abstratt.mdd.frontend.core,
+ com.abstratt.mdd.frontend.core.spi,
+ com.abstratt.pluginutils,
+ org.eclipse.core.runtime,
+ org.apache.commons.io
+Export-Package: com.abstratt.kirra.populator
