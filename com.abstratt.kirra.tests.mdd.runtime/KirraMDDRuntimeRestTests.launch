@@ -30,7 +30,7 @@
 <stringAttribute key="org.eclipse.jdt.launching.PROGRAM_ARGUMENTS" value="-consolelog"/>
 <stringAttribute key="org.eclipse.jdt.launching.PROJECT_ATTR" value="com.abstratt.kirra.tests.mdd.runtime"/>
 <stringAttribute key="org.eclipse.jdt.launching.SOURCE_PATH_PROVIDER" value="org.eclipse.pde.ui.workbenchClasspathProvider"/>
-<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Ddebug.sql=true&#10;-Dorg.eclipse.uml2.common.util.CacheAdapter.ThreadLocal &#10;-Dorg.eclipse.equinox.http.jetty.http.port=8091 -Declipse.ignoreApp=false -DDEBUG -DDEBUG_PATTERNS=main,org.mortbay.http -DDEBUG_VERBOSE=1 -Xmx400m&#10;-Ddebug.sql=true"/>
+<stringAttribute key="org.eclipse.jdt.launching.VM_ARGUMENTS" value="-Dcloudfier.api.externalBaseUri=http://localhost:8091/mdd/ &#10;-Ddebug.sql=true&#10;-Dorg.eclipse.uml2.common.util.CacheAdapter.ThreadLocal &#10;-Dorg.eclipse.equinox.http.jetty.http.port=8091 -Declipse.ignoreApp=false -DDEBUG -DDEBUG_PATTERNS=main,org.mortbay.http -DDEBUG_VERBOSE=1 -Xmx400m"/>
 <stringAttribute key="pde.version" value="3.3"/>
 <stringAttribute key="product" value="com.abstratt.kirra.server.product"/>
 <booleanAttribute key="run_in_ui_thread" value="true"/>
