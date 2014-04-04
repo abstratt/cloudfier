@@ -13,9 +13,13 @@ import com.abstratt.kirra.Tuple;
 public class TupleJSONRepresentation {
 
 	@JsonProperty
+	public String typeName;
+	
+	@JsonProperty
 	public Map<String, Object> values;
 	
 	public void build(KirraReferenceBuilder refBuilder, TopLevelElement element, Tuple instance) {
+		this.typeName = element.getTypeRef().getFullName();
 		this.values = new HashMap<String, Object>();
 		for (Entry<String, Object> entry : instance.getValues().entrySet()) {
 			if (entry.getValue() instanceof Tuple) {
