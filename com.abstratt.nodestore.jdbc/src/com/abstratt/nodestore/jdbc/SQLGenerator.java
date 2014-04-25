@@ -374,7 +374,7 @@ public class SQLGenerator {
 		
 		if (myRelationship.isMultiple()) {
 			Entity clazz = metadata.getEntity(myRelationship.getTypeRef());
-			if (!otherEnd.isRequired()) {
+			if (replaceExisting && !otherEnd.isRequired()) {
 				String unlinkStmt = "update " + modelToSchemaName(clazz);
 				unlinkStmt += " set " + generateSelfToOppositeFK(otherEnd) + " = null";
 				unlinkStmt += " where " + generateSelfToOppositeFK(otherEnd) + " = " + targetKey + ";";
