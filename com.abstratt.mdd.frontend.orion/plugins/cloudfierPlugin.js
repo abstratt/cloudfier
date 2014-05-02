@@ -578,7 +578,7 @@ provider.registerServiceProvider("orion.page.link.related", {}, {
     id: "orion.cloudfier.content.examples",
     tooltip: "Check out existing projects from the Cloudfier example repository.",
     name: "Get Cloudfier examples",
-    uriTemplate: "{OrionHome}/git/git-repository.html#,cloneGitRepository=https://bitbucket.org/abstratt/cloudfier-examples.git"
+    uriTemplate: "../git/git-repository.html#,cloneGitRepository=https://bitbucket.org/abstratt/cloudfier-examples.git"
 });
 
 provider.registerServiceProvider("orion.page.link.related", {}, {
