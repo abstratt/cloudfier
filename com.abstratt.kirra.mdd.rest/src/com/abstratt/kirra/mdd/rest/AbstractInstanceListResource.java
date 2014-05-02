@@ -28,7 +28,7 @@ public abstract class AbstractInstanceListResource extends AbstractKirraReposito
 	protected List<Instance> sort(List<Instance> instances) {
 		Collections.sort(instances, new Comparator<Instance>() {
 			public int compare(Instance o1, Instance o2) {
-				return o1.getObjectId().compareTo(o2.getObjectId());
+				return Integer.parseInt(o1.getObjectId()) - Integer.parseInt(o2.getObjectId());
 			}
 		});
 		return instances;
