@@ -231,6 +231,8 @@ def classTab(entity) {
     }
     
     ${current()}.pageSelected = function () {
+        // when the page is selected, we need to reload the root object and the grid
+        ${current()}.reloadStore();
         ${current()}.reloadRootObject(currentRecord, true);
     };
     
