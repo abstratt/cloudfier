@@ -495,7 +495,7 @@ qx.Class.define("cloudfier.mobile.page.EntityNavigator",
 
       var data = [
           ${ entities.collect {
-              "{title : '${getLabel(it)}', subtitle : '${getDescription(it).replace("'", "\\'")}', path: '${getSymbol(it)}'}"
+              "{title : '${getLabel(it)}', subtitle : '${getDescription(it).replace("'", "\\'").replace("\n", "\\n")}', path: '${getSymbol(it)}'}"
           }.join(',\n') }
       ];
 
