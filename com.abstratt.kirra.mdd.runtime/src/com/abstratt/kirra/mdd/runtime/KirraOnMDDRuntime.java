@@ -193,9 +193,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     }
                 } else if (KirraHelper.isProperty(property)) {
                     BasicType value = source.getValue(property);
-                    if (value == null)
-                        continue;
                     // convert to client format
+                    // set even if null - so clients have a stable format they can rely on
                 	Object converted = convertFromBasicType(value, (Classifier) property.getType());
                     kirraInstance.setValue(KirraHelper.getName(property), converted);
                 }
