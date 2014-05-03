@@ -68,7 +68,7 @@ class Util extends KirraUIHelper {
 	"""
 	        if (${recordExpression}.values) {
 	            ${  
-	                def statements = []
+	                def statements = ['// converting ']
 	                getFormFields(entity).each {
 	                    if (it.type.name == 'Date' && editable && isEditable(it, creation))
 	                        statements << convertDateFromStringToJS(recordExpression, it)
@@ -80,7 +80,13 @@ class Util extends KirraUIHelper {
 	                        // use a text field for doubles
 	                        statements << convertToString(recordExpression, it)
 	                    else if (it.type instanceof StateMachine)
-	                        statements << convertCamelCaseToTitleCase(recordExpression, it);    
+	                        statements << convertCamelCaseToTitleCase(recordExpression, it);
+	                    // ensure all properties are defined, even if the JSON was missing some (Qooxdoo would throw an exception if we try to get their values later)
+                        statements << """ 	                        
+                    	if (${recordExpression}.values['${getName(it)}'] === undefined) {
+	                        ${recordExpression}.values['${getName(it)}'] = null;
+	                    }
+	                    """
 	                }
 	                return statements.join("\n")
 	            }
@@ -92,7 +98,7 @@ class Util extends KirraUIHelper {
 	"""
 	function(data) {
 	    for (var i = 0; i < data.length; i++) {
-	        ${ recordConverter(entity, 'data[i]', false, creation) } 
+	        ${ recordConverter(entity, 'data[i]', false, creation) }
 	    }
 	    return data;
 	}
