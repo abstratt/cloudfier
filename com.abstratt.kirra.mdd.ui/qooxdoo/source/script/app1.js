@@ -20,7 +20,7 @@ qx.$$g = {}
 
 qx.$$loader = {
   parts : {"boot":[0]},
-  packages : {"0":{"uris":["__out__:app1.b49a1a48d72b.js","app1:app1/Application.js","__out__:app1.07f99b4a69bd.js","app1:app1/theme/Color.js","__out__:app1.b8388a4afc26.js","app1:app1/theme/Font.js","__out__:app1.c4176b7f2e32.js","app1:app1/theme/Decoration.js","__out__:app1.78051fe37fd3.js","app1:app1/theme/Appearance.js","app1:app1/theme/Theme.js"]}},
+  packages : {"0":{"uris":["__out__:app1.d89f6be625a8.js","app1:app1/Application.js","__out__:app1.07f99b4a69bd.js","app1:app1/theme/Color.js","__out__:app1.b8388a4afc26.js","app1:app1/theme/Font.js","__out__:app1.c4176b7f2e32.js","app1:app1/theme/Decoration.js","__out__:app1.78051fe37fd3.js","app1:app1/theme/Appearance.js","app1:app1/theme/Theme.js"]}},
   urisBefore : [],
   cssBefore : [],
   boot : "boot",
