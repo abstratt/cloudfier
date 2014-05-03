@@ -57,11 +57,15 @@ qx.Class.define("cloudfier.mobile.page.InstanceNavigationPage",
         configureItem : function(item, data, row)
         {
           item.setTitle(data.getShorthand());
-          var details = [], value;
+          var details = [], value, detail;
           for (name in me.detailProperties) {
               value = data.getValues().get(name);
-              if (value && value != null)
-                  details.push(me.detailProperties[name].label + ": " + value || '');
+              if (value && value != null) {
+                  detail = me.detailProperties[name].label;
+                  if (value !== true)
+                      detail += ": " + value
+                  details.push(detail);
+              }
           }
           item.setSubtitle(details.join(", "));
           item.setShowArrow(true);
