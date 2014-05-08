@@ -48,7 +48,6 @@
 	<modules>
 		<module>com.abstratt.nodestore</module>
 		<module>com.abstratt.nodestore.jdbc</module>
-		<module>com.abstratt.kirra.api</module>
 		<module>com.abstratt.kirra.auth</module>
 		<module>com.abstratt.kirra.auth.ldap</module>
 		<module>com.abstratt.mdd.runtime.core</module>
