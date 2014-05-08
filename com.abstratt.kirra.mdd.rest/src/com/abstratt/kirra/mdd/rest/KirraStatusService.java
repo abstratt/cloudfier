@@ -14,19 +14,29 @@ import org.restlet.service.StatusService;
 
 import com.abstratt.nodestore.NodeStoreException;
 import com.abstratt.pluginutils.UserFacingException;
+import com.abstratt.kirra.KirraException;
 
 public class KirraStatusService extends StatusService {
+
+        private boolean isUserFacing(Throwable throwable) {
+            return throwable instanceof UserFacingException || throwable instanceof KirraException;
+        }
+        private String getUserFacingMessage(Throwable throwable) {
+            if (throwable instanceof UserFacingException)
+                return ((UserFacingException) throwable).getUserFacingMessage();        
+            return throwable.getMessage();
+        }
 	@Override
 	public Status getStatus(Throwable throwable, Request request, Response response) {
 		if (response.isEntityAvailable())
 			response.getEntity().setExpirationDate(new Date(0));
 		Throwable original = throwable;
-		while (throwable.getCause() instanceof UserFacingException)
+		while (isUserFacing(throwable.getCause()))
 			throwable = throwable.getCause();
 		if (throwable instanceof NodeStoreException)
 			return new Status(Status.SERVER_ERROR_SERVICE_UNAVAILABLE, "Application database is not available");
-		if (throwable instanceof UserFacingException)
-			return new Status(Status.SERVER_ERROR_SERVICE_UNAVAILABLE, ((UserFacingException) throwable).getUserFacingMessage());
+                if (isUserFacing(throwable))
+		    return new Status(Status.SERVER_ERROR_SERVICE_UNAVAILABLE, getUserFacingMessage(throwable));
 		return super.getStatus(original, request, response);
 	}
 	

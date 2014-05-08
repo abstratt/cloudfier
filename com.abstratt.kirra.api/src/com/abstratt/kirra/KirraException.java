@@ -1,9 +1,6 @@
 package com.abstratt.kirra;
 
-import com.abstratt.pluginutils.UserFacingException;
-
-//XXX Runtime exception for now, might change to checked exception in the future
-public class KirraException extends RuntimeException implements UserFacingException {
+public class KirraException extends RuntimeException {
 	public static enum Kind {
 		ENTITY, SCHEMA, VALIDATION, OBJECT_NOT_FOUND, EXTERNAL
 	}
@@ -14,11 +11,6 @@ public class KirraException extends RuntimeException implements UserFacingExcept
 
 	private String context;
 	
-	@Override
-	public String getUserFacingMessage() {
-		return getMessage();
-	}
-
 	public KirraException(String message, Throwable cause, Kind kind) {
 		this(message, cause, kind, null);
 	}

@@ -6,4 +6,4 @@ Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Export-Package: com.abstratt.kirra
-Import-Package: com.abstratt.pluginutils
+
