@@ -42,8 +42,6 @@ public class InstanceJSONRepresentation extends TupleJSONRepresentation {
 		public String shorthand;
 	}
 	
-	public String typeName;
-
 	@JsonProperty
 	public String shorthand;
 	@JsonProperty

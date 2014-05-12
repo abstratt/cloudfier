@@ -19,8 +19,8 @@ public class TupleJSONRepresentation {
 	public Map<String, Object> values;
 	
 	public void build(KirraReferenceBuilder refBuilder, TopLevelElement element, Tuple instance) {
-                if (element != null && element.getTypeRef() != null)
-                    this.typeName = element.getTypeRef().getFullName();
+        if (element != null && element.getTypeRef() != null)
+            this.typeName = element.getTypeRef().getFullName();
 		this.values = new HashMap<String, Object>();
 		for (Entry<String, Object> entry : instance.getValues().entrySet()) {
 			if (entry.getValue() instanceof Tuple) {
