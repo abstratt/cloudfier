@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +44,9 @@ public class JDBCNodeStore implements INodeStore {
 	private Entity clazz;
 	private JDBCNodeStoreCatalog catalog;
 	private ConnectionProvider connectionProvider;
+	private Map<INodeKey, INode> nodes = new LinkedHashMap<INodeKey, INode>();
+	private Map<String, Map<INodeKey, List<INodeKey>>> relatedNodeKeys = new LinkedHashMap<String, Map<INodeKey, List<INodeKey>>>();
+	
 
 	public JDBCNodeStore(JDBCNodeStoreCatalog catalog, ConnectionProvider connectionProvider, SchemaManagement schema, TypeRef typeRef) {
 		Assert.isNotNull(typeRef);
@@ -342,7 +346,21 @@ public class JDBCNodeStore implements INodeStore {
 	
 	@Override
 	public Collection<INode> getRelatedNodes(INodeKey key, String relationship) {
-		return loadMany(new LoadNodeHandler(), getGenerator().generateSelectRelated(clazz.getRelationship(relationship), keyToId(key)));
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship) {
+		Map<INodeKey, List<INodeKey>> relationshipCache = relatedNodeKeys.get(relationship);
+		if (relationshipCache == null)
+			relatedNodeKeys.put(relationship, relationshipCache = new LinkedHashMap<INodeKey, List<INodeKey>>());
+		List<INodeKey> nodeRelationshipCache = relationshipCache.get(key);
+		if (nodeRelationshipCache != null)
+			return nodeRelationshipCache;
+		Relationship attribute = clazz.getRelationship(relationship);
+		List<INodeKey> relatedNodeKeys = loadMany(new LoadKeyHandler(), getGenerator().generateSelectRelatedKeys(attribute, keyToId(key)));
+		relationshipCache.put(key, relatedNodeKeys);
+		return relatedNodeKeys;
 	}
 	
 	@Override
@@ -372,12 +390,6 @@ public class JDBCNodeStore implements INodeStore {
 		perform(getGenerator().generateRemoveRelated(clazz.getRelationship(relationship), keyToId(key), keyToId(related.getKey())), false, true);
 	}
 	
-	@Override
-	public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship) {
-		Relationship attribute = clazz.getRelationship(relationship);
-		return loadMany(new LoadKeyHandler(), getGenerator().generateSelectRelated(attribute, keyToId(key)));
-	}
-
 	private SQLGenerator getGenerator() {
 		return basicGetCatalog().getGenerator();
 	}

@@ -289,40 +289,40 @@ public class SQLGenerator {
 		return Arrays.asList(stmt);
 	}
 	
-	public List<String> generateSelectRelated(Relationship myRelationship, long key) {
+	public List<String> generateSelectRelatedKeys(Relationship myRelationship, long key) {
 		Relationship otherEnd = metadata.getOpposite(myRelationship);
 		Entity otherEntity = metadata.getEntity(myRelationship.getTypeRef());
 		Entity contextEntity = metadata.getEntity(myRelationship.getOwner());
 		if (otherEnd == null) {
 			if (myRelationship.isMultiple())
-				return generateSelectManyRelatedViaMappingTable(myRelationship, key, otherEnd, contextEntity);
-			return generateSelectOneRelated(myRelationship, key, otherEnd, otherEntity, contextEntity);
+				return generateSelectManyRelatedKeysViaMappingTable(myRelationship, key, otherEnd, contextEntity);
+			return generateSelectOneRelatedKey(myRelationship, key, otherEnd, otherEntity, contextEntity);
 		}
 		if (isMappingTableRelationship(myRelationship))
-			return generateSelectManyRelatedViaMappingTable(myRelationship, key, otherEnd, contextEntity);
+			return generateSelectManyRelatedKeysViaMappingTable(myRelationship, key, otherEnd, contextEntity);
 		if (myRelationship.isMultiple())
-			return generateSelectManyRelatedDirectly(key, otherEnd, otherEntity);
-		return generateSelectOneRelated(myRelationship, key, otherEnd, otherEntity, contextEntity);
+			return generateSelectManyRelatedDirectlyKeys(key, otherEnd, otherEntity);
+		return generateSelectOneRelatedKey(myRelationship, key, otherEnd, otherEntity, contextEntity);
 	}
 
-	private List<String> generateSelectManyRelatedDirectly(long key, Relationship otherEnd, Entity clazz) {
-		String stmt = generateSelect(clazz);
+	private List<String> generateSelectManyRelatedDirectlyKeys(long key, Relationship otherEnd, Entity clazz) {
+		String stmt = generateSelect(clazz, null, true);
 		stmt += " where " + generateSelfToOppositeFK(otherEnd) + " = " + key + ";";
 		return Arrays.asList(stmt);
 	}
 
-	private List<String> generateSelectManyRelatedViaMappingTable(Relationship myRelationship, long key, Relationship otherEnd, Entity contextEntity) {
+	private List<String> generateSelectManyRelatedKeysViaMappingTable(Relationship myRelationship, long key, Relationship otherEnd, Entity contextEntity) {
 		String mappingTableName = getMappingTableName(contextEntity, myRelationship, otherEnd);
-		String stmt = generateSelectViaMappingTable(contextEntity, myRelationship, otherEnd);
+		String stmt = generateSelectKeysViaMappingTable(contextEntity, myRelationship, otherEnd);
 		stmt += " where " + escape(mappingTableName) + "." + generateSelfToOppositeFK(otherEnd) + " = " + key + ";";
 		return Arrays.asList(stmt);
 	}
 
-	private List<String> generateSelectOneRelated(Relationship myRelationship, long key, Relationship otherEnd, Entity otherEntity, Entity contextEntity) {
+	private List<String> generateSelectOneRelatedKey(Relationship myRelationship, long key, Relationship otherEnd, Entity otherEntity, Entity contextEntity) {
 		Relationship sourceRelationship = myRelationship.isNavigable() ? otherEnd : myRelationship;
 		Relationship targetRelationship = myRelationship.isNavigable() ? myRelationship : otherEnd;
 		
-		String statement = generateSelect(otherEntity, modelToSchemaName(myRelationship));
+		String statement = generateSelect(otherEntity, modelToSchemaName(myRelationship), true);
 		statement += " join "  + tableName(contextEntity.getEntityNamespace(), contextEntity.getName()) + asAlias(generateSelfToOppositeFK(otherEnd));
 		statement += " on " + modelToSchemaName(targetRelationship) + ".id";
 		statement += " = " + generateSelfToOppositeFK(sourceRelationship) + '.' + modelToSchemaName(targetRelationship);
@@ -330,10 +330,10 @@ public class SQLGenerator {
 		return Arrays.asList(statement);
 	}
 	
-	private String generateSelectViaMappingTable(Entity context, Relationship myRelationship, Relationship otherEnd) {
+	private String generateSelectKeysViaMappingTable(Entity context, Relationship myRelationship, Relationship otherEnd) {
 		Entity otherEntity = metadata.getEntity(myRelationship.getTypeRef());
 		String otherAlias = modelToSchemaName(myRelationship);
-		String statement = generateSelect(otherEntity, otherAlias);
+		String statement = generateSelect(otherEntity, otherAlias, true);
 		String mappingTableName = getMappingTableName(context, myRelationship, otherEnd);
 		String mappingTableAlias = escape(mappingTableName);
 		statement += " join "  + tableName(context.getEntityNamespace(), mappingTableName) + asAlias(mappingTableAlias);
@@ -458,15 +458,21 @@ public class SQLGenerator {
 	protected String generateSelect(Entity clazz) {
 		return generateSelect(clazz, null);
 	}
-	
+
 	protected String generateSelect(Entity clazz, String alias) {
+		return generateSelect(clazz, alias, false);
+	}
+	
+	protected String generateSelect(Entity clazz, String alias, boolean keysOnly) {
 		String aliasPrefix = alias == null ? "" : alias + '.';
 		String stmt = "select " + aliasPrefix + "id";
-		for (Property property : getProperties(clazz))
-			stmt += ", " + aliasPrefix + modelToSchemaName(property);
-		for (Relationship relationship : getRelationships(clazz))
-			if (relationship.isNavigable() && !isMappingTableRelationship(relationship))
-				stmt += ", "+ aliasPrefix + generateSelfToOppositeFK(relationship);
+		if (!keysOnly) {
+			for (Property property : getProperties(clazz))
+				stmt += ", " + aliasPrefix + modelToSchemaName(property);
+			for (Relationship relationship : getRelationships(clazz))
+				if (relationship.isNavigable() && !isMappingTableRelationship(relationship))
+					stmt += ", "+ aliasPrefix + generateSelfToOppositeFK(relationship);
+		}
 		stmt += " from " + modelToSchemaName(clazz);
 		return stmt + asAlias(alias);
 	}

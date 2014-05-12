@@ -26,11 +26,13 @@ public class JDBCNodeStoreProvider implements ActivatableFeatureProvider {
 	
 	@Override
 	public void activateContext(Resource<?> resource) {
-		// nothing to do here, transactions are initiated by the Runtime/ExecutionContext
+		// nothing to do here
 	}
 	
 	@Override
 	public void deactivateContext(Resource<?> resource, boolean operationSucceeded) {
-		// nothing to do here, commit/abort are issued by the Runtime/ExecutionContext
+		JDBCNodeStoreCatalog contextCatalog = (JDBCNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
+		if (contextCatalog != null)
+			contextCatalog.clearCache();
 	}
 }

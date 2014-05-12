@@ -277,8 +277,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 		parseAndCheck(model);
 		
 		Class class1 = getClass("custom::Class1");
-		check(generator.generateSelectRelated(schema.getEntity(ref(class1)).getRelationship("roleMany"), 17),
-				"select roleMany.id, roleMany.attr2 from " + tablePrefix("custom") + "Class2 as roleMany join " + 
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(class1)).getRelationship("roleMany"), 17),
+				"select roleMany.id from " + tablePrefix("custom") + "Class2 as roleMany join " + 
 						tablePrefix("custom") + "OneToMany as OneToMany on OneToMany.roleMany = roleMany.id where OneToMany.roleOne = 17;");
 	}
 
@@ -317,11 +317,11 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 			    "add constraint owner " +
 				"foreign key (owner) references " + tablePrefix("custom") + "Person (id) on delete set null deferrable initially deferred;");
 		
-		check(generator.generateSelectRelated(schema.getEntity(ref(person)).getRelationship("accounts"), 17),
-				"select id, number, owner from " + tablePrefix("custom") + "Account where owner = 17;");
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(person)).getRelationship("accounts"), 17),
+				"select id from " + tablePrefix("custom") + "Account where owner = 17;");
 		
-		check(generator.generateSelectRelated(schema.getEntity(ref(account)).getRelationship("owner"), 17),
-				"select owner.id, owner.name from " + tablePrefix("custom") + "Person as owner join " + tablePrefix("custom") + "Account as accounts on owner.id = accounts.owner where accounts.id = 17;");
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(account)).getRelationship("owner"), 17),
+				"select owner.id from " + tablePrefix("custom") + "Person as owner join " + tablePrefix("custom") + "Account as accounts on owner.id = accounts.owner where accounts.id = 17;");
 
 	}
 	
@@ -359,8 +359,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 			    "add constraint roleOne " +
 				"foreign key (roleOne) references " + tablePrefix("custom") + "Class1 (id) on delete no action deferrable initially deferred;");
 		
-		check(generator.generateSelectRelated(schema.getEntity(ref(class1)).getRelationship("class2s"), 17),
-				"select id, attr2, roleOne from " + tablePrefix("custom") + "Class2 where roleOne = 17;");
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(class1)).getRelationship("class2s"), 17),
+				"select id from " + tablePrefix("custom") + "Class2 where roleOne = 17;");
 	}
 	
 	public void testComposition_multipleMemberOwned_navigableSingleAssociationOwned() throws CoreException {
@@ -397,8 +397,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 			    "add constraint \"roleOne\" " +
 				"foreign key (\"roleOne\") references " + tablePrefix("custom", "MyClass6") + " (id) on delete set null deferrable initially deferred;");
 		
-		check(false, generator.generateSelectRelated(schema.getEntity(ref(myClass6)).getRelationship("myClass7s"), 17),
-				"select id, \"attr2\", \"roleOne\" from " + tablePrefix("custom", "MyClass7") + " where \"roleOne\" = 17;");
+		check(false, generator.generateSelectRelatedKeys(schema.getEntity(ref(myClass6)).getRelationship("myClass7s"), 17),
+				"select id from " + tablePrefix("custom", "MyClass7") + " where \"roleOne\" = 17;");
 		
 		check(false, generator.generateSetRelated(schema.getEntity(ref(myClass6)).getRelationship("myClass7s"), 1, Arrays.asList(2L, 3L, 4L), true),
 				"update " + tablePrefix("custom", "MyClass7") + " set \"roleOne\" = null where \"roleOne\" = 1;",
@@ -444,12 +444,12 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 		Class associated1 = getClass("custom::Associated1");
 		Class associated2 = getClass("custom::Associated2");
 
-		check(generator.generateSelectRelated(schema.getEntity(ref(associated1)).getRelationship("end2"), 17),
-				"select end2.id, end2.attr2 from " + tablePrefix("custom") + "Associated2 as end2 join " +
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(associated1)).getRelationship("end2"), 17),
+				"select end2.id from " + tablePrefix("custom") + "Associated2 as end2 join " +
 				tablePrefix("custom") + "OneToOne as OneToOne on OneToOne.end2 = end2.id where OneToOne.end1 = 17;");
 		
-		check(generator.generateSelectRelated(schema.getEntity(ref(associated2)).getRelationship("end1"), 17),
-				"select end1.id, end1.attr1 from " + tablePrefix("custom") + "Associated1 as end1 join " +
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(associated2)).getRelationship("end1"), 17),
+				"select end1.id from " + tablePrefix("custom") + "Associated1 as end1 join " +
 				tablePrefix("custom") + "OneToOne as OneToOne on OneToOne.end1 = end1.id where OneToOne.end2 = 17;");
 	}
 
@@ -518,8 +518,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 	public void testAssociation_oneToOneReference_getRelated() throws CoreException {
 		buildOneToOneReference();
 		Class city = getClass("custom::City");
-		check(generator.generateSelectRelated(schema.getEntity(ref(city)).getRelationship("cityState"), 17),
-				"select cityState.id, cityState.stateName from " + tablePrefix("custom") + "State as cityState join " +
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(city)).getRelationship("cityState"), 17),
+				"select cityState.id from " + tablePrefix("custom") + "State as cityState join " +
 				tablePrefix("custom") + "City as __self__ on cityState.id = __self__.cityState where __self__.id = 17;");
 	}
 	
@@ -548,8 +548,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 					    "vehicleNumber varchar, " +
 					    "carEngine bigint);");
 
-		check(generator.generateSelectRelated(schema.getEntity(ref(car)).getRelationship("carEngine"), 17),
-				"select carEngine.id, carEngine.engineNumber from " + tablePrefix("custom") + "Engine as carEngine join " +
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(car)).getRelationship("carEngine"), 17),
+				"select carEngine.id from " + tablePrefix("custom") + "Engine as carEngine join " +
 				tablePrefix("custom") + "Car as engineCar on carEngine.id = engineCar.carEngine where engineCar.id = 17;");
 		
 		check(generator.generateTable(schema.getEntity(ref(engine))),
@@ -557,8 +557,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 					    "id bigint primary key, " +
 					    "engineNumber varchar);");
 
-		check(generator.generateSelectRelated(schema.getEntity(ref(engine)).getRelationship("engineCar"), 17), 
-				"select engineCar.id, engineCar.vehicleNumber, engineCar.carEngine from " + tablePrefix("custom") + "Car as engineCar join " +
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(engine)).getRelationship("engineCar"), 17), 
+				"select engineCar.id from " + tablePrefix("custom") + "Car as engineCar join " +
 						tablePrefix("custom") + "Engine as carEngine on carEngine.id = engineCar.carEngine where carEngine.id = 17;");
 	}
 
@@ -580,8 +580,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 	public void testAssociation_oneToManyUniDi_getRelated() throws CoreException {
 		buildOneToManyUniDi();
 		Class state = getClass("custom::State");
-		check(generator.generateSelectRelated(schema.getEntity(ref(state)).getRelationship("stateCities"), 17),
-				"select stateCities.id, stateCities.cityName from " + tablePrefix("custom") + "City as stateCities" + " join " +
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(state)).getRelationship("stateCities"), 17),
+				"select stateCities.id from " + tablePrefix("custom") + "City as stateCities" + " join " +
 				tablePrefix("custom") + "State_stateCities as State_stateCities" + " on State_stateCities.stateCities = stateCities.id where State_stateCities.__self__ = 17;");
 	}
 	
@@ -810,11 +810,11 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 		Class myState = getClass("custom::State");
 		Class myCity = getClass("custom::City");
 		// 1 -> many
-		check(generator.generateSelectRelated(schema.getEntity(ref(myState)).getRelationship("cities"), 17), 
-				"select id, \"cityName\", \"cityState\" from " + tablePrefix("custom") + "City where \"cityState\" = 17;");
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(myState)).getRelationship("cities"), 17), 
+				"select id from " + tablePrefix("custom") + "City where \"cityState\" = 17;");
 		// many -> 1
-		check(generator.generateSelectRelated(schema.getEntity(ref(myCity)).getRelationship("cityState"), 17), 
-				"select \"cityState\".id, \"cityState\".\"stateName\" from " + tablePrefix("custom") + "State as \"cityState\" join " + tablePrefix("custom") + "City as \"cities\" on \"cityState\".id = \"cities\".\"cityState\" where \"cities\".id = 17;");
+		check(generator.generateSelectRelatedKeys(schema.getEntity(ref(myCity)).getRelationship("cityState"), 17), 
+				"select \"cityState\".id from " + tablePrefix("custom") + "State as \"cityState\" join " + tablePrefix("custom") + "City as \"cities\" on \"cityState\".id = \"cities\".\"cityState\" where \"cities\".id = 17;");
 	}
 	
 	public void testGenerateSetRelated() throws CoreException {

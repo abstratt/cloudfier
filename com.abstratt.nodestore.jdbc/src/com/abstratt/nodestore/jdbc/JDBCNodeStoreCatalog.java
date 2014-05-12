@@ -6,7 +6,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -40,7 +42,9 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
 	private SQLGenerator generator;
 
 	private ConnectionProvider connectionProvider;
-
+	
+	private Map<String, JDBCNodeStore> stores = new LinkedHashMap<String, JDBCNodeStore>();
+	
 	public JDBCNodeStoreCatalog(String name, SchemaManagement schema) {
 		Assert.isNotNull(schema);
 		this.name = name;
@@ -61,7 +65,12 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
 
 	@Override
 	public INodeStore getStore(String name) {
-		return new JDBCNodeStore(this, getConnectionProvider(), metadata, new TypeRef(name, TypeKind.Entity));
+		JDBCNodeStore existing = stores.get(name);
+		if (existing != null)
+			return existing;
+		JDBCNodeStore newStore = new JDBCNodeStore(this, getConnectionProvider(), metadata, new TypeRef(name, TypeKind.Entity));
+		stores.put(name, newStore);
+		return newStore;
 	}
 
 	private ConnectionProvider getConnectionProvider() {
@@ -163,6 +172,10 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
 	public void zap() {
 		//zap should not require metadata (repository may not be available)
 		JDBCNodeStore.perform(connectionProvider, generator.generateDropSchema(false), false, false);
+	}
+	
+	public void clearCache() {
+		this.stores = new LinkedHashMap<String, JDBCNodeStore>();
 	}
 	
 	@Override
