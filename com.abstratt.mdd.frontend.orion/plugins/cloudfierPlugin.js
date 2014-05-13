@@ -107,10 +107,16 @@ var standardApplicationError = function(projectPath) {
     return function (error) {
         if (error.status == 404) {
 	        return "Application not found: '" + application + "'. An application is a directory containing a mdd.properties file.";
-	    } else if (error.status == 400) {
-	        return JSON.parse(error.responseText).message;
-	    }
-        return "Unexpected error: " + JSON.parse(error.responseText).message + " (" + error.status + ")";
+        } else if (error.status == 400) {
+            return JSON.parse(error.responseText).message;
+        }
+        try { 
+            var parsedMessage = JSON.parse(error.responseText).message;
+        } catch (e) {
+            console.log("Error parsing error message: " + e);
+            parsedMessage = "no further detail";
+        }
+        return "Unexpected error: " + parsedMessage + " (" + error.status + ")";
     };
 };
 
