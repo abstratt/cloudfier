@@ -38,4 +38,6 @@ public interface INodeStoreCatalog {
 	boolean isInitialized();
 
 	void validateConstraints();
+
+	void clearCaches();
 }

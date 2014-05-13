@@ -44,7 +44,6 @@ public class JDBCNodeStore implements INodeStore {
 	private Entity clazz;
 	private JDBCNodeStoreCatalog catalog;
 	private ConnectionProvider connectionProvider;
-	private Map<INodeKey, INode> nodes = new LinkedHashMap<INodeKey, INode>();
 	private Map<String, Map<INodeKey, List<INodeKey>>> relatedNodeKeys = new LinkedHashMap<String, Map<INodeKey, List<INodeKey>>>();
 	
 
@@ -392,5 +391,9 @@ public class JDBCNodeStore implements INodeStore {
 	
 	private SQLGenerator getGenerator() {
 		return basicGetCatalog().getGenerator();
+	}
+
+	public void clearCaches() {
+		relatedNodeKeys.clear();		
 	}
 }

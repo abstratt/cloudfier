@@ -54,6 +54,12 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
 	}
 	
 	@Override
+	public void clearCaches() {
+		for (JDBCNodeStore cached : stores.values())
+			cached.clearCaches();
+	}
+	
+	@Override
 	public String getName() {
 		return name;
 	}

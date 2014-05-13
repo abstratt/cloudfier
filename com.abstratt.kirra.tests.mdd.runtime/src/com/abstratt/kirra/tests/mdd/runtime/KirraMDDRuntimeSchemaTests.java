@@ -141,13 +141,9 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 		
 		assertEquals("attr1", properties.get(0).getName());
 		assertEquals("Integer", properties.get(0).getTypeRef().getTypeName());
-		assertTrue(properties.get(0).isShowInMasterTable());
-		assertTrue(properties.get(0).isShowInChildTable());
 		
 		assertEquals("attr2", properties.get(1).getName());
 		assertEquals("String", properties.get(1).getTypeRef().getTypeName());
-		assertTrue(properties.get(1).isShowInMasterTable());
-		assertTrue(properties.get(1).isShowInChildTable());
 		
 		entity = kirra.getEntity("mypackage", "MyClass2");
 		properties = entity.getProperties();
@@ -507,7 +503,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 		assertEquals(Arrays.asList("value1", "value2", "value3"), attr1.getEnumerationLiterals());
 
 		try {
-			Entity enumAsEntity = kirra.getEntity("mypackage", "Enum1");
+			kirra.getEntity("mypackage", "Enum1");
 			fail("Enumerations are not entities");
 		} catch (KirraException e) {
 			assertEquals(Kind.SCHEMA, e.getKind());

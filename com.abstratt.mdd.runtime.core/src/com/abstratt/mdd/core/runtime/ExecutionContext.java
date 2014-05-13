@@ -365,6 +365,8 @@ public class ExecutionContext {
 	}
 
 	public void saveContext(boolean preserve) {
+		if (preserve) 
+			runtime.getNodeStoreCatalog().clearCaches();
 		boolean originalSaveChanges = saveChanges;
 		Collection<RuntimeObject> objectsToCheck = this.workingSet.values();
 		try {

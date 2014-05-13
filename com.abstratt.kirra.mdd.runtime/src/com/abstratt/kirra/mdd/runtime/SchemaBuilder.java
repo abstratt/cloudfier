@@ -128,8 +128,6 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		entityProperty.setEditable(KirraHelper.isEditable(umlAttribute));
 		Type umlType = umlAttribute.getType();
 		setTypeInfo(entityProperty, umlType);
-		entityProperty.setShowInMasterTable(!umlAttribute.isMultivalued() && isEssential(umlAttribute));
-		entityProperty.setShowInChildTable(!umlAttribute.isMultivalued() && isEssential(umlAttribute));
 		entityProperty.setDerived(KirraHelper.isDerived(umlAttribute));
 		entityProperty.setUnique(KirraHelper.isUnique(umlAttribute));
 		return entityProperty;
@@ -163,8 +161,6 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		entityRelationship.setEditable(KirraHelper.isEditable(umlAttribute));
 		entityRelationship.setMultiple(umlAttribute.isMultivalued());
 		setTypeInfo(entityRelationship, umlAttribute.getType());
-		entityRelationship.setShowInMasterTable(!umlAttribute.isMultivalued() && isEssential(umlAttribute));
-		entityRelationship.setShowInChildTable(!umlAttribute.isMultivalued() && isEssential(umlAttribute));
 		entityRelationship.setDerived(isDerived(umlAttribute));
 		entityRelationship
 				.setVisible(umlAttribute.isNavigable()
