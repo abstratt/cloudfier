@@ -12,9 +12,9 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.service.StatusService;
 
+import com.abstratt.kirra.KirraException;
 import com.abstratt.nodestore.NodeStoreException;
 import com.abstratt.pluginutils.UserFacingException;
-import com.abstratt.kirra.KirraException;
 
 public class KirraStatusService extends StatusService {
 

@@ -11,8 +11,8 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Entity;
+import com.abstratt.kirra.json.EntityLinkJSONRepresentation;
 import com.abstratt.mdd.frontend.web.JsonHelper;
-import com.abstratt.mdd.frontend.web.ReferenceUtils;
 
 public class EntityListResource extends AbstractKirraRepositoryResource {
 
@@ -25,6 +25,9 @@ public class EntityListResource extends AbstractKirraRepositoryResource {
 			EntityLinkJSONRepresentation link = new EntityLinkJSONRepresentation();
 			link.name = entity.getName();
 			link.namespace = entity.getEntityNamespace();
+			link.label = entity.getLabel();
+			link.description = entity.getDescription();
+
 			link.uri = reference.clone().addSegment(entity.getEntityNamespace() + '.' + entity.getName()).toString();
 			link.extentUri = reference.getParentRef().clone().addSegment("instances").addSegment(entity.getEntityNamespace() + '.' + entity.getName()).addSegment("").toString();
 			links.add(link);

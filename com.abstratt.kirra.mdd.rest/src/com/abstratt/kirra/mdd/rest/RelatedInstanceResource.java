@@ -9,6 +9,8 @@ import org.restlet.resource.Delete;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Relationship;
+import com.abstratt.kirra.json.InstanceJSONRepresentation;
+import com.abstratt.kirra.json.RelatedInstanceJSONRepresentation;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 
 public class RelatedInstanceResource extends InstanceResource {

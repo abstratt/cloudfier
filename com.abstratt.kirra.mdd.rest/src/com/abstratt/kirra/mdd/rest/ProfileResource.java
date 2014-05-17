@@ -4,20 +4,18 @@ import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
-import com.abstratt.kirra.KirraException;
+import com.abstratt.kirra.json.TupleParser;
 import com.abstratt.kirra.mdd.runtime.KirraActorSelector;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
-import com.abstratt.pluginutils.LogUtils;
 
 public class ProfileResource extends AbstractKirraRepositoryResource {
 
@@ -42,7 +40,7 @@ public class ProfileResource extends AbstractKirraRepositoryResource {
 		ResourceUtils.ensure(profileEntity.isUser(), profileEntity.getTypeRef().getFullName() + " is not a user entity", Status.CLIENT_ERROR_BAD_REQUEST);
 
 		Instance newInstance = getRepository().newInstance(profileEntity.getEntityNamespace(), profileEntity.getName());
-		InstanceResource.updateInstanceFromJsonRepresentation(toCreate, profileEntity, newInstance);
+		TupleParser.updateInstanceFromJsonRepresentation(toCreate, profileEntity, newInstance);
 		newInstance.setValue("username", currentUserName);
 		setStatus(Status.SUCCESS_CREATED);
 	    return jsonToStringRepresentation(getInstanceJSONRepresentation(getRepository().createInstance(newInstance), profileEntity));

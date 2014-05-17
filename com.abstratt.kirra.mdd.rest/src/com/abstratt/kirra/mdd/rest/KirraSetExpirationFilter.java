@@ -5,7 +5,6 @@ import java.util.Date;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.routing.Filter;
 

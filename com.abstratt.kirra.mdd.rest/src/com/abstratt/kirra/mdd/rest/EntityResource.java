@@ -12,13 +12,16 @@ import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Operation;
-import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.TypeRef;
+import com.abstratt.kirra.json.ActionJSONRepresentation;
+import com.abstratt.kirra.json.EntityJSONRepresentation;
+import com.abstratt.kirra.json.PropertyJSONRepresentation;
+import com.abstratt.kirra.json.QueryJSONRepresentation;
+import com.abstratt.kirra.json.RelationshipJSONRepresentation;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
-import static com.abstratt.mdd.frontend.web.ReferenceUtils.getExternal;
 
 public class EntityResource extends AbstractKirraRepositoryResource {
 	
@@ -31,6 +34,8 @@ public class EntityResource extends AbstractKirraRepositoryResource {
 		EntityJSONRepresentation entityRepresentation = new EntityJSONRepresentation();
 		entityRepresentation.name = entity.getName();
 		entityRepresentation.namespace = entity.getEntityNamespace();
+		entityRepresentation.label = entity.getLabel();
+		entityRepresentation.description = entity.getDescription();
 		Reference reference = getExternalReference();
 		entityRepresentation.uri = reference.toString();
 		KirraReferenceBuilder referenceBuilder = getReferenceBuilder();

@@ -16,7 +16,6 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.restlet.data.Form;
-import org.restlet.data.Reference;
 
 import com.abstratt.kirra.ExternalService;
 import com.abstratt.kirra.KirraException;
@@ -27,6 +26,8 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
+import com.abstratt.kirra.json.TupleJSONRepresentation;
+import com.abstratt.kirra.json.TupleParser;
 import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
@@ -65,7 +66,7 @@ public class KirraRESTExternalService implements ExternalService {
 		HttpClient httpClient = new HttpClient();
 		try {
 			TupleJSONRepresentation representation = new TupleJSONRepresentation();
-			representation.build(null, eventType, event);
+			new TupleJSONRepresentationBuilder().build(representation, null, eventType, event);
 			String jsonRequest = JsonHelper.renderAsJson(representation);
 			method.setRequestEntity(new StringRequestEntity(jsonRequest, "application/json", "UTF-8"));
 			int response = httpClient.executeMethod(method);
@@ -118,7 +119,7 @@ public class KirraRESTExternalService implements ExternalService {
 				return Arrays.asList();
 			}
 			JsonNode jsonValues = JsonHelper.parse(new InputStreamReader(method.getResponseBodyAsStream(), "UTF-8"));
-			return InstanceResource.getValuesFromJsonRepresentation(KirraRESTUtils.getRepository(), jsonValues, operation.getTypeRef(), operation.isMultiple());
+			return TupleParser.getValuesFromJsonRepresentation(KirraRESTUtils.getRepository(), jsonValues, operation.getTypeRef(), operation.isMultiple());
 		} catch (IOException e) {
 			throw new KirraException("Error executing retriever " + operation + " (at " + uri + ")", e, KirraException.Kind.EXTERNAL);
 		} finally {

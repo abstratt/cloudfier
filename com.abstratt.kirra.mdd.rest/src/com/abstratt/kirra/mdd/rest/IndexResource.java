@@ -1,6 +1,5 @@
 package com.abstratt.kirra.mdd.rest;
 
-import org.eclipse.core.runtime.Platform;
 import org.restlet.data.MediaType;
 import org.restlet.data.Reference;
 import org.restlet.representation.Representation;
@@ -9,7 +8,7 @@ import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Repository;
-import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.SingleLink;
+import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;

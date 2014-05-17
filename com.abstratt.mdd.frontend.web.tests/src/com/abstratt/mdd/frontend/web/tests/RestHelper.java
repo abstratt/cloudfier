@@ -1,6 +1,7 @@
 package com.abstratt.mdd.frontend.web.tests;
 
 import java.io.ByteArrayInputStream;
+
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -10,9 +11,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-
-import junit.framework.Assert;
-import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
@@ -29,8 +27,9 @@ import org.codehaus.jackson.JsonNode;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.Paths;
 import com.abstratt.mdd.frontend.web.WebFrontEnd;
+import org.junit.Assert;
 
-public class RestHelper extends TestCase {
+public class RestHelper {
 
 	private HttpClient httpClient;
 	private String workspaceName;
@@ -95,7 +94,7 @@ public class RestHelper extends TestCase {
 		try {
 			Assert.assertEquals(200, httpClient.executeMethod(uploadRequest));
 			String responseText = uploadRequest.getResponseBodyAsString();
-			assertTrue(responseText, responseText.startsWith("<results status=\"success\""));
+			Assert.assertTrue(responseText, responseText.startsWith("<results status=\"success\""));
 		} finally {
 			uploadRequest.releaseConnection();
 		}
@@ -133,7 +132,7 @@ public class RestHelper extends TestCase {
 		PostMethod init = new PostMethod(getApiUri().resolve(Paths.DATA).toString());
 		try {
 			int result = httpClient.executeMethod(init);
-			assertTrue(result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
+			Assert.assertTrue(result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
 		} finally {
 			init.releaseConnection();
 		}

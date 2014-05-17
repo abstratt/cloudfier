@@ -17,7 +17,6 @@ import org.restlet.data.Reference;
 import org.restlet.data.Status;
 import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.Representation;
-import org.restlet.resource.ResourceException;
 import org.restlet.resource.ServerResource;
 import org.restlet.util.NamedValue;
 import org.restlet.util.Series;
@@ -31,10 +30,13 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.SingleLink;
+import com.abstratt.kirra.json.InstanceJSONRepresentation;
+import com.abstratt.kirra.json.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
+
 public abstract class AbstractKirraRepositoryResource extends ServerResource {
 
 	@Override
@@ -45,48 +47,12 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
 		super.doCatch(throwable);
 	}
 
-	protected static Object convertSlotValue(String slotName, JsonNode slotValueNode) {
-		Object fieldValue = null;
-		if (slotValueNode == null) {
-			fieldValue = null;
-		} else if (slotValueNode.isIntegralNumber()) {
-			fieldValue = slotValueNode.asLong();
-		} else if (slotValueNode.isNumber()) {
-			fieldValue = slotValueNode.asDouble();
-		} else if (slotValueNode.isBoolean()) {
-			fieldValue = slotValueNode.asBoolean();
-		} else if (slotValueNode.isTextual()) {
-			fieldValue = slotValueNode.asText();
-		} else if (slotValueNode.isNull()) {
-			fieldValue = null;
-		} else if (slotValueNode.isArray()) {
-			fieldValue = null;
-		} else {
-			ResourceUtils.ensure(false, slotName + ": " + slotValueNode.toString(), Status.CLIENT_ERROR_UNPROCESSABLE_ENTITY);
-		}
-		return fieldValue;
-	}
+
 	
 	protected Entity getTargetEntity() {
 		String entityName = getEntityName();
 		String entityNamespace = getEntityNamespace();
 		return getRepository().getEntity(entityNamespace, entityName);
-	}
-
-	protected static Instance resolveLink(JsonNode fieldValueNode, TypeRef type) {
-		if (fieldValueNode == null || fieldValueNode.isNull())
-			return null;
-		return resolveLink(fieldValueNode.getTextValue(), type);
-	}
-	
-	protected static Instance resolveLink(String uriString, TypeRef type) {
-		if (uriString == null || uriString.trim().isEmpty())
-			return null;
-		String objectId = new Path(URI.create(uriString).getPath()).lastSegment();
-		if (objectId == null)
-			return null;
-		Instance toLink = new Instance(type, objectId);
-		return toLink;
 	}
 
 	protected String getEntityNamespace() {
@@ -161,13 +127,13 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
 				while (argNames.hasNext()) {
 					String argName = argNames.next();
 					JsonNode argValueNode = invocation.get(argName);
-					argumentMap.put(argName, convertSlotValue(argName, argValueNode));
+					argumentMap.put(argName, TupleParser.convertSlotValue(argName, argValueNode));
 				}
 				for (Parameter parameter : parameters) {
 					ResourceUtils.ensure(argumentMap.containsKey(parameter.getName()) || !parameter.isRequired(), "Parameter is required: " + parameter.getName(), Status.CLIENT_ERROR_BAD_REQUEST);
 					Object argumentValue = argumentMap.get(parameter.getName());
 					if (parameter.getTypeRef().getKind() == TypeKind.Entity)
-						argumentValue = resolveLink((String) argumentValue, parameter.getTypeRef());
+						argumentValue = TupleParser.resolveLink((String) argumentValue, parameter.getTypeRef());
 					arguments.add(argumentValue);
 				}
 			}
@@ -213,7 +179,7 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
 	 */
 	protected InstanceJSONRepresentation getInstanceJSONRepresentation(Instance instance, Entity entity) {
 		InstanceJSONRepresentation instanceRepr = createInstanceJSONRepresentation();
-		instanceRepr.build(getReferenceBuilder(), entity, instance);
+		new InstanceJSONRepresentationBuilder().build(instanceRepr, getReferenceBuilder(), entity, instance);
 		return instanceRepr;
 	}
 

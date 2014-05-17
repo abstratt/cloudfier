@@ -12,6 +12,9 @@ import org.restlet.resource.Post;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Relationship;
+import com.abstratt.kirra.json.InstanceJSONRepresentation;
+import com.abstratt.kirra.json.RelatedInstanceJSONRepresentation;
+import com.abstratt.kirra.json.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 
@@ -20,7 +23,7 @@ public class RelatedInstanceListResource extends AbstractInstanceListResource {
 	@Override
 	protected InstanceJSONRepresentation getInstanceJSONRepresentation(Instance instance, Entity entity) {
 		RelatedInstanceJSONRepresentation representation = new RelatedInstanceJSONRepresentation();
-		representation.build(getReferenceBuilder(), entity, instance);
+		new InstanceJSONRepresentationBuilder().build(representation, getReferenceBuilder(), entity, instance);
 		String relationshipName = (String) getRequestAttributes().get("relationshipName");
 		Entity baseEntity = super.getTargetEntity();
 		String objectId = (String) getRequestAttributes().get("objectId");
@@ -75,13 +78,13 @@ public class RelatedInstanceListResource extends AbstractInstanceListResource {
 		
 		
 		if (existingUri != null && !existingUri.isNull()) {
-			InstanceResource.updateRelationship(anchorEntity, anchorInstance, relationship, existingUri);
+			TupleParser.updateRelationship(anchorEntity, anchorInstance, relationship, existingUri);
 			setStatus(Status.SUCCESS_OK);
 			getRepository().updateInstance(anchorInstance);
-		    return jsonToStringRepresentation(resolveLink(existingUri, relationship.getTypeRef()));
+		    return jsonToStringRepresentation(TupleParser.resolveLink(existingUri, relationship.getTypeRef()));
 		}
 		Instance newRelatedInstance = getRepository().newInstance(targetEntity.getEntityNamespace(), targetEntity.getName());
-		InstanceResource.updateInstanceFromJsonRepresentation(toCreate, targetEntity, newRelatedInstance);
+		TupleParser.updateInstanceFromJsonRepresentation(toCreate, targetEntity, newRelatedInstance);
 		if (relationship.getOpposite() != null)
 			newRelatedInstance.setSingleRelated(relationship.getOpposite(), anchorInstance);
 	    Instance createdInstance = getRepository().createInstance(newRelatedInstance);

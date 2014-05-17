@@ -685,6 +685,9 @@ ${getSymbol(property)}Widget.setEnabled(false);
         return """
 ${basicClassWidget(formName, property, false, false)}
 ${getSymbol(property)}Widget.setReadOnly(true);
+var ${getSymbol(property)}DummyWidget = new qx.ui.form.TextField();
+${getSymbol(property)}DummyWidget.visibility = "excluded";
+
 """        
     }    
 """    

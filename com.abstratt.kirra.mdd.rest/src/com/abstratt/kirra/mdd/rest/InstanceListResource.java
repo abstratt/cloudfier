@@ -10,6 +10,7 @@ import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.json.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 
 public class InstanceListResource extends AbstractInstanceListResource {
@@ -25,7 +26,7 @@ public class InstanceListResource extends AbstractInstanceListResource {
 		JsonNode toCreate = JsonHelper.parse(requestRepresentation.getReader());
 		Instance newInstance = getRepository().newInstance(getEntityNamespace(), getEntityName());
 		Entity entity = getRepository().getEntity(getEntityNamespace(), getEntityName());
-		InstanceResource.updateInstanceFromJsonRepresentation(toCreate, entity, newInstance);
+		TupleParser.updateInstanceFromJsonRepresentation(toCreate, entity, newInstance);
 		setStatus(Status.SUCCESS_CREATED);
 	    return jsonToStringRepresentation(getInstanceJSONRepresentation(getRepository().createInstance(newInstance), entity));
 	}

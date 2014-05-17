@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.core.runtime.Assert;
-
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;

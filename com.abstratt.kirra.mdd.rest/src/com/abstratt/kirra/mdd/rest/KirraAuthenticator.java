@@ -7,6 +7,8 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.restlet.Request;
 import org.restlet.Response;
+import org.restlet.data.ChallengeResponse;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.Method;
 import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.security.SecretVerifier;
@@ -17,11 +19,25 @@ import com.abstratt.pluginutils.LogUtils;
 
 public class KirraAuthenticator extends CookieAuthenticator {
 	private final static ThreadLocal<Boolean> IS_OPTIONAL = new ThreadLocal<Boolean>();
+	private final static ThreadLocal<Boolean> PROTECTED = new ThreadLocal<Boolean>();
 	private final static ThreadLocal<String> WORKSPACE_NAME = new ThreadLocal<String>();
 	
 	private final static Verifier VERIFIER = new SecretVerifier() {
+		public int verify(Request request, Response response) {
+			if (!PROTECTED.get()) {
+				ChallengeResponse challengeResponse = new ChallengeResponse(ChallengeScheme.CUSTOM);
+				challengeResponse.setIdentifier("guest");
+				challengeResponse.setSecret("");
+				request.setChallengeResponse(challengeResponse);
+				return RESULT_VALID;
+			}
+		    return super.verify(request, response);
+		}
+		
 		@Override
-		public int verify(String identifier, char[] secret) {
+		public int verify(String identifier, char[] secret) { 
+			if (!PROTECTED.get())
+				return RESULT_VALID; 
 			if (StringUtils.isBlank(identifier)) {
 				LogUtils.logInfo(getClass().getPackage().getName(), "User authentication for " +WORKSPACE_NAME.get() + " failed, identifier not provided", null);
 				return RESULT_MISSING;
@@ -86,7 +102,8 @@ public class KirraAuthenticator extends CookieAuthenticator {
 		String workspace = getWorkspace(request);
 		WORKSPACE_NAME.set(workspace);
 		Properties properties = KirraRESTUtils.getProperties(workspace);
-		IS_OPTIONAL.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS, "true")));
+		PROTECTED.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.LOGIN_REQUIRED, "true")));
+		IS_OPTIONAL.set(PROTECTED.get() || Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS, "true")));
 		return super.beforeHandle(request, response);
 	}
 

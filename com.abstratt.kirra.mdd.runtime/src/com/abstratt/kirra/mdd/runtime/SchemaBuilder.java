@@ -240,6 +240,7 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		targetElement.setName(KirraHelper.getName(sourceElement));
 		targetElement.setSymbol(KirraHelper.getSymbol(sourceElement));
 		targetElement.setLabel(KirraHelper.getLabel(sourceElement));
+		targetElement.setDescription(KirraHelper.getDescription(sourceElement));
 	}
 
 	private void setTypeInfo(com.abstratt.kirra.TypedElement typedElement, Type umlType) {

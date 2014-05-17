@@ -13,6 +13,7 @@ import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
+import com.abstratt.kirra.json.TupleJSONRepresentation;
 
 public class ServiceInvocationResource extends AbstractKirraRepositoryResource {
 	@Post("json")
@@ -42,7 +43,7 @@ public class ServiceInvocationResource extends AbstractKirraRepositoryResource {
 			for (Object object : result) {
 	            if (object instanceof Tuple) {
 	            	TupleJSONRepresentation asTuple = new TupleJSONRepresentation();
-	            	asTuple.build(null, tupleType, (Tuple) object);
+	            	new TupleJSONRepresentationBuilder().build(asTuple, null, tupleType, (Tuple) object);
 	            	asTuples.add(asTuple);
 	            } else
 	            	asTuples.add(object); 
