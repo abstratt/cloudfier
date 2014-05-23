@@ -1,6 +1,9 @@
 /*
  This file only exists to explicitly state all dependencies for Cloudfier applications.
  
+ #require(kirra.utils.corelib)
+ #require(kirra.utils.tasker)
+  
  #asset(qx/icon/Tango/16/apps/office-calendar.png)
  #asset(qx/icon/Oxygen/16/actions/zoom-fit-best.png)
  #asset(qx/icon/Oxygen/16/actions/go-first.png)
@@ -76,4 +79,4 @@
  #require(qx.util.Serializer)
  #require(qx.util.Validate)
 */
-qx.Class.define("app1.Application", {});
+qx.Class.define("kirra.Application", {});

@@ -32,14 +32,14 @@ public class KirraUIApplication extends KirraRESTApplication {
 		router.attach("/", desktopIndex);
 		
 		KirraRepositoryFilter desktopAppResource = new KirraRepositoryFilter(createFinder(UIApplicationResource.class));
-		router.attach("/{workspace}/root/source/class/app1/Application.js", desktopAppResource);
+		router.attach("/{workspace}/root/source/class/kirra/Application.js", desktopAppResource);
 		
 		KirraRepositoryFilter desktopModuleResource = new KirraRepositoryFilter(createFinder(UIModuleResource.class));
 		TemplateRoute builderRoute = router.attach("/{workspace}/root/source/module/{className}.js", desktopModuleResource);
 		builderRoute.getTemplate().getVariables().put("entity", new Variable(Variable.TYPE_URI_PATH));
 
 		KirraRepositoryFilter mobileAppResource = new KirraRepositoryFilter(createFinder(MobileUIApplicationResource.class));
-		router.attach("/{workspace}/mobile/source/class/qooxdoo_mobile/Application.js", mobileAppResource);
+		router.attach("/{workspace}/mobile/source/class/kirra/Application.js", mobileAppResource);
 		
 		router.attach("/{workspace}/root/source/",
 				new ClassLoaderDirectory(getContext(), new LocalReference("clap://thread/qooxdoo/source/")));

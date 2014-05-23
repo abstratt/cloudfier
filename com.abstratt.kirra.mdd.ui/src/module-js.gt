@@ -181,7 +181,7 @@ def classTab(entity) {
         var currentItem = store.getModel().getItem(indexToLoad);
         if (!currentItem)
             return;
-        cloudfier.lib.tasker.schedule({
+        cloudfier.tasker.schedule({
             uri: currentItem.getUri(),
             context: currentItem.getUri(),
             run: function (next) {

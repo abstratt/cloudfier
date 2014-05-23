@@ -8,11 +8,11 @@
 
 ************************************************************************ */
 
-qx.Theme.define("app1.theme.Color",
+qx.Theme.define("kirra.theme.Decoration",
 {
-  extend : qx.theme.simple.Color,
+  extend : qx.theme.simple.Decoration,
 
-  colors :
+  decorations :
   {
   }
 });

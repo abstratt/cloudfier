@@ -1,5 +1,5 @@
 {
-  "name"    : "app1",
+  "name"    : "kirra",
   
 
   "include" :
@@ -37,9 +37,9 @@
 
   "let" :
   {
-    "APPLICATION"  : "app1",
+    "APPLICATION"  : "kirra",
     "QOOXDOO_PATH" : "../../qooxdoo",
-    "QXTHEME"      : "app1.theme.Theme",
+    "QXTHEME"      : "kirra.theme.Theme",
     "API_EXCLUDE"  : ["qx.test.*", "${APPLICATION}.theme.*", "${APPLICATION}.test.*", "${APPLICATION}.simulation.*"],
     "LOCALES"      : [ "en" ],
     "CACHE"        : "${TMPDIR}/qx${QOOXDOO_VERSION}/cache",
@@ -88,7 +88,7 @@
 		  {
 		    "code" : {
 		        "format": true,
-		        "except" : ["app1.*"]
+		        "except" : ["kirra.*"]
 		    }
 		  }
     }

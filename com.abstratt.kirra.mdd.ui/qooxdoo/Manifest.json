@@ -1,7 +1,7 @@
 {
   "info" : 
   {
-    "name" : "app1",
+    "name" : "kirra",
 
     "summary" : "Custom Application",
     "description" : "This is a skeleton for a custom application with qooxdoo.",
@@ -23,7 +23,7 @@
   
   "provides" : 
   {
-    "namespace"   : "app1",
+    "namespace"   : "kirra",
     "encoding"    : "utf-8",
     "class"       : "source/class",
     "resource"    : "source/resource",

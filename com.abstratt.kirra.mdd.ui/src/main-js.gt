@@ -5,14 +5,13 @@ def generate(org.eclipse.uml2.uml.Package single) {
 def generateAll(List<org.eclipse.uml2.uml.Package> namespaces) {
 """
 
-var cloudfier = {
+cloudfier = qx.lang.Object.mergeWith(cloudfier || {}, {
     // first package is the main application
     applicationName: '${modelToScreen(getLabel(namespaces[0]))}', 
     qooxdooBase: '../../../qooxdoo/framework/source/',
     qooxdooTheme: 'Oxygen/16',
     apiBase: location.href.replace('/ui/', '/api/').replace('root/source/', '').replace(/\\?.*/, ''),
     ui : {},
-    corelib: ${buildCoreLib()},
     registry: ${buildRegistry(namespaces)},
     linking: { 
         targetEntity: undefined, sourceInstanceUri: undefined, sourceEntity: undefined, sourceRelationship: undefined,
@@ -31,8 +30,6 @@ var cloudfier = {
         linker: undefined 
     },
     lib : {
-        tasker : ${buildTasker()},
-    
         performAction: function (actionUri, model) {
 	        var req = ${buildRequest('actionUri', 'model', '"POST"')};
 	        req.addListener("success", function(e) {
@@ -64,7 +61,7 @@ var cloudfier = {
 	        }
 		    // reload each relationship sequentially to avoid overloading the server with parallel requests
 		    for (var current = 0;current < related.length; current++) {
-		        cloudfier.lib.tasker.schedule({
+		        cloudfier.tasker.schedule({
 		            relatedStore: related[current].store,
 		            context: parentRecordUri,
 		            uri: parentRecordUri + '/relationships/' + related[current].relationship + '/',
@@ -466,12 +463,14 @@ var cloudfier = {
             popup.show();
         }
     }
-};
+});
 
 
 /*
 Only need to include here dependencies that do not appear clearly in this template. 
 
+#require(kirra.utils.corelib)
+#require(kirra.utils.tasker)
 #require(qx.io.ScriptLoader)
 #require(qx.ui.form.TextArea)
 #require(qx.ui.form.TextField)
@@ -479,7 +478,7 @@ Only need to include here dependencies that do not appear clearly in this templa
 #require(qx.ui.form.CheckBox)
 #require(qx.ui.form.DateField)
 */
-qx.Class.define("app1.Application", {
+qx.Class.define("kirra.Application", {
   extend : qx.application.Inline,
   events: {
      "currentUserChanged" : "qx.event.type.Data"

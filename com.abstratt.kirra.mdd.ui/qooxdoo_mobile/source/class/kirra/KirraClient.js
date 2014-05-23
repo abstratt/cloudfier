@@ -1,7 +1,7 @@
 /*
  This file only exists to explicitly state all dependencies for mobile Cloudfier applications.
  
- #asset(qooxdoo_mobile/*)
+ #asset(kirra/*)
  #asset(qx/mobile/js/iscroll.js)
 
  #require(qx.application.Mobile)
@@ -42,4 +42,18 @@
  #require(qx.util.Serializer)
  #require(qx.util.Validate)
 */
-qx.Class.define("qooxdoo_mobile.Application", {});
+
+var cloudfier = cloudfier || {};
+cloudfier.lib.showLoginWindow = function () {
+    cloudfier.mobile.loginPage.show();
+};
+cloudfier.mobile = {
+    loginPage : undefined
+};
+
+
+qx.Class.define("kirra.KirraClient", {
+    // hit the server
+    // in case of 401, show login dialog
+    // in case of success, look for entities
+});

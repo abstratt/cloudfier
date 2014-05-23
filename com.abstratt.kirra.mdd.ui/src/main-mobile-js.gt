@@ -5,23 +5,19 @@ def generate(org.eclipse.uml2.uml.Package single) {
 def generateAll(List<org.eclipse.uml2.uml.Package> namespaces) {
 """
 
-var cloudfier = {
-    applicationName: '${modelToScreen(getLabel(namespaces[0]))}', 
-    apiBase: location.href.replace('/ui/', '/api/').replace('mobile/source/', '').replace(/\\?.*/, '').replace(/\\#.*/, ''),
-    corelib: ${buildCoreLib()},
-    registry: ${buildRegistry(namespaces)},
-    tasker: ${buildTasker()},
-    lib: {
-        tasker : ${buildTasker()},
-        
-        showLoginWindow: function () {
+cloudfier = qx.lang.Object.mergeWith(cloudfier || {}, {
+    applicationName : '${modelToScreen(getLabel(namespaces[0]))}',
+    apiBase : location.href.replace('/ui/', '/api/').replace('mobile/source/', '').replace(/\\?.*/, '').replace(/\\#.*/, ''),
+    registry : ${buildRegistry(namespaces)},
+    lib : { 
+        showLoginWindow : function () {
             cloudfier.mobile.loginPage.show();
         }
     },
     mobile : {
         loginPage : undefined
     }
-};
+});
 
 ${ defineJsonStore() }
 ${ createStores(namespaces) }
@@ -93,7 +89,7 @@ qx.Class.define("cloudfier.mobile.page.InstanceNavigationPage",
 
 ${ buildEntityNavigator(getEntities(namespaces).findAll { isTopLevel(it) && isConcreteEntity(it) }) }
 
-qx.Class.define("qooxdoo_mobile.Application",
+qx.Class.define("kirra.Application",
 {
   extend : qx.application.Mobile,
 
@@ -284,7 +280,7 @@ qx.Class.define("cloudfier.mobile.page.${getSymbol(entity)}InstanceForm",
     },
     _start : function() {
         var me = this;
-        cloudfier.lib.tasker.schedule({
+        cloudfier.tasker.schedule({
             uri: me.uri,
             context: null,
             run: function (next) {

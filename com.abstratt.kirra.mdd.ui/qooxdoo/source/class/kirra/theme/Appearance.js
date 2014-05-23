@@ -8,11 +8,11 @@
 
 ************************************************************************ */
 
-qx.Theme.define("app1.theme.Font",
+qx.Theme.define("kirra.theme.Appearance",
 {
-  extend : qx.theme.simple.Font,
+  extend : qx.theme.simple.Appearance,
 
-  fonts :
+  appearances :
   {
   }
 });

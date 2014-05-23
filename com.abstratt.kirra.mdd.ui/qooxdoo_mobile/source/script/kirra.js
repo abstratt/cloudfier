@@ -5,11 +5,11 @@ if (!window.qx) window.qx = {};
 qx.$$start = new Date();
 
 if (!qx.$$environment) qx.$$environment = {};
-var envinfo = {"qx.application":"app1.Application","qx.revision":"","qx.theme":"app1.theme.Theme","qx.version":"3.5"};
+var envinfo = {"qx.application":"kirra.Application","qx.mobile.emulatetouch":true,"qx.revision":"","qx.theme":"custom","qx.version":"3.5"};
 for (var k in envinfo) qx.$$environment[k] = envinfo[k];
 
 if (!qx.$$libraries) qx.$$libraries = {};
-var libinfo = {"__out__":{"sourceUri":"script"},"app1":{"resourceUri":"../source/resource","sourceUri":"../source/class"},"qx":{"resourceUri":"../../../qooxdoo/framework/source/resource","sourceUri":"../../../qooxdoo/framework/source/class","sourceViewUri":"https://github.com/qooxdoo/qooxdoo/blob/%{qxGitBranch}/framework/source/class/%{classFilePath}#L%{lineNumber}"}};
+var libinfo = {"__out__":{"sourceUri":"script"},"kirra":{"resourceUri":"../source/resource","sourceUri":"../source/class"},"qx":{"resourceUri":"../../../qooxdoo/framework/source/resource","sourceUri":"../../../qooxdoo/framework/source/class","sourceViewUri":"https://github.com/qooxdoo/qooxdoo/blob/%{qxGitBranch}/framework/source/class/%{classFilePath}#L%{lineNumber}"}};
 for (var k in libinfo) qx.$$libraries[k] = libinfo[k];
 
 qx.$$resources = {};
@@ -20,9 +20,9 @@ qx.$$g = {}
 
 qx.$$loader = {
   parts : {"boot":[0]},
-  packages : {"0":{"uris":["__out__:app1.d89f6be625a8.js","app1:app1/Application.js","__out__:app1.07f99b4a69bd.js","app1:app1/theme/Color.js","__out__:app1.b8388a4afc26.js","app1:app1/theme/Font.js","__out__:app1.c4176b7f2e32.js","app1:app1/theme/Decoration.js","__out__:app1.78051fe37fd3.js","app1:app1/theme/Appearance.js","app1:app1/theme/Theme.js"]}},
+  packages : {"0":{"uris":["__out__:kirra.49d680ecfbd4.js","kirra:kirra/utils/tasker.js","__out__:kirra.4bc49196119d.js","kirra:kirra/utils/corelib.js","__out__:kirra.f86dbe533ed0.js","kirra:kirra/Application.js"]}},
   urisBefore : [],
-  cssBefore : [],
+  cssBefore : ["./resource/kirra/css/custom.css","./resource/kirra/css/styles.css"],
   boot : "boot",
   closureParts : {},
   bootIsInline : false,
@@ -82,10 +82,18 @@ function loadScript(uri, callback) {
 function loadCss(uri) {
   var elem = document.createElement("link");
   elem.rel = "stylesheet";
-  elem.type= "text/css";
-  elem.href= uri;
+  elem.type = "text/css";
+  elem.href = uri;
+  elem.onload = onLoadCss();
   var head = document.getElementsByTagName("head")[0];
   head.appendChild(elem);
+}
+
+function onLoadCss() {
+  cssFilesToLoad = cssFilesToLoad - 1;
+  if(cssFilesToLoad == 0) {
+    setTimeout(initScripts,0);
+  }
 }
 
 var isWebkit = /AppleWebKit\/([^ ]+)/.test(navigator.userAgent);
@@ -170,14 +178,28 @@ qx.$$loader.signalStartup = function ()
   }
 }
 
+
 // Load all stuff
-qx.$$loader.init = function(){
+
+var cssFilesToLoad = 0;
+
+qx.$$loader.init = function() {
   var l=qx.$$loader;
   if (l.cssBefore.length>0) {
+
+    cssFilesToLoad = l.cssBefore.length;
+
     for (var i=0, m=l.cssBefore.length; i<m; i++) {
       loadCss(l.cssBefore[i]);
     }
+  } else {
+    initScripts();
   }
+}
+
+// Init scripts...
+function initScripts() {
+  var l=qx.$$loader;
   if (l.urisBefore.length>0){
     loadScriptList(l.urisBefore, function(){
       l.initUris();

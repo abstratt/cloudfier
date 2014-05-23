@@ -532,7 +532,7 @@ Only need to include here dependencies that do not appear clearly in this templa
 #require(qx.ui.form.CheckBox)
 #require(qx.ui.form.DateField)
 */
-qx.Class.define("app1.Application", {
+qx.Class.define("kirra.Application", {
   extend : qx.application.Inline,
   members : {
     main : function() {

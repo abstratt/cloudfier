@@ -1,5 +1,5 @@
 {
-  "name"    : "qooxdoo_mobile",
+  "name"    : "kirra",
 
   "include" :
   [
@@ -46,8 +46,8 @@
 
   "let" :
   {
-    "APPLICATION"  : "qooxdoo_mobile",
-    "APPLICATION_PATH" : "qooxdoo_mobile",
+    "APPLICATION"  : "kirra",
+    "APPLICATION_PATH" : "kirra",
     "APPLICATION_CSS" : "${APPLICATION_PATH}/css/styles.css",  // resource id of custom css
     "QOOXDOO_PATH" : "../../qooxdoo",
     "LOCALES"      : [ "en" ],
