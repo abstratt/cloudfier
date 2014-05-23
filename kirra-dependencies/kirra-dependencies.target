@@ -64,17 +64,19 @@
 
 		<location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
-			<unit id="com.abstratt.pluginutils" version="0.0.0" />
-            <repository location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/1.120.1/com.abstratt.eclipsegraphviz.repository-1.120.1.zip!/" />				
-		</location>
-		
-		<location includeAllPlatforms="false" includeMode="planner"
-			includeSource="true" type="InstallableUnit">
 			<unit id="com.abstratt.mdd.frontend.toolkit.feature.feature.group"
 				version="0.0.0" />
 			<repository
-				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/1.120.1/com.abstratt.mdd.oss.repository-1.120.1.zip!/" />
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.oss.repository/1.120.1/com.abstratt.oss.repository-1.120.1.zip!/" />
 		</location>		
+
+                <location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.kirra.feature.feature.group"
+				version="0.0.0" />
+			<repository
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/kirra/com.abstratt.kirra.repository/1.120.1/com.abstratt.kirra-1.120.1.zip!/" />
+		</location>
 
 		<location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
