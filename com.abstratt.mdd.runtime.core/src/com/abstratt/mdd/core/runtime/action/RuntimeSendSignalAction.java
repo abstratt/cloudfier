@@ -7,6 +7,7 @@ import org.eclipse.uml2.uml.SendSignalAction;
 
 import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
+import com.abstratt.mdd.core.runtime.ModelExecutionException;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.types.BasicType;
@@ -20,6 +21,10 @@ public class RuntimeSendSignalAction extends RuntimeAction {
 		SendSignalAction instance = (SendSignalAction) getInstance();
 		
 		BasicType target = (BasicType) getRuntimeObjectNode(instance.getTarget()).getValue();
+		
+		if (target == null)
+			throw new ModelExecutionException("Attempt to send " + instance.getSignal().getQualifiedName() + " to a null target", context.currentFrame().getActivity(), this);
+		
 		RuntimeObject runtimeSignal = context.getRuntime().newInstance(instance.getSignal(), false, false);
 		
 		for (Property property : instance.getSignal().getAllAttributes()) {
