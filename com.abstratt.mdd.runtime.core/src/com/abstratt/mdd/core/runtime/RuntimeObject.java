@@ -606,7 +606,9 @@ public class RuntimeObject extends BasicType {
 		String message = MDDUtil.getDescription(violated);
 		if (StringUtils.isBlank(message))
 			message = "Constraint violated " + anchorNameScope.getQualifiedName()  + preconditionName;
-		throw new RuntimeRaisedException(exceptionObject, message, anchorNameScope);
+		RuntimeRaisedException runtimeRaisedException = new RuntimeRaisedException(exceptionObject, message, anchorNameScope);
+		runtimeRaisedException.setConstraint(violated);
+		throw runtimeRaisedException;
 	}
 
 	protected EAnnotation getSourceInfo(NamedElement scope) {

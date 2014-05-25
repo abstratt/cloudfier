@@ -3,8 +3,8 @@ package com.abstratt.mdd.core.runtime;
 import java.util.List;
 
 import org.eclipse.uml2.uml.Classifier;
+import org.eclipse.uml2.uml.Constraint;
 import org.eclipse.uml2.uml.NamedElement;
-import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext.CallSite;
 import com.abstratt.mdd.core.runtime.types.BasicType;
@@ -16,7 +16,7 @@ public class RuntimeRaisedException extends ModelExecutionException {
     private List<CallSite> callSites;
     private BasicType exceptionObject;
     private Classifier exceptionType;
-    
+    private Constraint constraint;
     public RuntimeRaisedException(BasicType exceptionObject, String message, List<CallSite> callSites, NamedElement context) {
 		super(message == null ? exceptionObject.toString(Runtime.getCurrentRuntime().getCurrentContext()).toString() : message, context, null);
 		this.callSites = callSites;
@@ -48,4 +48,11 @@ public class RuntimeRaisedException extends ModelExecutionException {
     public Classifier getExceptionType() {
         return exceptionType;
     }
+    
+    public void setConstraint(Constraint constraint) {
+		this.constraint = constraint;
+	}
+    public Constraint getConstraint() {
+		return constraint;
+	}
 }
