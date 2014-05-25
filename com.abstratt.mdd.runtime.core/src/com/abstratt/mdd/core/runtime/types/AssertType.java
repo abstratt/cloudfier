@@ -20,9 +20,11 @@ public class AssertType extends BuiltInClass {
 	        throw new RuntimeRaisedException(new StringType((expected == null ? null : expected.toString()) + " != " + (actual == null ? null : actual.toString())), null, null);
 		return null;
     }
-	public static RuntimeObject isTrue(ExecutionContext context, BasicType actual) {
+	public static RuntimeObject isTrue(ExecutionContext context, BooleanType actual) {
 		if (actual == null)
 	        throw new RuntimeRaisedException(new StringType("Value is null"), null, null);
+		if (!actual.isTrue())
+	        throw new RuntimeRaisedException(new StringType("Value is false"), null, null);
 		return null;
     }
 }
