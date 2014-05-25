@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
@@ -72,7 +73,7 @@ public class KirraRepositoryFilter extends Filter {
 		LogUtils.logWarning(getClass().getPackage().getName(), "application error", e);
 		response.setStatus(e.getStatus());
 		Map<String, String> error = new HashMap<String, String>();
-		error.put("message", e.getMessage());
+		error.put("message", StringUtils.isBlank(e.getStatus().getDescription()) ? e.getStatus().getReasonPhrase() : e.getStatus().getDescription());
 		response.setEntity(KirraRESTUtils.jsonToStringRepresentation(error));
 		response.getEntity().setExpirationDate(new Date(0));
 	}
