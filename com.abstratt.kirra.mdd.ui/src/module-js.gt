@@ -731,13 +731,20 @@ def MemoSetup(formName, property, editable, creation) {
 """
 }
 
-def IntegerWidget(formName, attribute, editable, creation) {  "Spinner" }
+def IntegerWidget(formName, attribute, editable, creation) {  "TextField" }
+def IntegerSetup(formName, property, editable, creation) {
+if (!editable) return ""
+"""
+var ${getSymbol(property)}Validator = qx.util.Validate.regExp(${'/-?^[\\d]+$/'}, "Only numbers are allowed");
+${formName}.getValidationManager().add(${getSymbol(property)}Widget,${getSymbol(property)}Validator); 
+""" 
+}
 
 def DoubleWidget(formName, attribute, editable, creation) {  "TextField" }
 def DoubleSetup(formName, property, editable, creation) {
 if (!editable) return ""
 """
-var ${getSymbol(property)}Validator = qx.util.Validate.regExp(${'/^[\\d\\.]+$/'}, "Only numbers are allowed");
+var ${getSymbol(property)}Validator = qx.util.Validate.regExp(${'/-?^[\\d\\.]+$/'}, "Only numbers are allowed");
 ${formName}.getValidationManager().add(${getSymbol(property)}Widget,${getSymbol(property)}Validator); 
 """ 
 }

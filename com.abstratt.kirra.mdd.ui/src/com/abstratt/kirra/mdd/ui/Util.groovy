@@ -74,10 +74,8 @@ class Util extends KirraUIHelper {
 	                        statements << convertDateFromStringToJS(recordExpression, it)
 	                    else if (isEntity(it.type))
 	                        statements << ((editable && !isReadOnly(it, creation)) ? convertLinkToUri(recordExpression, it) : convertLinkToShorthand(recordExpression, it))
-	                    else if (it.type.name == 'Integer' && (!editable || isReadOnly(it, creation)))
-	                        statements << convertToString(recordExpression, it)
-	                    else if (it.type.name == 'Double')
-	                        // use a text field for doubles
+	                    else if (it.type.name == 'Double' || it.type.name == 'Integer')
+	                        // use a text field for integers and doubles
 	                        statements << convertToString(recordExpression, it)
 	                    else if (it.type instanceof StateMachine)
 	                        statements << convertCamelCaseToTitleCase(recordExpression, it);
