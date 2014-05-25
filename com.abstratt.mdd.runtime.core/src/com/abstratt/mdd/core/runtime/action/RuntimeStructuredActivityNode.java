@@ -65,6 +65,8 @@ public class RuntimeStructuredActivityNode extends CompositeRuntimeAction {
 					    toExecute -= this.executeContainedAction(runtimeAction, context);
 				}
 			} while (toExecute > 0);
+			if (instance.isMustIsolate())
+				context.saveContext(true);
 		} catch (RuntimeRaisedException rre) {
 		    if (rre.getExceptionObject() != null) {
 		        ExceptionHandler handler = ActivityUtils.findHandler(getInstance(), rre.getExceptionType(), false);
