@@ -7,6 +7,10 @@ public class TransientAuthenticationService implements AuthenticationService {
 	
 	private Map<String, String> users = new HashMap<String, String>();
 
+	public TransientAuthenticationService() {
+		createUser("demo@abstratt.com", "Demo1234");
+	}
+	
 	@Override
 	public boolean authenticate(String username, String password) {
 		return password != null && password.equals(users.get(username));
