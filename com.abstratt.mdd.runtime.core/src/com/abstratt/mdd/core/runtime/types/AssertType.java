@@ -15,16 +15,23 @@ public class AssertType extends BuiltInClass {
     public static RuntimeObject user(ExecutionContext context) {
         return context.getRuntime().getCurrentActor();
     }
-	public static RuntimeObject areEqual(ExecutionContext context, BasicType expected, BasicType actual) {
+	public static void areEqual(ExecutionContext context, BasicType expected, BasicType actual) {
 		if (expected == null || !expected.equals(context, actual).isTrue())
 	        throw new RuntimeRaisedException(new StringType((expected == null ? null : expected.toString()) + " != " + (actual == null ? null : actual.toString())), null, null);
-		return null;
     }
-	public static RuntimeObject isTrue(ExecutionContext context, BooleanType actual) {
+	public static void isTrue(ExecutionContext context, BooleanType actual) {
 		if (actual == null)
 	        throw new RuntimeRaisedException(new StringType("Value is null"), null, null);
 		if (!actual.isTrue())
 	        throw new RuntimeRaisedException(new StringType("Value is false"), null, null);
-		return null;
     }
+	public static void isNull(ExecutionContext context, BasicType actual) {
+		if (actual != null)
+	        throw new RuntimeRaisedException(new StringType("Value is not null"), null, null);
+    }
+	public static void isNotNull(ExecutionContext context, BasicType actual) {
+		if (actual == null)
+	        throw new RuntimeRaisedException(new StringType("Value is null"), null, null);
+    }
+
 }
