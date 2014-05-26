@@ -37,8 +37,8 @@ public class KirraRESTApplication extends Application {
 		// takes path in query
 		attachTo(router, "/", createFinder(IndexResource.class));
 		attachTo(router, "/{workspace}/" + Paths.DATA, createRestlet(DataResource.class, false, true));
-		attachTo(router, "/{workspace}/" + Paths.TESTS, createRestlet(TestResource.class, true, true));
-		attachTo(router, "/{workspace}/" + Paths.TESTS + "/{testClassName}/{testCaseName}", createRestlet(TestRunnerResource.class, true, true));
+		attachTo(router, "/{workspace}/" + Paths.TESTS, createRestlet(TestResource.class, false, true));
+		attachTo(router, "/{workspace}/" + Paths.TESTS + "/{testClassName}/{testCaseName}", createRestlet(TestRunnerResource.class, false, false));
 		attachTo(router, "/{workspace}/" + Paths.SIGNUP, createRestlet(SignupResource.class, false, false));
 		attachTo(router, "/{workspace}/" + Paths.PASSWORD_RESET, createRestlet(PasswordResetResource.class, false, false));
 		Restlet loginLogout = createRestlet(LoginLogoutResource.class, true, false);

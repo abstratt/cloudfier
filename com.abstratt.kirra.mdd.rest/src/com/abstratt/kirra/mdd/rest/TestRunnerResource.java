@@ -20,6 +20,7 @@ import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.abstratt.pluginutils.ISharedContextRunnable;
 
 public class TestRunnerResource extends AbstractKirraRepositoryResource {
 	
@@ -52,11 +53,29 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 	}
 	
 	@Post
-	public Representation create(Representation noneExpected) {
-		IRepository repository = RepositoryService.DEFAULT.getFeature(IRepository.class);
-		Runtime runtime = RepositoryService.DEFAULT.getFeature(Runtime.class);
-		String testClassName = (String) getRequestAttributes().get("testClassName");
-		String testCaseName = (String) getRequestAttributes().get("testCaseName");
+	public Representation runTest(Representation noneExpected) {
+		final Representation[] result = { null };
+		try {
+			KirraRESTUtils.runInKirraRepository(getRequest(), new ISharedContextRunnable<IRepository, Representation>() {
+				public Representation runInContext(IRepository context) {
+					result[0] = doRunTest();
+					// avoid saving
+					throw new RuntimeException();
+				}
+			});
+		} catch (RuntimeException e) {
+			if (result[0] != null)
+				return result[0];
+			throw e;
+		}
+		return result[0];
+	}
+
+	private Representation doRunTest() {
+		final IRepository repository = RepositoryService.DEFAULT.getFeature(IRepository.class);
+		final Runtime runtime = RepositoryService.DEFAULT.getFeature(Runtime.class);
+		final String testClassName = (String) getRequestAttributes().get("testClassName");
+		final String testCaseName = (String) getRequestAttributes().get("testCaseName");
 
 		Operation testCase = repository.findNamedElement(testClassName.replace(".", NamedElement.SEPARATOR) + NamedElement.SEPARATOR + testCaseName, UMLPackage.Literals.OPERATION, null);
 		ResourceUtils.ensure(testCase != null, "Could not find operation", null);
@@ -107,8 +126,8 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 				testResult.errorLocation.add(new SourceLocation(callSite.getSourceFile(), callSite.getLineNumber(), callSite.getFrameName()));
 			return jsonToStringRepresentation(testResult);
 		} catch (RuntimeException rre) {
-			rre.printStackTrace();
-			throw rre;
+			TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, rre.getMessage(), testLocation);
+			return jsonToStringRepresentation(testResult);
 		}
 	}
 
