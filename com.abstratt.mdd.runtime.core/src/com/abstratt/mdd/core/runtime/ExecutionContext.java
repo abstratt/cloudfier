@@ -27,9 +27,11 @@ public class ExecutionContext {
      * For a frame, what line it was executing when the next frame was created.
      */
     public static class CallSite {
+    	private String frameName;
         private String sourceFile;
         private Integer lineNumber;
-        public CallSite(String sourceFile, Integer lineNumber) {
+        public CallSite(String frameName, String sourceFile, Integer lineNumber) {
+        	this.frameName = frameName;
             this.sourceFile = sourceFile;
             this.lineNumber = lineNumber;
         }
@@ -38,6 +40,9 @@ public class ExecutionContext {
         }
         public String getSourceFile() {
             return sourceFile;
+        }
+        public String getFrameName() {
+            return frameName;
         }
         @Override
         public int hashCode() {
@@ -70,9 +75,6 @@ public class ExecutionContext {
                 return false;
             return true;
         }
-		public String getFrameName() {
-			return this.getSourceFile() + ":" + this.getLineNumber();
-		}
     }
 	
 	public class Frame {
@@ -105,7 +107,7 @@ public class ExecutionContext {
 		        return null;
             String source = MDDExtensionUtils.getSource(lastCallSite);
 	        Integer lineNumber = MDDExtensionUtils.getLineNumber(lastCallSite);
-            return new CallSite(source, lineNumber);
+            return new CallSite(name, source, lineNumber);
         }
 		
 		public Activity getActivity() {

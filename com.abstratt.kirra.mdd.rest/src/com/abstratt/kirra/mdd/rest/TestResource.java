@@ -2,12 +2,11 @@ package com.abstratt.kirra.mdd.rest;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
-import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Stereotype;
@@ -17,7 +16,6 @@ import org.restlet.resource.Get;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
-import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 
@@ -54,6 +52,15 @@ public class TestResource extends AbstractKirraRepositoryResource {
 
 			result.add(testCase);
 		}
+		Collections.sort(result, new Comparator<TestCase>() {
+			@Override
+			public int compare(TestCase o1, TestCase o2) {
+				int result = o1.testClass.compareTo(o2.testClass);
+				if (result == 0)
+					result = o1.testCase.compareTo(o2.testCase);
+				return result;
+			}
+		});
 		return jsonToStringRepresentation(Collections.singletonMap("testCases", result));
 	}
 

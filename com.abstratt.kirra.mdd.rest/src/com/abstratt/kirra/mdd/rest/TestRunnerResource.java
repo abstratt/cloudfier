@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.uml2.uml.Action;
-import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
-import org.eclipse.uml2.uml.StructuredActivityNode;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Post;
@@ -21,7 +18,6 @@ import com.abstratt.mdd.core.runtime.ExecutionContext.CallSite;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.types.BasicType;
-import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 
@@ -44,12 +40,14 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 		public String testClassName;
 		public String testMessage;
 		public Status testStatus;
+		public SourceLocation testSourceLocation;
 		public TestResult(String testClassName, String testCaseName,
-				Status testStatus, String testMessage) {
+				Status testStatus, String testMessage, SourceLocation testSourceLocation) {
 			this.testClassName = testClassName;
 			this.testCaseName = testCaseName;
 			this.testStatus = testStatus;
 			this.testMessage = testMessage;
+			this.testSourceLocation = testSourceLocation; 
 		}
 	}
 	
@@ -63,6 +61,7 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 		Operation testCase = repository.findNamedElement(testClassName.replace(".", NamedElement.SEPARATOR) + NamedElement.SEPARATOR + testCaseName, UMLPackage.Literals.OPERATION, null);
 		ResourceUtils.ensure(testCase != null, "Could not find operation", null);
 		ResourceUtils.ensure(TestResource.isTestCase(testCase), "Not a test case operation", null);
+		SourceLocation testLocation = findOperationLocation(testCase);
 		try {
 			BasicType instance = runtime.newInstance(testCase.getClass_());
 			runtime.runOperation(null, instance, testCase);
@@ -75,20 +74,15 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 					errorMessage += " - expected context: " + expectedContext;
 				if (expectedConstraint != null)
 					errorMessage += " - expected constraint: " + expectedConstraint;
-				TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, errorMessage);
-				Activity activity = ActivityUtils.getActivity(testCase);
-				if (activity != null) {
-					StructuredActivityNode rootAction = ActivityUtils.getRootAction(activity);
-					if (rootAction != null) {
-						Action finalAction = ActivityUtils.getFinalAction(rootAction);
-						if (finalAction != null)
-							testResult.errorLocation.add(new SourceLocation(MDDExtensionUtils.getSource(finalAction), MDDExtensionUtils
-									.getLineNumber(finalAction), testCase.getQualifiedName()));
-					}
-				}
+				TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, errorMessage, testLocation);
+				SourceLocation location = findOperationLocation(testCase);
+				if (location != null)
+					testResult.errorLocation.add(location);
 				return jsonToStringRepresentation(testResult);
 			}
-			return jsonToStringRepresentation(new TestResult(testClassName, testCaseName, TestResult.Status.Pass, null));
+			
+			TestResult pass = new TestResult(testClassName, testCaseName, TestResult.Status.Pass, null, testLocation);
+			return jsonToStringRepresentation(pass);
 		} catch (RuntimeRaisedException rre) {
 			String message = rre.getMessage();
 			if (TestResource.shouldFail(testCase)) {
@@ -105,10 +99,10 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 					matchExpectation = false;
 					message += " - Expected constraint: " + expectedConstraint + ", actual: " + actualConstraint;
 				}
-				return jsonToStringRepresentation(new TestResult(testClassName, testCaseName, matchExpectation ? Status.Pass : Status.Fail, matchExpectation ? null : message));                    				
+				return jsonToStringRepresentation(new TestResult(testClassName, testCaseName, matchExpectation ? Status.Pass : Status.Fail, matchExpectation ? null : message, testLocation));                    				
 			}
 
-			TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, message);
+			TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, message, testLocation);
 			for (CallSite callSite : rre.getCallSites())
 				testResult.errorLocation.add(new SourceLocation(callSite.getSourceFile(), callSite.getLineNumber(), callSite.getFrameName()));
 			return jsonToStringRepresentation(testResult);
@@ -116,5 +110,10 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 			rre.printStackTrace();
 			throw rre;
 		}
+	}
+
+	private SourceLocation findOperationLocation(Operation operation) {
+		return new SourceLocation(MDDExtensionUtils.getSource(operation), MDDExtensionUtils
+				.getLineNumber(operation), operation.getQualifiedName());
 	}
 }
