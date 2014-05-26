@@ -1,9 +1,11 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import com.abstratt.mdd.core.runtime.ExecutionContext;
 import java.util.ArrayList;
 import java.util.Collection;
+
 import org.eclipse.uml2.uml.Type;
+
+import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class BagType extends CollectionType {
 	/**

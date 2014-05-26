@@ -9,11 +9,9 @@ import java.util.Map;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Classifier;
-import org.eclipse.uml2.uml.Constraint;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.Property;
-import org.eclipse.uml2.uml.Signal;
 import org.eclipse.uml2.uml.Vertex;
 
 import com.abstratt.mdd.core.runtime.types.BasicType;

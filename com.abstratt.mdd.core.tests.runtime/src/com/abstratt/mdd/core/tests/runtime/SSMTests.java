@@ -1,13 +1,15 @@
 package com.abstratt.mdd.core.tests.runtime;
 
-import com.abstratt.mdd.core.runtime.SSM;
-import com.abstratt.mdd.core.runtime.SSM.Event;
-import com.abstratt.mdd.core.runtime.SSM.Guard;
 import java.util.ArrayList;
 import java.util.List;
+
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
+
+import com.abstratt.mdd.core.runtime.SSM;
+import com.abstratt.mdd.core.runtime.SSM.Event;
+import com.abstratt.mdd.core.runtime.SSM.Guard;
 
 public class SSMTests extends TestCase {
 

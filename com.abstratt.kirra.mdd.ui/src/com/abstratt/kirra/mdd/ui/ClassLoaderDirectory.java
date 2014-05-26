@@ -2,8 +2,6 @@ package com.abstratt.kirra.mdd.ui;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 
 import org.apache.commons.lang.StringUtils;

@@ -11,13 +11,11 @@ import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.AddVariableValueAction;
 import org.eclipse.uml2.uml.CallOperationAction;
 import org.eclipse.uml2.uml.Classifier;
-import org.eclipse.uml2.uml.InputPin;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.ReadExtentAction;
 import org.eclipse.uml2.uml.ReadLinkAction;
 import org.eclipse.uml2.uml.StructuredActivityNode;
-import org.eclipse.uml2.uml.ValueSpecificationAction;
 import org.eclipse.uml2.uml.Variable;
 
 import com.abstratt.mdd.core.IRepository;

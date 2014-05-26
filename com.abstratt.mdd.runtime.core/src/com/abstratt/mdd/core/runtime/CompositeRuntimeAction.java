@@ -1,8 +1,7 @@
 package com.abstratt.mdd.core.runtime;
 
 import static com.abstratt.mdd.core.runtime.RuntimeActionState.READY;
-import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.util.MDDUtil;
+
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -11,10 +10,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import org.eclipse.uml2.uml.Action;
 import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.ObjectNode;
 import org.eclipse.uml2.uml.StructuredActivityNode;
+
+import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.util.MDDUtil;
 
 /**
  * A composite runtime action can contain other runtime actions.

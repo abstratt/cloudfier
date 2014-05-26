@@ -1,7 +1,6 @@
 package com.abstratt.mdd.frontend.web.tests;
 
 import java.io.ByteArrayInputStream;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
@@ -23,11 +22,11 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.codehaus.jackson.JsonNode;
+import org.junit.Assert;
 
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.Paths;
 import com.abstratt.mdd.frontend.web.WebFrontEnd;
-import org.junit.Assert;
 
 public class RestHelper {
 

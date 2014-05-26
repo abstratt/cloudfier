@@ -9,7 +9,6 @@ package com.abstratt.mdd.target.query;
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EPackage;
 import org.eclipse.emf.ecore.EReference;
-
 import org.eclipse.uml2.uml.UMLPackage;
 
 /**

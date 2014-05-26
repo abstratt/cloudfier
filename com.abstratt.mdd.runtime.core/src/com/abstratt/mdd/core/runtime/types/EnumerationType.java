@@ -5,7 +5,6 @@ import java.io.Serializable;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.Operation;
-import org.eclipse.uml2.uml.Signal;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.MetaClass;

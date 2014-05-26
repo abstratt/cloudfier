@@ -2,14 +2,12 @@ package com.abstratt.kirra.tests.mdd.runtime;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Properties;
 
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
-import com.abstratt.mdd.core.IRepository;
 
 public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
 

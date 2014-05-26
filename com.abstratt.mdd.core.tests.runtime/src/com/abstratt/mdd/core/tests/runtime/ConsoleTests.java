@@ -1,13 +1,16 @@
 package com.abstratt.mdd.core.tests.runtime;
 
-import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.runtime.RuntimeClass;
 import java.util.List;
+
 import junit.framework.Test;
 import junit.framework.TestSuite;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Operation;
+
+import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.runtime.RuntimeClass;
 
 public class ConsoleTests extends AbstractRuntimeTests {
 

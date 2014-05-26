@@ -6,15 +6,18 @@
  */
 package com.abstratt.mdd.target.query.impl;
 
-import com.abstratt.mdd.target.query.*;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.EPackage;
-
 import org.eclipse.emf.ecore.impl.EFactoryImpl;
-
 import org.eclipse.emf.ecore.plugin.EcorePlugin;
+
+import com.abstratt.mdd.target.query.Join;
+import com.abstratt.mdd.target.query.PropertyReference;
+import com.abstratt.mdd.target.query.Query;
+import com.abstratt.mdd.target.query.QueryFactory;
+import com.abstratt.mdd.target.query.QueryPackage;
+import com.abstratt.mdd.target.query.VariableReference;
 
 /**
  * <!-- begin-user-doc -->

@@ -7,7 +7,6 @@
 package com.abstratt.mdd.target.query;
 
 import org.eclipse.uml2.uml.Association;
-import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.Property;
 

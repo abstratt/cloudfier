@@ -2,7 +2,6 @@ package com.abstratt.kirra.mdd.runtime;
 
 import static com.abstratt.kirra.mdd.core.KirraHelper.getParameters;
 import static com.abstratt.kirra.mdd.core.KirraHelper.isDerived;
-import static com.abstratt.kirra.mdd.core.KirraHelper.isEssential;
 import static com.abstratt.kirra.mdd.core.KirraHelper.isRequired;
 
 import java.util.ArrayList;

@@ -7,7 +7,6 @@
 package com.abstratt.mdd.target.query;
 
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Element;

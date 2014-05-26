@@ -1,7 +1,6 @@
 package com.abstratt.kirra.mdd.rest;
 
 import java.io.IOException;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,7 +10,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.JsonProcessingException;
-import org.eclipse.core.runtime.Path;
 import org.restlet.data.Form;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
@@ -28,14 +26,13 @@ import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Service;
-import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.kirra.json.InstanceJSONRepresentation;
+import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.kirra.json.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
 
 public abstract class AbstractKirraRepositoryResource extends ServerResource {
 

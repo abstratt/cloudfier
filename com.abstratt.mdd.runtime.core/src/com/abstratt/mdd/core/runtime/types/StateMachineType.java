@@ -3,7 +3,6 @@ package com.abstratt.mdd.core.runtime.types;
 import java.io.Serializable;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Pseudostate;
 import org.eclipse.uml2.uml.State;
 import org.eclipse.uml2.uml.Vertex;

@@ -1,7 +1,8 @@
 package com.abstratt.mdd.core.runtime;
 
-import com.abstratt.mdd.core.runtime.types.BasicType;
 import org.eclipse.uml2.uml.OutputPin;
+
+import com.abstratt.mdd.core.runtime.types.BasicType;
 
 /**
  * Relevant sections of the specification:

@@ -1,10 +1,11 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import com.abstratt.mdd.core.runtime.ExecutionContext;
 import java.io.Serializable;
 
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Type;
+
+import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public abstract class PrimitiveType<T> extends BuiltInClass implements Serializable {
     private static final long serialVersionUID = 1L;

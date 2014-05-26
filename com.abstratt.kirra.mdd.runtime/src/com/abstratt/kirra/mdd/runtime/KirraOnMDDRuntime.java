@@ -35,7 +35,6 @@ import org.eclipse.uml2.uml.TypedElement;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.Vertex;
-import org.w3c.dom.NameList;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.ExternalService;

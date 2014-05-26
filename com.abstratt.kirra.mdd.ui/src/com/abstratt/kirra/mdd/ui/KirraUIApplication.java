@@ -10,8 +10,6 @@ import org.restlet.routing.Variable;
 
 import com.abstratt.kirra.mdd.rest.KirraRESTApplication;
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
-import com.abstratt.mdd.frontend.web.BuilderResource;
-import com.abstratt.mdd.frontend.web.WebFrontEnd;
 
 public class KirraUIApplication extends KirraRESTApplication {
 	public KirraUIApplication(Component component) {

@@ -6,22 +6,23 @@
  */
 package com.abstratt.mdd.target.query.util;
 
-import com.abstratt.mdd.target.query.*;
-
 import org.eclipse.emf.common.notify.Adapter;
 import org.eclipse.emf.common.notify.Notifier;
-
 import org.eclipse.emf.common.notify.impl.AdapterFactoryImpl;
-
 import org.eclipse.emf.ecore.EModelElement;
 import org.eclipse.emf.ecore.EObject;
-
 import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.PackageableElement;
 import org.eclipse.uml2.uml.ParameterableElement;
 import org.eclipse.uml2.uml.TypedElement;
 import org.eclipse.uml2.uml.ValueSpecification;
+
+import com.abstratt.mdd.target.query.Join;
+import com.abstratt.mdd.target.query.PropertyReference;
+import com.abstratt.mdd.target.query.Query;
+import com.abstratt.mdd.target.query.QueryPackage;
+import com.abstratt.mdd.target.query.VariableReference;
 
 /**
  * <!-- begin-user-doc -->

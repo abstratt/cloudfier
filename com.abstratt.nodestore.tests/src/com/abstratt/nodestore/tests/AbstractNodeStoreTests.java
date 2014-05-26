@@ -2,7 +2,6 @@ package com.abstratt.nodestore.tests;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,8 +15,6 @@ import com.abstratt.mdd.core.tests.runtime.AbstractRuntimeTests;
 import com.abstratt.nodestore.INode;
 import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStore;
-import com.abstratt.nodestore.INodeStoreFactory;
-import com.abstratt.nodestore.NodeStores;
 
 public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
 	private final static String library = 

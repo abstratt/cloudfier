@@ -9,7 +9,6 @@ import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.UMLPackage;
 
-import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.kirra.mdd.ui.KirraUIHelper;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;

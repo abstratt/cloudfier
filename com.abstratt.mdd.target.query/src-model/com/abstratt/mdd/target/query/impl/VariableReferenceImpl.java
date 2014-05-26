@@ -6,19 +6,15 @@
  */
 package com.abstratt.mdd.target.query.impl;
 
-import com.abstratt.mdd.target.query.QueryPackage;
-import com.abstratt.mdd.target.query.VariableReference;
-
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
 import org.eclipse.uml2.uml.Variable;
-
 import org.eclipse.uml2.uml.internal.impl.ValueSpecificationImpl;
+
+import com.abstratt.mdd.target.query.QueryPackage;
+import com.abstratt.mdd.target.query.VariableReference;
 
 /**
  * <!-- begin-user-doc -->

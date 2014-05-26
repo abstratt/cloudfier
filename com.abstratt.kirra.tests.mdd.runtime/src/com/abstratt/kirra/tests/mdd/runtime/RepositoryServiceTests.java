@@ -8,9 +8,8 @@ import org.eclipse.core.runtime.CoreException;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.runtime.Runtime;
-
 import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.pluginutils.ISharedContextRunnable;

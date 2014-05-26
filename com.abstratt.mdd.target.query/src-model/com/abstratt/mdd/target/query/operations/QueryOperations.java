@@ -6,11 +6,10 @@
  */
 package com.abstratt.mdd.target.query.operations;
 
-import com.abstratt.mdd.target.query.Query;
-
 import org.eclipse.uml2.uml.Classifier;
-
 import org.eclipse.uml2.uml.internal.operations.ElementOperations;
+
+import com.abstratt.mdd.target.query.Query;
 
 /**
  * <!-- begin-user-doc -->

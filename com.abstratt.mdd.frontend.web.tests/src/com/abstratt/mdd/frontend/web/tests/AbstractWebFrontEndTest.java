@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.codehaus.jackson.JsonNode;

@@ -19,7 +19,6 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.URIUtil;
 
 import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.pluginutils.LogUtils;
 
 public class BuildDirectoryUtils {

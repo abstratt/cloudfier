@@ -1,7 +1,6 @@
 package com.abstratt.mdd.core.runtime.types;
 
 import org.eclipse.uml2.uml.Operation;
-import org.eclipse.uml2.uml.Signal;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.MetaClass;

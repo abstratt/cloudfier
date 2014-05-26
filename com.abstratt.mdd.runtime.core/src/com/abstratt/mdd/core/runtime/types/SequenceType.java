@@ -1,10 +1,12 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import com.abstratt.mdd.core.runtime.ExecutionContext;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
 import org.eclipse.uml2.uml.Type;
+
+import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class SequenceType extends OrderedCollectionType {
 	/**

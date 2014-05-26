@@ -1,12 +1,13 @@
 package com.abstratt.mdd.core.runtime.action;
 
+import org.eclipse.uml2.uml.Action;
+import org.eclipse.uml2.uml.DestroyObjectAction;
+
 import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.RuntimeObjectNode;
-import org.eclipse.uml2.uml.Action;
-import org.eclipse.uml2.uml.DestroyObjectAction;
 
 public class RuntimeDestroyObjectAction extends RuntimeAction {
 	public RuntimeDestroyObjectAction(Action instance, CompositeRuntimeAction parent) {

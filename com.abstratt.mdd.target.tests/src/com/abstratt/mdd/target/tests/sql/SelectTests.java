@@ -1,5 +1,7 @@
 package com.abstratt.mdd.target.tests.sql;
 
+import static com.abstratt.mdd.core.tests.harness.AssertHelper.trim;
+
 import java.util.Properties;
 
 import junit.framework.Assert;
@@ -17,7 +19,6 @@ import com.abstratt.mdd.core.target.ITargetPlatform;
 import com.abstratt.mdd.core.target.TargetCore;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.mdd.core.tests.harness.AssertHelper;
-import static com.abstratt.mdd.core.tests.harness.AssertHelper.trim;
 
 /**
  * Tests generation of SQL select statements. 

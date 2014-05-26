@@ -7,7 +7,6 @@ import junit.framework.TestSuite;
 
 import org.eclipse.core.runtime.CoreException;
 
-import com.abstratt.mdd.core.runtime.RuntimeClass;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.DateType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;

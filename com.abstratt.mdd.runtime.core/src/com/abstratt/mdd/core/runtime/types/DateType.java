@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.TimeZone;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
-import com.abstratt.mdd.core.runtime.ModelExecutionException;
 
 public class DateType extends PrimitiveType<Date> {
     /**

@@ -2,17 +2,14 @@ package com.abstratt.kirra.mdd.runtime;
 
 import java.util.List;
 
-import org.eclipse.emf.ecore.EClass;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
-import org.eclipse.uml2.uml.NamedElement;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
-import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.TupleType;
 

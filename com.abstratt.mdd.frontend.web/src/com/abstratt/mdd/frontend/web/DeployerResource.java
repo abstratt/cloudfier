@@ -27,7 +27,6 @@ import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
 import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.MDDCore;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.frontend.core.IProblem;

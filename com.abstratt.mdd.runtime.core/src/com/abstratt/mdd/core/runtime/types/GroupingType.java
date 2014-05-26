@@ -1,6 +1,5 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import java.util.Collection;
 import java.util.Map;
 
 import org.eclipse.uml2.uml.Type;

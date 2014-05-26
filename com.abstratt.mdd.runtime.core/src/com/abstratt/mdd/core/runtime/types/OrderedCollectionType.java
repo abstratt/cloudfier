@@ -2,6 +2,7 @@ package com.abstratt.mdd.core.runtime.types;
 
 import java.util.Collection;
 import java.util.List;
+
 import org.eclipse.uml2.uml.Type;
 
 public abstract class OrderedCollectionType extends CollectionType {

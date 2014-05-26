@@ -5,7 +5,6 @@ import com.abstratt.kirra.KirraApplication;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Schema;
 import com.abstratt.kirra.mdd.core.KirraHelper;
-import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.resman.ActivatableFeatureProvider;
 import com.abstratt.resman.ExceptionTranslationFeatureProvider;

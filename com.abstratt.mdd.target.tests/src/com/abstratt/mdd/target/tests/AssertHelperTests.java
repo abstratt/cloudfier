@@ -1,7 +1,7 @@
 package com.abstratt.mdd.target.tests;
 
-import junit.framework.TestCase;
 import static com.abstratt.mdd.core.tests.harness.AssertHelper.trim;
+import junit.framework.TestCase;
 
 public class AssertHelperTests extends TestCase {
 	public void testSingleChar() {

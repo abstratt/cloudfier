@@ -6,31 +6,25 @@
  */
 package com.abstratt.mdd.target.query.impl;
 
-import com.abstratt.mdd.target.query.Join;
-import com.abstratt.mdd.target.query.Query;
-import com.abstratt.mdd.target.query.QueryPackage;
-
-import com.abstratt.mdd.target.query.operations.QueryOperations;
 import java.util.Collection;
 
 import org.eclipse.emf.common.notify.Notification;
 import org.eclipse.emf.common.notify.NotificationChain;
-
 import org.eclipse.emf.common.util.EList;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
 import org.eclipse.emf.ecore.util.EObjectContainmentEList;
 import org.eclipse.emf.ecore.util.EObjectResolvingEList;
 import org.eclipse.emf.ecore.util.InternalEList;
-
 import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.Classifier;
-
 import org.eclipse.uml2.uml.internal.impl.ElementImpl;
+
+import com.abstratt.mdd.target.query.Join;
+import com.abstratt.mdd.target.query.Query;
+import com.abstratt.mdd.target.query.QueryPackage;
+import com.abstratt.mdd.target.query.operations.QueryOperations;
 
 /**
  * <!-- begin-user-doc -->

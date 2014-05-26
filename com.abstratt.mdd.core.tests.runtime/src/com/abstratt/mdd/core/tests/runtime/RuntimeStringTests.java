@@ -1,12 +1,12 @@
 package com.abstratt.mdd.core.tests.runtime;
 
+import junit.framework.Test;
+import junit.framework.TestSuite;
+
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.RealType;
 import com.abstratt.mdd.core.runtime.types.StringType;
-
-import junit.framework.Test;
-import junit.framework.TestSuite;
 
 public class RuntimeStringTests extends AbstractRuntimeTests {
 

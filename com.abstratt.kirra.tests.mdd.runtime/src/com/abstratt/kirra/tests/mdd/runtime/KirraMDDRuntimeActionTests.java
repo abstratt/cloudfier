@@ -7,10 +7,7 @@ import java.util.List;
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.Instance;
-import com.abstratt.kirra.KirraException;
-import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Repository;
-import com.abstratt.kirra.TopLevelElement;
 
 public class KirraMDDRuntimeActionTests extends AbstractKirraMDDRuntimeTests {
 

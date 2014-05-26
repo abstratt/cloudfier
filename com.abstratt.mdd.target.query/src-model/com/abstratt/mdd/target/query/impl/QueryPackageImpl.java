@@ -6,20 +6,18 @@
  */
 package com.abstratt.mdd.target.query.impl;
 
+import org.eclipse.emf.ecore.EClass;
+import org.eclipse.emf.ecore.EPackage;
+import org.eclipse.emf.ecore.EReference;
+import org.eclipse.emf.ecore.impl.EPackageImpl;
+import org.eclipse.uml2.uml.UMLPackage;
+
 import com.abstratt.mdd.target.query.Join;
 import com.abstratt.mdd.target.query.PropertyReference;
 import com.abstratt.mdd.target.query.Query;
 import com.abstratt.mdd.target.query.QueryFactory;
 import com.abstratt.mdd.target.query.QueryPackage;
 import com.abstratt.mdd.target.query.VariableReference;
-
-import org.eclipse.emf.ecore.EClass;
-import org.eclipse.emf.ecore.EPackage;
-import org.eclipse.emf.ecore.EReference;
-
-import org.eclipse.emf.ecore.impl.EPackageImpl;
-
-import org.eclipse.uml2.uml.UMLPackage;
 
 /**
  * <!-- begin-user-doc -->

@@ -6,10 +6,10 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.pluginutils.ISharedContextRunnable;
 import com.abstratt.resman.Resource;
-import com.abstratt.mdd.core.runtime.Runtime;
 
 public class KirraMDDRuntimeResourceTests extends AbstractRepositoryBuildingTests {
 	

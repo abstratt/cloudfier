@@ -8,7 +8,6 @@ import org.eclipse.uml2.uml.ObjectNode;
 import org.eclipse.uml2.uml.ValueSpecification;
 
 import com.abstratt.mdd.core.runtime.types.BasicType;
-import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 
 public abstract class RuntimeObjectNode {

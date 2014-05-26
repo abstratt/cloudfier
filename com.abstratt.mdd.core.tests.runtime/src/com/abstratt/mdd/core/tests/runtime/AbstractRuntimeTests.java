@@ -1,15 +1,9 @@
 package com.abstratt.mdd.core.tests.runtime;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-
-import junit.framework.Assert;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Class;
@@ -26,14 +20,11 @@ import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeClass;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.types.BasicType;
-import com.abstratt.mdd.core.runtime.types.CollectionType;
-import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.nodestore.INodeStoreFactory;
 import com.abstratt.nodestore.NodeStores;
-import com.abstratt.resman.Resource;
 
 public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
 

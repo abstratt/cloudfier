@@ -6,21 +6,16 @@
  */
 package com.abstratt.mdd.target.query.impl;
 
-import com.abstratt.mdd.target.query.Join;
-import com.abstratt.mdd.target.query.QueryPackage;
-
 import org.eclipse.emf.common.notify.Notification;
-
 import org.eclipse.emf.ecore.EClass;
 import org.eclipse.emf.ecore.InternalEObject;
-
 import org.eclipse.emf.ecore.impl.ENotificationImpl;
-
-import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Association;
-import org.eclipse.uml2.uml.Classifier;
-
+import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.internal.impl.ElementImpl;
+
+import com.abstratt.mdd.target.query.Join;
+import com.abstratt.mdd.target.query.QueryPackage;
 
 /**
  * <!-- begin-user-doc -->
