@@ -341,6 +341,10 @@ public class ExecutionContext {
 
 	public boolean enter() {
 		boolean newTransaction = (level++) == 0;
+		if (newTransaction) {
+			Assert.isTrue(this.events.isEmpty(), "Event backlog is not empty");
+			Assert.isTrue(this.workingSet.isEmpty(), "Working set is not empty");
+		}
 		System.out.println("entered context level: " + level);
 		if (newTransaction)
 			runtime.getNodeStoreCatalog().beginTransaction();
@@ -356,8 +360,11 @@ public class ExecutionContext {
 				success = true;
 			}
 		} finally {
+			
 			level--;
 			if (level == 0) {
+				clearWorkingSet();
+				clearEventQueue();
 				if (success)
 					runtime.getNodeStoreCatalog().commitTransaction();
 				else
@@ -366,6 +373,10 @@ public class ExecutionContext {
 		}
 	}
 
+	/**
+	 * 
+	 * @param preserve WFT does this mean?
+	 */
 	public void saveContext(boolean preserve) {
 		if (preserve) 
 			runtime.getNodeStoreCatalog().clearCaches();
@@ -384,8 +395,8 @@ public class ExecutionContext {
 				runtime.getNodeStoreCatalog().validateConstraints();
 			}
 		} finally {
-			this.events = new ArrayList<RuntimeEvent>();
-			this.workingSet = new LinkedHashMap<INodeKey, RuntimeObject>();
+			clearEventQueue();
+			clearWorkingSet();
 			this.saveChanges = originalSaveChanges;
 			if (preserve)
 				for (RuntimeObject original : objectsToCheck)
@@ -393,10 +404,14 @@ public class ExecutionContext {
 		}
 	}
 
+	private List<RuntimeEvent> clearEventQueue() {
+		return this.events = new ArrayList<RuntimeEvent>();
+	}
+
 	public void processPendingEvents() {
 		while (!this.events.isEmpty()) {
 			List<RuntimeEvent> eventsToProcess = this.events;
-			this.events = new ArrayList<RuntimeEvent>();
+			clearEventQueue();
 			processEvents(eventsToProcess);
 		}
 	}
@@ -473,6 +488,6 @@ public class ExecutionContext {
 	}
 
 	public void clearWorkingSet() {
-		workingSet.clear();
+		workingSet = new LinkedHashMap<INodeKey, RuntimeObject>();
 	}
 }

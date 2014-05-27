@@ -126,7 +126,7 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 				testResult.errorLocation.add(new SourceLocation(callSite.getSourceFile(), callSite.getLineNumber(), callSite.getFrameName()));
 			return jsonToStringRepresentation(testResult);
 		} catch (RuntimeException rre) {
-			TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, rre.getMessage(), testLocation);
+			TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, rre.toString(), testLocation);
 			return jsonToStringRepresentation(testResult);
 		}
 	}

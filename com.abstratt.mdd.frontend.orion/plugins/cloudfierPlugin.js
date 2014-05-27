@@ -128,8 +128,13 @@ var formatTestResult = function(testResult, projectPath) {
      var j, location, string = "";
      var passed = testResult.testStatus == 'Pass';
      var symbol = passed ? "\u2714": "\u2718";
-     var linkToOperation = "http:/edit/edit.html#" + projectPath + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
-     string += "[" + symbol + "](" + linkToOperation + ")";
+     var linkToOperation
+     if (testResult.testSourceLocation) {     
+         linkToOperation = "http:/edit/edit.html#" + projectPath + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
+         string += "[" + symbol + "](" + linkToOperation + ")";
+     } else {
+         string += symbol;
+     }
      string += " " + testResult.testClassName + "." + testResult.testCaseName + "\n";
      if (!passed) {
          if (testResult.testMessage) {
