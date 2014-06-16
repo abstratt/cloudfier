@@ -27,9 +27,9 @@ import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.kirra.json.InstanceJSONRepresentation;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
-import com.abstratt.kirra.json.TupleParser;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.TupleParser;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
@@ -62,15 +62,7 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
 	 * @return
 	 */
 	protected Reference getBaseReference() {
-		Reference reference = getReference().clone();
-		List<String> segments = reference.getSegments();
-		int sessionIndex = segments.indexOf(Paths.API);
-		int segmentCount = segments.size();
-		if ("".equals(segments.get(segmentCount - 1)))
-			segmentCount--;
-		for (int currentSegment = segmentCount - 1;currentSegment > sessionIndex + 1;currentSegment--)
-		    reference = reference.getParentRef();
-		return mapToExternal(reference);
+		return KirraReferenceUtils.getBaseReference(getRequest(), getReference());
 	}
 	
 	/**
@@ -84,15 +76,7 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
 	 * Attempts to map the given internal reference to an external reference.
 	 */
 	protected Reference mapToExternal(Reference reference) {
-		Series<NamedValue<String>> httpHeaders = (Series<NamedValue<String>>) getRequest()
-				.getAttributes().get(HeaderConstants.ATTRIBUTE_HEADERS);
-		String proxiedHeader = httpHeaders.getFirstValue("X-Kirra-Proxied");
-		if ("true".equals(proxiedHeader)) {
-			String applicationBaseUri = getRepository().getProperties().getProperty("mdd.api.rest.base");
-			if (applicationBaseUri != null)
-				return ReferenceUtils.getExternal(reference, applicationBaseUri);
-		}
-		return ReferenceUtils.getExternal(reference);
+		return KirraReferenceUtils.mapToExternal(getRequest(), reference);
 	}
 
 	protected String getEntityName() {

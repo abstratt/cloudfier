@@ -3,6 +3,7 @@ package com.abstratt.kirra.mdd.rest;
 import org.restlet.data.Reference;
 
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.rest.common.Paths;
 
 public class KirraReferenceBuilder {
 	private Reference baseReference;

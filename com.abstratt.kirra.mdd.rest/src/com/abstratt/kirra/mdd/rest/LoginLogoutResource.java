@@ -9,11 +9,11 @@ import com.abstratt.pluginutils.LogUtils;
 public class LoginLogoutResource extends AbstractKirraRepositoryResource {
 	@Get
 	public void logout() {
-		LogUtils.debug(KirraRESTApplication.ID, "Logging out");
+		LogUtils.debug(LegacyKirraMDDRestletApplication.ID, "Logging out");
 	}
 	
 	@Post
 	public void login(Representation repr) {
-		LogUtils.debug(KirraRESTApplication.ID, "Logging in");
+		LogUtils.debug(LegacyKirraMDDRestletApplication.ID, "Logging in");
 	}
 }

@@ -10,7 +10,7 @@ import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
-import com.abstratt.kirra.json.TupleParser;
+import com.abstratt.kirra.mdd.rest.TupleParser;
 import com.abstratt.kirra.mdd.runtime.KirraActorSelector;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeObject;

@@ -129,7 +129,7 @@ var formatTestResult = function(testResult, projectPath) {
      var passed = testResult.testStatus == 'Pass';
      var symbol = passed ? "\u2714": "\u2718";
      var linkToOperation
-     if (testResult.testSourceLocation) {     
+     if (testResult.testSourceLocation !== undefined) {     
          linkToOperation = "http:/edit/edit.html#" + projectPath + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
          string += "[" + symbol + "](" + linkToOperation + ")";
      } else {

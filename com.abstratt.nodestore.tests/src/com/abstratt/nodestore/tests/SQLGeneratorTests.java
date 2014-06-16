@@ -23,9 +23,10 @@ import org.eclipse.uml2.uml.Package;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.SchemaManagement;
+import com.abstratt.kirra.SchemaManagementSnapshot;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.kirra.mdd.runtime.SchemaManagementSnapshot;
+import com.abstratt.kirra.mdd.runtime.KirraMDDSchemaBuilder;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.nodestore.jdbc.ConnectionProvider;
@@ -145,7 +146,7 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 	
 	@Override
 	protected void compilationCompleted() throws CoreException {
-		this.schema = new SchemaManagementSnapshot();
+		this.schema = new SchemaManagementSnapshot(new KirraMDDSchemaBuilder());
 		generator = new SQLGenerator(getName(), schema);
 	}
 	

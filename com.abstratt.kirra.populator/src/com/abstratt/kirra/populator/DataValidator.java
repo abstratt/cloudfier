@@ -93,7 +93,7 @@ public class DataValidator {
 		Set<String> requiredProperties = new HashSet<String>();
 		for (Property property : entity.getProperties()) {
 			validProperties.put(property.getName(), property);
-			if (property.isRequired() && !property.isDefaultValue())
+			if (property.isRequired() && property.getDefaultValue() == null) 
 				requiredProperties.add(property.getName());
 		}
 		Map<String, Relationship> validRelationships = new HashMap<String, Relationship>();

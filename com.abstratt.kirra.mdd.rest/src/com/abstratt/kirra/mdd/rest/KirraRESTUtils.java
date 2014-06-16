@@ -60,7 +60,11 @@ public class KirraRESTUtils {
 	}
 	
 	public static <R> R runInKirraRepository(final Request request, final ISharedContextRunnable<IRepository, R> runnable) {
-		final String workspace = getWorkspaceFromProjectPath(request);
+		String workspace = getWorkspaceFromProjectPath(request);
+		return runInKirraWorkspace(workspace, runnable);
+	}
+
+	public static <R> R runInKirraWorkspace(final String workspace, final ISharedContextRunnable<IRepository, R> runnable) {
 		try {
 			return RepositoryService.DEFAULT.runInRepository(ResourceUtils.getRepositoryURI(workspace), runnable);
 		} catch (KirraException e) {

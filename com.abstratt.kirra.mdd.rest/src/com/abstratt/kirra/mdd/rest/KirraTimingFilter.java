@@ -24,7 +24,7 @@ public class KirraTimingFilter extends Filter {
 		watch.start();
 		int result = super.doHandle(request, response);
 		watch.stop();
-		LogUtils.log(IStatus.INFO, KirraRESTApplication.ID, request.toString() + " - " + watch.getTime() + "ms", null);
+		LogUtils.log(IStatus.INFO, LegacyKirraMDDRestletApplication.ID, request.toString() + " - " + watch.getTime() + "ms", null);
 		return result;
 	}
 }

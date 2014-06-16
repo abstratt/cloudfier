@@ -5,8 +5,11 @@
          point="org.eclipse.equinox.http.registry.servlets">
       <servlet
             alias="/mdd/api"
-            class="com.abstratt.kirra.mdd.rest.KirraRESTServlet">
+            class="com.abstratt.kirra.mdd.rest.LegacyKirraRESTServlet">
       </servlet>
+      <servlet
+          alias="/mdd/api-v2"
+          class="com.abstratt.kirra.mdd.rest.KirraRESTOnMDDServlet"/>
    </extension>
    <extension
          point="com.abstratt.resman.features">

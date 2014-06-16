@@ -11,7 +11,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Service;
-import com.abstratt.kirra.json.ServiceLinkJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.ServiceLinkJSONRepresentation;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 
 public class ServiceListResource extends AbstractKirraRepositoryResource {

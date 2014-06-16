@@ -8,10 +8,10 @@ import org.restlet.routing.Router;
 import org.restlet.routing.TemplateRoute;
 import org.restlet.routing.Variable;
 
-import com.abstratt.kirra.mdd.rest.KirraRESTApplication;
+import com.abstratt.kirra.mdd.rest.LegacyKirraMDDRestletApplication;
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
 
-public class KirraUIApplication extends KirraRESTApplication {
+public class KirraUIApplication extends LegacyKirraMDDRestletApplication {
 	public KirraUIApplication(Component component) {
 		super(component);
 	}

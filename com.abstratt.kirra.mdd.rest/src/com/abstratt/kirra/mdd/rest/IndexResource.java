@@ -8,7 +8,7 @@ import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Repository;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
@@ -43,7 +43,8 @@ public class IndexResource extends AbstractKirraRepositoryResource {
 				buffer.append("\t\t\"username\": " + JsonHelper.renderAsJson(KirraRESTUtils.getCurrentUserName()) + "\n");
 				buffer.append("\t},\n");
 				buffer.append("\t\"applicationTimestamp\": \"" + repo.getBuild() + "\",\n");
-				buffer.append("\t\"platformVersion\": \"" + Activator.getInstance().getPlatformVersion() + "\"\n");
+				buffer.append("\t\"platformVersion\": \"" + Activator.getInstance().getPlatformVersion() + "\",\n");
+				buffer.append("\t\"applicationName\": \"" + repo.getApplicationName() + "\"\n");
 				buffer.append("}\n");
 				
 				return new StringRepresentation(buffer.toString(),

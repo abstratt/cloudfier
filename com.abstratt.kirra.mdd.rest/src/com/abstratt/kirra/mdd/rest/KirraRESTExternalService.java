@@ -26,8 +26,8 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
-import com.abstratt.kirra.json.TupleJSONRepresentation;
-import com.abstratt.kirra.json.TupleParser;
+import com.abstratt.kirra.mdd.rest.TupleJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.TupleParser;
 import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
@@ -71,7 +71,7 @@ public class KirraRESTExternalService implements ExternalService {
 			method.setRequestEntity(new StringRequestEntity(jsonRequest, "application/json", "UTF-8"));
 			int response = httpClient.executeMethod(method);
 			if (response != 200)
-				LogUtils.logError(KirraRESTApplication.ID, "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(64*1024) , null);
+				LogUtils.logError(LegacyKirraMDDRestletApplication.ID, "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(64*1024) , null);
 			// no use for response, not expected
 		} catch (IOException e) {
 			throw new KirraException("", e, KirraException.Kind.EXTERNAL);
@@ -110,12 +110,12 @@ public class KirraRESTExternalService implements ExternalService {
 	private List<?> retrieveData(Repository repository, Service service, Operation operation, Map<String, Object> argumentMap) {
 		URI uri = getOperationURI(service, operation, argumentMap);
 		GetMethod method = new GetMethod(uri.toString());
-		LogUtils.logInfo(KirraRESTApplication.ID, "Sending request to: " + uri, null);
+		LogUtils.logInfo(LegacyKirraMDDRestletApplication.ID, "Sending request to: " + uri, null);
 		HttpClient httpClient = new HttpClient();
 		try {
 			int response = httpClient.executeMethod(method);
 			if (response != 200) {
-				LogUtils.logError(KirraRESTApplication.ID, "Unexpected status for " + uri + ": " + response, null);
+				LogUtils.logError(LegacyKirraMDDRestletApplication.ID, "Unexpected status for " + uri + ": " + response, null);
 				return Arrays.asList();
 			}
 			JsonNode jsonValues = JsonHelper.parse(new InputStreamReader(method.getResponseBodyAsStream(), "UTF-8"));

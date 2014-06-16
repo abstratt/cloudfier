@@ -2,6 +2,7 @@ package com.abstratt.kirra.mdd.runtime;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.emf.ecore.EClass;
 
@@ -164,5 +165,15 @@ public class SchemaManagementOnUML implements SchemaManagement {
 	private SchemaManagement getSchemaManagement() {
 		return RepositoryService.DEFAULT.getCurrentResource().getFeature(
 				SchemaManagement.class);
+	}
+	
+	@Override
+	public String getApplicationName() {
+		return getSchemaManagement().getApplicationName();
+	}
+	
+	@Override
+	public String getBuild() {
+		return getSchemaManagement().getBuild();
 	}
 }

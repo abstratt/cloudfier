@@ -18,14 +18,16 @@ import com.abstratt.pluginutils.UserFacingException;
 
 public class KirraStatusService extends StatusService {
 
-        private boolean isUserFacing(Throwable throwable) {
-            return throwable instanceof UserFacingException || throwable instanceof KirraException;
-        }
-        private String getUserFacingMessage(Throwable throwable) {
-            if (throwable instanceof UserFacingException)
-                return ((UserFacingException) throwable).getUserFacingMessage();        
-            return throwable.getMessage();
-        }
+	private boolean isUserFacing(Throwable throwable) {
+		return throwable instanceof UserFacingException || throwable instanceof KirraException;
+	}
+
+	private String getUserFacingMessage(Throwable throwable) {
+		if (throwable instanceof UserFacingException)
+			return ((UserFacingException) throwable).getUserFacingMessage();
+		return throwable.getMessage();
+	}
+
 	@Override
 	public Status getStatus(Throwable throwable, Request request, Response response) {
 		if (response.isEntityAvailable())
@@ -35,11 +37,11 @@ public class KirraStatusService extends StatusService {
 			throwable = throwable.getCause();
 		if (throwable instanceof NodeStoreException)
 			return new Status(Status.SERVER_ERROR_SERVICE_UNAVAILABLE, "Application database is not available");
-                if (isUserFacing(throwable))
-		    return new Status(Status.SERVER_ERROR_SERVICE_UNAVAILABLE, getUserFacingMessage(throwable));
+		if (isUserFacing(throwable))
+			return new Status(Status.SERVER_ERROR_SERVICE_UNAVAILABLE, getUserFacingMessage(throwable));
 		return super.getStatus(original, request, response);
 	}
-	
+
 	@Override
 	public Representation getRepresentation(Status status, Request request, Response response) {
 		List<Preference<MediaType>> mediaTypes = request.getClientInfo().getAcceptedMediaTypes();

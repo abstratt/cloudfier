@@ -3,6 +3,7 @@ package com.abstratt.mdd.frontend.web;
 public interface Paths {
 	String UI = "ui";
 	String API = "api";
+	String API_V2 = "api-v2";
     String RETRIEVERS = "retrievers";
     String ENTITIES = "entities";
     String SERVICES = "services";

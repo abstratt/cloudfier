@@ -9,17 +9,18 @@ import org.restlet.data.Reference;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Operation;
+import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.TopLevelElement;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.kirra.json.InstanceJSONRepresentation;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.Action;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.ActionParameter;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.MultipleLink;
-import com.abstratt.kirra.json.InstanceJSONRepresentation.SingleLink;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.Action;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.ActionParameter;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.MultipleLink;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation.SingleLink;
 
 public class InstanceJSONRepresentationBuilder extends BasicDataJSONRepresentationBuilder<InstanceJSONRepresentation> {
 	public void build(InstanceJSONRepresentation representation, KirraReferenceBuilder refBuilder, TopLevelElement element, Tuple tuple) {
@@ -43,9 +44,10 @@ public class InstanceJSONRepresentationBuilder extends BasicDataJSONRepresentati
 		if (!instance.isNew()) {
 			Reference instanceUri = refBuilder.buildInstanceReference(instance);
 			representation.uri = instanceUri.toString();
+			representation.id = instance.getObjectId();
 			// actions
 			for (Operation operation : entity.getOperations())
-				if (operation.isInstanceOperation()) {
+				if (operation.isInstanceOperation() && operation.getKind() == OperationKind.Action) {
 					Action action = new Action();
 					Reference actionReference = instanceUri.clone().addSegment(Paths.ACTIONS).addSegment(operation.getName());
 					action.uri = actionReference.toString();

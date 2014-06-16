@@ -15,11 +15,11 @@ import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.TypeRef;
-import com.abstratt.kirra.json.ActionJSONRepresentation;
-import com.abstratt.kirra.json.EntityJSONRepresentation;
-import com.abstratt.kirra.json.PropertyJSONRepresentation;
-import com.abstratt.kirra.json.QueryJSONRepresentation;
-import com.abstratt.kirra.json.RelationshipJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.ActionJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.EntityJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.PropertyJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.QueryJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.RelationshipJSONRepresentation;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 
@@ -36,6 +36,7 @@ public class EntityResource extends AbstractKirraRepositoryResource {
 		entityRepresentation.namespace = entity.getEntityNamespace();
 		entityRepresentation.label = entity.getLabel();
 		entityRepresentation.description = entity.getDescription();
+		entityRepresentation.topLevel = entity.isTopLevel();
 		Reference reference = getExternalReference();
 		entityRepresentation.uri = reference.toString();
 		KirraReferenceBuilder referenceBuilder = getReferenceBuilder();
@@ -44,10 +45,7 @@ public class EntityResource extends AbstractKirraRepositoryResource {
 		entityRepresentation.template = reference.getParentRef().getParentRef().addSegment(Paths.INSTANCES).addSegment(entityNamespace + '.' + entityName).addSegment("_template").toString();
 		
 		for (Property property : entity.getProperties()) {
-			PropertyJSONRepresentation propertyRepr = new PropertyJSONRepresentation();
-			propertyRepr.name = property.getName();
-			propertyRepr.type = property.getTypeRef().getTypeName();
-			entityRepresentation.properties.add(propertyRepr);
+			entityRepresentation.properties.add(property);
 		}
 		
 		for (Relationship relationship : entity.getRelationships()) {

@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 
 import com.abstratt.kirra.TopLevelElement;
 import com.abstratt.kirra.Tuple;
-import com.abstratt.kirra.json.TupleJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.TupleJSONRepresentation;
 
 public abstract class BasicDataJSONRepresentationBuilder<T extends TupleJSONRepresentation> {
 	public void build(T representation, KirraReferenceBuilder refBuilder, 

@@ -10,7 +10,7 @@ import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
-import com.abstratt.kirra.json.TupleParser;
+import com.abstratt.kirra.mdd.rest.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 
 public class InstanceListResource extends AbstractInstanceListResource {

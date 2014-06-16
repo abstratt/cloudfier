@@ -176,8 +176,6 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             kirraInstance.setEntityName(modelClassifier.getName());
             kirraInstance.setEntityNamespace(modelClassifier.getNamespace().getQualifiedName());
             kirraInstance.setObjectId(getObjectId(source));
-            org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
-			kirraInstance.setShorthandProperty(mnemonic == null ? null : KirraHelper.getName(mnemonic));
             EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
                 if (KirraHelper.isEntity(property.getType())) {
@@ -198,6 +196,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 	Object converted = convertFromBasicType(value, (Classifier) property.getType());
                     kirraInstance.setValue(KirraHelper.getName(property), converted);
                 }
+            }
+            org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
+            if (mnemonic != null) {
+                Object shorthand = kirraInstance.getValue(KirraHelper.getName(mnemonic));
+				kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             }
             if (source.isPersisted()) {
 	            List<Association> allAssociations = AssociationUtils.allAssociations(modelClassifier);
@@ -903,6 +906,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 	
 	@Override
 	public String getBuild() {
-		return RepositoryService.DEFAULT.getCurrentRepository().getBuild();
+		return getSchemaManagement().getBuild();
+	}
+	
+	@Override
+	public String getApplicationName() {
+		return getSchemaManagement().getApplicationName();
 	}
 }

@@ -12,7 +12,7 @@ import org.restlet.resource.Put;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
-import com.abstratt.kirra.json.TupleParser;
+import com.abstratt.kirra.mdd.rest.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 

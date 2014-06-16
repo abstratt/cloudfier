@@ -26,6 +26,7 @@ import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.NamedElement;
 import com.abstratt.kirra.Namespace;
 import com.abstratt.kirra.Operation;
+import com.abstratt.kirra.SchemaBuilder;
 import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Property;
@@ -37,14 +38,17 @@ import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.kirra.mdd.core.KirraHelper;
+import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.StateMachineUtils;
 
 /**
  * Builds Kirra schema elements based on UML elements.
  */
-public class SchemaBuilder implements SchemaBuildingOnUML {
+public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder {
 	private static String mapToClientType(String typeName) {
-		return typeName.replace("::", TypeRef.SEPARATOR);
+		return TypeRef.sanitize(typeName);
 	}
 
 	private Operation basicGetOperation(org.eclipse.uml2.uml.BehavioralFeature umlOperation) {
@@ -94,6 +98,9 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 	public Operation getEntityOperation(org.eclipse.uml2.uml.Operation umlOperation) {
 		if (!KirraHelper.isEntityOperation(umlOperation))
 			throw new IllegalArgumentException();
+		if (!KirraHelper.isAction(umlOperation) && !KirraHelper.isFinder(umlOperation))
+			throw new IllegalArgumentException();
+
 		Operation entityOperation = basicGetOperation(umlOperation);
 		entityOperation.setKind(KirraHelper.isFinder(umlOperation) ? Operation.OperationKind.Finder
 				: Operation.OperationKind.Action);
@@ -122,7 +129,7 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		setName(umlAttribute, entityProperty);
 		entityProperty.setRequired(isRequired(umlAttribute));
 		entityProperty.setMultiple(umlAttribute.isMultivalued());
-		entityProperty.setDefaulValue(umlAttribute.getDefaultValue() != null);
+		entityProperty.setHasDefault(umlAttribute.getDefaultValue() != null);
 		entityProperty.setInitializable(KirraHelper.isInitializable(umlAttribute));
 		entityProperty.setEditable(KirraHelper.isEditable(umlAttribute));
 		Type umlType = umlAttribute.getType();
@@ -155,7 +162,7 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		entityRelationship.setPrimary(KirraHelper.isPrimary(umlAttribute));
 		entityRelationship.setNavigable(umlAttribute.isNavigable());
 		entityRelationship.setRequired(!umlAttribute.isDerived() && umlAttribute.getLower() > 0);
-		entityRelationship.setDefaulValue(umlAttribute.getDefaultValue() != null);
+		entityRelationship.setHasDefault(umlAttribute.getDefaultValue() != null);
 		entityRelationship.setInitializable(KirraHelper.isInitializable(umlAttribute));
 		entityRelationship.setEditable(KirraHelper.isEditable(umlAttribute));
 		entityRelationship.setMultiple(umlAttribute.isMultivalued());
@@ -235,14 +242,14 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		return tupleType;
 	}
 
-	private void setName(org.eclipse.uml2.uml.NamedElement sourceElement, NamedElement targetElement) {
+	private void setName(org.eclipse.uml2.uml.NamedElement sourceElement, NamedElement<?> targetElement) {
 		targetElement.setName(KirraHelper.getName(sourceElement));
 		targetElement.setSymbol(KirraHelper.getSymbol(sourceElement));
 		targetElement.setLabel(KirraHelper.getLabel(sourceElement));
 		targetElement.setDescription(KirraHelper.getDescription(sourceElement));
 	}
 
-	private void setTypeInfo(com.abstratt.kirra.TypedElement typedElement, Type umlType) {
+	private void setTypeInfo(com.abstratt.kirra.TypedElement<?> typedElement, Type umlType) {
 		if (umlType instanceof Enumeration) {
 			Enumeration umlEnum = (Enumeration) umlType;
 			EList<EnumerationLiteral> umlLiterals = umlEnum.getOwnedLiterals();
@@ -259,7 +266,9 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		typedElement.setTypeRef(convertType(umlType));
 	}
 
-	public Schema buildSchema(Collection<Package> applicationPackages) {
+	public Schema build() {
+		IRepository repository = RepositoryService.DEFAULT.getFeature(IRepository.class);
+		Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null))		;
 		List<Namespace> namespaces = new ArrayList<Namespace>();
 		for (Package package1 : applicationPackages) {
 			List<Entity> entities = new ArrayList<Entity>();
@@ -274,6 +283,9 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 					tupleTypes.add(getTupleType((Classifier) type));
 			if (!entities.isEmpty() || !services.isEmpty() || !tupleTypes.isEmpty()) {
 			    Namespace namespace = new Namespace(KirraHelper.getName(package1));
+			    namespace.setLabel(KirraHelper.getLabel(package1));
+			    namespace.setDescription(KirraHelper.getDescription(package1));
+			    namespace.setTimestamp(MDDUtil.getGeneratedTimestamp(package1));
 			    namespace.setEntities(entities);
 			    namespace.setServices(services);
 			    namespace.setTupleTypes(tupleTypes);
@@ -282,6 +294,11 @@ public class SchemaBuilder implements SchemaBuildingOnUML {
 		}
         Schema schema = new Schema();
         schema.setNamespaces(namespaces);
+        if (!namespaces.isEmpty()) {
+        	Namespace first = namespaces.get(0);
+	        schema.setBuild(first.getTimestamp());
+	        schema.setApplicationName(first.getLabel());
+        }
         return schema;
 	}
 }

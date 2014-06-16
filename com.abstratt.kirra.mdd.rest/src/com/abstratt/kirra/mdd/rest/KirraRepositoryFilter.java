@@ -13,8 +13,11 @@ import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
 
 import com.abstratt.kirra.KirraException;
+import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.runtime.KirraOnMDDRuntime;
+import com.abstratt.kirra.rest.resources.KirraContext;
 import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.pluginutils.ISharedContextRunnable;
 import com.abstratt.pluginutils.LogUtils;
 
@@ -27,11 +30,22 @@ public class KirraRepositoryFilter extends Filter {
 	}
 	@Override
 	protected int doHandle(final Request request, final Response response) {
+		String workspace = getWorkspace(request);
 		try {
-			return KirraRESTUtils.runInKirraRepository(request, new ISharedContextRunnable<IRepository, Integer>() {
+			return KirraRESTUtils.runInKirraWorkspace(workspace, new ISharedContextRunnable<IRepository, Integer>() {
 				public Integer runInContext(IRepository context) {
-					int result = KirraRepositoryFilter.super.doHandle(request, response);
-					return result;				
+					Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
+					KirraContext.setInstanceManagement(kirraRepository);
+					KirraContext.setSchemaManagement(kirraRepository);
+					KirraContext.setBaseURI(KirraReferenceUtils.getBaseReference(request, request.getResourceRef(), Paths.API_V2).toUri());
+					try {
+						int result = KirraRepositoryFilter.super.doHandle(request, response);
+						return result;
+					} finally {
+						KirraContext.setInstanceManagement(null);
+						KirraContext.setSchemaManagement(null);
+						KirraContext.setBaseURI(null);
+					}
 				}
 			});
 		} catch (ResourceException e) {
@@ -54,6 +68,9 @@ public class KirraRepositoryFilter extends Filter {
 			handleInternalError(response, e);
 		}
 		return STOP;
+	}
+	protected String getWorkspace(Request request) {
+		return KirraRESTUtils.getWorkspaceFromProjectPath(request);
 	}
 	private void handleKirraException(final Response response,
 			KirraException kirraException) {

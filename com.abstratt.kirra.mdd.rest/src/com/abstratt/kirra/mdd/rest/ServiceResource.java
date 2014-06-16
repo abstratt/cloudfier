@@ -10,9 +10,9 @@ import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Service;
-import com.abstratt.kirra.json.ActionJSONRepresentation;
-import com.abstratt.kirra.json.QueryJSONRepresentation;
-import com.abstratt.kirra.json.ServiceJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.ActionJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.QueryJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.ServiceJSONRepresentation;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 

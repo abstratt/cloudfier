@@ -12,9 +12,9 @@ import org.restlet.resource.Post;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Relationship;
-import com.abstratt.kirra.json.InstanceJSONRepresentation;
-import com.abstratt.kirra.json.RelatedInstanceJSONRepresentation;
-import com.abstratt.kirra.json.TupleParser;
+import com.abstratt.kirra.mdd.rest.InstanceJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.RelatedInstanceJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 

@@ -3,12 +3,12 @@
 
 <product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" useFeatures="false" includeLaunchers="true">
 
-
    <configIni use="default">
    </configIni>
 
    <launcherArgs>
-      <programArgs>-console -consolelog</programArgs>
+      <programArgs>-console -consolelog
+      </programArgs>
       <vmArgs>-Declipse.ignoreApp=false 
 -Dosgi.noShutdown=true
 -Dorg.eclipse.jetty.LEVEL=DEBUG 
@@ -19,12 +19,13 @@
 -Dcloudfier.api.internalBaseUri=http://localhost:8081/mdd/
 -Dcloudfier.api.externalBaseUri=http://localhost/services/
 -Dorg.eclipse.equinox.http.jetty.http.port=8081
--Dcloudfier.database.username=cloudfier</vmArgs>
-      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts</vmArgsMac>
+-Dcloudfier.database.username=cloudfier
+      </vmArgs>
+      <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
+      </vmArgsMac>
    </launcherArgs>
 
    <windowImages/>
-
 
    <launcher name="kirra-server">
       <solaris/>
@@ -33,15 +34,11 @@
       </win>
    </launcher>
 
-
    <vm>
    </vm>
 
-
    <plugins>
       <plugin id="com.abstratt.kirra.api"/>
-      <plugin id="com.abstratt.kirra.json"/>
-      <plugin id="com.abstratt.kirra.rest.client"/>
       <plugin id="com.abstratt.kirra.auth"/>
       <plugin id="com.abstratt.kirra.auth.ldap"/>
       <plugin id="com.abstratt.kirra.mdd.core"/>
@@ -50,6 +47,8 @@
       <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.populator"/>
       <plugin id="com.abstratt.kirra.populator.compiler"/>
+      <plugin id="com.abstratt.kirra.rest.client"/>
+      <plugin id="com.abstratt.kirra.rest.resources"/>
       <plugin id="com.abstratt.kirra.server"/>
       <plugin id="com.abstratt.mdd.core"/>
       <plugin id="com.abstratt.mdd.frontend.core"/>
@@ -65,10 +64,14 @@
       <plugin id="com.abstratt.pluginutils"/>
       <plugin id="com.abstratt.resman"/>
       <plugin id="com.abstratt.wrapped.postgresql"/>
+      <plugin id="com.fasterxml.jackson.core.jackson-annotations"/>
+      <plugin id="com.fasterxml.jackson.core.jackson-core"/>
+      <plugin id="com.google.gson" version="2.2.4"/>
       <plugin id="com.ibm.icu"/>
       <plugin id="jackson-core-asl"/>
       <plugin id="jackson-mapper-asl"/>
       <plugin id="javax.servlet"/>
+      <plugin id="javax.ws.rs.jsr311-api"/>
       <plugin id="org.apache.ant"/>
       <plugin id="org.apache.commons.beanutils"/>
       <plugin id="org.apache.commons.codec"/>
@@ -77,6 +80,7 @@
       <plugin id="org.apache.commons.httpclient"/>
       <plugin id="org.apache.commons.io"/>
       <plugin id="org.apache.commons.lang"/>
+      <plugin id="org.apache.commons.lang3"/>
       <plugin id="org.apache.commons.logging"/>
       <plugin id="org.apache.felix.gogo.command"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
@@ -116,12 +120,15 @@
       <plugin id="org.eclipse.uml2.uml.profile.l3"/>
       <plugin id="org.eclipse.uml2.uml.resources"/>
       <plugin id="org.hamcrest.core"/>
+      <plugin id="org.json"/>
       <plugin id="org.junit"/>
-      <plugin id="org.restlet"/>
-      <plugin id="org.restlet.ext.crypto"/>
-      <plugin id="org.restlet.ext.fileupload"/>
-      <plugin id="org.restlet.ext.servlet"/>
-      <plugin id="org.restlet.ext.xml"/>
+      <plugin id="org.restlet" version="2.2.0.v20140327-1540"/>
+      <plugin id="org.restlet.ext.crypto" version="2.2.0.v20140327-1540"/>
+      <plugin id="org.restlet.ext.fileupload" version="2.2.0.v20140327-1540"/>
+      <plugin id="org.restlet.ext.jackson" version="2.2.0.v20140327-1540"/>
+      <plugin id="org.restlet.ext.jaxrs" version="2.2.0.v20140327-1540"/>
+      <plugin id="org.restlet.ext.servlet" version="2.2.0.v20140327-1540"/>
+      <plugin id="org.restlet.ext.xml" version="2.2.0.v20140327-1540"/>
    </plugins>
 
    <configurations>

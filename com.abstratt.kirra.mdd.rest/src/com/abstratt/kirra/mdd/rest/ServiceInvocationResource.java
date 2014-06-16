@@ -13,7 +13,7 @@ import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
-import com.abstratt.kirra.json.TupleJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.TupleJSONRepresentation;
 
 public class ServiceInvocationResource extends AbstractKirraRepositoryResource {
 	@Post("json")

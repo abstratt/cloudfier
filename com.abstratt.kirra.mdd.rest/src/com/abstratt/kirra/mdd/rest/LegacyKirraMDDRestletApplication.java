@@ -10,15 +10,15 @@ import org.restlet.routing.Router;
 import org.restlet.security.Authenticator;
 import org.restlet.service.LogService;
 
-public class KirraRESTApplication extends Application {
-	public static String ID = KirraRESTApplication.class.getPackage().getName();
+public class LegacyKirraMDDRestletApplication extends Application {
+	public static String ID = LegacyKirraMDDRestletApplication.class.getPackage().getName();
 	private static boolean SHOW_TIMING = Boolean.parseBoolean(System.getProperty("kirra.timing", "true"));
 	private KirraStatusService customStatusService;
 	private LogService customLogService;
 	private Component component;
 	
 	
-	public KirraRESTApplication(Component component) {
+	public LegacyKirraMDDRestletApplication(Component component) {
 		customStatusService = new KirraStatusService();
 		customLogService = new LogService(false);
 		this.component = component;
