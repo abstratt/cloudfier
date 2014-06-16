@@ -18,7 +18,11 @@ public class DateConverter implements ValueConverter {
 				try {
 					return DateType.fromValue(new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z (z)").parse((String) original));					
 				} catch (ParseException e2) {
-					throw new RuntimeException(e2);
+	               try {
+	                    return DateType.fromValue(new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ").parse((String) original));
+	                } catch (ParseException e3) {
+	                    throw new RuntimeException(e);
+	                }
 				}
 			}
 		}
