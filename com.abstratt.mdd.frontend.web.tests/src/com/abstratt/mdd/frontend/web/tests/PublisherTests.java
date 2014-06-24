@@ -121,7 +121,7 @@ public class PublisherTests extends AbstractWebFrontEndTest {
 		source += "end.\n";
 		executeMethod(200, buildUploadRequest(getTestProjectURI(), Collections.singletonMap("foo.tuml", source.getBytes())));
 		executeMethod(200, buildGetRequest(getTestProjectURI()));
-		executeMethod(200, new DeleteMethod(getTestProjectURI().toASCIIString()));
+		executeMethod(204, new DeleteMethod(getTestProjectURI().toASCIIString()));
 		executeMethod(404, buildGetRequest(getTestProjectURI()));
 	}
 

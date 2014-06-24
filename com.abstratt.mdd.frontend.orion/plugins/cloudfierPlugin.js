@@ -419,11 +419,13 @@ var shellDbDeploy = function(args, context, message) {
 var showLinks = function(projectPath) {
     var applicationName = locationToWorkspace(projectPath);
     var uiUrl = "http:/services/ui/" + applicationName + "/";
-    var mobileUiUrl = "http:/services/ui/" + applicationName + "/mobile/source/";
+    var mobileUiUrl = "http:/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
     var apiUrl = "http:/services/api/" + applicationName + "/";
+    var api2Url = "http:/services/api-v2/" + applicationName + "/";
     return "\nStart [desktop UI](" + uiUrl + ")" +
-        "\nStart [mobile UI](" + mobileUiUrl + ")" +
-        "\nBrowse [REST API](" + apiUrl + ") (make sure to log in via a UI first)"; 
+        "\nStart [mobile UI](" + mobileUiUrl + ") (experimental)" +
+        "\nBrowse [REST API](" + apiUrl + ") (make sure to log in via a UI first)" +
+        "\nBrowse [REST API (v2 - experimental)](" + api2Url + ") (make sure to log in via a UI first)"; 
 }
 
 var takeDatabaseSnapshot = function(selectedText, text, selection, resource) {

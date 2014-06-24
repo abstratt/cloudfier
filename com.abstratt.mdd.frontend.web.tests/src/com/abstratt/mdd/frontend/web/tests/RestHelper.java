@@ -70,7 +70,7 @@ public class RestHelper {
 		try {
 			int response = httpClient.executeMethod(method);
 			byte[] body = method.getResponseBody();
-			Assert.assertEquals("Method: " + method.getName() + " - URI: " + method.getURI() + "\n" + new String(body), expectedStatus, response);
+			Assert.assertEquals("Method: " + method.getName() + " - URI: " + method.getURI() + "\n" + (body == null ? "" : new String(body)), expectedStatus, response);
 			return body;
 		} finally {
 			method.releaseConnection();
