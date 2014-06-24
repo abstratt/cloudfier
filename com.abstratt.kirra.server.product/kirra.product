@@ -43,11 +43,13 @@
       <plugin id="com.abstratt.kirra.auth.ldap"/>
       <plugin id="com.abstratt.kirra.mdd.core"/>
       <plugin id="com.abstratt.kirra.mdd.rest"/>
+      <plugin id="com.abstratt.kirra.mdd.rest2"/>
       <plugin id="com.abstratt.kirra.mdd.runtime"/>
       <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.populator"/>
       <plugin id="com.abstratt.kirra.populator.compiler"/>
       <plugin id="com.abstratt.kirra.rest.client"/>
+      <plugin id="com.abstratt.kirra.rest.common"/>
       <plugin id="com.abstratt.kirra.rest.resources"/>
       <plugin id="com.abstratt.kirra.server"/>
       <plugin id="com.abstratt.mdd.core"/>
