@@ -89,6 +89,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
 		entity.setOperations(getEntityOperations(umlClass));
 		entity.setRelationships(getEntityRelationships(umlClass));
 		entity.setConcrete(KirraHelper.isConcrete(umlClass));
+		entity.setInstantiable(KirraHelper.isInstantiable(umlClass));
 		entity.setTopLevel(KirraHelper.isTopLevel(umlClass));
 		entity.setStandalone(KirraHelper.isStandalone(umlClass));
 		entity.setUser(KirraHelper.isUser(umlClass));
