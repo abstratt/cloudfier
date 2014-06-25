@@ -137,6 +137,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
 		setTypeInfo(entityProperty, umlType);
 		entityProperty.setDerived(KirraHelper.isDerived(umlAttribute));
 		entityProperty.setUnique(KirraHelper.isUnique(umlAttribute));
+		entityProperty.setUserVisible(KirraHelper.isUserVisible(umlAttribute));
 		return entityProperty;
 	}
 

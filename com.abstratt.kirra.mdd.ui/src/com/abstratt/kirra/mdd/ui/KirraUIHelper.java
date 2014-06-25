@@ -60,12 +60,6 @@ public class KirraUIHelper extends KirraHelper {
 		});
 	}
 
-	public static boolean isUserVisible(Property property) {
-		if (isParentRelationship(property) && !isTopLevel((Classifier) property.getOwner()))
-			return false;
-		return isPublic(property);
-	}
-	
 	public static List<Property> getFormFields(final org.eclipse.uml2.uml.Class entity) {
 		return get(entity, "getFormFields", new Callable<List<Property>>() {
 			@Override
