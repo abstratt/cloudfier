@@ -599,6 +599,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 	@Override
 	public List<Instance> getParameterDomain(Entity entity, String externalId, com.abstratt.kirra.Operation action,
 			Parameter parameter) {
+       if (!action.isInstanceOperation())
+            return getInstances(parameter.getTypeRef().getNamespace(), parameter.getTypeRef().getTypeName(), false);
 		Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), UMLPackage.Literals.CLASS);
 		org.eclipse.uml2.uml.Operation operation = FeatureUtils.findOperation(getRepository(), umlClass, action.getName(), null);
 		org.eclipse.uml2.uml.Parameter umlParameter = operation.getOwnedParameter(parameter.getName(), null);

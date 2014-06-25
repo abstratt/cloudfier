@@ -8,6 +8,7 @@ import org.restlet.service.LogService;
 
 import com.abstratt.kirra.mdd.rest2.KirraRepositoryFilter;
 import com.abstratt.kirra.mdd.rest2.KirraStatusService;
+import com.abstratt.kirra.rest.resources.KirraJaxRsApplication;
 
 public class KirraOnMDDRestletApplication extends JaxRsApplication {
 	private KirraStatusService customStatusService;
@@ -24,6 +25,8 @@ public class KirraOnMDDRestletApplication extends JaxRsApplication {
         this.component.setLogService(customLogService);
 		this.getServices().remove(this.getStatusService());
 		this.setStatusService(customStatusService);
+        KirraJaxRsApplication jaxApplication = new KirraJaxRsApplication();
+	    this.add(jaxApplication);
 	}
 	
 	public Restlet createInboundRoot() {

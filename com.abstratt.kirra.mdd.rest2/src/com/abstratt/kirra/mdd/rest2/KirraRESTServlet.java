@@ -12,8 +12,6 @@ public class KirraRESTServlet extends ServerServlet {
 	@Override
 	protected Application createApplication(Context parentContext) {
 	    KirraOnMDDRestletApplication kirraRestletApplication = new KirraOnMDDRestletApplication(getComponent());
-		KirraJaxRsApplication jaxApplication = new KirraJaxRsApplication();
-		kirraRestletApplication.add(jaxApplication);
 		return kirraRestletApplication;
 	}
 }
