@@ -612,7 +612,9 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 		Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), UMLPackage.Literals.CLASS);
 		org.eclipse.uml2.uml.Property property = AssociationUtils.findMemberEnd(umlClass, relationship.getName());
 		if (!KirraHelper.isRelationship(property))
-			throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);			
+			throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);
+       if ("_template".equals(objectId))
+            return getInstances(relationship.getTypeRef().getNamespace(), relationship.getTypeRef().getTypeName(), false);
 		return filterValidInstances(getRuntime().getPropertyDomain(umlClass, objectId, property));
 	}
 
