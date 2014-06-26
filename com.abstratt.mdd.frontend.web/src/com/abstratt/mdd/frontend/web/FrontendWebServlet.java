@@ -9,10 +9,10 @@ import org.restlet.ext.servlet.ServerServlet;
  * around the fact Restlet itself cannot see our code.
  */
 public class FrontendWebServlet extends ServerServlet {
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Override
-	protected Application createApplication(Context parentContext) {
-		return new PublisherApplication();
-	}
+    @Override
+    protected Application createApplication(Context parentContext) {
+        return new PublisherApplication();
+    }
 }

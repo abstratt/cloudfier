@@ -11,22 +11,23 @@ import com.abstratt.mdd.core.runtime.RuntimeObjectNode;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 
 public class RuntimeConditionalNode extends CompositeRuntimeAction {
-	public RuntimeConditionalNode(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeConditionalNode(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		ConditionalNode instance = (ConditionalNode) getInstance();
-		for (Clause currentClause : instance.getClauses()) {
-			Action testAction = (Action) currentClause.getTests().get(0);
-			RuntimeAction runtimeTestAction = getRuntimeAction(testAction);
-			executeContainedAction(runtimeTestAction, context);
-			RuntimeObjectNode decider = runtimeTestAction.findRuntimeObjectNode(currentClause.getDecider());
-			if (((BooleanType) decider.getValue()).isTrue()) {
-				Action bodyAction = (Action) currentClause.getBodies().get(0);
-				executeContainedAction(getRuntimeAction(bodyAction), context);
-				break;
-			}
-		}
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        ConditionalNode instance = (ConditionalNode) getInstance();
+        for (Clause currentClause : instance.getClauses()) {
+            Action testAction = (Action) currentClause.getTests().get(0);
+            RuntimeAction runtimeTestAction = getRuntimeAction(testAction);
+            executeContainedAction(runtimeTestAction, context);
+            RuntimeObjectNode decider = runtimeTestAction.findRuntimeObjectNode(currentClause.getDecider());
+            if (((BooleanType) decider.getValue()).isTrue()) {
+                Action bodyAction = (Action) currentClause.getBodies().get(0);
+                executeContainedAction(getRuntimeAction(bodyAction), context);
+                break;
+            }
+        }
+    }
 }

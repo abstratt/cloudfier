@@ -3,67 +3,74 @@ package com.abstratt.mdd.core.runtime.types;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class RealType extends NumberType<Double> {
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
-	private double value;
+    public static RealType fromString(java.lang.String stringValue) {
+        return new RealType(Double.parseDouble(stringValue));
+    }
 
-	public static RealType fromString(java.lang.String stringValue) {
-		return new RealType(Double.parseDouble(stringValue));
-	}
+    public static RealType fromValue(double value) {
+        return new RealType(value);
+    }
 
-	public static RealType fromValue(double value) {
-		return new RealType(value);
-	}
+    /**
+     *
+     */
+    private static final long serialVersionUID = 1L;
 
-	public RealType(double value) {
-		this.value = value;
-	}
+    private double value;
 
-	/*
-	 * (non-Javadoc)
-	 * @see com.abstratt.mdd.core.runtime.types.NumberType#add(com.abstratt.mdd.core.runtime.types.NumberType)
-	 */
-	public NumberType<Double> add(ExecutionContext context, NumberType<?> another) {
-		return new RealType(value + another.asDouble());
-	}
+    public RealType(double value) {
+        this.value = value;
+    }
 
-	public double asDouble() {
-		return value;
-	}
+    /*
+     * (non-Javadoc)
+     * 
+     * @see
+     * com.abstratt.mdd.core.runtime.types.NumberType#add(com.abstratt.mdd.core
+     * .runtime.types.NumberType)
+     */
+    @Override
+    public NumberType<Double> add(ExecutionContext context, NumberType<?> another) {
+        return new RealType(value + another.asDouble());
+    }
 
-	@Override
-	public NumberType<Double> divide(ExecutionContext context, NumberType<?> number) {
-		return new RealType(value / number.asDouble());
-	}
+    @Override
+    public double asDouble() {
+        return value;
+    }
 
-	@Override
-	public String getClassifierName() {
-		return "mdd_types::Double";
-	}
+    @Override
+    public NumberType<Double> divide(ExecutionContext context, NumberType<?> number) {
+        return new RealType(value / number.asDouble());
+    }
 
-	@Override
-	public NumberType multiply(ExecutionContext context, NumberType number) {
-		return new RealType(value * number.asDouble());
-	}
+    @Override
+    public String getClassifierName() {
+        return "mdd_types::Double";
+    }
 
-	public Double primitiveValue() {
-		return Double.valueOf(value);
-	}
+    @Override
+    public NumberType multiply(ExecutionContext context, NumberType number) {
+        return new RealType(value * number.asDouble());
+    }
 
-	@Override
-	public NumberType subtract(ExecutionContext context) {
-		return new RealType(-value);
-	}
+    @Override
+    public Double primitiveValue() {
+        return Double.valueOf(value);
+    }
 
-	@Override
-	public NumberType subtract(ExecutionContext context, NumberType another) {
-		return new RealType(value - another.asDouble());
-	}
-	
-	@Override
-	protected RealType asReal() {
-		return this;
-	}
+    @Override
+    public NumberType subtract(ExecutionContext context) {
+        return new RealType(-value);
+    }
+
+    @Override
+    public NumberType subtract(ExecutionContext context, NumberType another) {
+        return new RealType(value - another.asDouble());
+    }
+
+    @Override
+    protected RealType asReal() {
+        return this;
+    }
 }

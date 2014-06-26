@@ -8,36 +8,36 @@ import com.abstratt.mdd.core.runtime.MetaClass;
 
 public class ElementReferenceType extends BasicType {
 
-	private Element metaReference;
-	
-	public ElementReferenceType(Element metaValue) {
-		this.metaReference = metaValue;
-	}
+    private Element metaReference;
 
-	@Override
-	public String getClassifierName() {
-		throw new UnsupportedOperationException();
-	}
+    public ElementReferenceType(Element metaValue) {
+        this.metaReference = metaValue;
+    }
 
-	public boolean isClassObject() {
-		return false;
-	}
+    @Override
+    public String getClassifierName() {
+        throw new UnsupportedOperationException();
+    }
 
-	public Object runClassOperation(ExecutionContext context, Operation operation, Object... arguments) {
-		throw new UnsupportedOperationException();
-	}
+    public Element getElement() {
+        return this.metaReference;
+    }
 
-	public Object runOperation(ExecutionContext context, Operation operation, Object... arguments) {
-		throw new UnsupportedOperationException();
-	}
-
-	public Element getElement() {
-		return this.metaReference;
-	}
-	
     @Override
     public MetaClass getMetaClass() {
         return MetaClass.NOT_IMPLEMENTED;
+    }
+
+    public boolean isClassObject() {
+        return false;
+    }
+
+    public Object runClassOperation(ExecutionContext context, Operation operation, Object... arguments) {
+        throw new UnsupportedOperationException();
+    }
+
+    public Object runOperation(ExecutionContext context, Operation operation, Object... arguments) {
+        throw new UnsupportedOperationException();
     }
 
 }

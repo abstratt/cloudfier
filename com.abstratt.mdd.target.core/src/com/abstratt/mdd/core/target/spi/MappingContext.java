@@ -10,40 +10,44 @@ import com.abstratt.mdd.core.target.IMappingContext;
 
 public class MappingContext implements IMappingContext {
 
-	private ILanguageMapper languageMapper;
+    private ILanguageMapper languageMapper;
 
-	private Stack<Style> styles;
-	
-	private MapperFinder mapperFinder;
+    private Stack<Style> styles;
 
-	public MappingContext(ILanguageMapper mapper, Style defaultStyle, MapperFinder finder) {
-		this.languageMapper = mapper;
-		styles = new Stack<Style>();
-		mapperFinder = finder;
-		styles.push(defaultStyle);
-	}
+    private MapperFinder mapperFinder;
 
-	public Style getCurrentStyle() {
-		return styles.peek();
-	}
+    public MappingContext(ILanguageMapper mapper, Style defaultStyle, MapperFinder finder) {
+        this.languageMapper = mapper;
+        styles = new Stack<Style>();
+        mapperFinder = finder;
+        styles.push(defaultStyle);
+    }
 
-	public String map(Action target) {
-		return map(target, null);
-	}
+    @Override
+    public Style getCurrentStyle() {
+        return styles.peek();
+    }
 
-	public String map(Action target, Style nextStyle) {
-		if (nextStyle == null)
-			nextStyle = styles.peek();
-		styles.push(nextStyle);
-		try {
-			IActionMapper<Action> mapper = (IActionMapper<Action>) mapperFinder.getMapping(target);
-			return mapper != null ? mapper.map(target, this) : null;
-		} finally {
-			styles.pop();
-		}
-	}
+    @Override
+    public ILanguageMapper getLanguageMapper() {
+        return this.languageMapper;
+    }
 
-	public ILanguageMapper getLanguageMapper() {
-		return this.languageMapper;
-	}
+    @Override
+    public String map(Action target) {
+        return map(target, null);
+    }
+
+    @Override
+    public String map(Action target, Style nextStyle) {
+        if (nextStyle == null)
+            nextStyle = styles.peek();
+        styles.push(nextStyle);
+        try {
+            IActionMapper<Action> mapper = (IActionMapper<Action>) mapperFinder.getMapping(target);
+            return mapper != null ? mapper.map(target, this) : null;
+        } finally {
+            styles.pop();
+        }
+    }
 }

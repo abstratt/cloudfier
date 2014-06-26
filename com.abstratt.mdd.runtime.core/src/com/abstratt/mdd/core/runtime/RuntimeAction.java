@@ -27,240 +27,233 @@ import com.abstratt.mdd.core.util.ActivityUtils;
 /**
  * Represents an executing action, its state and runtime connections with other
  * actions.
- * 
+ *
  * <p>
  * Clients should not extend this class.
  * </p>
  */
 public abstract class RuntimeAction {
 
-	private Action instance;
+    static void buildDeepDebugLine(StringBuffer result, String prefix, String line) {
+        result.append(prefix);
+        result.append(line);
+        result.append("\n");
+    }
 
-	protected List<RuntimeObjectNode> objectNodes = new ArrayList<RuntimeObjectNode>();
+    private Action instance;
 
-	private CompositeRuntimeAction parent;
+    protected List<RuntimeObjectNode> objectNodes = new ArrayList<RuntimeObjectNode>();
 
-	protected RuntimeActionState state = WAITING;
+    private CompositeRuntimeAction parent;
 
-	static void buildDeepDebugLine(StringBuffer result, String prefix,
-			String line) {
-		result.append(prefix);
-		result.append(line);
-		result.append("\n");
-	}
+    protected RuntimeActionState state = WAITING;
 
-	public RuntimeAction(Action instance, CompositeRuntimeAction parent) {
-		this.instance = instance;
-		this.parent = parent;
-		createObjectNodes();
-	}
+    public RuntimeAction(Action instance, CompositeRuntimeAction parent) {
+        this.instance = instance;
+        this.parent = parent;
+        createObjectNodes();
+    }
 
-	public void buildConnections() {
-		for (RuntimeObjectNode source : objectNodes) {
-			List outgoings = source.getInstance().getOutgoings();
-			for (Iterator j = outgoings.iterator(); j.hasNext();) {
-				ObjectNode destinationNode = (ObjectNode) ((ObjectFlow) j
-						.next()).getTarget();
-				// XXX is the assumption that an action will always contain its
-				// object nodes valid?
-				// XXX do ExpansionRegions need to contain their
-				// ExpansionNodes??? Don't think so...
-				Action targetOwner = (Action) destinationNode.getOwner();
-				RuntimeAction runtimeTargetOwner = getRuntimeAction(targetOwner);
-				RuntimeObjectNode target = runtimeTargetOwner
-						.getRuntimeObjectNode(destinationNode);
-				if (target == null)
-					throw new IllegalStateException(destinationNode.eClass().getName()
-						+ " not found in " + targetOwner.eClass().getName());
-				new RuntimeObjectFlow(source, target);
-			}
-		}
-	}
+    public void buildConnections() {
+        for (RuntimeObjectNode source : objectNodes) {
+            List outgoings = source.getInstance().getOutgoings();
+            for (Iterator j = outgoings.iterator(); j.hasNext();) {
+                ObjectNode destinationNode = (ObjectNode) ((ObjectFlow) j.next()).getTarget();
+                // XXX is the assumption that an action will always contain its
+                // object nodes valid?
+                // XXX do ExpansionRegions need to contain their
+                // ExpansionNodes??? Don't think so...
+                Action targetOwner = (Action) destinationNode.getOwner();
+                RuntimeAction runtimeTargetOwner = getRuntimeAction(targetOwner);
+                RuntimeObjectNode target = runtimeTargetOwner.getRuntimeObjectNode(destinationNode);
+                if (target == null)
+                    throw new IllegalStateException(destinationNode.eClass().getName() + " not found in " + targetOwner.eClass().getName());
+                new RuntimeObjectFlow(source, target);
+            }
+        }
+    }
 
-	protected void createObjectNodes() {
-		List ownedElements = this.instance.getOwnedElements();
-		for (Iterator i = ownedElements.iterator(); i.hasNext();) {
-			Element current = (Element) i.next();
-			if (current instanceof Pin)
-				objectNodes.add(createRuntimeObjectNode((ObjectNode) current));
-		}
-	}
-
-	protected RuntimeObjectNode createRuntimeObjectNode(ObjectNode node) {
-		assert node instanceof Pin : node.getClass();
-		return node instanceof InputPin ? new RuntimeInputPin(this,
-				(InputPin) node) : new RuntimeOutputPin(this, (OutputPin) node);
-	}
-
-	/**
-	 * Executes this action.
-	 * 
-	 * @param context
-	 * 
-	 * @throws IllegalStateException
-	 *             if the action state is not READY
-	 */
-	public final void execute(final ExecutionContext context) {
-		if (getState() != READY)
-			throw new IllegalStateException();
-		try {
-			setState(EXECUTING);
-			this.executeBehavior(context);
-			// run after advices
-			// execution completed
-			setState(COMPLETE);
-			transferValues();
-			if (ActivityUtils.isFinal(getInstance()))
-			    throw new ActivityFinishedException();
-		} catch (ModelExecutionException rre) {
-		    throw rre;
+    /**
+     * Executes this action.
+     * 
+     * @param context
+     * 
+     * @throws IllegalStateException
+     *             if the action state is not READY
+     */
+    public final void execute(final ExecutionContext context) {
+        if (getState() != READY)
+            throw new IllegalStateException();
+        try {
+            setState(EXECUTING);
+            this.executeBehavior(context);
+            // run after advices
+            // execution completed
+            setState(COMPLETE);
+            transferValues();
+            if (ActivityUtils.isFinal(getInstance()))
+                throw new ActivityFinishedException();
+        } catch (ModelExecutionException rre) {
+            throw rre;
         } catch (ActivityFinishedException afe) {
             throw afe;
-		}
-	}
+        }
+    }
 
-	/**
-	 * Performs the runtime behavior of an action Input/Output pins will be
-	 * available off the action object.
-	 * 
-	 * @param context
-	 */
-	protected abstract void executeBehavior(ExecutionContext context);
+    public RuntimeObjectNode findRuntimeObjectNode(ObjectNode node) {
+        return getRuntimeObjectNode(node);
+    }
 
-	public RuntimeObjectNode findRuntimeObjectNode(ObjectNode node) {
-		return getRuntimeObjectNode(node);
-	}
+    public List<RuntimeObjectNode> getInputs() {
+        List outputPins = getStaticInputs();
+        List<RuntimeObjectNode> runtimeInputPins = new ArrayList<RuntimeObjectNode>(outputPins.size());
+        for (Iterator i = outputPins.iterator(); i.hasNext();)
+            runtimeInputPins.add(getRuntimeObjectNode((ObjectNode) i.next()));
+        return runtimeInputPins;
+    }
 
-	public List<RuntimeObjectNode> getInputs() {
-		List outputPins = getStaticInputs();
-		List<RuntimeObjectNode> runtimeInputPins = new ArrayList<RuntimeObjectNode>(
-				outputPins.size());
-		for (Iterator i = outputPins.iterator(); i.hasNext();)
-			runtimeInputPins.add(getRuntimeObjectNode((ObjectNode) i.next()));
-		return runtimeInputPins;
-	}
+    public Action getInstance() {
+        return this.instance;
+    }
 
-	public Action getInstance() {
-		return this.instance;
-	}
+    public List<RuntimeObjectNode> getOutputs() {
+        List outputPins = getStaticOutputs();
+        List<RuntimeObjectNode> runtimeOutputPins = new ArrayList<RuntimeObjectNode>(outputPins.size());
+        for (Iterator i = outputPins.iterator(); i.hasNext();)
+            runtimeOutputPins.add(getRuntimeObjectNode((ObjectNode) i.next()));
+        return runtimeOutputPins;
+    }
 
-	public List<RuntimeObjectNode> getOutputs() {
-		List outputPins = getStaticOutputs();
-		List<RuntimeObjectNode> runtimeOutputPins = new ArrayList<RuntimeObjectNode>(
-				outputPins.size());
-		for (Iterator i = outputPins.iterator(); i.hasNext();)
-			runtimeOutputPins.add(getRuntimeObjectNode((ObjectNode) i.next()));
-		return runtimeOutputPins;
-	}
+    public RuntimeObjectNode getRuntimeObjectNode(ObjectNode node) {
+        for (RuntimeObjectNode current : objectNodes)
+            if (current.getInstance() == node)
+                return current;
+        if (parent != null)
+            return parent.getRuntimeObjectNode(node);
+        return null;
+    }
 
-	protected CompositeRuntimeAction getParent() {
-		return parent;
-	}
+    public List<RuntimeObjectNode> getRuntimeObjectNodes() {
+        return Collections.unmodifiableList(this.objectNodes);
+    }
 
-	protected RuntimeAction getRuntimeAction(Action instance) {
-		if (getInstance() == instance)
-			return this;
-		return parent != null ? parent.getRuntimeAction(instance) : null;
-	}
+    /**
+     * Returns a collection of source actions. Source actions are actions that
+     * own object nodes that feed any of this action's input pins.
+     * 
+     * @return a collection of source actions
+     */
+    public Collection<RuntimeAction> getSourceActions() {
+        Set<RuntimeAction> sources = new HashSet<RuntimeAction>(objectNodes.size());
+        for (RuntimeObjectNode current : objectNodes)
+            if (current.isInput())
+                for (RuntimeObjectFlow flow : current.getIncoming())
+                    sources.add(flow.getSource().getAction());
+        return sources;
+    }
 
-	public RuntimeObjectNode getRuntimeObjectNode(ObjectNode node) {
-		for (RuntimeObjectNode current : objectNodes)
-			if (current.getInstance() == node)
-				return current;
-		if (parent != null)
-			return parent.getRuntimeObjectNode(node);
-		return null;
-	}
+    public RuntimeActionState getState() {
+        if (peekState() == WAITING)
+            tryToBeReady();
+        return peekState();
+    }
 
-	public List<RuntimeObjectNode> getRuntimeObjectNodes() {
-		return Collections.unmodifiableList(this.objectNodes);
-	}
+    public boolean isComplete() {
+        return peekState() == COMPLETE;
+    }
 
-	/**
-	 * Returns a collection of source actions. Source actions are actions that
-	 * own object nodes that feed any of this action's input pins.
-	 * 
-	 * @return a collection of source actions
-	 */
-	public Collection<RuntimeAction> getSourceActions() {
-		Set<RuntimeAction> sources = new HashSet<RuntimeAction>(objectNodes
-				.size());
-		for (RuntimeObjectNode current : objectNodes)
-			if (current.isInput())
-				for (RuntimeObjectFlow flow : current.getIncoming())
-					sources.add(flow.getSource().getAction());
-		return sources;
-	}
+    public RuntimeActionState peekState() {
+        return state;
+    }
 
-	public RuntimeActionState getState() {
-		if (peekState() == WAITING)
-			tryToBeReady();
-		return peekState();
-	}
+    public void reset(boolean propagate) {
+        setState(WAITING);
+        if (propagate)
+            for (RuntimeObjectNode current : objectNodes)
+                current.reset(true);
+    }
 
-	protected List<InputPin> getStaticInputs() {
-		return ActivityUtils.getActionInputs(instance);
-	}
+    @Override
+    public String toString() {
+        return this.instance.eClass().getName();
+    }
 
-	protected List<OutputPin> getStaticOutputs() {
-		return ActivityUtils.getActionOutputs(instance);
-	}
+    /**
+     * Tries to transition to the READY state if not there yet (are we there
+     * yet?).
+     */
+    public final void tryToBeReady() {
+        // not waiting anymore
+        if (peekState() != WAITING)
+            return;
+        // the parent action (e.g. group) is not in the EXECUTING state, so
+        // should not change state
+        if (parent != null && parent.getState() != EXECUTING)
+            return;
+        // usually, all an action needs to be ready is that its input pins are
+        // set
+        // (some more specialized actions - such as ExpansionRegions - impose
+        // further restrictions)
+        for (RuntimeObjectNode current : objectNodes)
+            if (current.isInput() && !current.isReady())
+                // an input pin has not been fed yet, keep waiting
+                return;
+        // now we are ready
+        setState(READY);
+    }
 
-	public boolean isComplete() {
-		return peekState() == COMPLETE;
-	}
+    protected void addResultValue(OutputPin resultPin, BasicType resultValue) {
+        this.getRuntimeObjectNode(resultPin).addValue(resultValue);
+    }
 
-	public RuntimeActionState peekState() {
-		return state;
-	}
+    protected void createObjectNodes() {
+        List ownedElements = this.instance.getOwnedElements();
+        for (Iterator i = ownedElements.iterator(); i.hasNext();) {
+            Element current = (Element) i.next();
+            if (current instanceof Pin)
+                objectNodes.add(createRuntimeObjectNode((ObjectNode) current));
+        }
+    }
 
-	public void reset(boolean propagate) {
-		setState(WAITING);
-		if (propagate)
-			for (RuntimeObjectNode current : objectNodes)
-				current.reset(true);
-	}
+    protected RuntimeObjectNode createRuntimeObjectNode(ObjectNode node) {
+        assert node instanceof Pin : node.getClass();
+        return node instanceof InputPin ? new RuntimeInputPin(this, (InputPin) node) : new RuntimeOutputPin(this, (OutputPin) node);
+    }
 
-	public String toString() {
-		return this.instance.eClass().getName();
-	}
+    /**
+     * Performs the runtime behavior of an action Input/Output pins will be
+     * available off the action object.
+     * 
+     * @param context
+     */
+    protected abstract void executeBehavior(ExecutionContext context);
 
-	private void transferValues() {
-		List<RuntimeObjectNode> outputs = getOutputs();
-		for (RuntimeObjectNode node : outputs)
-			node.transferValues();
-	}
+    protected CompositeRuntimeAction getParent() {
+        return parent;
+    }
 
-	/**
-	 * Tries to transition to the READY state if not there yet (are we there
-	 * yet?).
-	 */
-	public final void tryToBeReady() {
-		// not waiting anymore
-		if (peekState() != WAITING)
-			return;
-		// the parent action (e.g. group) is not in the EXECUTING state, so
-		// should not change state
-		if (parent != null && parent.getState() != EXECUTING)
-			return;
-		// usually, all an action needs to be ready is that its input pins are
-		// set
-		// (some more specialized actions - such as ExpansionRegions - impose
-		// further restrictions)
-		for (RuntimeObjectNode current : objectNodes)
-			if (current.isInput() && !current.isReady())
-				// an input pin has not been fed yet, keep waiting
-				return;
-		// now we are ready
-		setState(READY);
-	}
+    protected RuntimeAction getRuntimeAction(Action instance) {
+        if (getInstance() == instance)
+            return this;
+        return parent != null ? parent.getRuntimeAction(instance) : null;
+    }
 
-	private void setState(RuntimeActionState newState) {
-		this.state = newState;
-	}
+    protected List<InputPin> getStaticInputs() {
+        return ActivityUtils.getActionInputs(instance);
+    }
 
-	protected void addResultValue(OutputPin resultPin, BasicType resultValue) {
-		this.getRuntimeObjectNode(resultPin).addValue(resultValue);
-	}
-	
+    protected List<OutputPin> getStaticOutputs() {
+        return ActivityUtils.getActionOutputs(instance);
+    }
+
+    private void setState(RuntimeActionState newState) {
+        this.state = newState;
+    }
+
+    private void transferValues() {
+        List<RuntimeObjectNode> outputs = getOutputs();
+        for (RuntimeObjectNode node : outputs)
+            node.transferValues();
+    }
+
 }

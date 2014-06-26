@@ -1,47 +1,48 @@
 package com.abstratt.mdd.target.tests;
 
-import static com.abstratt.mdd.core.tests.harness.AssertHelper.trim;
 import junit.framework.TestCase;
 
+import com.abstratt.mdd.core.tests.harness.AssertHelper;
+
 public class AssertHelperTests extends TestCase {
-	public void testSingleChar() {
-		assertEquals("", trim(""));
-		assertEquals("a", trim("a"));
-		assertEquals("a", trim("a "));
-		assertEquals("a", trim(" a "));
-	}
-	
-	public void testOneWord() {
-		assertEquals("foo", trim("foo"));
-		assertEquals("foo", trim("foo "));
-		assertEquals("foo", trim(" foo"));
-		assertEquals("foo", trim(" foo "));
-	}
-	
-	public void testOneWordWithMultipleSpaces() {
-		assertEquals("foo", trim("foo  "));
-		assertEquals("foo", trim("  foo"));
-		assertEquals("foo", trim("  foo  "));
-	}
+    public void testComplexExpressions() {
+        TestCase.assertEquals("(4+5.47)", AssertHelper.trim("( 4 + 5.47 )"));
+        TestCase.assertEquals("4+(5.47)*2", AssertHelper.trim("4 +(5.47) * 2"));
+        TestCase.assertEquals("int sum=0;for(Integer e:listOfInts){sum=e+1;}",
+                AssertHelper.trim("int sum = 0;\nfor ( Integer e : listOfInts ) {\n\tsum = e + 1 ;\n}"));
+    }
 
-	public void testTwoWord() {
-		assertEquals("foo bar", trim("foo bar"));
-		assertEquals("foo bar", trim("foo bar "));
-		assertEquals("foo bar", trim(" foo bar"));
-		assertEquals("foo bar", trim(" foo bar "));
-	}
-	
-	public void testTwoWordWithMultipleSpaces() {
-		assertEquals("foo bar", trim("foo  bar  "));
-		assertEquals("foo bar", trim("  foo  bar"));
-		assertEquals("foo bar", trim("  foo  bar  "));
-	}
-	
-	public void testComplexExpressions() {
-		assertEquals("(4+5.47)", trim("( 4 + 5.47 )"));
-		assertEquals("4+(5.47)*2", trim("4 +(5.47) * 2"));
-		assertEquals("int sum=0;for(Integer e:listOfInts){sum=e+1;}", trim("int sum = 0;\nfor ( Integer e : listOfInts ) {\n\tsum = e + 1 ;\n}"));
-	}
+    public void testOneWord() {
+        TestCase.assertEquals("foo", AssertHelper.trim("foo"));
+        TestCase.assertEquals("foo", AssertHelper.trim("foo "));
+        TestCase.assertEquals("foo", AssertHelper.trim(" foo"));
+        TestCase.assertEquals("foo", AssertHelper.trim(" foo "));
+    }
 
+    public void testOneWordWithMultipleSpaces() {
+        TestCase.assertEquals("foo", AssertHelper.trim("foo  "));
+        TestCase.assertEquals("foo", AssertHelper.trim("  foo"));
+        TestCase.assertEquals("foo", AssertHelper.trim("  foo  "));
+    }
+
+    public void testSingleChar() {
+        TestCase.assertEquals("", AssertHelper.trim(""));
+        TestCase.assertEquals("a", AssertHelper.trim("a"));
+        TestCase.assertEquals("a", AssertHelper.trim("a "));
+        TestCase.assertEquals("a", AssertHelper.trim(" a "));
+    }
+
+    public void testTwoWord() {
+        TestCase.assertEquals("foo bar", AssertHelper.trim("foo bar"));
+        TestCase.assertEquals("foo bar", AssertHelper.trim("foo bar "));
+        TestCase.assertEquals("foo bar", AssertHelper.trim(" foo bar"));
+        TestCase.assertEquals("foo bar", AssertHelper.trim(" foo bar "));
+    }
+
+    public void testTwoWordWithMultipleSpaces() {
+        TestCase.assertEquals("foo bar", AssertHelper.trim("foo  bar  "));
+        TestCase.assertEquals("foo bar", AssertHelper.trim("  foo  bar"));
+        TestCase.assertEquals("foo bar", AssertHelper.trim("  foo  bar  "));
+    }
 
 }

@@ -3,6 +3,7 @@ package com.abstratt.mdd.core.tests.runtime;
 import java.util.Properties;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.eclipse.core.runtime.CoreException;
@@ -22,199 +23,200 @@ import com.abstratt.mdd.core.runtime.types.StringType;
 
 public class RuntimeObjectTests extends AbstractRuntimeTests {
 
-	static String model = "";
+    public static Test suite() {
+        return new TestSuite(RuntimeObjectTests.class);
+    }
 
-	static {
-		model += "model tests;\n";
-		model += "  import base;\n";
-		model += "  enumeration Role OWNER, EMPLOYEE, FAMILY end;\n";
-		model += "  interface Named\n";
-		model += "    operation getName() : String;\n";
-		model += "  end;\n";
-		model += "  class Person implements Named\n";
-		model += "    attribute name : String[0,1];\n";
-		model += "    attribute active : Boolean := true;\n";
-		model += "    attribute personRole : Role := EMPLOYEE;\n";
-		model += "    static operation newPerson(name : String) : Person;\n";
-		model += "    begin\n";
-		model += "      var newPerson : Person;\n";
-		model += "      newPerson := new Person;\n";
-		model += "      newPerson.name := name;\n";
-		model += "      return newPerson;\n";
-		model += "    end;\n";
-		model += "    operation getName() : String;\n";
-		model += "    begin\n";
-		model += "      return self.name;\n";
-		model += "    end;\n";
-		model += "    operation setName(name : String);\n";
-		model += "    begin\n";
-		model += "      self.name := name;\n";
-		model += "    end;\n";
-        model += "    operation toString() : String;\n";
-        model += "    begin\n";
-        model += "      return \"name: \" + self.name;\n";
-        model += "    end;\n";
-        model += "    operation hasRole(r : Role) : Boolean;\n";
-        model += "    begin\n";
-        model += "      return r = self.personRole;\n";
-        model += "    end;\n";
-        model += "    operation hasAnyRole() : Boolean;\n";
-        model += "    begin\n";
-        model += "      return not(self.personRole == null);\n";
-        model += "    end;\n";
-        model += "  end;\n";        
-		model += "end.";
-	}
+    static String model = "";
 
-	public static Test suite() {
-		return new TestSuite(RuntimeObjectTests.class);
-	}
+    static {
+        RuntimeObjectTests.model += "model tests;\n";
+        RuntimeObjectTests.model += "  import base;\n";
+        RuntimeObjectTests.model += "  enumeration Role OWNER, EMPLOYEE, FAMILY end;\n";
+        RuntimeObjectTests.model += "  interface Named\n";
+        RuntimeObjectTests.model += "    operation getName() : String;\n";
+        RuntimeObjectTests.model += "  end;\n";
+        RuntimeObjectTests.model += "  class Person implements Named\n";
+        RuntimeObjectTests.model += "    attribute name : String[0,1];\n";
+        RuntimeObjectTests.model += "    attribute active : Boolean := true;\n";
+        RuntimeObjectTests.model += "    attribute personRole : Role := EMPLOYEE;\n";
+        RuntimeObjectTests.model += "    static operation newPerson(name : String) : Person;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      var newPerson : Person;\n";
+        RuntimeObjectTests.model += "      newPerson := new Person;\n";
+        RuntimeObjectTests.model += "      newPerson.name := name;\n";
+        RuntimeObjectTests.model += "      return newPerson;\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "    operation getName() : String;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      return self.name;\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "    operation setName(name : String);\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      self.name := name;\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "    operation toString() : String;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      return \"name: \" + self.name;\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "    operation hasRole(r : Role) : Boolean;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      return r = self.personRole;\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "    operation hasAnyRole() : Boolean;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      return not(self.personRole == null);\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "  end;\n";
+        RuntimeObjectTests.model += "end.";
+    }
 
-	public RuntimeObjectTests(String name) {
-		super(name);
-	}
-	
-	public void testObjectCreation() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeClass personClass = getRuntimeClass("tests::Person");
-		assertNotNull(personClass);
-		RuntimeObject person = personClass.newInstance();
-		assertNotNull(person);
-		assertNotNull(person.getKey());
-		
-		assertNull(personClass.getInstance(person.getKey()));
-		assertFalse(personClass.getAllInstances().contains(person));
-		
-		person.attach();
+    public RuntimeObjectTests(String name) {
+        super(name);
+    }
 
-		assertNotNull(personClass.getInstance(person.getKey()));
-		assertTrue(personClass.getAllInstances().contains(person));
-	}
-		
-	public void testObjectCreation_DefaultValues() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeClass personClass = getRuntimeClass("tests::Person");
-		RuntimeObject person = personClass.newInstance();
+    public void testEnumerationEquals() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        RuntimeObject person = personClass.newInstance();
+        TestCase.assertTrue(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
+        Enumeration role = getRepository().findNamedElement("tests::Role", UMLPackage.Literals.ENUMERATION, null);
+        writeAttribute(person, "personRole", new EnumerationType(role.getOwnedLiteral("OWNER")));
+        TestCase.assertTrue(((BooleanType) runOperation(person, "hasRole", new EnumerationType(role.getOwnedLiteral("OWNER"))))
+                .primitiveValue());
+        TestCase.assertFalse(((BooleanType) runOperation(person, "hasRole", new EnumerationType(role.getOwnedLiteral("EMPLOYEE"))))
+                .primitiveValue());
+        TestCase.assertTrue(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
+        writeAttribute(person, "personRole", null);
+        TestCase.assertFalse(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
+    }
 
-		// test initial values
-		assertEquals(BooleanType.TRUE,  readAttribute(person, "active"));
-		BasicType personRole = readAttribute(person, "personRole");
-		assertNotNull(personRole);
-		assertNotNull(((EnumerationType) personRole).getValue());
-		assertEquals("EMPLOYEE", ((EnumerationType) personRole).getValue().getName());
-	}
-	
-	public void testRunOperation() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeClass personClass = getRuntimeClass("tests::Person");
-		RuntimeObject person = personClass.newInstance();
+    public void testFactoryInvocation() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeObject newPerson = (RuntimeObject) runStaticOperation("tests::Person", "newPerson", new StringType("John Doe"));
+        TestCase.assertNotNull(newPerson);
+        TestCase.assertEquals(new StringType("John Doe"), readAttribute(newPerson, "name"));
+    }
 
-		// basic operation testing
-		runOperation(person, "setName", new StringType("Foo"));
-		assertEquals(new StringType("Foo"), runOperation(person, "getName"));
-	}
+    public void testObjectCreation() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        TestCase.assertNotNull(personClass);
+        RuntimeObject person = personClass.newInstance();
+        TestCase.assertNotNull(person);
+        TestCase.assertNotNull(person.getKey());
 
-	public void testRunInterfaceOperation() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeClass personClass = getRuntimeClass("tests::Person");
-		RuntimeObject person = personClass.newInstance();
+        TestCase.assertNull(personClass.getInstance(person.getKey()));
+        TestCase.assertFalse(personClass.getAllInstances().contains(person));
+
+        person.attach();
+
+        TestCase.assertNotNull(personClass.getInstance(person.getKey()));
+        TestCase.assertTrue(personClass.getAllInstances().contains(person));
+    }
+
+    public void testObjectCreation_DefaultValues() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        RuntimeObject person = personClass.newInstance();
+
+        // test initial values
+        TestCase.assertEquals(BooleanType.TRUE, readAttribute(person, "active"));
+        BasicType personRole = readAttribute(person, "personRole");
+        TestCase.assertNotNull(personRole);
+        TestCase.assertNotNull(((EnumerationType) personRole).getValue());
+        TestCase.assertEquals("EMPLOYEE", ((EnumerationType) personRole).getValue().getName());
+    }
+
+    public void testObjectDestruction() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        TestCase.assertNotNull(personClass);
+        RuntimeObject person = personClass.newInstance(true);
+        person.save();
+        TestCase.assertTrue(personClass.getAllInstances().contains(person));
+        runOperation(person, "setName", new StringType("Foo"));
+        person.destroy();
+        TestCase.assertFalse(personClass.getAllInstances().contains(person));
+        try {
+            runOperation(person, "getName");
+            TestCase.fail("Should have failed, object has been destroyed");
+        } catch (ObjectNotActiveException e) {
+            // expected
+        }
+        try {
+            readAttribute(person, "name");
+            TestCase.fail("Should have failed, object has been destroyed");
+        } catch (ObjectNotActiveException e) {
+            // expected
+        }
+    }
+
+    public void testReadStaticDerivedAttribute() throws CoreException {
+        String source = "";
+        source += "model tests;\n";
+        source += "  import base;\n";
+        source += "  class MyClass\n";
+        source += "    derived static attribute count : Integer := { 1 };\n";
+        source += "  end;\n";
+        source += "end.";
+
+        parseAndCheck(new String[] { source });
+        RuntimeClass personClass = getRuntimeClass("tests::MyClass");
+        BasicType read = readAttribute(personClass.getClassObject(), "count");
+        TestCase.assertEquals(new IntegerType(1), read);
+    }
+
+    public void testRunInterfaceOperation() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        RuntimeObject person = personClass.newInstance();
         writeAttribute(person, "name", new StringType("Foo"));
-		
-		// interface operation testing
-		Operation operation = get("tests::Named::getName", UMLPackage.Literals.OPERATION);
-		assertEquals(new StringType("Foo"), getRuntime().runOperation(null, person, operation));
-	}
-	
-	public void testWriteReadAttribute() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeClass personClass = getRuntimeClass("tests::Person");
-		RuntimeObject person = personClass.newInstance();
 
-		// basic attribute testing
-		writeAttribute(person, "name", new StringType("Bar"));
-		assertEquals(new StringType("Bar"), readAttribute(person, "name"));
-	}
-	
-	public void testReadStaticDerivedAttribute() throws CoreException {
-		String source = "";
-		source += "model tests;\n";
-		source += "  import base;\n";
-		source += "  class MyClass\n";
-		source += "    derived static attribute count : Integer := { 1 };\n";
-        source += "  end;\n";        
-		source += "end.";
+        // interface operation testing
+        Operation operation = get("tests::Named::getName", UMLPackage.Literals.OPERATION);
+        TestCase.assertEquals(new StringType("Foo"), getRuntime().runOperation(null, person, operation));
+    }
 
-		parseAndCheck(new String[] { source });
-		RuntimeClass personClass = getRuntimeClass("tests::MyClass");
-		BasicType read = readAttribute(personClass.getClassObject(), "count");
-		assertEquals(new IntegerType(1), read);
-	}
+    public void testRunOperation() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        RuntimeObject person = personClass.newInstance();
 
-	
+        // basic operation testing
+        runOperation(person, "setName", new StringType("Foo"));
+        TestCase.assertEquals(new StringType("Foo"), runOperation(person, "getName"));
+    }
+
     public void testToString() throws CoreException {
-        String[] sources = { model };
-		parseAndCheck(sources);
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
         RuntimeClass personClass = getRuntimeClass("tests::Person");
         RuntimeObject person = personClass.newInstance();
         writeAttribute(person, "name", new StringType("Bar"));
         StringType result = (StringType) runOperation(person, "toString");
-        assertEquals("name: Bar", result.primitiveValue());
+        TestCase.assertEquals("name: Bar", result.primitiveValue());
     }
-    
-    public void testEnumerationEquals() throws CoreException {
-        String[] sources = { model };
-		parseAndCheck(sources);
+
+    public void testWriteReadAttribute() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
         RuntimeClass personClass = getRuntimeClass("tests::Person");
         RuntimeObject person = personClass.newInstance();
-        assertTrue(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
-        Enumeration role = getRepository().findNamedElement("tests::Role", UMLPackage.Literals.ENUMERATION, null);
-        writeAttribute(person, "personRole", new EnumerationType(role.getOwnedLiteral("OWNER")));
-        assertTrue(((BooleanType) runOperation(person, "hasRole", new EnumerationType(role.getOwnedLiteral("OWNER")))).primitiveValue());
-        assertFalse(((BooleanType) runOperation(person, "hasRole", new EnumerationType(role.getOwnedLiteral("EMPLOYEE")))).primitiveValue());
-        assertTrue(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
-        writeAttribute(person, "personRole", null);
-        assertFalse(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
-    }
-	
-	public void testFactoryInvocation() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeObject newPerson = (RuntimeObject) runStaticOperation("tests::Person", "newPerson", new StringType("John Doe"));
-		assertNotNull(newPerson);
-		assertEquals(new StringType("John Doe"), readAttribute(newPerson, "name"));
-	}
 
-	public void testObjectDestruction() throws CoreException {
-		String[] sources = { model };
-		parseAndCheck(sources);
-		RuntimeClass personClass = getRuntimeClass("tests::Person");
-		assertNotNull(personClass);
-		RuntimeObject person = personClass.newInstance(true);
-		person.save();
-		assertTrue(personClass.getAllInstances().contains(person));
-		runOperation(person, "setName", new StringType("Foo"));
-		person.destroy();
-		assertFalse(personClass.getAllInstances().contains(person));
-		try {
-			runOperation(person, "getName");
-			fail("Should have failed, object has been destroyed");
-		} catch (ObjectNotActiveException e) {
-			// expected
-		}
-		try {
-			readAttribute(person, "name");
-			fail("Should have failed, object has been destroyed");
-		} catch (ObjectNotActiveException e) {
-			// expected
-		}
-	}
-	
-   @Override
+        // basic attribute testing
+        writeAttribute(person, "name", new StringType("Bar"));
+        TestCase.assertEquals(new StringType("Bar"), readAttribute(person, "name"));
+    }
+
+    @Override
     protected Properties createDefaultSettings() {
         Properties defaultSettings = super.createDefaultSettings();
         defaultSettings.setProperty(IRepository.EXTEND_BASE_OBJECT, Boolean.TRUE.toString());

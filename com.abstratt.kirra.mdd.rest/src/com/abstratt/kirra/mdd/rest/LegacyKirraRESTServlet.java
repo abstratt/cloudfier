@@ -11,15 +11,16 @@ import org.restlet.ext.servlet.ServerServlet;
  * around the fact Restlet itself cannot see our code.
  */
 public class LegacyKirraRESTServlet extends ServerServlet {
-	
-	private static final long serialVersionUID = 1L;
-	@Override
-	protected Application createApplication(Context parentContext) {
-		return new LegacyKirraMDDRestletApplication(getComponent());
-	}
-	
-	@Override
-	public void init() throws ServletException {
-		super.init();
-	}
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+    }
+
+    @Override
+    protected Application createApplication(Context parentContext) {
+        return new LegacyKirraMDDRestletApplication(getComponent());
+    }
 }

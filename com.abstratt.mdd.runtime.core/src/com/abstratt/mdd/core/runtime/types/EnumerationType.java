@@ -12,56 +12,56 @@ import com.abstratt.mdd.core.runtime.RuntimeEvent;
 
 public class EnumerationType extends BasicType implements Serializable {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	private EnumerationLiteral value;
-	
-	/**
-	 * @see BasicType#isEqualsTo
-	 */
-	@Override
-	public final boolean equals(Object another) {
-		if (!(another instanceof EnumerationType))
-			return false;
-		return value.equals(((EnumerationType) another).value);
-	}
-	
-	@Override
-	public BooleanType same(ExecutionContext context, BasicType other) {
-		return BooleanType.fromValue(equals(other));
-	}
+    private EnumerationLiteral value;
 
-	public EnumerationType(EnumerationLiteral value) {
-		super();
-		Assert.isNotNull(value);
-		this.value = value;
-	}
+    public EnumerationType(EnumerationLiteral value) {
+        super();
+        Assert.isNotNull(value);
+        this.value = value;
+    }
 
-	public java.lang.String toString() {
-		return value.getName();
-	}
+    /**
+     * @see BasicType#isEqualsTo
+     */
+    @Override
+    public final boolean equals(Object another) {
+        if (!(another instanceof EnumerationType))
+            return false;
+        return value.equals(((EnumerationType) another).value);
+    }
 
-	@Override
-	public String getClassifierName() {
-		return value.getEnumeration().getQualifiedName();
-	}
-	
-	public EnumerationLiteral getValue() {
-		return value;
-	}
+    @Override
+    public String getClassifierName() {
+        return value.getEnumeration().getQualifiedName();
+    }
 
     @Override
     public MetaClass<EnumerationType> getMetaClass() {
         return new MetaClass<EnumerationType>() {
             @Override
-            public Object runOperation(ExecutionContext context,
-            		BasicType target, Operation operation,
-                    Object... arguments) {
-            	return BasicType.runNativeOperation(context, EnumerationType.class, target, operation, arguments);
-            }
-            @Override
             public void handleEvent(RuntimeEvent runtimeEvent) {
             }
+
+            @Override
+            public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+                return BasicType.runNativeOperation(context, EnumerationType.class, target, operation, arguments);
+            }
         };
+    }
+
+    public EnumerationLiteral getValue() {
+        return value;
+    }
+
+    @Override
+    public BooleanType same(ExecutionContext context, BasicType other) {
+        return BooleanType.fromValue(equals(other));
+    }
+
+    @Override
+    public java.lang.String toString() {
+        return value.getName();
     }
 }

@@ -48,8 +48,8 @@
 //		source += "  end;\n";
 //		source += "  association AccountCustomer\n";
 //		source += "    navigable role account : Account[*];\n";
-//		source += "    navigable role owner : Customer;\n";		
-//		source += "  end;\n";		
+//		source += "    navigable role owner : Customer;\n";
+//		source += "  end;\n";
 //		source += "end.";
 //		parseAndCheck(source);
 //		Operation getCustomersWithAccountOperation = getRepository().findNamedElement(
@@ -60,23 +60,23 @@
 //	    Association accountCustomerAssociation = getRepository().findNamedElement("simple::AccountCustomer", UMLPackage.Literals.ASSOCIATION, null);
 //        Property fedEnd = accountCustomerAssociation.getMemberEnd("account", null);
 //        Property openEnd = accountCustomerAssociation.getMemberEnd("owner", null);
-//	    
+//
 //		assertNotNull(getCustomersWithAccountOperation);
 //	    assertNotNull(accountClass);
 //	    assertNotNull(customerClass);
-//	    assertNotNull(accountCustomerAssociation); 
-//		
+//	    assertNotNull(accountCustomerAssociation);
+//
 //	    Query query = new QueryCore().transformActivityToQuery((Activity) getCustomersWithAccountOperation.getMethods().get(0));
 //	    assertEquals(accountClass, query.getSourceType());
 //	    assertEquals(customerClass, query.getTargetType());
 //	    assertEquals(1, query.getJoins().size());
-//	    
+//
 //	    Join join = query.getJoins().get(0);
 //	    assertEquals(fedEnd, join.getSource());
 //	    assertEquals(openEnd, join.getTarget());
 //	    assertEquals(accountCustomerAssociation, join.getAssociation());
 //	}
-//	
+//
 //	public void testCollectAssociatedQueryTwoLevels() throws CoreException {
 //		String source = "";
 //		source += "model simple;\n";
@@ -97,12 +97,12 @@
 //		source += "  end;\n";
 //		source += "  association AccountCustomer\n";
 //		source += "    navigable role account : Account[*];\n";
-//		source += "    navigable role owner : Customer;\n";		
+//		source += "    navigable role owner : Customer;\n";
 //		source += "  end;\n";
 //		source += "  association CustomerAddress\n";
 //		source += "    navigable role resident : Customer;\n";
-//		source += "    navigable role residence : Address;\n";		
-//		source += "  end;\n";		
+//		source += "    navigable role residence : Address;\n";
+//		source += "  end;\n";
 //		source += "end.";
 //		parseAndCheck(source);
 //		Operation getAddressesOfCustomersWithAccountOperation = getRepository().findNamedElement(
@@ -125,17 +125,17 @@
 //	    assertNotNull(addressClass);
 //	    assertNotNull(accountCustomerAssociation);
 //	    assertNotNull(customerAddressAssociation);
-//		
+//
 //	    Query query = new QueryCore().transformActivityToQuery((Activity) getAddressesOfCustomersWithAccountOperation.getMethods().get(0));
 //	    assertEquals(accountClass, query.getSourceType());
 //	    assertEquals(addressClass, query.getTargetType());
 //	    assertEquals(2, query.getJoins().size());
-//	    
+//
 //	    Join accountToCustomer = query.getJoins().get(0);
 //	    assertEquals(accountCustomerAccount, accountToCustomer.getSource());
 //	    assertEquals(accountCustomerOwner, accountToCustomer.getTarget());
 //	    assertEquals(accountCustomerAssociation, accountToCustomer.getAssociation());
-//	    
+//
 //	    Join customerToAddress = query.getJoins().get(1);
 //	    assertEquals(customerAddressResident, customerToAddress.getSource());
 //	    assertEquals(customerAddressResidence, customerToAddress.getTarget());
@@ -143,7 +143,7 @@
 //
 //	}
 //
-//	
+//
 //	public void testReadExtent() throws CoreException {
 //		String source = "";
 //		source += "model simple;\n";
@@ -163,7 +163,7 @@
 //
 //		Classifier customerClass = getRepository().findNamedElement("simple::Customer", UMLPackage.Literals.CLASS, null);
 //	    assertNotNull(customerClass);
-//		
+//
 //	    Query query = new QueryCore().transformActivityToQuery((Activity) getCustomersOperation.getMethods().get(0));
 //	    assertEquals(customerClass, query.getSourceType());
 //	    assertEquals(customerClass, query.getTargetType());
@@ -188,15 +188,15 @@
 //        source += "  end;\n";
 //        source += "end.";
 //        parseAndCheck(source);
-//        
+//
 //        Operation queryOperation = getRepository().findNamedElement(
 //                "simple::Class1::query1",
 //                UMLPackage.Literals.OPERATION, null);
 //        assertNotNull(queryOperation);
-//        
+//
 //        List<Action> statements = ActivityUtils.findStatements(ActivityUtils.getRootAction(queryOperation));
 //        assertEquals(statements.size(), 1);
-//        
+//
 //        assertTrue(statements.get(0) instanceof AddVariableValueAction);
 //        Query query = new QueryCore().buildQuery(ActivityUtils.getSourceAction(statements.get(0)));
 //        Classifier class1 = getRepository().findNamedElement("simple::Class1", UMLPackage.Literals.CLASS, null);
@@ -206,8 +206,8 @@
 //        assertEquals(1, query.getJoins().size());
 //        assertEquals(4, query.getFilters().size());
 //    }
-//	
+//
 //	public static Test suite() {
 //		return new TestSuite(QueryTests.class);
 //	}
-//}
+// }

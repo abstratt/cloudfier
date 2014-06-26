@@ -25,170 +25,133 @@ import com.abstratt.mdd.core.target.spi.ITransformationEngine;
 import com.abstratt.pluginutils.LogUtils;
 
 public class TargetPlatformRegistry {
-	private static final String ATTRIBUTE_ID = "id";
-	private static final String ATTRIBUTE_NAME = "name";
-	private static final String ATTRIBUTE_ENGINE_ID = "id";
-	private static final String ATTRIBUTE_ENGINE_CLASS = "class";
-	private static final String ATTRIBUTE_MAPPER = "mapper";
-	private static TargetPlatformRegistry instance = new TargetPlatformRegistry();
+    public static TargetPlatformRegistry getInstance() {
+        return TargetPlatformRegistry.instance;
+    }
 
-	private static final String TARGET_PLATFORM = TargetCore.PLUGIN_ID
-			+ ".targetPlatform";
+    private static final String ATTRIBUTE_ID = "id";
+    private static final String ATTRIBUTE_NAME = "name";
+    private static final String ATTRIBUTE_ENGINE_ID = "id";
+    private static final String ATTRIBUTE_ENGINE_CLASS = "class";
+    private static final String ATTRIBUTE_MAPPER = "mapper";
 
-	private static final String TRANSFORMATION_ENGINE = TargetCore.PLUGIN_ID
-			+ ".transformationEngine";
+    private static TargetPlatformRegistry instance = new TargetPlatformRegistry();
 
-	private static Pattern PLATFORM_PROPERTY = Pattern.compile("(mdd.target\\.([^\\.]*))\\.([^\\.]*)");
+    private static final String TARGET_PLATFORM = TargetCore.PLUGIN_ID + ".targetPlatform";
 
-	private Map<String, ITargetPlatform> builtInPlatforms;
-	private Map<String, ITransformationEngine> transformationEngines;
+    private static final String TRANSFORMATION_ENGINE = TargetCore.PLUGIN_ID + ".transformationEngine";
 
-	public static TargetPlatformRegistry getInstance() {
-		return instance;
-	}
+    private static Pattern PLATFORM_PROPERTY = Pattern.compile("(mdd.target\\.([^\\.]*))\\.([^\\.]*)");
+    private Map<String, ITargetPlatform> builtInPlatforms;
 
-	private TargetPlatformRegistry() {
-		try {
-			builtInPlatforms = buildTargetPlatformRegistry(RegistryFactory
-					.getRegistry());
-		} catch (RuntimeException e) {
-			LogUtils.logError(TargetCore.PLUGIN_ID,
-					"Exception on initialization", e);
-		}
-		try {
-			transformationEngines = buildTransformationEngineRegistry(RegistryFactory
-					.getRegistry());
-		} catch (RuntimeException e) {
-			LogUtils.logError(TargetCore.PLUGIN_ID,
-					"Exception on initialization", e);
-		}
+    private Map<String, ITransformationEngine> transformationEngines;
 
-	}
+    private TargetPlatformRegistry() {
+        try {
+            builtInPlatforms = buildTargetPlatformRegistry(RegistryFactory.getRegistry());
+        } catch (RuntimeException e) {
+            LogUtils.logError(TargetCore.PLUGIN_ID, "Exception on initialization", e);
+        }
+        try {
+            transformationEngines = buildTransformationEngineRegistry(RegistryFactory.getRegistry());
+        } catch (RuntimeException e) {
+            LogUtils.logError(TargetCore.PLUGIN_ID, "Exception on initialization", e);
+        }
 
-	private Map<String, ITransformationEngine> buildTransformationEngineRegistry(
-			IExtensionRegistry registry) {
-		IExtensionPoint extensionPoint = registry
-				.getExtensionPoint(TRANSFORMATION_ENGINE);
-		IExtension[] extensions = extensionPoint.getExtensions();
-		Map<String, ITransformationEngine> result = new HashMap<String, ITransformationEngine>();
-		for (IExtension extension : extensions) {
-			IConfigurationElement[] configElements = extension
-					.getConfigurationElements();
-			for (IConfigurationElement configElement : configElements) {
-				String id = configElement.getAttribute(ATTRIBUTE_ENGINE_ID);
-				ITransformationEngine engine = null;
-				try {
-					if (configElement.getAttribute(ATTRIBUTE_ENGINE_CLASS) != null)
-						engine = (ITransformationEngine) configElement
-								.createExecutableExtension(ATTRIBUTE_ENGINE_CLASS);
-				} catch (CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					break;
-				}
-				result.put(id, engine);
-			}
-		}
-		return result;
-	}
+    }
 
-	private Map<String, ITargetPlatform> buildTargetPlatformRegistry(
-			IExtensionRegistry registry) {
-		IExtensionPoint extensionPoint = registry
-				.getExtensionPoint(TARGET_PLATFORM);
-		IExtension[] extensions = extensionPoint.getExtensions();
-		Map<String, ITargetPlatform> result = new HashMap<String, ITargetPlatform>();
-		for (IExtension extension : extensions) {
-			IConfigurationElement[] configElements = extension
-					.getConfigurationElements();
-			for (IConfigurationElement configElement : configElements) {
-				String id = configElement.getAttribute(ATTRIBUTE_ID);
-				String name = configElement.getAttribute(ATTRIBUTE_NAME);
-				ILanguageMapper mapper = null;
-				try {
-					if (configElement.getAttribute(ATTRIBUTE_MAPPER) != null)
-						mapper = (ILanguageMapper) configElement
-								.createExecutableExtension(ATTRIBUTE_MAPPER);
-				} catch (CoreException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					break;
-				}
-				ITargetPlatform targetPlatform = new TargetPlatform(id, name, mapper);
-				result.put(targetPlatform.getId(), targetPlatform);
-			}
-		}
-		return result;
-	}
+    public ITargetPlatform getBuiltInPlatform(String platformId) {
+        return builtInPlatforms.get(platformId);
+    }
 
-	public ITargetPlatform getBuiltInPlatform(String platformId) {
-		return builtInPlatforms.get(platformId);
-	}
+    public ITargetPlatform getPlatform(Properties properties, String platformId) {
+        String engineId = properties.getProperty(IRepository.TARGET_ENGINE);
+        if (transformationEngines.containsKey(engineId) && !builtInPlatforms.containsKey(platformId)) {
+            ITransformationEngine engine = transformationEngines.get(engineId);
+            ITargetPlatform customPlatform = getCustomPlatform(engine, properties, platformId);
+            if (customPlatform != null)
+                return customPlatform;
+        }
+        return getBuiltInPlatform(platformId);
+    }
 
-	public Collection<String> getPlatformIds(Properties properties) {
-		String engineId = properties.getProperty(
-				IRepository.TARGET_ENGINE);
-		boolean knownEngine = transformationEngines.containsKey(engineId);
-		Set<String> found = new TreeSet<String>();		
-		for (String property : properties.stringPropertyNames()) {
-			Matcher matcher = PLATFORM_PROPERTY.matcher(property);
-			if (matcher.matches()) {
-				String platform = matcher.group(2);
-				String platformProperty = matcher.group(3);
-				boolean isBuiltIn = builtInPlatforms.containsKey(platform);
-				boolean builtInEnabled = isBuiltIn && "enabled".equals(platformProperty) && Boolean.parseBoolean(properties.getProperty(property)); 
-				if (builtInEnabled || (!isBuiltIn && knownEngine))
-					found.add(platform);
-			}
-		}
-		return found;
-	}
+    public Collection<String> getPlatformIds(Properties properties) {
+        String engineId = properties.getProperty(IRepository.TARGET_ENGINE);
+        boolean knownEngine = transformationEngines.containsKey(engineId);
+        Set<String> found = new TreeSet<String>();
+        for (String property : properties.stringPropertyNames()) {
+            Matcher matcher = TargetPlatformRegistry.PLATFORM_PROPERTY.matcher(property);
+            if (matcher.matches()) {
+                String platform = matcher.group(2);
+                String platformProperty = matcher.group(3);
+                boolean isBuiltIn = builtInPlatforms.containsKey(platform);
+                boolean builtInEnabled = isBuiltIn && "enabled".equals(platformProperty)
+                        && Boolean.parseBoolean(properties.getProperty(property));
+                if (builtInEnabled || !isBuiltIn && knownEngine)
+                    found.add(platform);
+            }
+        }
+        return found;
+    }
 
-	private Collection<String> getPlatforms(Properties properties) {
-		String engineId = properties.getProperty(
-				IRepository.TARGET_ENGINE);
-		boolean knownEngine = transformationEngines.containsKey(engineId);
-		Set<String> found = new TreeSet<String>();		
-		for (String property : properties.stringPropertyNames()) {
-			Matcher matcher = PLATFORM_PROPERTY.matcher(property);
-			if (matcher.matches()) {
-				String platform = matcher.group(2);
-				String platformProperty = matcher.group(3);
-				boolean isBuiltIn = builtInPlatforms.containsKey(platform);
-				boolean builtInEnabled = isBuiltIn && "enabled".equals(platformProperty) && Boolean.parseBoolean(properties.getProperty(property)); 
-				if (builtInEnabled || (!isBuiltIn && knownEngine))
-					found.add(platform);
-			}
-		}
-		return found;
-	}
+    private Map<String, ITargetPlatform> buildTargetPlatformRegistry(IExtensionRegistry registry) {
+        IExtensionPoint extensionPoint = registry.getExtensionPoint(TargetPlatformRegistry.TARGET_PLATFORM);
+        IExtension[] extensions = extensionPoint.getExtensions();
+        Map<String, ITargetPlatform> result = new HashMap<String, ITargetPlatform>();
+        for (IExtension extension : extensions) {
+            IConfigurationElement[] configElements = extension.getConfigurationElements();
+            for (IConfigurationElement configElement : configElements) {
+                String id = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ID);
+                String name = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_NAME);
+                ILanguageMapper mapper = null;
+                try {
+                    if (configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_MAPPER) != null)
+                        mapper = (ILanguageMapper) configElement.createExecutableExtension(TargetPlatformRegistry.ATTRIBUTE_MAPPER);
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    break;
+                }
+                ITargetPlatform targetPlatform = new TargetPlatform(id, name, mapper);
+                result.put(targetPlatform.getId(), targetPlatform);
+            }
+        }
+        return result;
+    }
 
-	public ITargetPlatform getPlatform(Properties properties,
-			String platformId) {
-		String engineId = properties.getProperty(
-				IRepository.TARGET_ENGINE);
-		if (transformationEngines.containsKey(engineId) && !builtInPlatforms.containsKey(platformId)) {
-			ITransformationEngine engine = transformationEngines.get(engineId);
-			ITargetPlatform customPlatform = getCustomPlatform(engine,
-					properties, platformId);
-			if (customPlatform != null)
-				return customPlatform;
-		}
-		return getBuiltInPlatform(platformId);
-	}
+    private Map<String, ITransformationEngine> buildTransformationEngineRegistry(IExtensionRegistry registry) {
+        IExtensionPoint extensionPoint = registry.getExtensionPoint(TargetPlatformRegistry.TRANSFORMATION_ENGINE);
+        IExtension[] extensions = extensionPoint.getExtensions();
+        Map<String, ITransformationEngine> result = new HashMap<String, ITransformationEngine>();
+        for (IExtension extension : extensions) {
+            IConfigurationElement[] configElements = extension.getConfigurationElements();
+            for (IConfigurationElement configElement : configElements) {
+                String id = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ENGINE_ID);
+                ITransformationEngine engine = null;
+                try {
+                    if (configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ENGINE_CLASS) != null)
+                        engine = (ITransformationEngine) configElement
+                                .createExecutableExtension(TargetPlatformRegistry.ATTRIBUTE_ENGINE_CLASS);
+                } catch (CoreException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                    break;
+                }
+                result.put(id, engine);
+            }
+        }
+        return result;
+    }
 
-	private ITargetPlatform getCustomPlatform(
-			ITransformationEngine engine, Properties properties,
-			String platformId) {
-		Map<String, String> platformProperties = new HashMap<String, String>();
-		for (String property : properties.stringPropertyNames()) {
-			Matcher matcher = PLATFORM_PROPERTY.matcher(property);
-			if (matcher.matches() && platformId.equals(matcher.group(2)))
-				platformProperties.put(matcher.group(3), properties.getProperty(property));
-		}
+    private ITargetPlatform getCustomPlatform(ITransformationEngine engine, Properties properties, String platformId) {
+        Map<String, String> platformProperties = new HashMap<String, String>();
+        for (String property : properties.stringPropertyNames()) {
+            Matcher matcher = TargetPlatformRegistry.PLATFORM_PROPERTY.matcher(property);
+            if (matcher.matches() && platformId.equals(matcher.group(2)))
+                platformProperties.put(matcher.group(3), properties.getProperty(property));
+        }
         if (properties.containsKey(IRepository.IMPORTED_PROJECTS))
             platformProperties.put(IRepository.IMPORTED_PROJECTS, properties.getProperty(IRepository.IMPORTED_PROJECTS));
-		return platformProperties.isEmpty() ? null : 
-			new CustomTargetPlatform(platformId, engine, platformProperties);
-	}
+        return platformProperties.isEmpty() ? null : new CustomTargetPlatform(platformId, engine, platformProperties);
+    }
 }

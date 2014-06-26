@@ -3,6 +3,8 @@ package com.abstratt.kirra.tests.mdd.runtime;
 import java.util.Date;
 import java.util.List;
 
+import junit.framework.TestCase;
+
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.Instance;
@@ -11,299 +13,298 @@ import com.abstratt.kirra.Repository;
 
 public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
 
-	public KirraMDDRuntimeDataTests(String name) {
-		super(name);
-	}
-	
-	private static String model;
-	static {
-		model = "";
-		model += "package mypackage;\n";
-		model += "import base;\n";
-		model += "apply kirra;\n";
-		model += "[Entity] class MyClass1\n";
-		model += "attribute attr1 : Integer[0,1] := 5;\n";
-		model += "attribute attr2 : String[0,1];\n";
-		model += "derived attribute attr6 : Boolean := { self.attr1 > 0 };\n";		
-		model += "end;\n";
-		model += "[Entity] class MyClass2\n";
-		model += "attribute attr3 : Boolean[0,1];\n";
-		model += "attribute attr4 : Date[0,1];\n";
-		model += "attribute attr5 : MyEnum[0,1] := value2;\n";
-		model += "end;\n";
-        model += "[Entity] class MyClass2a specializes MyClass2 end;\n";
-        model += "[Entity] class MyClass2b specializes MyClass2 end;\n";
-		model += "[Entity] class MyClass3\n";
-		model += "attribute name : String[0,1];\n";
-		model += "attribute myClass4 : MyClass4;\n";
-		model += "end;\n";
-		model += "[Entity] class MyClass4\n";
-		model += "attribute name : String[0,1];\n";
-		model += "attribute myClass3 : MyClass3;\n";
-		model += "end;\n";		
-		model += "[Entity] class MyClass5\n";
-		model += "derived id attribute myId1 : Integer;\n";
-		model += "derived id attribute myId2 : String;\n";
-		model += "end;\n";		
-		model += "association MyClass3_MyClass4\n";
-		model += "role MyClass4.myClass3;\n";		
-		model += "role MyClass3.myClass4;\n";
-		model += "end;\n";
-		model += "enumeration MyEnum value1, value2, value3 end;\n";
-		model += "end.";
-	}
-	
-	public void testUpdateInstance() throws CoreException {
-		parseAndCheck(model);
-		Repository  kirra = getKirra();
+    private static String model;
 
-		Instance newInstance = new Instance();
-		newInstance.setEntityName("MyClass1");
-		newInstance.setEntityNamespace("mypackage");
-		newInstance.setValue("attr1", 10);
-		newInstance.setValue("attr2", "bar");
-		Instance created = kirra.createInstance(newInstance);
+    static {
+        KirraMDDRuntimeDataTests.model = "";
+        KirraMDDRuntimeDataTests.model += "package mypackage;\n";
+        KirraMDDRuntimeDataTests.model += "import base;\n";
+        KirraMDDRuntimeDataTests.model += "apply kirra;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass1\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr1 : Integer[0,1] := 5;\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr2 : String[0,1];\n";
+        KirraMDDRuntimeDataTests.model += "derived attribute attr6 : Boolean := { self.attr1 > 0 };\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr3 : Boolean[0,1];\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr4 : Date[0,1];\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr5 : MyEnum[0,1] := value2;\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2a specializes MyClass2 end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2b specializes MyClass2 end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass3\n";
+        KirraMDDRuntimeDataTests.model += "attribute name : String[0,1];\n";
+        KirraMDDRuntimeDataTests.model += "attribute myClass4 : MyClass4;\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass4\n";
+        KirraMDDRuntimeDataTests.model += "attribute name : String[0,1];\n";
+        KirraMDDRuntimeDataTests.model += "attribute myClass3 : MyClass3;\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass5\n";
+        KirraMDDRuntimeDataTests.model += "derived id attribute myId1 : Integer;\n";
+        KirraMDDRuntimeDataTests.model += "derived id attribute myId2 : String;\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";
+        KirraMDDRuntimeDataTests.model += "association MyClass3_MyClass4\n";
+        KirraMDDRuntimeDataTests.model += "role MyClass4.myClass3;\n";
+        KirraMDDRuntimeDataTests.model += "role MyClass3.myClass4;\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";
+        KirraMDDRuntimeDataTests.model += "enumeration MyEnum value1, value2, value3 end;\n";
+        KirraMDDRuntimeDataTests.model += "end.";
+    }
 
-		created.setValue("attr1", 20);
-		created.setValue("attr2", "foo");
+    public KirraMDDRuntimeDataTests(String name) {
+        super(name);
+    }
 
-		Instance updated = kirra.updateInstance(created);
-		assertFalse(updated.isNew());
+    // disabled due to association behavior having changed
+    public void __testUpdateGraph() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
 
-		assertEquals(20L,  updated.getValue("attr1"));
-		assertEquals("foo", updated.getValue("attr2"));
-	}
-	
-	// disabled due to association behavior having changed
-	public void __testUpdateGraph() throws CoreException {
-		parseAndCheck(model);
-		Repository  kirra = getKirra();
+        Instance newInstance3 = new Instance();
+        newInstance3.setEntityName("MyClass3");
+        newInstance3.setEntityNamespace("mypackage");
+        newInstance3.setValue("name", "my3");
+        Instance created3 = kirra.createInstance(newInstance3);
 
-		Instance newInstance3 = new Instance();
-		newInstance3.setEntityName("MyClass3");
-		newInstance3.setEntityNamespace("mypackage");
-		newInstance3.setValue("name", "my3");
-		Instance created3 = kirra.createInstance(newInstance3);
-		
-		Instance newInstance4 = new Instance();
-		newInstance4.setEntityName("MyClass4");
-		newInstance4.setEntityNamespace("mypackage");
-		newInstance4.setValue("name", "my4");
-		created3.setSingleRelated("myClass4", newInstance4);
-		
-		Instance updated3 = kirra.updateInstance(created3);
-		Instance related4 = updated3.getSingleRelated("myClass4");
-		assertNotNull(related4);
-		assertEquals(newInstance4.getEntityName(), related4.getEntityName());
-		assertEquals(newInstance4.getValue("name"), related4.getValue("name"));
-		
-		Instance loaded4 = kirra.getInstance(related4.getEntityNamespace(), related4.getEntityName(), related4.getObjectId(), true);
-		assertNotNull(loaded4);
-		assertNotNull(loaded4.getSingleRelated("myClass3"));
-		assertEquals(updated3.getObjectId(), loaded4.getSingleRelated("myClass3").getObjectId());
-		
-		// try to upload a saved graph
-		kirra.updateInstance(updated3);
-	}
-	
-	public void testCreateInstance() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
+        Instance newInstance4 = new Instance();
+        newInstance4.setEntityName("MyClass4");
+        newInstance4.setEntityNamespace("mypackage");
+        newInstance4.setValue("name", "my4");
+        created3.setSingleRelated("myClass4", newInstance4);
 
-		Instance newInstance = new Instance();
-		newInstance.setEntityName("MyClass1");
-		newInstance.setEntityNamespace("mypackage");
-		newInstance.setValue("attr1", 10);
-		newInstance.setValue("attr2", "bar");
-		
-		assertTrue(newInstance.isNew());
-		Instance created = kirra.createInstance(newInstance);
-		assertFalse(created.isNew());
+        Instance updated3 = kirra.updateInstance(created3);
+        Instance related4 = updated3.getSingleRelated("myClass4");
+        TestCase.assertNotNull(related4);
+        TestCase.assertEquals(newInstance4.getEntityName(), related4.getEntityName());
+        TestCase.assertEquals(newInstance4.getValue("name"), related4.getValue("name"));
 
-		assertEquals(10L,  created.getValue("attr1"));
-		assertEquals("bar", created.getValue("attr2"));
-	}
-	
-	public void testCreateInstanceWithAutoGeneratedIds() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
+        Instance loaded4 = kirra.getInstance(related4.getEntityNamespace(), related4.getEntityName(), related4.getObjectId(), true);
+        TestCase.assertNotNull(loaded4);
+        TestCase.assertNotNull(loaded4.getSingleRelated("myClass3"));
+        TestCase.assertEquals(updated3.getObjectId(), loaded4.getSingleRelated("myClass3").getObjectId());
 
-		Instance newInstance = new Instance("mypackage", "MyClass5");
-		Instance created = kirra.createInstance(newInstance);
+        // try to upload a saved graph
+        kirra.updateInstance(updated3);
+    }
 
-		assertNotNull(created.getValue("myId1"));
-		assertNotNull(created.getValue("myId2"));
-	}
+    public void testCreateInstance() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
 
-	
-	public void testNewInstanceDefaults() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
-		Instance created1 = kirra.newInstance("mypackage", "MyClass1");
-		assertEquals(5L,  created1.getValue("attr1"));
-		assertNull(created1.getValue("attr2"));
-		
-		Instance created2 = kirra.newInstance("mypackage", "MyClass2");
-		assertNull(created2.getValue("attr3"));
-		assertNull(created2.getValue("attr4"));
-		assertEquals("value2",  created2.getValue("attr5"));
-	}
-	
-	public void testDerivedValues() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
-		Instance created1 = kirra.newInstance("mypackage", "MyClass1");
-		
-		created1 = kirra.createInstance(created1); 
-		
-		created1.setValue("attr1", 10L);
-		Instance updated1 = kirra.updateInstance(created1);
-		assertEquals(10L,  updated1.getValue("attr1"));
-		assertEquals(true, updated1.getValue("attr6"));
-		
-		created1.setValue("attr1", -100);
-		updated1 = kirra.updateInstance(created1);
-		assertEquals(-100L,  updated1.getValue("attr1"));
-		assertEquals(false, updated1.getValue("attr6"));
-	}
-	
-	public void testGetInstance() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
+        Instance newInstance = new Instance();
+        newInstance.setEntityName("MyClass1");
+        newInstance.setEntityNamespace("mypackage");
+        newInstance.setValue("attr1", 10);
+        newInstance.setValue("attr2", "bar");
 
-		Instance newInstance1 = new Instance();
-		newInstance1.setEntityName("MyClass1");
-		newInstance1.setEntityNamespace("mypackage");
-		newInstance1.setValue("attr1", 10);
-		newInstance1.setValue("attr2", "bar");
-		Instance created1 = kirra.createInstance(newInstance1);
-		
-		Instance loaded1 = kirra.getInstance("mypackage", "MyClass1", created1.getObjectId(), true);
-		assertNotNull(loaded1);
-		assertFalse(loaded1.isNew());
+        TestCase.assertTrue(newInstance.isNew());
+        Instance created = kirra.createInstance(newInstance);
+        TestCase.assertFalse(created.isNew());
 
-		assertEquals(10L,  loaded1.getValue("attr1"));
-		assertEquals("bar", loaded1.getValue("attr2"));
-		
-		Instance newInstance2 = new Instance();
-		newInstance2.setEntityName("MyClass2");
-		newInstance2.setEntityNamespace("mypackage");
-		newInstance2.setValue("attr3", true);
-		Date now = new Date();
-		newInstance2.setValue("attr4", now);
-		newInstance2.setValue("attr5", "value2");
-		Instance created2 = kirra.createInstance(newInstance2);
-		
-		Instance loaded2 = kirra.getInstance("mypackage", "MyClass2", created2.getObjectId(), true);
-		assertNotNull(loaded2);
-		assertFalse(loaded2.isNew());
+        TestCase.assertEquals(10L, created.getValue("attr1"));
+        TestCase.assertEquals("bar", created.getValue("attr2"));
+    }
 
-		assertEquals(true,  loaded2.getValue("attr3"));
-		// apparently, we don't keep time, only date, expect accordingly (that is probably not deliberate)
-		assertEquals(new Date(now.getYear(), now.getMonth(), now.getDate()), loaded2.getValue("attr4"));
-		assertEquals("value2", loaded2.getValue("attr5"));
-	}
-	
-	public void testSetValueWithQuotes() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
+    public void testCreateInstanceWithAutoGeneratedIds() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
 
-		Instance newInstance1 = new Instance();
-		newInstance1.setEntityName("MyClass1");
-		newInstance1.setEntityNamespace("mypackage");
-		// quotes caused trouble when persisting to a relational DB
-		newInstance1.setValue("attr2", "'bar'");
-		Instance created1 = kirra.createInstance(newInstance1);
-		assertEquals("'bar'", created1.getValue("attr2"));
-	}
+        Instance newInstance = new Instance("mypackage", "MyClass5");
+        Instance created = kirra.createInstance(newInstance);
 
-	
-	public void testDeleteInstance() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
+        TestCase.assertNotNull(created.getValue("myId1"));
+        TestCase.assertNotNull(created.getValue("myId2"));
+    }
 
-		Instance newInstance = new Instance();
-		newInstance.setEntityName("MyClass1");
-		newInstance.setEntityNamespace("mypackage");
-		Instance created = kirra.createInstance(newInstance);
-		
-		assertNotNull(kirra.getInstance("mypackage", "MyClass1", created.getObjectId(), true));
-		
-		kirra.deleteInstance(created);
-		
-		assertNull(kirra.getInstance("mypackage", "MyClass1", created.getObjectId(), true));
-		
-		// delete an already deleted object
-		try {
-			kirra.deleteInstance(created);
-			fail("should have failed");
-		} catch (KirraException e) {
-			// expected
-			assertEquals(KirraException.Kind.OBJECT_NOT_FOUND, e.getKind());
-		}
-	}
+    public void testDeleteInstance() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
 
+        Instance newInstance = new Instance();
+        newInstance.setEntityName("MyClass1");
+        newInstance.setEntityNamespace("mypackage");
+        Instance created = kirra.createInstance(newInstance);
 
-	public void testGetAllInstances() throws CoreException {
-		parseAndCheck(model);
-		Repository kirra = getKirra();
-		
-		// no instances created yet
-		assertEquals(0, kirra.getInstances("mypackage", "MyClass1", true).size());
-		assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
+        TestCase.assertNotNull(kirra.getInstance("mypackage", "MyClass1", created.getObjectId(), true));
 
-		Instance newInstance = new Instance("mypackage","MyClass1");
+        kirra.deleteInstance(created);
 
-		newInstance.setValue("attr1", 10);
-		newInstance.setValue("attr2", "bar");
-		Instance created1 = kirra.createInstance(newInstance);
-		
-		assertEquals(1, kirra.getInstances("mypackage", "MyClass1", true).size());
-		assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
-		
-		newInstance.setValue("attr1", 20);
-		newInstance.setValue("attr2", "foo");
-		Instance created2 = kirra.createInstance(newInstance);
-		
-		assertEquals(2, kirra.getInstances("mypackage", "MyClass1", true).size());
-		assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
+        TestCase.assertNull(kirra.getInstance("mypackage", "MyClass1", created.getObjectId(), true));
 
-		Instance newInstance2 = new Instance("mypackage", "MyClass2");
-		newInstance2.setValue("attr3", true);
-		newInstance2.setValue("attr4", new Date());
-		newInstance2.setValue("attr5", "value1");
-		Instance created3 = kirra.createInstance(newInstance2);
-		
-		List<Instance> myClass1Instances = kirra.getInstances("mypackage", "MyClass1", true);
-		List<Instance> myClass2Instances = kirra.getInstances("mypackage", "MyClass2", true);
-		
-		assertEquals(2, myClass1Instances.size());
-		assertEquals(1, myClass2Instances.size());
-		
-		assertNotNull(findById(myClass1Instances, created1.getObjectId()));
-		assertNotNull(findById(myClass1Instances, created2.getObjectId()));
-		assertNotNull(findById(myClass2Instances, created3.getObjectId()));
-		
-		kirra.deleteInstance(created1);
-		
-		assertEquals(1, kirra.getInstances("mypackage", "MyClass1", true).size());
-		assertEquals(1, kirra.getInstances("mypackage", "MyClass2", true).size());
-		
-		kirra.deleteInstance(created2);
-		kirra.deleteInstance(created3);
-		
-		assertEquals(0, kirra.getInstances("mypackage", "MyClass1", true).size());
-		assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
-		
-		kirra.createInstance(new Instance("mypackage", "MyClass2a"));
-        assertEquals(1, kirra.getInstances("mypackage", "MyClass2a", true).size());
-        assertEquals(0, kirra.getInstances("mypackage", "MyClass2b", true).size());
-        assertEquals(1, kirra.getInstances("mypackage", "MyClass2", true).size());
-        
+        // delete an already deleted object
+        try {
+            kirra.deleteInstance(created);
+            TestCase.fail("should have failed");
+        } catch (KirraException e) {
+            // expected
+            TestCase.assertEquals(KirraException.Kind.OBJECT_NOT_FOUND, e.getKind());
+        }
+    }
+
+    public void testDerivedValues() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+        Instance created1 = kirra.newInstance("mypackage", "MyClass1");
+
+        created1 = kirra.createInstance(created1);
+
+        created1.setValue("attr1", 10L);
+        Instance updated1 = kirra.updateInstance(created1);
+        TestCase.assertEquals(10L, updated1.getValue("attr1"));
+        TestCase.assertEquals(true, updated1.getValue("attr6"));
+
+        created1.setValue("attr1", -100);
+        updated1 = kirra.updateInstance(created1);
+        TestCase.assertEquals(-100L, updated1.getValue("attr1"));
+        TestCase.assertEquals(false, updated1.getValue("attr6"));
+    }
+
+    public void testGetAllInstances() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+
+        // no instances created yet
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass1", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
+
+        Instance newInstance = new Instance("mypackage", "MyClass1");
+
+        newInstance.setValue("attr1", 10);
+        newInstance.setValue("attr2", "bar");
+        Instance created1 = kirra.createInstance(newInstance);
+
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass1", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
+
+        newInstance.setValue("attr1", 20);
+        newInstance.setValue("attr2", "foo");
+        Instance created2 = kirra.createInstance(newInstance);
+
+        TestCase.assertEquals(2, kirra.getInstances("mypackage", "MyClass1", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
+
+        Instance newInstance2 = new Instance("mypackage", "MyClass2");
+        newInstance2.setValue("attr3", true);
+        newInstance2.setValue("attr4", new Date());
+        newInstance2.setValue("attr5", "value1");
+        Instance created3 = kirra.createInstance(newInstance2);
+
+        List<Instance> myClass1Instances = kirra.getInstances("mypackage", "MyClass1", true);
+        List<Instance> myClass2Instances = kirra.getInstances("mypackage", "MyClass2", true);
+
+        TestCase.assertEquals(2, myClass1Instances.size());
+        TestCase.assertEquals(1, myClass2Instances.size());
+
+        TestCase.assertNotNull(findById(myClass1Instances, created1.getObjectId()));
+        TestCase.assertNotNull(findById(myClass1Instances, created2.getObjectId()));
+        TestCase.assertNotNull(findById(myClass2Instances, created3.getObjectId()));
+
+        kirra.deleteInstance(created1);
+
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass1", true).size());
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2", true).size());
+
+        kirra.deleteInstance(created2);
+        kirra.deleteInstance(created3);
+
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass1", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
+
+        kirra.createInstance(new Instance("mypackage", "MyClass2a"));
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2a", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2b", true).size());
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2", true).size());
+
         kirra.createInstance(new Instance("mypackage", "MyClass2b"));
-        assertEquals(1, kirra.getInstances("mypackage", "MyClass2a", true).size());
-        assertEquals(1, kirra.getInstances("mypackage", "MyClass2b", true).size());
-        assertEquals(2, kirra.getInstances("mypackage", "MyClass2", true).size());
-		
-	}
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2a", true).size());
+        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2b", true).size());
+        TestCase.assertEquals(2, kirra.getInstances("mypackage", "MyClass2", true).size());
+
+    }
+
+    public void testGetInstance() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+
+        Instance newInstance1 = new Instance();
+        newInstance1.setEntityName("MyClass1");
+        newInstance1.setEntityNamespace("mypackage");
+        newInstance1.setValue("attr1", 10);
+        newInstance1.setValue("attr2", "bar");
+        Instance created1 = kirra.createInstance(newInstance1);
+
+        Instance loaded1 = kirra.getInstance("mypackage", "MyClass1", created1.getObjectId(), true);
+        TestCase.assertNotNull(loaded1);
+        TestCase.assertFalse(loaded1.isNew());
+
+        TestCase.assertEquals(10L, loaded1.getValue("attr1"));
+        TestCase.assertEquals("bar", loaded1.getValue("attr2"));
+
+        Instance newInstance2 = new Instance();
+        newInstance2.setEntityName("MyClass2");
+        newInstance2.setEntityNamespace("mypackage");
+        newInstance2.setValue("attr3", true);
+        Date now = new Date();
+        newInstance2.setValue("attr4", now);
+        newInstance2.setValue("attr5", "value2");
+        Instance created2 = kirra.createInstance(newInstance2);
+
+        Instance loaded2 = kirra.getInstance("mypackage", "MyClass2", created2.getObjectId(), true);
+        TestCase.assertNotNull(loaded2);
+        TestCase.assertFalse(loaded2.isNew());
+
+        TestCase.assertEquals(true, loaded2.getValue("attr3"));
+        // apparently, we don't keep time, only date, expect accordingly (that
+        // is probably not deliberate)
+        TestCase.assertEquals(new Date(now.getYear(), now.getMonth(), now.getDate()), loaded2.getValue("attr4"));
+        TestCase.assertEquals("value2", loaded2.getValue("attr5"));
+    }
+
+    public void testNewInstanceDefaults() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+        Instance created1 = kirra.newInstance("mypackage", "MyClass1");
+        TestCase.assertEquals(5L, created1.getValue("attr1"));
+        TestCase.assertNull(created1.getValue("attr2"));
+
+        Instance created2 = kirra.newInstance("mypackage", "MyClass2");
+        TestCase.assertNull(created2.getValue("attr3"));
+        TestCase.assertNull(created2.getValue("attr4"));
+        TestCase.assertEquals("value2", created2.getValue("attr5"));
+    }
+
+    public void testSetValueWithQuotes() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+
+        Instance newInstance1 = new Instance();
+        newInstance1.setEntityName("MyClass1");
+        newInstance1.setEntityNamespace("mypackage");
+        // quotes caused trouble when persisting to a relational DB
+        newInstance1.setValue("attr2", "'bar'");
+        Instance created1 = kirra.createInstance(newInstance1);
+        TestCase.assertEquals("'bar'", created1.getValue("attr2"));
+    }
+
+    public void testUpdateInstance() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+
+        Instance newInstance = new Instance();
+        newInstance.setEntityName("MyClass1");
+        newInstance.setEntityNamespace("mypackage");
+        newInstance.setValue("attr1", 10);
+        newInstance.setValue("attr2", "bar");
+        Instance created = kirra.createInstance(newInstance);
+
+        created.setValue("attr1", 20);
+        created.setValue("attr2", "foo");
+
+        Instance updated = kirra.updateInstance(created);
+        TestCase.assertFalse(updated.isNew());
+
+        TestCase.assertEquals(20L, updated.getValue("attr1"));
+        TestCase.assertEquals("foo", updated.getValue("attr2"));
+    }
 }

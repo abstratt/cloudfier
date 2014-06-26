@@ -11,19 +11,20 @@ import org.restlet.ext.servlet.ServerServlet;
  * around the fact Restlet itself cannot see our code.
  */
 public class KirraUIServlet extends ServerServlet {
-	
-	private static final long serialVersionUID = 1L;
-	@Override
-	protected Application createApplication(Context parentContext) {
-		return new KirraUIApplication(getComponent());
-	}
-	
-	@Override
-	protected Component createComponent() {
-		Component component = super.createComponent();
-		// used for serving static files
-		component.getClients().add(Protocol.CLAP);
-		return component;
-	}
-	
+
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    protected Application createApplication(Context parentContext) {
+        return new KirraUIApplication(getComponent());
+    }
+
+    @Override
+    protected Component createComponent() {
+        Component component = super.createComponent();
+        // used for serving static files
+        component.getClients().add(Protocol.CLAP);
+        return component;
+    }
+
 }

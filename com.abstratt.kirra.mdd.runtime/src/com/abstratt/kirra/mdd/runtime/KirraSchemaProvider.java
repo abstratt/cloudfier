@@ -8,18 +8,20 @@ import com.abstratt.resman.FeatureProvider;
 import com.abstratt.resman.Resource;
 
 public class KirraSchemaProvider implements FeatureProvider {
-	
-	@Override
-	public Class<?>[] getRequiredFeatureTypes() {
-		return new Class<?>[] { KirraHelper.Metadata.class, KirraApplication.class };
-	}
-	@Override
-	public Class<?>[] getProvidedFeatureTypes() {
-		return new Class<?>[] { SchemaManagement.class };
-	}
-	@Override
-	public void initFeatures(Resource<?> resource) {
-		SchemaManagement schema = new SchemaManagementSnapshot(new KirraMDDSchemaBuilder());
-		resource.setFeature(SchemaManagement.class, schema);
-	}
+
+    @Override
+    public Class<?>[] getProvidedFeatureTypes() {
+        return new Class<?>[] { SchemaManagement.class };
+    }
+
+    @Override
+    public Class<?>[] getRequiredFeatureTypes() {
+        return new Class<?>[] { KirraHelper.Metadata.class, KirraApplication.class };
+    }
+
+    @Override
+    public void initFeatures(Resource<?> resource) {
+        SchemaManagement schema = new SchemaManagementSnapshot(new KirraMDDSchemaBuilder());
+        resource.setFeature(SchemaManagement.class, schema);
+    }
 }

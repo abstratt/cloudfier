@@ -15,18 +15,19 @@ import com.abstratt.mdd.core.runtime.RuntimeObject;
 
 public class RuntimeDestroyLinkAction extends RuntimeAction {
 
-	public RuntimeDestroyLinkAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeDestroyLinkAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		DestroyLinkAction instance = (DestroyLinkAction) getInstance();
-		List<LinkEndData> endData = instance.getEndData();
-		InputPin targetEndPin = endData.get(0).getValue();
-		Property targetEnd = endData.get(1).getEnd();
-		InputPin otherEndPin = endData.get(1).getValue();
-		RuntimeObject targetObject = (RuntimeObject) getRuntimeObjectNode(targetEndPin).getValue();
-		RuntimeObject otherObject = (RuntimeObject) getRuntimeObjectNode(otherEndPin).getValue();
-		targetObject.unlink(targetEnd, otherObject);
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        DestroyLinkAction instance = (DestroyLinkAction) getInstance();
+        List<LinkEndData> endData = instance.getEndData();
+        InputPin targetEndPin = endData.get(0).getValue();
+        Property targetEnd = endData.get(1).getEnd();
+        InputPin otherEndPin = endData.get(1).getValue();
+        RuntimeObject targetObject = (RuntimeObject) getRuntimeObjectNode(targetEndPin).getValue();
+        RuntimeObject otherObject = (RuntimeObject) getRuntimeObjectNode(otherEndPin).getValue();
+        targetObject.unlink(targetEnd, otherObject);
+    }
 }

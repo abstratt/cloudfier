@@ -1,6 +1,7 @@
 package com.abstratt.mdd.core.tests.runtime;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.eclipse.core.runtime.CoreException;
@@ -14,171 +15,210 @@ import com.abstratt.mdd.core.runtime.types.RealType;
 
 public class ExpressionTests extends AbstractRuntimeTests {
 
-	private static String structure;
+    public static Test suite() {
+        return new TestSuite(ExpressionTests.class);
+    }
 
-	static {
-		structure = "";
-		structure += "model tests;\n";
-		structure += "import base;\n";
-		structure += "class Simple\n";
-		structure += "static operation staticGetANumber() : Integer;\n";
-		structure += "static operation staticGetABoolean() : Boolean;\n";
-		structure += "static operation staticOperateOnInteger(value :  Integer) : Integer;\n";
-		structure += "static operation staticOperateOnTwoIntegers(value1 :  Integer, value2 : Integer) : Integer;\n";
-		structure += "static operation staticOperateOnBoolean(value :  Boolean) : Boolean;\n";
-		structure += "static operation staticOperateOnTwoBooleans(value1 :  Boolean, value2 : Boolean) : Boolean;\n";
-		structure += "static operation staticDoubleNumber(number : Integer) : Integer;\n";
-		structure += "static operation staticCompareTwoNumbers(value1 :  Number, value2 : Number) : Boolean;\n";
-		structure += "static operation staticCompareTwoObjects(value1 :  Object, value2 : Object) : Boolean;\n";		
-		structure += "end;\n";
-		structure += "class ClassA end;\n";
-		structure += "class ClassB end;\n";
-		structure += "end.";
-	}
+    private static String structure;
 
-	public static Test suite() {
-		return new TestSuite(ExpressionTests.class);
-	}
+    static {
+        ExpressionTests.structure = "";
+        ExpressionTests.structure += "model tests;\n";
+        ExpressionTests.structure += "import base;\n";
+        ExpressionTests.structure += "class Simple\n";
+        ExpressionTests.structure += "static operation staticGetANumber() : Integer;\n";
+        ExpressionTests.structure += "static operation staticGetABoolean() : Boolean;\n";
+        ExpressionTests.structure += "static operation staticOperateOnInteger(value :  Integer) : Integer;\n";
+        ExpressionTests.structure += "static operation staticOperateOnTwoIntegers(value1 :  Integer, value2 : Integer) : Integer;\n";
+        ExpressionTests.structure += "static operation staticOperateOnBoolean(value :  Boolean) : Boolean;\n";
+        ExpressionTests.structure += "static operation staticOperateOnTwoBooleans(value1 :  Boolean, value2 : Boolean) : Boolean;\n";
+        ExpressionTests.structure += "static operation staticDoubleNumber(number : Integer) : Integer;\n";
+        ExpressionTests.structure += "static operation staticCompareTwoNumbers(value1 :  Number, value2 : Number) : Boolean;\n";
+        ExpressionTests.structure += "static operation staticCompareTwoObjects(value1 :  Object, value2 : Object) : Boolean;\n";
+        ExpressionTests.structure += "end;\n";
+        ExpressionTests.structure += "class ClassA end;\n";
+        ExpressionTests.structure += "class ClassB end;\n";
+        ExpressionTests.structure += "end.";
+    }
 
-	public ExpressionTests(String arg0) {
-		super(arg0);
-	}
+    public ExpressionTests(String arg0) {
+        super(arg0);
+    }
 
-	private void createNumberComparisonMethod(String operator) throws CoreException {
-		createBinaryExpressionMethod("staticCompareTwoNumbers", operator);
-	}
-	
-	private void createBinaryExpressionMethod(String operationName, String operator) throws CoreException {
-		String behavior = "";
-		behavior += "model tests;\n";
-		behavior += "operation Simple." + operationName + ";\n";
-		behavior += "begin\n";
-		behavior += "return value1 " + operator + " value2;\n";
-		behavior += "end;\n";
-		behavior += "end.";
-		parseAndCheck(structure, behavior);
-	}
+    public void testAndExpression() throws CoreException {
+        createBinaryExpressionMethod("staticOperateOnTwoBooleans", "and");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
+    }
 
-	
-	public void testAndExpression() throws CoreException {
-		createBinaryExpressionMethod("staticOperateOnTwoBooleans", "and");
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
-	}
-	
-	public void testEqualsExpression() throws CoreException {
-		createNumberComparisonMethod("=");
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new IntegerType(1)));
-	}
-	
-	public void testExpression() throws CoreException {
-		String behavior = "";
-		behavior += "model tests;\n";
-		behavior += "operation Simple.staticGetANumber;\n";
-		behavior += "begin\n";
-		behavior += "var value : Integer;\n";
-		behavior += "value := 5;";
-		behavior += "return 2 * value;\n";
-		behavior += "end;\n";
-		behavior += "end.";
-		parseAndCheck(structure, behavior);
-		assertEquals(new IntegerType(10), runStaticOperation("tests::Simple", "staticGetANumber"));
-	}
+    public void testEqualsExpression() throws CoreException {
+        createNumberComparisonMethod("=");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new IntegerType(1)));
+    }
 
-	public void testGreaterOrEqualsExpression() throws CoreException {
-		createNumberComparisonMethod(">=");
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));		
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));		
-	}
-	
-	public void testGreaterThanExpression() throws CoreException {
-		createNumberComparisonMethod(">");
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));		
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));		
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new IntegerType(1)));
-	}
-	
-	public void testLowerOrEqualsExpression() throws CoreException {
-		createNumberComparisonMethod("<=");
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));		
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));		
-	}
-	
-	public void testLowerThanExpression() throws CoreException {
-		createNumberComparisonMethod("<");
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));		
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));		
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new IntegerType(1)));
-	}
-	
-	public void testNotEqualsExpression() throws CoreException {
-		createNumberComparisonMethod("!=");
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
-	}
+    public void testExpression() throws CoreException {
+        String behavior = "";
+        behavior += "model tests;\n";
+        behavior += "operation Simple.staticGetANumber;\n";
+        behavior += "begin\n";
+        behavior += "var value : Integer;\n";
+        behavior += "value := 5;";
+        behavior += "return 2 * value;\n";
+        behavior += "end;\n";
+        behavior += "end.";
+        parseAndCheck(ExpressionTests.structure, behavior);
+        TestCase.assertEquals(new IntegerType(10), runStaticOperation("tests::Simple", "staticGetANumber"));
+    }
 
+    public void testGreaterOrEqualsExpression() throws CoreException {
+        createNumberComparisonMethod(">=");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));
+    }
 
-	public void testNotExpression() throws CoreException {
-		String behavior = "";
-		behavior += "model tests;\n";
-		behavior += "operation Simple.staticOperateOnBoolean;\n";
-		behavior += "begin\n";
-		behavior += "return not value;\n";
-		behavior += "end;\n";
-		behavior += "end.";
-		parseAndCheck(structure, behavior);
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticOperateOnBoolean", BooleanType.FALSE));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticOperateOnBoolean", BooleanType.TRUE));
-	}
+    public void testGreaterThanExpression() throws CoreException {
+        createNumberComparisonMethod(">");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new IntegerType(1)));
+    }
 
-	public void testOrExpression() throws CoreException {
-		createBinaryExpressionMethod("staticOperateOnTwoBooleans", "or");
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
-	}
+    public void testLowerOrEqualsExpression() throws CoreException {
+        createNumberComparisonMethod("<=");
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));
+    }
 
-	public void testSameExpression() throws CoreException {
-		getRepository().getProperties().put(IRepository.EXTEND_BASE_OBJECT, "true");
-		createBinaryExpressionMethod("staticCompareTwoObjects", "==");
-		
-		org.eclipse.uml2.uml.Class classA = getRepository().findNamedElement("tests::ClassA", UMLPackage.Literals.CLASS, null);
-		org.eclipse.uml2.uml.Class classB = getRepository().findNamedElement("tests::ClassB", UMLPackage.Literals.CLASS, null);
-		assertNotNull(classA);
-		assertNotNull(classB);
-		
-		RuntimeObject a1 = getRuntime().getRuntimeClass(classA).newInstance();
-		RuntimeObject a2 = getRuntime().getRuntimeClass(classA).newInstance();
-		RuntimeObject b1 = getRuntime().getRuntimeClass(classB).newInstance();
-		RuntimeObject b2 = getRuntime().getRuntimeClass(classB).newInstance();
+    public void testLowerThanExpression() throws CoreException {
+        createNumberComparisonMethod("<");
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(2), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(2), new RealType(1)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new IntegerType(1)));
+    }
 
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, a2));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, a1));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", b1, b2));
-		assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", b1, b1));
-		assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, b1));
-	}
+    public void testNotEqualsExpression() throws CoreException {
+        createNumberComparisonMethod("!=");
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(2)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new IntegerType(1), new IntegerType(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(2)));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", new RealType(1), new RealType(1)));
+    }
+
+    public void testNotExpression() throws CoreException {
+        String behavior = "";
+        behavior += "model tests;\n";
+        behavior += "operation Simple.staticOperateOnBoolean;\n";
+        behavior += "begin\n";
+        behavior += "return not value;\n";
+        behavior += "end;\n";
+        behavior += "end.";
+        parseAndCheck(ExpressionTests.structure, behavior);
+        TestCase.assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticOperateOnBoolean", BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticOperateOnBoolean", BooleanType.TRUE));
+    }
+
+    public void testOrExpression() throws CoreException {
+        createBinaryExpressionMethod("staticOperateOnTwoBooleans", "or");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
+    }
+
+    public void testSameExpression() throws CoreException {
+        getRepository().getProperties().put(IRepository.EXTEND_BASE_OBJECT, "true");
+        createBinaryExpressionMethod("staticCompareTwoObjects", "==");
+
+        org.eclipse.uml2.uml.Class classA = getRepository().findNamedElement("tests::ClassA", UMLPackage.Literals.CLASS, null);
+        org.eclipse.uml2.uml.Class classB = getRepository().findNamedElement("tests::ClassB", UMLPackage.Literals.CLASS, null);
+        TestCase.assertNotNull(classA);
+        TestCase.assertNotNull(classB);
+
+        RuntimeObject a1 = getRuntime().getRuntimeClass(classA).newInstance();
+        RuntimeObject a2 = getRuntime().getRuntimeClass(classA).newInstance();
+        RuntimeObject b1 = getRuntime().getRuntimeClass(classB).newInstance();
+        RuntimeObject b2 = getRuntime().getRuntimeClass(classB).newInstance();
+
+        TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, a2));
+        TestCase.assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, a1));
+        TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", b1, b2));
+        TestCase.assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", b1, b1));
+        TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, b1));
+    }
+
+    private void createBinaryExpressionMethod(String operationName, String operator) throws CoreException {
+        String behavior = "";
+        behavior += "model tests;\n";
+        behavior += "operation Simple." + operationName + ";\n";
+        behavior += "begin\n";
+        behavior += "return value1 " + operator + " value2;\n";
+        behavior += "end;\n";
+        behavior += "end.";
+        parseAndCheck(ExpressionTests.structure, behavior);
+    }
+
+    private void createNumberComparisonMethod(String operator) throws CoreException {
+        createBinaryExpressionMethod("staticCompareTwoNumbers", operator);
+    }
 }

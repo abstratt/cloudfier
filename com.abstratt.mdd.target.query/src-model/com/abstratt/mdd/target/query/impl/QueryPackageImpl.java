@@ -20,314 +20,358 @@ import com.abstratt.mdd.target.query.QueryPackage;
 import com.abstratt.mdd.target.query.VariableReference;
 
 /**
- * <!-- begin-user-doc -->
- * An implementation of the model <b>Package</b>.
- * <!-- end-user-doc -->
+ * <!-- begin-user-doc --> An implementation of the model <b>Package</b>. <!--
+ * end-user-doc -->
+ * 
  * @generated
  */
 public class QueryPackageImpl extends EPackageImpl implements QueryPackage {
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass queryEClass = null;
+    /**
+     * Creates, registers, and initializes the <b>Package</b> for this model,
+     * and for any others upon which it depends.
+     * 
+     * <p>
+     * This method is used to initialize {@link QueryPackage#eINSTANCE} when
+     * that field is accessed. Clients should not invoke it directly. Instead,
+     * they should simply access that field to obtain the package. <!--
+     * begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @see #eNS_URI
+     * @see #createPackageContents()
+     * @see #initializePackageContents()
+     * @generated
+     */
+    public static QueryPackage init() {
+        if (QueryPackageImpl.isInited)
+            return (QueryPackage) EPackage.Registry.INSTANCE.getEPackage(QueryPackage.eNS_URI);
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass joinEClass = null;
+        // Obtain or create and register package
+        QueryPackageImpl theQueryPackage = (QueryPackageImpl) (EPackage.Registry.INSTANCE.get(QueryPackage.eNS_URI) instanceof QueryPackageImpl ? EPackage.Registry.INSTANCE
+                .get(QueryPackage.eNS_URI) : new QueryPackageImpl());
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass propertyReferenceEClass = null;
+        QueryPackageImpl.isInited = true;
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private EClass variableReferenceEClass = null;
+        // Initialize simple dependencies
+        UMLPackage.eINSTANCE.eClass();
 
-	/**
-	 * Creates an instance of the model <b>Package</b>, registered with
-	 * {@link org.eclipse.emf.ecore.EPackage.Registry EPackage.Registry} by the package
-	 * package URI value.
-	 * <p>Note: the correct way to create the package is via the static
-	 * factory method {@link #init init()}, which also performs
-	 * initialization of the package, or returns the registered package,
-	 * if one already exists.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see org.eclipse.emf.ecore.EPackage.Registry
-	 * @see com.abstratt.mdd.target.query.QueryPackage#eNS_URI
-	 * @see #init()
-	 * @generated
-	 */
-	private QueryPackageImpl() {
-		super(eNS_URI, QueryFactory.eINSTANCE);
-	}
+        // Create package meta-data objects
+        theQueryPackage.createPackageContents();
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private static boolean isInited = false;
+        // Initialize created meta-data
+        theQueryPackage.initializePackageContents();
 
-	/**
-	 * Creates, registers, and initializes the <b>Package</b> for this model, and for any others upon which it depends.
-	 * 
-	 * <p>This method is used to initialize {@link QueryPackage#eINSTANCE} when that field is accessed.
-	 * Clients should not invoke it directly. Instead, they should simply access that field to obtain the package.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @see #eNS_URI
-	 * @see #createPackageContents()
-	 * @see #initializePackageContents()
-	 * @generated
-	 */
-	public static QueryPackage init() {
-		if (isInited) return (QueryPackage)EPackage.Registry.INSTANCE.getEPackage(QueryPackage.eNS_URI);
+        // Mark meta-data to indicate it can't be changed
+        theQueryPackage.freeze();
 
-		// Obtain or create and register package
-		QueryPackageImpl theQueryPackage = (QueryPackageImpl)(EPackage.Registry.INSTANCE.get(eNS_URI) instanceof QueryPackageImpl ? EPackage.Registry.INSTANCE.get(eNS_URI) : new QueryPackageImpl());
+        // Update the registry and return the package
+        EPackage.Registry.INSTANCE.put(QueryPackage.eNS_URI, theQueryPackage);
+        return theQueryPackage;
+    }
 
-		isInited = true;
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private EClass queryEClass = null;
 
-		// Initialize simple dependencies
-		UMLPackage.eINSTANCE.eClass();
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private EClass joinEClass = null;
 
-		// Create package meta-data objects
-		theQueryPackage.createPackageContents();
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private EClass propertyReferenceEClass = null;
 
-		// Initialize created meta-data
-		theQueryPackage.initializePackageContents();
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private EClass variableReferenceEClass = null;
 
-		// Mark meta-data to indicate it can't be changed
-		theQueryPackage.freeze();
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private static boolean isInited = false;
 
-  
-		// Update the registry and return the package
-		EPackage.Registry.INSTANCE.put(QueryPackage.eNS_URI, theQueryPackage);
-		return theQueryPackage;
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private boolean isCreated = false;
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getQuery() {
-		return queryEClass;
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    private boolean isInitialized = false;
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getQuery_SourceType() {
-		return (EReference)queryEClass.getEStructuralFeatures().get(0);
-	}
+    /**
+     * Creates an instance of the model <b>Package</b>, registered with
+     * {@link org.eclipse.emf.ecore.EPackage.Registry EPackage.Registry} by the
+     * package package URI value.
+     * <p>
+     * Note: the correct way to create the package is via the static factory
+     * method {@link #init init()}, which also performs initialization of the
+     * package, or returns the registered package, if one already exists. <!--
+     * begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @see org.eclipse.emf.ecore.EPackage.Registry
+     * @see com.abstratt.mdd.target.query.QueryPackage#eNS_URI
+     * @see #init()
+     * @generated
+     */
+    private QueryPackageImpl() {
+        super(QueryPackage.eNS_URI, QueryFactory.eINSTANCE);
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getQuery_Joins() {
-		return (EReference)queryEClass.getEStructuralFeatures().get(1);
-	}
+    /**
+     * Creates the meta-model objects for the package. This method is guarded to
+     * have no affect on any invocation but its first. <!-- begin-user-doc -->
+     * <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    public void createPackageContents() {
+        if (isCreated)
+            return;
+        isCreated = true;
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getQuery_Filters() {
-		return (EReference)queryEClass.getEStructuralFeatures().get(2);
-	}
+        // Create classes and their features
+        queryEClass = createEClass(QueryPackage.QUERY);
+        createEReference(queryEClass, QueryPackage.QUERY__SOURCE_TYPE);
+        createEReference(queryEClass, QueryPackage.QUERY__JOINS);
+        createEReference(queryEClass, QueryPackage.QUERY__FILTERS);
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getJoin() {
-		return joinEClass;
-	}
+        joinEClass = createEClass(QueryPackage.JOIN);
+        createEReference(joinEClass, QueryPackage.JOIN__SOURCE);
+        createEReference(joinEClass, QueryPackage.JOIN__TARGET);
+        createEReference(joinEClass, QueryPackage.JOIN__ASSOCIATION);
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getJoin_Source() {
-		return (EReference)joinEClass.getEStructuralFeatures().get(0);
-	}
+        propertyReferenceEClass = createEClass(QueryPackage.PROPERTY_REFERENCE);
+        createEReference(propertyReferenceEClass, QueryPackage.PROPERTY_REFERENCE__PROPERTY);
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getJoin_Target() {
-		return (EReference)joinEClass.getEStructuralFeatures().get(1);
-	}
+        variableReferenceEClass = createEClass(QueryPackage.VARIABLE_REFERENCE);
+        createEReference(variableReferenceEClass, QueryPackage.VARIABLE_REFERENCE__VARIABLE);
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getJoin_Association() {
-		return (EReference)joinEClass.getEStructuralFeatures().get(2);
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EClass getJoin() {
+        return joinEClass;
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getPropertyReference() {
-		return propertyReferenceEClass;
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getJoin_Association() {
+        return (EReference) joinEClass.getEStructuralFeatures().get(2);
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getPropertyReference_Property() {
-		return (EReference)propertyReferenceEClass.getEStructuralFeatures().get(0);
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getJoin_Source() {
+        return (EReference) joinEClass.getEStructuralFeatures().get(0);
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EClass getVariableReference() {
-		return variableReferenceEClass;
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getJoin_Target() {
+        return (EReference) joinEClass.getEStructuralFeatures().get(1);
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public EReference getVariableReference_Variable() {
-		return (EReference)variableReferenceEClass.getEStructuralFeatures().get(0);
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EClass getPropertyReference() {
+        return propertyReferenceEClass;
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public QueryFactory getQueryFactory() {
-		return (QueryFactory)getEFactoryInstance();
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getPropertyReference_Property() {
+        return (EReference) propertyReferenceEClass.getEStructuralFeatures().get(0);
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private boolean isCreated = false;
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EClass getQuery() {
+        return queryEClass;
+    }
 
-	/**
-	 * Creates the meta-model objects for the package.  This method is
-	 * guarded to have no affect on any invocation but its first.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void createPackageContents() {
-		if (isCreated) return;
-		isCreated = true;
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getQuery_Filters() {
+        return (EReference) queryEClass.getEStructuralFeatures().get(2);
+    }
 
-		// Create classes and their features
-		queryEClass = createEClass(QUERY);
-		createEReference(queryEClass, QUERY__SOURCE_TYPE);
-		createEReference(queryEClass, QUERY__JOINS);
-		createEReference(queryEClass, QUERY__FILTERS);
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getQuery_Joins() {
+        return (EReference) queryEClass.getEStructuralFeatures().get(1);
+    }
 
-		joinEClass = createEClass(JOIN);
-		createEReference(joinEClass, JOIN__SOURCE);
-		createEReference(joinEClass, JOIN__TARGET);
-		createEReference(joinEClass, JOIN__ASSOCIATION);
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getQuery_SourceType() {
+        return (EReference) queryEClass.getEStructuralFeatures().get(0);
+    }
 
-		propertyReferenceEClass = createEClass(PROPERTY_REFERENCE);
-		createEReference(propertyReferenceEClass, PROPERTY_REFERENCE__PROPERTY);
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public QueryFactory getQueryFactory() {
+        return (QueryFactory) getEFactoryInstance();
+    }
 
-		variableReferenceEClass = createEClass(VARIABLE_REFERENCE);
-		createEReference(variableReferenceEClass, VARIABLE_REFERENCE__VARIABLE);
-	}
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EClass getVariableReference() {
+        return variableReferenceEClass;
+    }
 
-	/**
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	private boolean isInitialized = false;
+    /**
+     * <!-- begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    @Override
+    public EReference getVariableReference_Variable() {
+        return (EReference) variableReferenceEClass.getEStructuralFeatures().get(0);
+    }
 
-	/**
-	 * Complete the initialization of the package and its meta-model.  This
-	 * method is guarded to have no affect on any invocation but its first.
-	 * <!-- begin-user-doc -->
-	 * <!-- end-user-doc -->
-	 * @generated
-	 */
-	public void initializePackageContents() {
-		if (isInitialized) return;
-		isInitialized = true;
+    /**
+     * Complete the initialization of the package and its meta-model. This
+     * method is guarded to have no affect on any invocation but its first. <!--
+     * begin-user-doc --> <!-- end-user-doc -->
+     * 
+     * @generated
+     */
+    public void initializePackageContents() {
+        if (isInitialized)
+            return;
+        isInitialized = true;
 
-		// Initialize package
-		setName(eNAME);
-		setNsPrefix(eNS_PREFIX);
-		setNsURI(eNS_URI);
+        // Initialize package
+        setName(QueryPackage.eNAME);
+        setNsPrefix(QueryPackage.eNS_PREFIX);
+        setNsURI(QueryPackage.eNS_URI);
 
-		// Obtain other dependent packages
-		UMLPackage theUMLPackage = (UMLPackage)EPackage.Registry.INSTANCE.getEPackage(UMLPackage.eNS_URI);
+        // Obtain other dependent packages
+        UMLPackage theUMLPackage = (UMLPackage) EPackage.Registry.INSTANCE.getEPackage(UMLPackage.eNS_URI);
 
-		// Create type parameters
+        // Create type parameters
 
-		// Set bounds for type parameters
+        // Set bounds for type parameters
 
-		// Add supertypes to classes
-		queryEClass.getESuperTypes().add(theUMLPackage.getElement());
-		joinEClass.getESuperTypes().add(theUMLPackage.getElement());
-		propertyReferenceEClass.getESuperTypes().add(theUMLPackage.getValueSpecification());
-		variableReferenceEClass.getESuperTypes().add(theUMLPackage.getValueSpecification());
+        // Add supertypes to classes
+        queryEClass.getESuperTypes().add(theUMLPackage.getElement());
+        joinEClass.getESuperTypes().add(theUMLPackage.getElement());
+        propertyReferenceEClass.getESuperTypes().add(theUMLPackage.getValueSpecification());
+        variableReferenceEClass.getESuperTypes().add(theUMLPackage.getValueSpecification());
 
-		// Initialize classes and features; add operations and parameters
-		initEClass(queryEClass, Query.class, "Query", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getQuery_SourceType(), theUMLPackage.getClassifier(), null, "sourceType", null, 1, 1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
-		initEReference(getQuery_Joins(), this.getJoin(), null, "joins", null, 0, -1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
-		initEReference(getQuery_Filters(), theUMLPackage.getActivity(), null, "filters", null, 0, -1, Query.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
+        // Initialize classes and features; add operations and parameters
+        initEClass(queryEClass, Query.class, "Query", !EPackageImpl.IS_ABSTRACT, !EPackageImpl.IS_INTERFACE,
+                EPackageImpl.IS_GENERATED_INSTANCE_CLASS);
+        initEReference(getQuery_SourceType(), theUMLPackage.getClassifier(), null, "sourceType", null, 1, 1, Query.class,
+                !EPackageImpl.IS_TRANSIENT, !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE,
+                EPackageImpl.IS_RESOLVE_PROXIES, !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED,
+                !EPackageImpl.IS_ORDERED);
+        initEReference(getQuery_Joins(), this.getJoin(), null, "joins", null, 0, -1, Query.class, !EPackageImpl.IS_TRANSIENT,
+                !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, EPackageImpl.IS_COMPOSITE, EPackageImpl.IS_RESOLVE_PROXIES,
+                !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED, !EPackageImpl.IS_ORDERED);
+        initEReference(getQuery_Filters(), theUMLPackage.getActivity(), null, "filters", null, 0, -1, Query.class,
+                !EPackageImpl.IS_TRANSIENT, !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE,
+                EPackageImpl.IS_RESOLVE_PROXIES, !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED,
+                !EPackageImpl.IS_ORDERED);
 
-		addEOperation(queryEClass, theUMLPackage.getClassifier(), "getTargetType", 1, 1, IS_UNIQUE, !IS_ORDERED);
+        addEOperation(queryEClass, theUMLPackage.getClassifier(), "getTargetType", 1, 1, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_ORDERED);
 
-		initEClass(joinEClass, Join.class, "Join", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getJoin_Source(), theUMLPackage.getProperty(), null, "source", null, 1, 1, Join.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
-		initEReference(getJoin_Target(), theUMLPackage.getProperty(), null, "target", null, 1, 1, Join.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
-		initEReference(getJoin_Association(), theUMLPackage.getAssociation(), null, "association", null, 1, 1, Join.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
+        initEClass(joinEClass, Join.class, "Join", !EPackageImpl.IS_ABSTRACT, !EPackageImpl.IS_INTERFACE,
+                EPackageImpl.IS_GENERATED_INSTANCE_CLASS);
+        initEReference(getJoin_Source(), theUMLPackage.getProperty(), null, "source", null, 1, 1, Join.class, !EPackageImpl.IS_TRANSIENT,
+                !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE, EPackageImpl.IS_RESOLVE_PROXIES,
+                !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED, !EPackageImpl.IS_ORDERED);
+        initEReference(getJoin_Target(), theUMLPackage.getProperty(), null, "target", null, 1, 1, Join.class, !EPackageImpl.IS_TRANSIENT,
+                !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE, EPackageImpl.IS_RESOLVE_PROXIES,
+                !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED, !EPackageImpl.IS_ORDERED);
+        initEReference(getJoin_Association(), theUMLPackage.getAssociation(), null, "association", null, 1, 1, Join.class,
+                !EPackageImpl.IS_TRANSIENT, !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE,
+                EPackageImpl.IS_RESOLVE_PROXIES, !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED,
+                !EPackageImpl.IS_ORDERED);
 
-		initEClass(propertyReferenceEClass, PropertyReference.class, "PropertyReference", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getPropertyReference_Property(), theUMLPackage.getProperty(), null, "property", null, 1, 1, PropertyReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
+        initEClass(propertyReferenceEClass, PropertyReference.class, "PropertyReference", !EPackageImpl.IS_ABSTRACT,
+                !EPackageImpl.IS_INTERFACE, EPackageImpl.IS_GENERATED_INSTANCE_CLASS);
+        initEReference(getPropertyReference_Property(), theUMLPackage.getProperty(), null, "property", null, 1, 1, PropertyReference.class,
+                !EPackageImpl.IS_TRANSIENT, !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE,
+                EPackageImpl.IS_RESOLVE_PROXIES, !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED,
+                !EPackageImpl.IS_ORDERED);
 
-		initEClass(variableReferenceEClass, VariableReference.class, "VariableReference", !IS_ABSTRACT, !IS_INTERFACE, IS_GENERATED_INSTANCE_CLASS);
-		initEReference(getVariableReference_Variable(), theUMLPackage.getVariable(), null, "variable", null, 1, 1, VariableReference.class, !IS_TRANSIENT, !IS_VOLATILE, IS_CHANGEABLE, !IS_COMPOSITE, IS_RESOLVE_PROXIES, !IS_UNSETTABLE, IS_UNIQUE, !IS_DERIVED, !IS_ORDERED);
+        initEClass(variableReferenceEClass, VariableReference.class, "VariableReference", !EPackageImpl.IS_ABSTRACT,
+                !EPackageImpl.IS_INTERFACE, EPackageImpl.IS_GENERATED_INSTANCE_CLASS);
+        initEReference(getVariableReference_Variable(), theUMLPackage.getVariable(), null, "variable", null, 1, 1, VariableReference.class,
+                !EPackageImpl.IS_TRANSIENT, !EPackageImpl.IS_VOLATILE, EPackageImpl.IS_CHANGEABLE, !EPackageImpl.IS_COMPOSITE,
+                EPackageImpl.IS_RESOLVE_PROXIES, !EPackageImpl.IS_UNSETTABLE, EPackageImpl.IS_UNIQUE, !EPackageImpl.IS_DERIVED,
+                !EPackageImpl.IS_ORDERED);
 
-		// Create resource
-		createResource(eNS_URI);
-	}
+        // Create resource
+        createResource(QueryPackage.eNS_URI);
+    }
 
-} //QueryPackageImpl
+} // QueryPackageImpl

@@ -14,14 +14,15 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 
 public class RuntimeReadExtentAction extends RuntimeAction implements Constants {
-	public RuntimeReadExtentAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeReadExtentAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		ReadExtentAction instance = (ReadExtentAction) getInstance();
-		Classifier classifier = instance.getClassifier();
-		List<BasicType> allInstances = context.getRuntime().getAllInstances(classifier);
-		addResultValue(instance.getResult(), CollectionType.createCollectionFor(instance.getResult(), allInstances));
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        ReadExtentAction instance = (ReadExtentAction) getInstance();
+        Classifier classifier = instance.getClassifier();
+        List<BasicType> allInstances = context.getRuntime().getAllInstances(classifier);
+        addResultValue(instance.getResult(), CollectionType.createCollectionFor(instance.getResult(), allInstances));
+    }
 }

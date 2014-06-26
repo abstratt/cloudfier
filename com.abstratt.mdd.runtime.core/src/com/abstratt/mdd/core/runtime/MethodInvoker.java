@@ -11,8 +11,8 @@ public class MethodInvoker {
     /**
      * Tries to invoke a method operation on a Java object or class (if static).
      */
-    public static Object tryToInvoke(ExecutionContext context, Class<?> javaClass, Object target,
-            Operation operation, Object... arguments) throws NoSuchMethodException, IllegalAccessException {
+    public static Object tryToInvoke(ExecutionContext context, Class<?> javaClass, Object target, Operation operation, Object... arguments)
+            throws NoSuchMethodException, IllegalAccessException {
         Class<?>[] argumentTypes = new Class[arguments.length + 1];
         argumentTypes[0] = ExecutionContext.class;
         for (int i = 0; i < arguments.length; i++)
@@ -21,31 +21,31 @@ public class MethodInvoker {
         enhancedArguments[0] = context;
         System.arraycopy(arguments, 0, enhancedArguments, 1, arguments.length);
         try {
-            return invokeOperation(javaClass, target, operation.getName(), enhancedArguments);
+            return MethodInvoker.invokeOperation(javaClass, target, operation.getName(), enhancedArguments);
         } catch (InvocationTargetException e) {
             Throwable unexpected = e.getTargetException();
             if (unexpected instanceof RuntimeException)
-                throw ((RuntimeException) unexpected);
+                throw (RuntimeException) unexpected;
             if (unexpected instanceof Error)
-                throw ((Error) unexpected);
+                throw (Error) unexpected;
             throw new RuntimeException(unexpected);
         }
     }
 
-    private static Object invokeOperation(Class<?> javaClass, Object target, String operationName,
-            Object[] arguments) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    private static Object invokeOperation(Class<?> javaClass, Object target, String operationName, Object[] arguments)
+            throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method[] methods = javaClass.getDeclaredMethods();
         for (Method method : methods)
-            if (method.getName().equals(operationName) && isCompatibleArguments(method.getParameterTypes(), arguments))
+            if (method.getName().equals(operationName) && MethodInvoker.isCompatibleArguments(method.getParameterTypes(), arguments))
                 return method.invoke(target, arguments);
         Class<?> superClass = javaClass.getSuperclass();
         if (superClass == null || superClass == Object.class)
             throw new NoSuchMethodException(operationName);
-        return invokeOperation(superClass, target, operationName, arguments);
+        return MethodInvoker.invokeOperation(superClass, target, operationName, arguments);
     }
 
     private static boolean isCompatibleArguments(Class<?>[] parameterTypes, Object[] arguments) {
-        if (parameterTypes.length != arguments.length) 
+        if (parameterTypes.length != arguments.length)
             return false;
         for (int i = 0; i < arguments.length; i++) {
             if (arguments[i] == null) {

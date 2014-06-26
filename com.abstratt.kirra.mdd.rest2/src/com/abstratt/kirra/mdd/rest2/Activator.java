@@ -10,52 +10,53 @@ import com.abstratt.kirra.auth.EmailService;
 import com.abstratt.kirra.auth.TransientAuthenticationService;
 
 public class Activator implements BundleActivator {
-    
+
+    public static Activator getInstance() {
+        return Activator.instance;
+    }
+
     public static String ID = Activator.class.getPackage().getName();
+    private static Activator instance;
+    private BundleContext context;
+    private ServiceTracker<AuthenticationService, AuthenticationService> authenticationTracker;
+    private AuthenticationService transientAuthentication = new TransientAuthenticationService();
+    private ServiceTracker<EmailService, EmailService> emailTracker;
 
-	private static Activator instance;
-	private BundleContext context;
-	private ServiceTracker<AuthenticationService, AuthenticationService> authenticationTracker;
-	private AuthenticationService transientAuthentication = new TransientAuthenticationService();
-	private ServiceTracker<EmailService, EmailService> emailTracker;
-	private String applicationVersion;
-	
-	@Override
-	public void start(BundleContext context) throws Exception {
-		this.context = context;
-		authenticationTracker = new ServiceTracker<AuthenticationService, AuthenticationService>(context, AuthenticationService.class, null);
-		authenticationTracker.open();
-		emailTracker = new ServiceTracker<EmailService, EmailService>(context, EmailService.class, null);
-		emailTracker.open();
-		this.applicationVersion = context.getBundle().getHeaders().get(Constants.BUNDLE_VERSION);
-		instance = this;
-	}
+    private String applicationVersion;
 
-	@Override
-	public void stop(BundleContext context) throws Exception {
-		instance = null;
-		this.context = null;
-	}
-	
-	public BundleContext getContext() {
-		return context;
-	}
-	
-	public static Activator getInstance() {
-		return instance;
-	}
-	
-	public String getPlatformVersion() {
-		return applicationVersion;
-	}
-	
-	public AuthenticationService getAuthenticationService() {
-		AuthenticationService boundService = Boolean.getBoolean("mdd.offlineAuthentication") ? transientAuthentication : authenticationTracker.getService();
-		return boundService != null ? boundService : transientAuthentication;
-	}
-	
-	public EmailService getEmailService() {
-		EmailService boundService = emailTracker.getService();
-		return boundService;
-	}
+    public AuthenticationService getAuthenticationService() {
+        AuthenticationService boundService = Boolean.getBoolean("mdd.offlineAuthentication") ? transientAuthentication
+                : authenticationTracker.getService();
+        return boundService != null ? boundService : transientAuthentication;
+    }
+
+    public BundleContext getContext() {
+        return context;
+    }
+
+    public EmailService getEmailService() {
+        EmailService boundService = emailTracker.getService();
+        return boundService;
+    }
+
+    public String getPlatformVersion() {
+        return applicationVersion;
+    }
+
+    @Override
+    public void start(BundleContext context) throws Exception {
+        this.context = context;
+        authenticationTracker = new ServiceTracker<AuthenticationService, AuthenticationService>(context, AuthenticationService.class, null);
+        authenticationTracker.open();
+        emailTracker = new ServiceTracker<EmailService, EmailService>(context, EmailService.class, null);
+        emailTracker.open();
+        this.applicationVersion = context.getBundle().getHeaders().get(Constants.BUNDLE_VERSION);
+        Activator.instance = this;
+    }
+
+    @Override
+    public void stop(BundleContext context) throws Exception {
+        Activator.instance = null;
+        this.context = null;
+    }
 }

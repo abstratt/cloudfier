@@ -13,41 +13,40 @@ import com.abstratt.mdd.core.runtime.RuntimeMessageEvent;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 
 public class ExternalMetaClass implements MetaClass<ExternalObject> {
-	/**
-	 * All instances of external objects map to a single delegate.
-	 */
-	private ExternalObjectDelegate delegate;
+    /**
+     * All instances of external objects map to a single delegate.
+     */
+    private ExternalObjectDelegate delegate;
 
-	@Override
-	public Object runOperation(ExecutionContext context, BasicType target,
-			Operation operation, Object... arguments) {
-		return delegate.getData(getClassifier((ExternalObject) target), operation, arguments);
-	}
+    public ExternalObject getInstance(Classifier type) {
+        return new ExternalObject(type.getQualifiedName(), delegate);
+    }
 
-	private Classifier getClassifier(
-			ExternalObject target) {
-		return Runtime.getCurrentRuntime().getRepository().findNamedElement(target.getClassifierName(), UMLPackage.Literals.CLASSIFIER, null);
-	}
-	
-	public void processSignal(BasicType target, Signal signal, Object... arguments) {
-		delegate.receiveSignal(getClassifier((ExternalObject) target), signal, arguments);
-	}
-	
-	@Override
-	public void handleEvent(RuntimeEvent runtimeEvent) {
-		if (runtimeEvent instanceof RuntimeMessageEvent) {
-			RuntimeMessageEvent<?> messageEvent = (RuntimeMessageEvent<?>) runtimeEvent;
-			if (messageEvent.getMessage() instanceof Signal)
-				processSignal(runtimeEvent.getTarget(), (Signal) messageEvent.getMessage(), messageEvent.getArguments());
-		}
-		
-	}
+    @Override
+    public void handleEvent(RuntimeEvent runtimeEvent) {
+        if (runtimeEvent instanceof RuntimeMessageEvent) {
+            RuntimeMessageEvent<?> messageEvent = (RuntimeMessageEvent<?>) runtimeEvent;
+            if (messageEvent.getMessage() instanceof Signal)
+                processSignal(runtimeEvent.getTarget(), (Signal) messageEvent.getMessage(), messageEvent.getArguments());
+        }
 
-	public void register(ExternalObjectDelegate delegate) {
-		this.delegate = delegate;
-	}
+    }
 
-	public ExternalObject getInstance(Classifier type) {
-		return new ExternalObject(type.getQualifiedName(), delegate);
-	}
+    public void processSignal(BasicType target, Signal signal, Object... arguments) {
+        delegate.receiveSignal(getClassifier((ExternalObject) target), signal, arguments);
+    }
+
+    public void register(ExternalObjectDelegate delegate) {
+        this.delegate = delegate;
+    }
+
+    @Override
+    public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+        return delegate.getData(getClassifier((ExternalObject) target), operation, arguments);
+    }
+
+    private Classifier getClassifier(ExternalObject target) {
+        return Runtime.getCurrentRuntime().getRepository()
+                .findNamedElement(target.getClassifierName(), UMLPackage.Literals.CLASSIFIER, null);
+    }
 }

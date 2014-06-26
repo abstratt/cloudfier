@@ -10,18 +10,19 @@ import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 
 public class RuntimeCreateObjectAction extends RuntimeAction {
-	public RuntimeCreateObjectAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeCreateObjectAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		CreateObjectAction instance = (CreateObjectAction) getInstance();
-		final Classifier classifier = instance.getClassifier();
-		boolean persistent = classifier instanceof org.eclipse.uml2.uml.Class;
-		RuntimeObject created = context.getRuntime().newInstance(classifier, persistent);
-		if (persistent)
-			created.attach();
-		addResultValue(instance.getResult(), created);
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        CreateObjectAction instance = (CreateObjectAction) getInstance();
+        final Classifier classifier = instance.getClassifier();
+        boolean persistent = classifier instanceof org.eclipse.uml2.uml.Class;
+        RuntimeObject created = context.getRuntime().newInstance(classifier, persistent);
+        if (persistent)
+            created.attach();
+        addResultValue(instance.getResult(), created);
+    }
 
 }

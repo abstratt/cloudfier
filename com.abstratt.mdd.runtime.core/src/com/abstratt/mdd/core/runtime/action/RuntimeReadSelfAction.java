@@ -9,13 +9,14 @@ import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 
 public class RuntimeReadSelfAction extends RuntimeAction {
-	public RuntimeReadSelfAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeReadSelfAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		ReadSelfAction instance = (ReadSelfAction) this.getInstance();
-		RuntimeObject self = (RuntimeObject) context.getSelf();
-		addResultValue(instance.getResult(), self);
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        ReadSelfAction instance = (ReadSelfAction) this.getInstance();
+        RuntimeObject self = (RuntimeObject) context.getSelf();
+        addResultValue(instance.getResult(), self);
+    }
 }

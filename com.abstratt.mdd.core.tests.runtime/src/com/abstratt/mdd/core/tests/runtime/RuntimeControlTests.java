@@ -1,6 +1,7 @@
 package com.abstratt.mdd.core.tests.runtime;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.eclipse.core.runtime.CoreException;
@@ -20,12 +21,6 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
     public RuntimeControlTests(String name) {
         super(name);
     }
-    
-    @Override
-    protected void runTest() throws Throwable {
-    	// do not run test cases under a runtime or else we can't test transactions
-    	originalRunTest();
-    }
 
     public void testEarlyReturn() throws CoreException {
         String source = "";
@@ -39,66 +34,16 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
         source += "end;\n";
         source += "end;\n";
         source += "end.";
-		String[] sources = { source };
+        String[] sources = { source };
         parseAndCheck(sources);
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				assertEquals(new IntegerType(1), runStaticOperation("tests::Simple", "doIt"));
-			}
-		});
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                TestCase.assertEquals(new IntegerType(1), runStaticOperation("tests::Simple", "doIt"));
+            }
+        });
     }
 
-    public void testRollbackOnException() throws CoreException {
-        String source = "";
-        source += "model tests;\n";
-        source += "import mdd_types;\n";
-        source += "class Simple\n";
-        source += "attribute attr1 : Integer := 1;\n";
-        source += "operation changeAttr1(newAttr1 : Integer, shouldFail : Boolean) raises String;\n";
-        source += "begin\n";
-        source += "    self.attr1 := newAttr1;\n";
-        source += "    if (shouldFail) then\n";
-        source += "        raise \"\";\n";
-        source += "end;\n";
-        source += "end;\n";
-        source += "end.";
-		String[] sources = { source };
-        parseAndCheck(sources);
-        
-        final RuntimeObject[] person = { null };
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				person[0] = newInstance("tests::Simple");
-			}
-        });
-
-        assertEquals(new IntegerType(1), readAttribute(person[0], "attr1"));
-		
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				runOperation(person[0], "changeAttr1", new IntegerType(2), BooleanType.fromValue(false));
-			}
-        });
-		assertEquals("should have changed", new IntegerType(2), readAttribute(person[0], "attr1"));
-		
-        try {
-    		runInRuntime(new Runnable() {
-    			@Override
-    			public void run() {
-    				runOperation(person[0], "changeAttr1", new IntegerType(3), BooleanType.fromValue(true));
-    			}
-            });
-            fail("Should have failed");
-        } catch (RuntimeRaisedException e) {
-        	// expected
-        }
-        // should not have changed
-        assertEquals("should NOT have changed", new IntegerType(2), readAttribute(person[0], "attr1"));
-    }
-    
     public void testExceptionCapturing() throws CoreException {
         String source = "";
         source += "model tests;\n";
@@ -115,17 +60,15 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
         source += "end;\n";
         source += "end;\n";
         source += "end.";
-		String[] sources = { source };
+        String[] sources = { source };
         parseAndCheck(sources);
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-		        assertEquals(new IntegerType(2),
-		                runStaticOperation("tests::Simple", "doIt"));
-			}
-		});        
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                TestCase.assertEquals(new IntegerType(2), runStaticOperation("tests::Simple", "doIt"));
+            }
+        });
     }
-    
 
     public void testExceptionHandling() throws CoreException {
         String source = "";
@@ -144,17 +87,16 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
         source += "end;\n";
         source += "end;\n";
         source += "end.";
-		String[] sources = { source };
+        String[] sources = { source };
         parseAndCheck(sources);
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-		        assertEquals(new IntegerType(2),
-		                runStaticOperation("tests::Simple", "doIt"));
-			}
-		});
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                TestCase.assertEquals(new IntegerType(2), runStaticOperation("tests::Simple", "doIt"));
+            }
+        });
     }
-    
+
     public void testPreconditionViolation() throws CoreException {
         String source = "";
         source += "model tests;\n";
@@ -163,31 +105,31 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
         source += "operation doIt() : Integer;\n";
         source += "precondition raises String { return true }\n";
         source += "precondition raises Boolean { return false }\n";
-        source += "precondition raises Integer { return false }\n";        
+        source += "precondition raises Integer { return false }\n";
         source += "begin\n";
         source += "end;\n";
         source += "end;\n";
         source += "end.";
-		String[] sources = { source };
+        String[] sources = { source };
         parseAndCheck(sources);
         final RuntimeObject[] targetObject = { null };
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				targetObject[0] = newInstance("tests::Simple");
-			}
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                targetObject[0] = newInstance("tests::Simple");
+            }
         });
         try {
-    		runInRuntime(new Runnable() {
-    			@Override
-    			public void run() {
-    				fail("Should have failed " + runOperation(targetObject[0], "doIt"));
-    			}
+            runInRuntime(new Runnable() {
+                @Override
+                public void run() {
+                    TestCase.fail("Should have failed " + runOperation(targetObject[0], "doIt"));
+                }
             });
         } catch (RuntimeRaisedException e) {
             // expected
-            assertNotNull(e.getExceptionType());
-            assertEquals("mdd_types::Boolean", e.getExceptionType().getQualifiedName());
+            TestCase.assertNotNull(e.getExceptionType());
+            TestCase.assertEquals("mdd_types::Boolean", e.getExceptionType().getQualifiedName());
         }
     }
 
@@ -203,72 +145,72 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
         source += "    invariant { return self.attr2 >= \"F\" };\n";
         source += "end;\n";
         source += "end.";
-		String[] sources = { source };
+        String[] sources = { source };
         parseAndCheck(sources);
-        
+
         final RuntimeObject[] targetObject = { null };
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				targetObject[0] = newInstance("tests::Simple");
-			}
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                targetObject[0] = newInstance("tests::Simple");
+            }
         });
 
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				writeAttribute(targetObject[0], "attr1", new IntegerType(20));
-			}
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                writeAttribute(targetObject[0], "attr1", new IntegerType(20));
+            }
         });
         try {
-    		runInRuntime(new Runnable() {
-    			@Override
-    			public void run() {
-    				writeAttribute(targetObject[0], "attr1", new IntegerType(5));
-    			}
+            runInRuntime(new Runnable() {
+                @Override
+                public void run() {
+                    writeAttribute(targetObject[0], "attr1", new IntegerType(5));
+                }
             });
-            fail("Should have failed ");
+            TestCase.fail("Should have failed ");
         } catch (RuntimeRaisedException e) {
             // expected
-            assertNotNull(e.getExceptionType());
-            assertEquals("mdd_types::Integer", e.getExceptionType().getQualifiedName());
+            TestCase.assertNotNull(e.getExceptionType());
+            TestCase.assertEquals("mdd_types::Integer", e.getExceptionType().getQualifiedName());
         }
         try {
-    		runInRuntime(new Runnable() {
-    			@Override
-    			public void run() {
-    				writeAttribute(targetObject[0], "attr1", new IntegerType(30));
-    			}
+            runInRuntime(new Runnable() {
+                @Override
+                public void run() {
+                    writeAttribute(targetObject[0], "attr1", new IntegerType(30));
+                }
             });
-            fail("Should have failed ");
+            TestCase.fail("Should have failed ");
         } catch (RuntimeRaisedException e) {
             // expected
-            assertNotNull(e.getExceptionType());
-            assertEquals("mdd_types::Boolean", e.getExceptionType().getQualifiedName());
+            TestCase.assertNotNull(e.getExceptionType());
+            TestCase.assertEquals("mdd_types::Boolean", e.getExceptionType().getQualifiedName());
         }
-        assertEquals(new IntegerType(20), readAttribute(targetObject[0], "attr1"));
-        
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				writeAttribute(targetObject[0], "attr2", new StringType("Foo"));
-			}
+        TestCase.assertEquals(new IntegerType(20), readAttribute(targetObject[0], "attr1"));
+
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                writeAttribute(targetObject[0], "attr2", new StringType("Foo"));
+            }
         });
 
         try {
-    		runInRuntime(new Runnable() {
-    			@Override
-    			public void run() {
-    				writeAttribute(targetObject[0], "attr2", new StringType("Bar"));
-    			}
+            runInRuntime(new Runnable() {
+                @Override
+                public void run() {
+                    writeAttribute(targetObject[0], "attr2", new StringType("Bar"));
+                }
             });
-            fail("Should have failed ");
+            TestCase.fail("Should have failed ");
         } catch (RuntimeRaisedException e) {
             // expected
-            assertNull(e.getExceptionType());
+            TestCase.assertNull(e.getExceptionType());
         }
     }
-    
+
     public void testPropertyInvariantViolationOnAssociationEnd() throws CoreException {
         String source = "";
         source += "model tests;\n";
@@ -284,34 +226,91 @@ public class RuntimeControlTests extends AbstractRuntimeTests {
         source += "role Simple2.s1;\n";
         source += "end;\n";
         source += "end.";
-		String[] sources = { source };
+        String[] sources = { source };
         parseAndCheck(sources);
-        
+
         final RuntimeObject[] s1 = { null };
         final RuntimeObject[] s2 = { null, null, null };
-        
-		runInRuntime(new Runnable() {
-			@Override
-			public void run() {
-				s1[0] = newInstance("tests::Simple1");
-				s2[0] = newInstance("tests::Simple2");
-				s2[1] = newInstance("tests::Simple2");
-				s2[2] = newInstance("tests::Simple2");
-		        s1[0].link(getProperty("tests::Simple1::s2"), s2[0]);
-		        s1[0].link(getProperty("tests::Simple1::s2"), s2[1]);
-			}
+
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                s1[0] = newInstance("tests::Simple1");
+                s2[0] = newInstance("tests::Simple2");
+                s2[1] = newInstance("tests::Simple2");
+                s2[2] = newInstance("tests::Simple2");
+                s1[0].link(getProperty("tests::Simple1::s2"), s2[0]);
+                s1[0].link(getProperty("tests::Simple1::s2"), s2[1]);
+            }
         });
 
         try {
-    		runInRuntime(new Runnable() {
-    			@Override
-    			public void run() {
-    	            s1[0].link(getProperty("tests::Simple1::s2"), s2[2]);
-    			}
+            runInRuntime(new Runnable() {
+                @Override
+                public void run() {
+                    s1[0].link(getProperty("tests::Simple1::s2"), s2[2]);
+                }
             });
-            fail("Should have failed");
+            TestCase.fail("Should have failed");
         } catch (RuntimeRaisedException rre) {
-        	// expected
+            // expected
         }
+    }
+
+    public void testRollbackOnException() throws CoreException {
+        String source = "";
+        source += "model tests;\n";
+        source += "import mdd_types;\n";
+        source += "class Simple\n";
+        source += "attribute attr1 : Integer := 1;\n";
+        source += "operation changeAttr1(newAttr1 : Integer, shouldFail : Boolean) raises String;\n";
+        source += "begin\n";
+        source += "    self.attr1 := newAttr1;\n";
+        source += "    if (shouldFail) then\n";
+        source += "        raise \"\";\n";
+        source += "end;\n";
+        source += "end;\n";
+        source += "end.";
+        String[] sources = { source };
+        parseAndCheck(sources);
+
+        final RuntimeObject[] person = { null };
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                person[0] = newInstance("tests::Simple");
+            }
+        });
+
+        TestCase.assertEquals(new IntegerType(1), readAttribute(person[0], "attr1"));
+
+        runInRuntime(new Runnable() {
+            @Override
+            public void run() {
+                runOperation(person[0], "changeAttr1", new IntegerType(2), BooleanType.fromValue(false));
+            }
+        });
+        TestCase.assertEquals("should have changed", new IntegerType(2), readAttribute(person[0], "attr1"));
+
+        try {
+            runInRuntime(new Runnable() {
+                @Override
+                public void run() {
+                    runOperation(person[0], "changeAttr1", new IntegerType(3), BooleanType.fromValue(true));
+                }
+            });
+            TestCase.fail("Should have failed");
+        } catch (RuntimeRaisedException e) {
+            // expected
+        }
+        // should not have changed
+        TestCase.assertEquals("should NOT have changed", new IntegerType(2), readAttribute(person[0], "attr1"));
+    }
+
+    @Override
+    protected void runTest() throws Throwable {
+        // do not run test cases under a runtime or else we can't test
+        // transactions
+        originalRunTest();
     }
 }

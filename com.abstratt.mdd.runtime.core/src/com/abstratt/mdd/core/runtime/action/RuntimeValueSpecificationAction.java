@@ -14,17 +14,18 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 
 public class RuntimeValueSpecificationAction extends RuntimeAction {
-	public RuntimeValueSpecificationAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeValueSpecificationAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		ValueSpecificationAction instance = (ValueSpecificationAction) this.getInstance();
-		ValueSpecification valueSpec = instance.getValue();
-		
-		BasicType value = RuntimeUtils.extractValueFromSpecification(valueSpec);
-		if (value == null && instance.getResult().isMultivalued())
-			value = CollectionType.createCollectionFor(instance.getResult(), Collections.<BasicType>emptySet());
-		addResultValue(instance.getResult(), value); 
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        ValueSpecificationAction instance = (ValueSpecificationAction) this.getInstance();
+        ValueSpecification valueSpec = instance.getValue();
+
+        BasicType value = RuntimeUtils.extractValueFromSpecification(valueSpec);
+        if (value == null && instance.getResult().isMultivalued())
+            value = CollectionType.createCollectionFor(instance.getResult(), Collections.<BasicType> emptySet());
+        addResultValue(instance.getResult(), value);
+    }
 }

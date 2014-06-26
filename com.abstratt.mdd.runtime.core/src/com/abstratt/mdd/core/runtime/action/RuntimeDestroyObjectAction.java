@@ -10,15 +10,16 @@ import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.RuntimeObjectNode;
 
 public class RuntimeDestroyObjectAction extends RuntimeAction {
-	public RuntimeDestroyObjectAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeDestroyObjectAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		DestroyObjectAction instance = (DestroyObjectAction) getInstance();
-		RuntimeObjectNode value = getRuntimeObjectNode(instance.getTarget());
-		RuntimeObject toDestroy = (RuntimeObject) value.getValue();
-		toDestroy.destroy();
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        DestroyObjectAction instance = (DestroyObjectAction) getInstance();
+        RuntimeObjectNode value = getRuntimeObjectNode(instance.getTarget());
+        RuntimeObject toDestroy = (RuntimeObject) value.getValue();
+        toDestroy.destroy();
+    }
 
 }

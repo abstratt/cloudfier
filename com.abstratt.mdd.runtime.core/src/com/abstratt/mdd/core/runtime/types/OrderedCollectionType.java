@@ -9,14 +9,14 @@ public abstract class OrderedCollectionType extends CollectionType {
     private static final long serialVersionUID = 1L;
 
     OrderedCollectionType(Type baseType, Collection<BasicType> backEnd) {
-		super(baseType, backEnd);
-	}
+        super(baseType, backEnd);
+    }
 
-	public void add(BasicType value, IntegerType position) {
-		((List<BasicType>) backEnd).add(((Number) position.primitiveValue()).intValue(), value);
-	}
+    public void add(BasicType value, IntegerType position) {
+        ((List<BasicType>) backEnd).add(((Number) position.primitiveValue()).intValue(), value);
+    }
 
-	public BasicType remove(IntegerType position) {
-		return ((List<BasicType>) backEnd).remove(((Number) position.primitiveValue()).intValue());
-	}
+    public BasicType remove(IntegerType position) {
+        return ((List<BasicType>) backEnd).remove(((Number) position.primitiveValue()).intValue());
+    }
 }

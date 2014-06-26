@@ -1,29 +1,6 @@
 package com.abstratt.kirra.populator;
 
 public class Reference {
-    private String namespace;
-    private String entity;
-    public Reference(String namespace, String entity, int index) {
-        super();
-        this.namespace = namespace;
-        this.entity = entity;
-        this.index = index;
-    }
-
-    private int index;
-
-    public String getEntity() {
-        return entity;
-    }
-
-    public int getIndex() {
-        return index;
-    }
-
-    public String getNamespace() {
-        return namespace;
-    }
-    
     public static Reference parse(String currentNamespace, String referenceString) {
         int addressSeparatorIndex = referenceString.indexOf('@');
         if (addressSeparatorIndex <= 0 || addressSeparatorIndex == referenceString.length() - 1)
@@ -45,15 +22,39 @@ public class Reference {
             namespaceName = entityName.substring(0, namespaceSeparatorIndex);
             entityName = entityName.substring(namespaceSeparatorIndex + 1);
         }
-        return new Reference(namespaceName, entityName, position);            
+        return new Reference(namespaceName, entityName, position);
     }
 
-	public void setNamespace(String currentNamespace) {
-		this.namespace = currentNamespace;
-	}
+    private String namespace;
+    private String entity;
 
-	@Override
-	public String toString() {
-		return (namespace == null ? "" : (namespace + '.')) + entity + '@' + index;
-	}
+    private int index;
+
+    public Reference(String namespace, String entity, int index) {
+        super();
+        this.namespace = namespace;
+        this.entity = entity;
+        this.index = index;
+    }
+
+    public String getEntity() {
+        return entity;
+    }
+
+    public int getIndex() {
+        return index;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
+
+    public void setNamespace(String currentNamespace) {
+        this.namespace = currentNamespace;
+    }
+
+    @Override
+    public String toString() {
+        return (namespace == null ? "" : namespace + '.') + entity + '@' + index;
+    }
 }

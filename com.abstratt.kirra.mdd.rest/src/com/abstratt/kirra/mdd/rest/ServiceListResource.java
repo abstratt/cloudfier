@@ -11,24 +11,22 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
 import com.abstratt.kirra.Service;
-import com.abstratt.kirra.mdd.rest.ServiceLinkJSONRepresentation;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 
 public class ServiceListResource extends AbstractKirraRepositoryResource {
 
-	@Get
-	public Representation list() throws IOException {
-		List<Service> services = getRepository().getServices(null);
-		List<ServiceLinkJSONRepresentation> links = new ArrayList<ServiceLinkJSONRepresentation>();
-		Reference reference = getExternalReference();
-		for (Service service : services) {
-			ServiceLinkJSONRepresentation link = new ServiceLinkJSONRepresentation();
-			link.name = service.getName();
-			link.namespace = service.getNamespace();
-			link.uri = reference.clone().addSegment(service.getNamespace() + '.' + service.getName()).toString();
-			links.add(link);
-		}
-		return new StringRepresentation(JsonHelper.renderAsJson(links).toString(),
-				MediaType.APPLICATION_JSON);
-	}
+    @Get
+    public Representation list() throws IOException {
+        List<Service> services = getRepository().getServices(null);
+        List<ServiceLinkJSONRepresentation> links = new ArrayList<ServiceLinkJSONRepresentation>();
+        Reference reference = getExternalReference();
+        for (Service service : services) {
+            ServiceLinkJSONRepresentation link = new ServiceLinkJSONRepresentation();
+            link.name = service.getName();
+            link.namespace = service.getNamespace();
+            link.uri = reference.clone().addSegment(service.getNamespace() + '.' + service.getName()).toString();
+            links.add(link);
+        }
+        return new StringRepresentation(JsonHelper.renderAsJson(links).toString(), MediaType.APPLICATION_JSON);
+    }
 }

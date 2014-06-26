@@ -20,20 +20,21 @@ import com.abstratt.mdd.core.util.FeatureUtils;
 
 public class RuntimeRaiseExceptionAction extends RuntimeAction {
 
-	public RuntimeRaiseExceptionAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeRaiseExceptionAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	@Override
-	protected void executeBehavior(ExecutionContext context) {
-		RaiseExceptionAction instance = (RaiseExceptionAction) this.getInstance();
-		BasicType exception = (BasicType) this.getRuntimeObjectNode(instance.getException()).getValue();
-		IRepository repository = context.getRuntime().getRepository();
-		Classifier exceptionType = (Classifier) instance.getException().getType();
-        Operation toString = FeatureUtils.findOperation(repository, exceptionType, "toString", Collections.<TypedElement>emptyList());
-		MetaClass<?> exceptionMetaClass = exception.getMetaClass();
-		Object toStringResult = exceptionMetaClass.runOperation(context, exception, toString);
-        throw new RuntimeRaisedException(exception, toStringResult.toString(), context.getCallSites(), ActivityUtils.getActionActivity(instance));
-	}
+    @Override
+    protected void executeBehavior(ExecutionContext context) {
+        RaiseExceptionAction instance = (RaiseExceptionAction) this.getInstance();
+        BasicType exception = this.getRuntimeObjectNode(instance.getException()).getValue();
+        IRepository repository = context.getRuntime().getRepository();
+        Classifier exceptionType = (Classifier) instance.getException().getType();
+        Operation toString = FeatureUtils.findOperation(repository, exceptionType, "toString", Collections.<TypedElement> emptyList());
+        MetaClass<?> exceptionMetaClass = exception.getMetaClass();
+        Object toStringResult = exceptionMetaClass.runOperation(context, exception, toString);
+        throw new RuntimeRaisedException(exception, toStringResult.toString(), context.getCallSites(),
+                ActivityUtils.getActionActivity(instance));
+    }
 
 }

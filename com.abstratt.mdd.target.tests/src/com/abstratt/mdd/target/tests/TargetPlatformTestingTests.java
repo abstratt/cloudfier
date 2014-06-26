@@ -27,7 +27,7 @@
 //	public TargetPlatformTestingTests(String name) {
 //		super(name);
 //	}
-//	
+//
 //	public void testTestDiscovery() throws CoreException, IOException {
 //        File repositoryDir = getRepositoryDir().toLocalFile(EFS.NONE, null);
 //        FileUtils.writeLines(new File(repositoryDir, "foobar.stg"), Arrays.asList("group suite;", "expected_test1() ::= \"\"\nexpected_test2() ::= \"\"\nactual_test3() ::= \"\"\nactual_test1() ::= \"\"\nexpected_test4() ::= \"\"\nactual_test4() ::= \"\"\n"));
@@ -40,7 +40,7 @@
 //        assertTrue(tests.containsKey("test1"));
 //        assertTrue(tests.containsKey("test4"));
 //    }
-//	
+//
 //	   public void testTestDescription() throws CoreException, IOException {
 //	        File repositoryDir = getRepositoryDir().toLocalFile(EFS.NONE, null);
 //	        FileUtils.writeLines(new File(repositoryDir, "foobar.stg"), Arrays.asList("group foobar;", "expected_test1() ::= \"\"\nactual_test1(element, elementName = \"somePackage::someClass\") ::= \"\"\n"));
@@ -56,7 +56,7 @@
 //	        assertEquals("somePackage::someClass", tests.get("test1").getTestedElement());
 //	    }
 //
-//	
+//
 //   public void testTestPass() throws CoreException, IOException {
 //        File repositoryDir = getRepositoryDir().toLocalFile(EFS.NONE, null);
 //        FileUtils.writeLines(new File(repositoryDir, "foobar.stg"), Arrays.asList("group suite;", "expected_test1() ::= \"output\"\nactual_test1() ::= \"output\"\n"));
@@ -68,7 +68,7 @@
 //        Result result = tests.get("test1").test(mapper, null);
 //        assertTrue(result.getMessage(), Test.Result.Kind.Pass == result.getKind());
 //    }
-//   
+//
 //   public void testTestWithParameter() throws CoreException, IOException {
 //       String source = "";
 //       source += "model simple;\n";
@@ -100,8 +100,8 @@
 //       Result result = tests.get("test1").test(mapper, null);
 //       assertTrue(result.getMessage(), Test.Result.Kind.Fail == result.getKind());
 //   }
-//   
+//
 //	public static junit.framework.Test suite() {
 //		return new TestSuite(TargetPlatformTestingTests.class);
 //	}
-//}
+// }

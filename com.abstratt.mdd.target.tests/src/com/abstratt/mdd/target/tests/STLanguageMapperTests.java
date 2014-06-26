@@ -38,7 +38,7 @@
 //        source += "  end;\n";
 //        source += "end.";
 //        parseAndCheck(source);
-//        
+//
 //        File superTemplate = getBaseDir().getChild("superGroup.stg").toLocalFile(EFS.NONE, null);
 //        superTemplate.getParentFile().mkdirs();
 //        FileUtils.writeLines(superTemplate, Arrays.asList(
@@ -59,7 +59,7 @@
 //        assertEquals("class name is Class1", mapper.map(class1));
 //    }
 //
-//    
+//
 //    public void testMatching() throws CoreException, IOException {
 //        String source = "";
 //        source += "model simple;\n";
@@ -69,7 +69,7 @@
 //        source += "  end;\n";
 //        source += "end.";
 //        parseAndCheck(source);
-//        
+//
 //        File repositoryDir = getRepositoryDir().toLocalFile(EFS.NONE, null);
 //        FileUtils.writeLines(new File(repositoryDir, "foobar.stg"), Arrays.asList(
 //            "group aGroup;",
@@ -98,7 +98,7 @@
 //        source += "  end;\n";
 //        source += "end.";
 //        parseAndCheck(source);
-//        
+//
 //        File repositoryDir = getRepositoryDir().toLocalFile(EFS.NONE, null);
 //        FileUtils.writeLines(new File(repositoryDir, "foobar.stg"), Arrays.asList("group method;", "contents(class) ::= \"<class.ownedAttributes:{attr|Attribute: <attr.name> <attr.required>}>\""));
 //        getRepository().getProperties().setProperty("mdd.target.engine", "stringtemplate");
@@ -112,7 +112,7 @@
 //        String mapped2 = mapper.map(class2);
 //        assertTrue(mapped2, AssertHelper.areEqual("Attribute: attr2 false", mapped2));
 //    }
-//    
+//
 //    public void testIdentifierGeneration() throws CoreException, IOException {
 //        String source = "";
 //        source += "model simple;\n";
@@ -128,7 +128,7 @@
 //        source += "      end;\n";
 //        source += "      operation op3();\n";
 //        source += "      begin\n";
-//        source += "          Class1 extent.collect((c : Class1) : mdd_types::Integer { return c.attr1 });\n";        
+//        source += "          Class1 extent.collect((c : Class1) : mdd_types::Integer { return c.attr1 });\n";
 //        source += "      end;\n";
 //        source += "  end;\n";
 //        source += "end.";
@@ -153,7 +153,7 @@
 //        assertEquals("c", mapper.applyChildMapper("parameterVariables", select).trim());
 //        assertEquals("c", mapper.applyChildMapper("suggestedName", selectVariable).trim());
 //        assertEquals("c", mapper.applyChildMapper("resultVariable", select).trim());
-//        
+//
 //        CallOperationAction reduce = findCallOperationAction("reduce", "op2");
 //        assertNotNull(reduce);
 //        Variable reduceVariable1 = findVariable("c", "op2");
@@ -164,7 +164,7 @@
 //        assertEquals("c", mapper.applyChildMapper("suggestedName", reduceVariable1).trim());
 //        assertEquals("b", mapper.applyChildMapper("suggestedName", reduceVariable2).trim());
 //        assertEquals("b", mapper.applyChildMapper("resultVariable", reduce).trim());
-//        
+//
 //        CallOperationAction collect = findCallOperationAction("collect", "op3");
 //        assertNotNull(collect);
 //        Variable collectVariable = findVariable("c", "op3");
@@ -177,26 +177,26 @@
 //    public static Test suite() {
 //        return new TestSuite(STLanguageMapperTests.class);
 //    }
-//    
+//
 //    private CallOperationAction findCallOperationAction(final String opName, final String operationName) {
 //        return (CallOperationAction) getRepository().findFirst(new EObjectCondition() {
 //            public boolean isSatisfied(EObject object) {
-//                if (!(object instanceof CallOperationAction)) 
+//                if (!(object instanceof CallOperationAction))
 //                    return false;
 //                CallOperationAction coa = (CallOperationAction) object;
 //                return coa.getOperation().getName().equals(opName) && ActivityUtils.getActionActivity(coa).getSpecification().getName().equals(operationName);
 //            }
 //        });
 //    }
-//    
+//
 //    private Variable findVariable(final String varName, final String operationName) {
 //        return (Variable) getRepository().findFirst(new EObjectCondition() {
 //            public boolean isSatisfied(EObject object) {
-//                if (!(object instanceof Variable)) 
+//                if (!(object instanceof Variable))
 //                    return false;
 //                Variable var = (Variable) object;
 //                return varName.equals(var.getName()) && operationName.equals(((Activity) MDDUtil.getNearest(var, UMLPackage.Literals.ACTIVITY).getOwner()).getSpecification().getName());
 //            }
 //        });
 //    }
-//}
+// }

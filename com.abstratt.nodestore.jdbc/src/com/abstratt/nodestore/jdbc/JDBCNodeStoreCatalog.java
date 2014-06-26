@@ -35,192 +35,193 @@ import com.abstratt.nodestore.jdbc.JDBCNodeStore.ConnectionRunnable;
  */
 public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
 
-	private SchemaManagement metadata;
+    private SchemaManagement metadata;
 
-	private String name;
+    private String name;
 
-	private SQLGenerator generator;
+    private SQLGenerator generator;
 
-	private ConnectionProvider connectionProvider;
-	
-	private Map<String, JDBCNodeStore> stores = new LinkedHashMap<String, JDBCNodeStore>();
-	
-	public JDBCNodeStoreCatalog(String name, SchemaManagement schema) {
-		Assert.isNotNull(schema);
-		this.name = name;
-		this.metadata = schema;
-		this.generator = new SQLGenerator(name, schema);
-		this.connectionProvider = new ConnectionProvider();
-	}
-	
-	@Override
-	public void clearCaches() {
-		for (JDBCNodeStore cached : stores.values())
-			cached.clearCaches();
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
+    private ConnectionProvider connectionProvider;
 
-	@Override
-	public INodeStore createStore(String name) {
-		return getStore(name);
-	}
+    private Map<String, JDBCNodeStore> stores = new LinkedHashMap<String, JDBCNodeStore>();
 
-	@Override
-	public INodeStore getStore(String name) {
-		JDBCNodeStore existing = stores.get(name);
-		if (existing != null)
-			return existing;
-		JDBCNodeStore newStore = new JDBCNodeStore(this, getConnectionProvider(), metadata, new TypeRef(name, TypeKind.Entity));
-		stores.put(name, newStore);
-		return newStore;
-	}
+    public JDBCNodeStoreCatalog(String name, SchemaManagement schema) {
+        Assert.isNotNull(schema);
+        this.name = name;
+        this.metadata = schema;
+        this.generator = new SQLGenerator(name, schema);
+        this.connectionProvider = new ConnectionProvider();
+    }
 
-	private ConnectionProvider getConnectionProvider() {
-		return connectionProvider;
-	}
+    @Override
+    public void abortTransaction() {
+        if (!connectionProvider.hasConnection())
+            return;
+        try {
+            connectionProvider.releaseConnection(false);
+        } catch (SQLException e) {
+            throw new NodeStoreException("Error rolling back changes: " + e.getMessage());
+        }
+    }
 
-	@Override
-	public void deleteStore(String name) {
-		// nothing to do, no use case requires this
-	}
+    @Override
+    public void beginTransaction() {
+        try {
+            connectionProvider.acquireConnection();
+        } catch (SQLException e) {
+            if ("3D000".equals(e.getSQLState()))
+                throw new NodeStoreNotFoundException();
+            throw new NodeStoreException("Could not acquire connection", e);
+        }
+    }
 
-	@Override
-	public INode newNode() {
-		return new BasicNode(generateKey());
-	}
+    public void clearCache() {
+        this.stores = new LinkedHashMap<String, JDBCNodeStore>();
+    }
 
-	@Override
-	public Collection<String> listStores() {
-		Collection<String> entityNames = new TreeSet<String>();
-		for (TypeRef typeRef : metadata.getEntityNames())
-			entityNames.add(typeRef.getFullName());
-		return entityNames;
-	}
+    @Override
+    public void clearCaches() {
+        for (JDBCNodeStore cached : stores.values())
+            cached.clearCaches();
+    }
 
-	@Override
-	public INode resolve(NodeReference ref) {
-		// TODO Auto-generated method stub
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public void commitTransaction() {
+        try {
+            connectionProvider.releaseConnection(true);
+        } catch (SQLException e) {
+            throw new NodeStoreException("Error committing changes: " + e.getMessage());
+        }
+    }
 
-	@Override
-	public boolean exists(NodeReference ref) {
-		return getStore(ref.getStoreName()).getNode(ref.getKey()) != null;
-	}
+    @Override
+    public INodeStore createStore(String name) {
+        return getStore(name);
+    }
 
-	@Override
-	public void beginTransaction() {
-		try {
-			connectionProvider.acquireConnection();
-		} catch (SQLException e) {
-			if ("3D000".equals(e.getSQLState()))
-				throw new NodeStoreNotFoundException();
-			throw new NodeStoreException("Could not acquire connection", e);
-		}
-	}
+    @Override
+    public void deleteStore(String name) {
+        // nothing to do, no use case requires this
+    }
 
-	@Override
-	public void commitTransaction() {
-		try {
-			connectionProvider.releaseConnection(true);
-		} catch (SQLException e) {
-			throw new NodeStoreException("Error committing changes: " + e.getMessage());
-		}
-	}
+    @Override
+    public boolean exists(NodeReference ref) {
+        return getStore(ref.getStoreName()).getNode(ref.getKey()) != null;
+    }
 
-	@Override
-	public void validateConstraints() {
-		for (Entity entity : this.metadata.getAllEntities()) {
-			List<Relationship> relationships = entity.getRelationships();
-			for (Relationship relationship : relationships) {
-				List<String> stmts = generator.generateValidate(relationship);
-				for (String statement : stmts) {
-					Number count = JDBCNodeStore.<Number>loadOne(connectionProvider, new JDBCNodeStore.LoadSingleValueHandler(), statement);
-					if (count != null && count.longValue() > 0)
-						throw new NodeStoreValidationException("Relationship " + relationship.getLabel() + " (from " + entity.getLabel() + ") failed validation");
-				}
-			}
-		}
-	}
+    public INodeKey generateKey() {
+        return JDBCNodeStore.loadOne(connectionProvider, new JDBCNodeStore.LoadKeyHandler(), generator.generateGetSequence());
+    }
 
-	@Override
-	public void abortTransaction() {
-		if (!connectionProvider.hasConnection())
-			return;
-		try {
-			connectionProvider.releaseConnection(false);
-		} catch (SQLException e) {
-			throw new NodeStoreException("Error rolling back changes: " + e.getMessage());
-		}
-	}
+    public SQLGenerator getGenerator() {
+        return generator;
+    }
 
-	@Override
-	public void prime() {
-		try {
-			JDBCNodeStore.perform(connectionProvider, generator.generateDropSchema(false), false, false);	    
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-		JDBCNodeStore.perform(connectionProvider, generator.generateCreateSchema(), false, false);
-		for (String pkg : findAllPackages())
-			JDBCNodeStore.perform(connectionProvider, generator.generateCreateTables(pkg), false, false);
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
 
-	protected SQLGenerator newSQLGenerator() {
-		return new SQLGenerator(getName(), metadata);
-	}
+    @Override
+    public INodeStore getStore(String name) {
+        JDBCNodeStore existing = stores.get(name);
+        if (existing != null)
+            return existing;
+        JDBCNodeStore newStore = new JDBCNodeStore(this, getConnectionProvider(), metadata, new TypeRef(name, TypeKind.Entity));
+        stores.put(name, newStore);
+        return newStore;
+    }
 
-	@Override
-	public void zap() {
-		//zap should not require metadata (repository may not be available)
-		JDBCNodeStore.perform(connectionProvider, generator.generateDropSchema(false), false, false);
-	}
-	
-	public void clearCache() {
-		this.stores = new LinkedHashMap<String, JDBCNodeStore>();
-	}
-	
-	@Override
-	public boolean isInitialized() {
-		final Collection<String> allPackages = findAllPackages();
-		final Set<String> missing = new HashSet<String>(allPackages);
-		try {
-			JDBCNodeStore.runWithConnection(connectionProvider, new ConnectionRunnable<Object>() {
-				@Override
-				public Object run(Connection connection) throws SQLException {
-					for (String pkg : allPackages) {
-						DatabaseMetaData dbMetadata = connection.getMetaData();
-						ResultSet schemas = dbMetadata.getSchemas(null, generator.modelToSchemaName(pkg));
-						try {
-							if (schemas.next())
-								missing.remove(pkg);
-						} finally {
-							schemas.close();					
-						}
-					}
-					return null;
-				}
-			});
-		} catch (SQLException e) {
-			// don't sweat it
-		}
-		return missing.isEmpty();
-	}
+    @Override
+    public boolean isInitialized() {
+        final Collection<String> allPackages = findAllPackages();
+        final Set<String> missing = new HashSet<String>(allPackages);
+        try {
+            JDBCNodeStore.runWithConnection(connectionProvider, new ConnectionRunnable<Object>() {
+                @Override
+                public Object run(Connection connection) throws SQLException {
+                    for (String pkg : allPackages) {
+                        DatabaseMetaData dbMetadata = connection.getMetaData();
+                        ResultSet schemas = dbMetadata.getSchemas(null, generator.modelToSchemaName(pkg));
+                        try {
+                            if (schemas.next())
+                                missing.remove(pkg);
+                        } finally {
+                            schemas.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (SQLException e) {
+            // don't sweat it
+        }
+        return missing.isEmpty();
+    }
 
-	private Collection<String> findAllPackages() {
-		return metadata.getNamespaces();
-	}
+    @Override
+    public Collection<String> listStores() {
+        Collection<String> entityNames = new TreeSet<String>();
+        for (TypeRef typeRef : metadata.getEntityNames())
+            entityNames.add(typeRef.getFullName());
+        return entityNames;
+    }
 
-	public INodeKey generateKey() {
-		return JDBCNodeStore.loadOne(connectionProvider, new JDBCNodeStore.LoadKeyHandler(), generator.generateGetSequence());
-	}
+    @Override
+    public INode newNode() {
+        return new BasicNode(generateKey());
+    }
 
-	public SQLGenerator getGenerator() {
-		return generator;
-	}
+    @Override
+    public void prime() {
+        try {
+            JDBCNodeStore.perform(connectionProvider, generator.generateDropSchema(false), false, false);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        JDBCNodeStore.perform(connectionProvider, generator.generateCreateSchema(), false, false);
+        for (String pkg : findAllPackages())
+            JDBCNodeStore.perform(connectionProvider, generator.generateCreateTables(pkg), false, false);
+    }
+
+    @Override
+    public INode resolve(NodeReference ref) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void validateConstraints() {
+        for (Entity entity : this.metadata.getAllEntities()) {
+            List<Relationship> relationships = entity.getRelationships();
+            for (Relationship relationship : relationships) {
+                List<String> stmts = generator.generateValidate(relationship);
+                for (String statement : stmts) {
+                    Number count = JDBCNodeStore
+                            .<Number> loadOne(connectionProvider, new JDBCNodeStore.LoadSingleValueHandler(), statement);
+                    if (count != null && count.longValue() > 0)
+                        throw new NodeStoreValidationException("Relationship " + relationship.getLabel() + " (from " + entity.getLabel()
+                                + ") failed validation");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void zap() {
+        // zap should not require metadata (repository may not be available)
+        JDBCNodeStore.perform(connectionProvider, generator.generateDropSchema(false), false, false);
+    }
+
+    protected SQLGenerator newSQLGenerator() {
+        return new SQLGenerator(getName(), metadata);
+    }
+
+    private Collection<String> findAllPackages() {
+        return metadata.getNamespaces();
+    }
+
+    private ConnectionProvider getConnectionProvider() {
+        return connectionProvider;
+    }
 }
-	

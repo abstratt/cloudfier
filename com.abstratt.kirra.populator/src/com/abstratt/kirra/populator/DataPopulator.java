@@ -32,76 +32,30 @@ import com.abstratt.kirra.TypeRef;
 import com.abstratt.pluginutils.LogUtils;
 
 public class DataPopulator {
-    public static String ID = DataPopulator.class.getPackage().getName();
-	private Repository repository;
-
-    public DataPopulator(Repository repository) {
-    	this.repository = repository;
-    }
-    
-    public int populate() {
-    	File dataFile = getDataFile();
-		InputStream in = null;
-		try {
-			// populate with empty data set if data.json not found
-			in = new BufferedInputStream(dataFile.isFile() ? new FileInputStream(dataFile) : new ByteArrayInputStream("{}".getBytes()), 8192);
-			return populate(in);
-		} catch (IOException e) {
-			LogUtils.logWarning(ID, "Error loading " + dataFile, e);
-			return -1;
-		} finally {
-			IOUtils.closeQuietly(in);
-		}
-    }
-
-	public File getDataFile() {
-		// load the sample data
-		File repositoryPath;
-		try {
-			repositoryPath = FileUtils.toFile(this.repository.getRepositoryURI().toURL());
-		} catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-		}
-		File dataFile = new File(repositoryPath, "data.json");
-		return dataFile;
-	}
-
-    public int populate(InputStream contents) {
-        try {
-            JsonNode tree = DataParser.parse(new InputStreamReader(contents));
-            if (tree == null || !tree.isObject())
-                return 0;
-            return new Loader().processTree(tree);
-        } catch (JsonParseException e) {
-            throw new KirraException("Error parsing JSON contents", e, KirraException.Kind.VALIDATION);
-        } catch (IOException e) {
-            throw new KirraException("Error reading contents", e, KirraException.Kind.VALIDATION);
-        }
-    }
-
     class Loader {
         private Map<String, Map<String, List<String>>> instances = new HashMap<String, Map<String, List<String>>>();
 
-        private int processTree(JsonNode tree) {
-            for (String namespace : repository.getNamespaces())
-                instances.put(namespace, new HashMap<String, List<String>>());
-            int count = 0;
-            for (Iterator<Map.Entry<String, JsonNode>> namespaceNodes = tree.getFields(); namespaceNodes.hasNext();) {
-                Entry<String, JsonNode> namespaceNode = namespaceNodes.next();
-                if (instances.containsKey(namespaceNode.getKey()) && namespaceNode.getValue().isObject()) {
-                    Iterator<Map.Entry<String, JsonNode>> entityNodes = namespaceNode.getValue().getFields();
-                    for (; entityNodes.hasNext();) {
-                        Entry<String, JsonNode> entityNode = entityNodes.next();
-                        count += processEntity(namespaceNode.getKey(), entityNode);
-                    }
-                }
+        private Instance createOrResolveRelated(String currentNamespace, JsonNode referenceOrObject, TypeRef type) {
+            if (referenceOrObject.isObject()) {
+                Entity relatedEntity = repository.getEntity(type.getEntityNamespace(), type.getTypeName());
+                return processInstance(relatedEntity, referenceOrObject);
+            } else if (referenceOrObject.isTextual()) {
+                Instance resolved = resolveReference(currentNamespace, referenceOrObject.getTextValue());
+                return resolved != null && resolved.isInstanceOf(type) ? resolved : null;
             }
-            return count;
+            return null;
+        }
+
+        private List<String> getEntityInstances(String namespaceName, String entity) {
+            Map<String, List<String>> namespace = instances.get(namespaceName);
+            if (!namespace.containsKey(entity))
+                namespace.put(entity, new ArrayList<String>());
+            return namespace.get(entity);
         }
 
         private int processEntity(String namespace, final Entry<String, JsonNode> entityNode) {
             final Entity entity;
-           	entity = repository.getEntity(namespace, entityNode.getKey());
+            entity = repository.getEntity(namespace, entityNode.getKey());
             if (!entity.isStandalone())
                 // only standalone entities can be populated this way
                 return 0;
@@ -137,43 +91,21 @@ public class DataPopulator {
             return created;
         }
 
-        private void setRelationship(Instance newInstance, JsonNode jsonNode, Relationship relationship) {
-            if (relationship.isMultiple())
-                setMultiRelationship(newInstance, jsonNode, relationship);
-            else
-                setSingleRelationship(newInstance, jsonNode, relationship);
-        }
-
-        private void setSingleRelationship(Instance newInstance, JsonNode jsonNode, Relationship relationship) {
-            Instance related = createOrResolveRelated(newInstance.getEntityNamespace(), jsonNode,
-                    relationship.getTypeRef());
-            if (related != null)
-                newInstance.setSingleRelated(relationship.getName(), related);
-        }
-
-        private void setMultiRelationship(Instance newInstance, JsonNode jsonNode, Relationship relationship) {
-            if (!jsonNode.isArray())
-                // no good, multiple relationships expect arrays
-                return;
-            List<Instance> allRelated = new ArrayList<Instance>(jsonNode.size());
-            for (int i = 0; i < jsonNode.size(); i++) {
-                Instance related = createOrResolveRelated(newInstance.getEntityNamespace(), jsonNode.get(i),
-                        relationship.getTypeRef());
-                if (related != null)
-                    allRelated.add(related);
+        private int processTree(JsonNode tree) {
+            for (String namespace : repository.getNamespaces())
+                instances.put(namespace, new HashMap<String, List<String>>());
+            int count = 0;
+            for (Iterator<Map.Entry<String, JsonNode>> namespaceNodes = tree.getFields(); namespaceNodes.hasNext();) {
+                Entry<String, JsonNode> namespaceNode = namespaceNodes.next();
+                if (instances.containsKey(namespaceNode.getKey()) && namespaceNode.getValue().isObject()) {
+                    Iterator<Map.Entry<String, JsonNode>> entityNodes = namespaceNode.getValue().getFields();
+                    for (; entityNodes.hasNext();) {
+                        Entry<String, JsonNode> entityNode = entityNodes.next();
+                        count += processEntity(namespaceNode.getKey(), entityNode);
+                    }
+                }
             }
-            newInstance.setRelated(relationship.getName(), allRelated);
-        }
-
-        private Instance createOrResolveRelated(String currentNamespace, JsonNode referenceOrObject, TypeRef type) {
-            if (referenceOrObject.isObject()) {
-        		Entity relatedEntity = repository.getEntity(type.getEntityNamespace(), type.getTypeName());
-        		return processInstance(relatedEntity, referenceOrObject);
-            } else if (referenceOrObject.isTextual()) {
-                Instance resolved = resolveReference(currentNamespace, referenceOrObject.getTextValue());
-                return resolved != null && resolved.isInstanceOf(type) ? resolved : null;
-            }
-            return null;
+            return count;
         }
 
         /**
@@ -194,11 +126,17 @@ public class DataPopulator {
             return repository.getInstance(ref.getNamespace(), ref.getEntity(), entity.get(ref.getIndex()), false);
         }
 
-        private List<String> getEntityInstances(String namespaceName, String entity) {
-            Map<String, List<String>> namespace = instances.get(namespaceName);
-            if (!namespace.containsKey(entity))
-                namespace.put(entity, new ArrayList<String>());
-            return namespace.get(entity);
+        private void setMultiRelationship(Instance newInstance, JsonNode jsonNode, Relationship relationship) {
+            if (!jsonNode.isArray())
+                // no good, multiple relationships expect arrays
+                return;
+            List<Instance> allRelated = new ArrayList<Instance>(jsonNode.size());
+            for (int i = 0; i < jsonNode.size(); i++) {
+                Instance related = createOrResolveRelated(newInstance.getEntityNamespace(), jsonNode.get(i), relationship.getTypeRef());
+                if (related != null)
+                    allRelated.add(related);
+            }
+            newInstance.setRelated(relationship.getName(), allRelated);
         }
 
         private void setProperty(Instance newInstance, JsonNode propertyValue, Property property) {
@@ -238,6 +176,68 @@ public class DataPopulator {
                 break;
             }
             newInstance.setValue(property.getName(), value);
+        }
+
+        private void setRelationship(Instance newInstance, JsonNode jsonNode, Relationship relationship) {
+            if (relationship.isMultiple())
+                setMultiRelationship(newInstance, jsonNode, relationship);
+            else
+                setSingleRelationship(newInstance, jsonNode, relationship);
+        }
+
+        private void setSingleRelationship(Instance newInstance, JsonNode jsonNode, Relationship relationship) {
+            Instance related = createOrResolveRelated(newInstance.getEntityNamespace(), jsonNode, relationship.getTypeRef());
+            if (related != null)
+                newInstance.setSingleRelated(relationship.getName(), related);
+        }
+    }
+
+    public static String ID = DataPopulator.class.getPackage().getName();
+
+    private Repository repository;
+
+    public DataPopulator(Repository repository) {
+        this.repository = repository;
+    }
+
+    public File getDataFile() {
+        // load the sample data
+        File repositoryPath;
+        try {
+            repositoryPath = FileUtils.toFile(this.repository.getRepositoryURI().toURL());
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+        File dataFile = new File(repositoryPath, "data.json");
+        return dataFile;
+    }
+
+    public int populate() {
+        File dataFile = getDataFile();
+        InputStream in = null;
+        try {
+            // populate with empty data set if data.json not found
+            in = new BufferedInputStream(dataFile.isFile() ? new FileInputStream(dataFile) : new ByteArrayInputStream("{}".getBytes()),
+                    8192);
+            return populate(in);
+        } catch (IOException e) {
+            LogUtils.logWarning(DataPopulator.ID, "Error loading " + dataFile, e);
+            return -1;
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+    }
+
+    public int populate(InputStream contents) {
+        try {
+            JsonNode tree = DataParser.parse(new InputStreamReader(contents));
+            if (tree == null || !tree.isObject())
+                return 0;
+            return new Loader().processTree(tree);
+        } catch (JsonParseException e) {
+            throw new KirraException("Error parsing JSON contents", e, KirraException.Kind.VALIDATION);
+        } catch (IOException e) {
+            throw new KirraException("Error reading contents", e, KirraException.Kind.VALIDATION);
         }
     }
 }

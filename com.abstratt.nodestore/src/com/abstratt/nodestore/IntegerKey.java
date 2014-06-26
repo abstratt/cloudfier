@@ -8,11 +8,6 @@ public class IntegerKey implements INodeKey {
     }
 
     @Override
-    public int hashCode() {
-        return Long.valueOf(innerKey).hashCode();
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -23,13 +18,18 @@ public class IntegerKey implements INodeKey {
         IntegerKey other = (IntegerKey) obj;
         return innerKey == other.innerKey;
     }
-    
+
+    public long getInnerKey() {
+        return innerKey;
+    }
+
+    @Override
+    public int hashCode() {
+        return Long.valueOf(innerKey).hashCode();
+    }
+
     @Override
     public String toString() {
         return Long.toString(innerKey);
     }
-    
-    public long getInnerKey() {
-		return innerKey;
-	}
 }

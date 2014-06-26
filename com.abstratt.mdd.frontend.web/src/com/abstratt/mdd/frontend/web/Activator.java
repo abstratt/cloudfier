@@ -7,13 +7,14 @@ import com.abstratt.pluginutils.LogUtils;
 
 public class Activator implements BundleActivator {
 
-	@Override
-	public void start(BundleContext context) throws Exception {
-		LogUtils.logInfo(WebFrontEnd.ID, "Started endpoint\n\tExternal: " + ReferenceUtils.EXTERNAL_BASE + "\n\tInternal: " + ReferenceUtils.INTERNAL_BASE, null);
-	}
+    @Override
+    public void start(BundleContext context) throws Exception {
+        LogUtils.logInfo(WebFrontEnd.ID, "Started endpoint\n\tExternal: " + ReferenceUtils.EXTERNAL_BASE + "\n\tInternal: "
+                + ReferenceUtils.INTERNAL_BASE, null);
+    }
 
-	@Override
-	public void stop(BundleContext context) throws Exception {
-	}
+    @Override
+    public void stop(BundleContext context) throws Exception {
+    }
 
 }

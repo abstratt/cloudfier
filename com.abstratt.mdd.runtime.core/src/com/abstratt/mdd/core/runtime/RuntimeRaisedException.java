@@ -17,42 +17,51 @@ public class RuntimeRaisedException extends ModelExecutionException {
     private BasicType exceptionObject;
     private Classifier exceptionType;
     private Constraint constraint;
+
     public RuntimeRaisedException(BasicType exceptionObject, String message, List<CallSite> callSites, NamedElement context) {
-		super(message == null ? exceptionObject.toString(Runtime.getCurrentRuntime().getCurrentContext()).toString() : message, context, null);
-		this.callSites = callSites;
-		this.exceptionObject = exceptionObject;
-		this.exceptionType = ClassifierUtils.findClassifier(Runtime.getCurrentRuntime().getRepository(), exceptionObject.getClassifierName());
-	}
-    
+        super(message == null ? exceptionObject.toString(Runtime.getCurrentRuntime().getCurrentContext()).toString() : message, context,
+                null);
+        this.callSites = callSites;
+        this.exceptionObject = exceptionObject;
+        this.exceptionType = ClassifierUtils.findClassifier(Runtime.getCurrentRuntime().getRepository(),
+                exceptionObject.getClassifierName());
+    }
+
     public RuntimeRaisedException(BasicType exceptionObject, String message, NamedElement context) {
         this(exceptionObject, message, Runtime.getCurrentRuntime().getCurrentContext().getCallSites(), context);
+    }
+
+    public List<CallSite> getCallSites() {
+        return callSites;
+    }
+
+    public Constraint getConstraint() {
+        return constraint;
+    }
+
+    public BasicType getExceptionObject() {
+        return exceptionObject;
+    }
+
+    public Classifier getExceptionType() {
+        return exceptionType;
+    }
+
+    public Integer getLineNumber() {
+        CallSite latestSite = getLatestSite();
+        return latestSite == null ? null : latestSite.getLineNumber();
     }
 
     public String getSourceFile() {
         CallSite latestSite = getLatestSite();
         return latestSite == null ? null : latestSite.getSourceFile();
     }
+
+    public void setConstraint(Constraint constraint) {
+        this.constraint = constraint;
+    }
+
     private CallSite getLatestSite() {
         return callSites.isEmpty() ? null : callSites.get(0);
     }
-    public Integer getLineNumber() {
-        CallSite latestSite = getLatestSite();
-        return latestSite == null ? null : latestSite.getLineNumber();
-    }
-    public List<CallSite> getCallSites() {
-        return callSites;
-    }
-    public BasicType getExceptionObject() {
-        return exceptionObject;
-    }
-    public Classifier getExceptionType() {
-        return exceptionType;
-    }
-    
-    public void setConstraint(Constraint constraint) {
-		this.constraint = constraint;
-	}
-    public Constraint getConstraint() {
-		return constraint;
-	}
 }

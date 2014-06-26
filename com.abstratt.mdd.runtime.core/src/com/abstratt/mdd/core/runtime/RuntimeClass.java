@@ -31,7 +31,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     private Classifier classifier;
-    
+
     private RuntimeClassObject classObject;
 
     protected Runtime runtime;
@@ -39,25 +39,59 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     /**
      * @param className
      * @param classifier
-     * @param runtime 
+     * @param runtime
      */
     protected RuntimeClass(Classifier classifier, Runtime runtime) {
         Assert.isNotNull(runtime);
         Assert.isNotNull(classifier);
         this.classifier = classifier;
         this.runtime = runtime;
-        this.classObject = new RuntimeClassObject(this);        
+        this.classObject = new RuntimeClassObject(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        RuntimeClass other = (RuntimeClass) obj;
+        if (classifier == null) {
+            if (other.classifier != null)
+                return false;
+        } else if (!classifier.equals(other.classifier))
+            return false;
+        if (runtime == null) {
+            if (other.runtime != null)
+                return false;
+        } else if (!runtime.equals(other.runtime))
+            return false;
+        return true;
+    }
+
+    public Map<Operation, List<Vertex>> findStateSpecificOperations() {
+        return StateMachineUtils.findStateSpecificOperations((BehavioredClassifier) getModelClassifier());
     }
 
     public final CollectionType getAllInstances() {
-    	Collection<RuntimeObject> fromDB = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().getNodeKeys()));
-    	fromDB.addAll(getRuntime().getCurrentContext().getWorkingObjects(this));
-		Collection<RuntimeObject> allInstances = fromDB;
-		return CollectionType.createCollection(classifier, true, false, allInstances);
+        Collection<RuntimeObject> fromDB = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().getNodeKeys()));
+        fromDB.addAll(getRuntime().getCurrentContext().getWorkingObjects(this));
+        Collection<RuntimeObject> allInstances = fromDB;
+        return CollectionType.createCollection(classifier, true, false, allInstances);
     }
 
     public final RuntimeClassObject getClassObject() {
         return classObject;
+    }
+
+    public RuntimeObject getInstance(INodeKey key) {
+        return getOrLoadInstance(key);
+    }
+
+    public RuntimeObject getInstance(String objectId) {
+        return getOrLoadInstance(objectIdToKey(objectId));
     }
 
     public final Classifier getModelClassifier() {
@@ -72,39 +106,73 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         return nodeStore;
     }
 
-    INodeStoreCatalog getNodeStoreCatalog() {
-        return runtime.getNodeStoreCatalog();
+    public CollectionType getParameterDomain(String externalId, Parameter parameter) {
+        IntegerKey key = objectIdToKey(externalId);
+        if (!getNodeStore().containsNode(key))
+            return CollectionType.createCollection(parameter.getType(), true, false);
+        return CollectionType.createCollection(parameter.getType(), true, false, getOrLoadInstance(key).getParameterDomain(parameter));
     }
-    
-	public Runtime getRuntime() {
+
+    public CollectionType getPropertyDomain(String objectId, Property property) {
+        IntegerKey key = objectIdToKey(objectId);
+        if (!getNodeStore().containsNode(key))
+            return CollectionType.createCollection(property.getType(), true, false);
+        return CollectionType.createCollection(property.getType(), true, false, getOrLoadInstance(key).getPropertyDomain(property));
+    }
+
+    public CollectionType getRelatedInstances(String objectId, Property property) {
+        IntegerKey key = objectIdToKey(objectId);
+        if (!getNodeStore().containsNode(key))
+            return CollectionType.createCollectionFor(property);
+        return CollectionType.createCollectionFor(property, getOrLoadInstance(key).getRelated(property));
+    }
+
+    public Runtime getRuntime() {
         return runtime;
     }
 
-	public final RuntimeObject newInstance() {
-		return newInstance(true);
-	}
-	
-	public final RuntimeObject newInstance(boolean persistent) {
-		return newInstance(persistent, true);
-	}
-	
+    @Override
+    public void handleEvent(RuntimeEvent runtimeEvent) {
+        // ensure target is active or it can't handle events
+        RuntimeObject target = (RuntimeObject) runtimeEvent.getTarget();
+        if (target.isActive())
+            target.handleEvent(runtimeEvent);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (classifier == null ? 0 : classifier.hashCode());
+        result = prime * result + (runtime == null ? 0 : runtime.hashCode());
+        return result;
+    }
+
+    public final RuntimeObject newInstance() {
+        return newInstance(true);
+    }
+
+    public final RuntimeObject newInstance(boolean persistent) {
+        return newInstance(persistent, true);
+    }
+
     /**
      * Creates a new instance of the class represented. Adds the created
      * instance to the pool of instances of the class represented.
-     * 
+     *
      * @return the created instance
      */
     public final RuntimeObject newInstance(boolean persistent, boolean initDefaults) {
         if (classifier.isAbstract())
             throw new CannotInstantiateAbstractClassifier(classifier);
         RuntimeObject newObject;
-        
+
         if (persistent) {
-			newObject = new RuntimeObject(this, getNodeStoreCatalog().newNode());
+            newObject = new RuntimeObject(this, getNodeStoreCatalog().newNode());
         } else
-        	newObject = new RuntimeObject(this);
+            newObject = new RuntimeObject(this);
         if (initDefaults)
-        	newObject.initDefaults();
+            newObject.initDefaults();
         return newObject;
     }
 
@@ -114,103 +182,36 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
             return getClassObject().runBehavioralFeature(operation, arguments);
         return ((RuntimeObject) target).runBehavioralFeature(operation, arguments);
     }
-    
-    @Override
-    public void handleEvent(RuntimeEvent runtimeEvent) {
-		// ensure target is active or it can't handle events
-		RuntimeObject target = (RuntimeObject) runtimeEvent.getTarget();
-		if (target.isActive())
-			target.handleEvent(runtimeEvent);
+
+    protected RuntimeObject getOrLoadInstance(INodeKey key) {
+        RuntimeObject existing = getRuntime().getCurrentContext().getWorkingObject(key);
+        if (existing != null) {
+            if (!existing.isActive())
+                return null;
+            return existing;
+        }
+        RuntimeObject runtimeObject = new RuntimeObject(this, key);
+        try {
+            // force load (also ensures the object exists)
+            runtimeObject.load();
+            return runtimeObject;
+        } catch (NotFoundException e) {
+            return null;
+        }
     }
 
-	public RuntimeObject getInstance(String objectId) {
-		return getOrLoadInstance(objectIdToKey(objectId));
-	}
-	
-	public RuntimeObject getInstance(INodeKey key) {
-		return getOrLoadInstance(key);
-	}
+    protected Collection<RuntimeObject> nodesToRuntimeObjects(Collection<INodeKey> keys) {
+        Collection<RuntimeObject> result = new HashSet<RuntimeObject>();
+        for (INodeKey key : keys)
+            result.add(getInstance(key));
+        return result;
+    }
 
-	protected IntegerKey objectIdToKey(String objectId) {
-		return new IntegerKey(Long.parseLong(objectId));
-	}
+    protected IntegerKey objectIdToKey(String objectId) {
+        return new IntegerKey(Long.parseLong(objectId));
+    }
 
-	public CollectionType getRelatedInstances(String objectId, Property property) {
-		IntegerKey key = objectIdToKey(objectId);
-		if (!getNodeStore().containsNode(key))
-			return CollectionType.createCollectionFor(property);
-	    return CollectionType.createCollectionFor(property, getOrLoadInstance(key).getRelated(property));	
-	}
-	
-	public CollectionType getParameterDomain(String externalId, Parameter parameter) {
-		IntegerKey key = objectIdToKey(externalId);
-		if (!getNodeStore().containsNode(key))
-			return CollectionType.createCollection(parameter.getType(), true, false);
-		return CollectionType.createCollection(parameter.getType(), true, false, getOrLoadInstance(key).getParameterDomain(parameter));
-	}
-	public CollectionType getPropertyDomain(String objectId, Property property) {
-		IntegerKey key = objectIdToKey(objectId);
-		if (!getNodeStore().containsNode(key))
-			return CollectionType.createCollection(property.getType(), true, false);
-		return CollectionType.createCollection(property.getType(), true, false, getOrLoadInstance(key).getPropertyDomain(property));
-	}
-
-	protected RuntimeObject getOrLoadInstance(INodeKey key) {
-		RuntimeObject existing = getRuntime().getCurrentContext().getWorkingObject(key);
-		if (existing != null) {
-			if (!existing.isActive())
-				return null;
-			return existing;
-		}
-		RuntimeObject runtimeObject = new RuntimeObject(this, key);
-		try {
-			// force load (also ensures the object exists)
-			runtimeObject.load();
-			return runtimeObject;
-		} catch (NotFoundException e) {
-			return null;
-		}
-	}
-
-	protected Collection<RuntimeObject> nodesToRuntimeObjects(Collection<INodeKey> keys) {
-		Collection<RuntimeObject> result = new HashSet<RuntimeObject>();
-		for (INodeKey key : keys)
-		    result.add(getInstance(key));
-		return result;
-	}
-	
-	public Map<Operation, List<Vertex>> findStateSpecificOperations() {
-		return StateMachineUtils.findStateSpecificOperations((BehavioredClassifier) getModelClassifier());
-	}
-
-	@Override
-	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((classifier == null) ? 0 : classifier.hashCode());
-		result = prime * result + ((runtime == null) ? 0 : runtime.hashCode());
-		return result;
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		RuntimeClass other = (RuntimeClass) obj;
-		if (classifier == null) {
-			if (other.classifier != null)
-				return false;
-		} else if (!classifier.equals(other.classifier))
-			return false;
-		if (runtime == null) {
-			if (other.runtime != null)
-				return false;
-		} else if (!runtime.equals(other.runtime))
-			return false;
-		return true;
-	}
+    INodeStoreCatalog getNodeStoreCatalog() {
+        return runtime.getNodeStoreCatalog();
+    }
 }

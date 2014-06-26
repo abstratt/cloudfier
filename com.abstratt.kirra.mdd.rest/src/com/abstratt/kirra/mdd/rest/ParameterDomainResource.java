@@ -16,21 +16,21 @@ import com.abstratt.mdd.frontend.web.ResourceUtils;
  */
 public class ParameterDomainResource extends AbstractInstanceListResource {
 
-	@Override
-	protected List<Instance> findInstances(String entityNamespace,
-			String entityName) {
-		Entity entity = getRepository().getEntity(getEntityNamespace(), getEntityName());
-		ResourceUtils.ensure(entity != null, "Entity not found: " + getEntityName(), Status.CLIENT_ERROR_NOT_FOUND);
-		String actionName = (String) getRequestAttributes().get("actionName");
-		Operation action = entity.getOperation(actionName);
-		ResourceUtils.ensure(action != null, "Action not found: " + actionName, Status.CLIENT_ERROR_NOT_FOUND);
-		ResourceUtils.ensure(action.isInstanceOperation(), "Action is not an instance action: " + actionName, Status.CLIENT_ERROR_NOT_FOUND);
+    @Override
+    protected List<Instance> findInstances(String entityNamespace, String entityName) {
+        Entity entity = getRepository().getEntity(getEntityNamespace(), getEntityName());
+        ResourceUtils.ensure(entity != null, "Entity not found: " + getEntityName(), Status.CLIENT_ERROR_NOT_FOUND);
+        String actionName = (String) getRequestAttributes().get("actionName");
+        Operation action = entity.getOperation(actionName);
+        ResourceUtils.ensure(action != null, "Action not found: " + actionName, Status.CLIENT_ERROR_NOT_FOUND);
+        ResourceUtils
+                .ensure(action.isInstanceOperation(), "Action is not an instance action: " + actionName, Status.CLIENT_ERROR_NOT_FOUND);
 
-		String parameterName = (String) getRequestAttributes().get("parameterName");
-		Parameter parameter = action.getParameter(parameterName);
-		ResourceUtils.ensure(parameter != null, "Parameter not found: " + parameterName, Status.CLIENT_ERROR_NOT_FOUND);
+        String parameterName = (String) getRequestAttributes().get("parameterName");
+        Parameter parameter = action.getParameter(parameterName);
+        ResourceUtils.ensure(parameter != null, "Parameter not found: " + parameterName, Status.CLIENT_ERROR_NOT_FOUND);
 
-		String objectId = (String) getRequestAttributes().get("objectId");
-		return getRepository().getParameterDomain(entity, objectId, action, parameter);
-	}
+        String objectId = (String) getRequestAttributes().get("objectId");
+        return getRepository().getParameterDomain(entity, objectId, action, parameter);
+    }
 }

@@ -15,27 +15,30 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 
 public class RuntimeReadStructuralFeatureAction extends RuntimeAction implements Constants {
 
-	public RuntimeReadStructuralFeatureAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeReadStructuralFeatureAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		ReadStructuralFeatureAction instance = (ReadStructuralFeatureAction) this.getInstance();
-		OutputPin resultPin = instance.getResult();
-		RuntimeObject target;
-		Property property = (Property) instance.getStructuralFeature();
-		if (!property.isStatic()) {
-			target = (RuntimeObject) this.getRuntimeObjectNode(instance.getObject()).getValue();
-		    if (target == null) {
-		    	// return null if trying to access property of a null object
-		    	addResultValue(resultPin, null);
-		    	return;
-//		        List<CallSite> sites = context.getCallSites();
-//		        throw new RuntimeRaisedException(null, null, "Can't access " + property.getName() + " on undefined reference", sites, property);
-		    }
-		} else
-			target = context.getRuntime().getRuntimeClass((Classifier) property.getOwner()).getClassObject();
-		BasicType result = target.getValue(property);
-		addResultValue(resultPin, result);
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        ReadStructuralFeatureAction instance = (ReadStructuralFeatureAction) this.getInstance();
+        OutputPin resultPin = instance.getResult();
+        RuntimeObject target;
+        Property property = (Property) instance.getStructuralFeature();
+        if (!property.isStatic()) {
+            target = (RuntimeObject) this.getRuntimeObjectNode(instance.getObject()).getValue();
+            if (target == null) {
+                // return null if trying to access property of a null object
+                addResultValue(resultPin, null);
+                return;
+                // List<CallSite> sites = context.getCallSites();
+                // throw new RuntimeRaisedException(null, null, "Can't access "
+                // + property.getName() + " on undefined reference", sites,
+                // property);
+            }
+        } else
+            target = context.getRuntime().getRuntimeClass((Classifier) property.getOwner()).getClassObject();
+        BasicType result = target.getValue(property);
+        addResultValue(resultPin, result);
+    }
 }

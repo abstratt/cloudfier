@@ -1,7 +1,5 @@
 package com.abstratt.kirra.tests.performance;
 
-import static java.util.Collections.singletonMap;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -9,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+
+import junit.framework.TestCase;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -23,165 +23,154 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.tests.mdd.runtime.AbstractKirraRestTests;
 
 public class InstancePerformanceTests extends AbstractKirraRestTests {
-	
-	public InstancePerformanceTests(String name) {
-		super(name);
-	}
-	
-	private void buildSimpleModel(int attributeCount) throws IOException,
-			CoreException {
-		String model = "";
-		model += "package mypackage;\n";
-		model += "apply kirra;\n";
-		model += "import base;\n";
-		int classCount = 10;
-		for (int j = 0; j < classCount; j++) {
-			model += "[Entity] class MyClass" + j + "\n";
-			for (int i = 0; i < attributeCount; i++)
-				model += "    attribute attr" + i + " : String;\n";
-			model += "end;\n";
-		}
-		model += "end.";
 
-		buildProjectAndLoadRepository(
-				singletonMap("test.tuml", model.getBytes()), true);
-	}
+    public InstancePerformanceTests(String name) {
+        super(name);
+    }
 
-	private List<String> createInstances(int instanceCount, int attributeCount)
-			throws IOException, HttpException, UnsupportedEncodingException,
-			CoreException {
+    public void testCreateInstances_010() throws Exception {
+        testCreateInstances(10);
+    }
 
-		Repository repository = getFeature(Repository.class);
-		Instance instance = repository.newInstance("mypackage", "MyClass1");
+    public void testCreateInstances_100() throws Exception {
+        testCreateInstances(100);
+    }
 
-		for (int i = 0; i < attributeCount; i++)
-			instance.setValue("attr" + i, "value" + i);
+    public void testRetrieveInstances_010() throws Exception {
+        testRetrieveInstances(10);
+    }
 
-		List<String> ids = new ArrayList<String>();
-		for (int i = 0; i < instanceCount; i++) {
-			Instance created = repository.createInstance(instance);
-			ids.add(created.getObjectId());
-		}
-		return ids;
-	}
+    public void testRetrieveInstances_100() throws Exception {
+        testRetrieveInstances(100);
+    }
 
-	private void measure(Callable<?> toMeasure) throws Exception {
-		System.gc();
-		System.gc();
-		final int blockSize = 1;
-		final int iterations = 10;
-		final int OFFSET = 2;
-		assertEquals(0, iterations % blockSize);
-		final int blockCount = iterations / blockSize;
-		assertTrue(blockCount > 2 * OFFSET);
+    public void testRetrieveOneInstance_010() throws Exception {
+        testRetrieveOneInstance(10);
+    }
 
-		StopWatch s = new StopWatch();
+    private void buildSimpleModel(int attributeCount) throws IOException, CoreException {
+        String model = "";
+        model += "package mypackage;\n";
+        model += "apply kirra;\n";
+        model += "import base;\n";
+        int classCount = 10;
+        for (int j = 0; j < classCount; j++) {
+            model += "[Entity] class MyClass" + j + "\n";
+            for (int i = 0; i < attributeCount; i++)
+                model += "    attribute attr" + i + " : String;\n";
+            model += "end;\n";
+        }
+        model += "end.";
 
-		List<Long> measurements = new ArrayList<Long>(blockCount);
-		for (int i = 0; i < blockCount; i++) {
-			s.start();
-			for (int j = 0; j < blockSize; j++) {
-				toMeasure.call();
-			}
-			s.stop();
-			measurements.add(s.getTime());
-			s.reset();
-		}
-		Collections.sort(measurements);
-		long elapsed = 0;
-		for (int i = OFFSET; i < measurements.size() - OFFSET; i++)
-			elapsed += measurements.get(i);
-		System.out.println("Average for " + getName() + ": "
-				+ (elapsed / (double) (blockCount - 2 * OFFSET) / blockSize));
-	}
+        buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
+    }
 
-	private void testCreateInstances(int instanceCount) throws Exception {
-		int attributeCount = 30;
-		buildSimpleModel(attributeCount);
-		URI sessionURI = getWorkspaceURI();
+    private List<String> createInstances(int instanceCount, int attributeCount) throws IOException, HttpException,
+            UnsupportedEncodingException, CoreException {
 
-		GetMethod getTemplateInstance = new GetMethod(sessionURI.resolve(
-				"instances/mypackage.MyClass1/_template").toASCIIString());
+        Repository repository = getFeature(Repository.class);
+        Instance instance = repository.newInstance("mypackage", "MyClass1");
 
-		ObjectNode template = (ObjectNode) executeJsonMethod(200,
-				getTemplateInstance);
+        for (int i = 0; i < attributeCount; i++)
+            instance.setValue("attr" + i, "value" + i);
 
-		ObjectNode values = (ObjectNode) template.get("values");
-		for (int i = 0; i < attributeCount; i++)
-			values.put("attr" + i, "value" + i);
+        List<String> ids = new ArrayList<String>();
+        for (int i = 0; i < instanceCount; i++) {
+            Instance created = repository.createInstance(instance);
+            ids.add(created.getObjectId());
+        }
+        return ids;
+    }
 
-		final PostMethod createMethod = new PostMethod(sessionURI.resolve(
-				"instances/mypackage.MyClass1/").toString());
-		createMethod.setRequestEntity(new StringRequestEntity(template
-				.toString(), "application/json", "UTF-8"));
+    private void measure(Callable<?> toMeasure) throws Exception {
+        System.gc();
+        System.gc();
+        final int blockSize = 1;
+        final int iterations = 10;
+        final int OFFSET = 2;
+        TestCase.assertEquals(0, iterations % blockSize);
+        final int blockCount = iterations / blockSize;
+        TestCase.assertTrue(blockCount > 2 * OFFSET);
 
-		Callable<?> toMeasure = new Callable<Object>() {
-			@Override
-			public Object call() throws HttpException, IOException {
-				return executeJsonMethod(201, createMethod);
-			}
-		};
+        StopWatch s = new StopWatch();
 
-		measure(toMeasure);
-	}
+        List<Long> measurements = new ArrayList<Long>(blockCount);
+        for (int i = 0; i < blockCount; i++) {
+            s.start();
+            for (int j = 0; j < blockSize; j++) {
+                toMeasure.call();
+            }
+            s.stop();
+            measurements.add(s.getTime());
+            s.reset();
+        }
+        Collections.sort(measurements);
+        long elapsed = 0;
+        for (int i = OFFSET; i < measurements.size() - OFFSET; i++)
+            elapsed += measurements.get(i);
+        System.out.println("Average for " + getName() + ": " + elapsed / (double) (blockCount - 2 * OFFSET) / blockSize);
+    }
 
-	public void testCreateInstances_010() throws Exception {
-		testCreateInstances(10);
-	}
+    private void testCreateInstances(int instanceCount) throws Exception {
+        int attributeCount = 30;
+        buildSimpleModel(attributeCount);
+        URI sessionURI = getWorkspaceURI();
 
-	public void testCreateInstances_100() throws Exception {
-		testCreateInstances(100);
-	}
+        GetMethod getTemplateInstance = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/_template").toASCIIString());
 
-	private void testRetrieveInstances(int instanceCount) throws Exception {
-		int attributeCount = 30;
-		buildSimpleModel(attributeCount);
-		createInstances(instanceCount, attributeCount);
-		URI sessionURI = getWorkspaceURI();
-		final GetMethod getInstances = new GetMethod(sessionURI.resolve(
-				"instances/mypackage.MyClass1/").toASCIIString());
+        ObjectNode template = (ObjectNode) executeJsonMethod(200, getTemplateInstance);
 
-		Callable<?> toMeasure = new Callable<Object>() {
-			@Override
-			public Object call() throws HttpException, IOException {
-				return executeMethod(200, getInstances);
-			}
-		};
+        ObjectNode values = (ObjectNode) template.get("values");
+        for (int i = 0; i < attributeCount; i++)
+            values.put("attr" + i, "value" + i);
 
-		measure(toMeasure);
-	}
+        final PostMethod createMethod = new PostMethod(sessionURI.resolve("instances/mypackage.MyClass1/").toString());
+        createMethod.setRequestEntity(new StringRequestEntity(template.toString(), "application/json", "UTF-8"));
 
-	public void testRetrieveInstances_010() throws Exception {
-		testRetrieveInstances(10);
-	}
+        Callable<?> toMeasure = new Callable<Object>() {
+            @Override
+            public Object call() throws HttpException, IOException {
+                return executeJsonMethod(201, createMethod);
+            }
+        };
 
-	public void testRetrieveInstances_100() throws Exception {
-		testRetrieveInstances(100);
-	}
+        measure(toMeasure);
+    }
 
-	private void testRetrieveOneInstance(int instanceCount) throws Exception {
-		int attributeCount = 30;
-		buildSimpleModel(attributeCount);
-		List<String> instanceIds = createInstances(instanceCount,
-				attributeCount);
+    private void testRetrieveInstances(int instanceCount) throws Exception {
+        int attributeCount = 30;
+        buildSimpleModel(attributeCount);
+        createInstances(instanceCount, attributeCount);
+        URI sessionURI = getWorkspaceURI();
+        final GetMethod getInstances = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/").toASCIIString());
 
-		URI sessionURI = getWorkspaceURI();
+        Callable<?> toMeasure = new Callable<Object>() {
+            @Override
+            public Object call() throws HttpException, IOException {
+                return executeMethod(200, getInstances);
+            }
+        };
 
-		final GetMethod getOneInstance = new GetMethod(sessionURI.resolve(
-				"instances/mypackage.MyClass1/" + instanceIds.get(0))
-				.toASCIIString());
+        measure(toMeasure);
+    }
 
-		Callable<?> toMeasure = new Callable<Object>() {
-			@Override
-			public Object call() throws HttpException, IOException {
-				return executeMethod(200, getOneInstance);
-			}
-		};
+    private void testRetrieveOneInstance(int instanceCount) throws Exception {
+        int attributeCount = 30;
+        buildSimpleModel(attributeCount);
+        List<String> instanceIds = createInstances(instanceCount, attributeCount);
 
-		measure(toMeasure);
-	}
+        URI sessionURI = getWorkspaceURI();
 
-	public void testRetrieveOneInstance_010() throws Exception {
-		testRetrieveOneInstance(10);
-	}
+        final GetMethod getOneInstance = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + instanceIds.get(0))
+                .toASCIIString());
+
+        Callable<?> toMeasure = new Callable<Object>() {
+            @Override
+            public Object call() throws HttpException, IOException {
+                return executeMethod(200, getOneInstance);
+            }
+        };
+
+        measure(toMeasure);
+    }
 }

@@ -32,47 +32,48 @@ import com.abstratt.pluginutils.LogUtils;
  * Provides access to an application session.
  */
 public abstract class AbstractUIResource<T extends NamedElement> extends AbstractKirraRepositoryResource {
-	@Get
-	public Representation generateCode() {
-//        List<String> namespaces = getRepository().getNamespaces();
-//        ResourceUtils.ensure(!namespaces.isEmpty(), "No entity namespaces found", Status.CLIENT_ERROR_NOT_FOUND);
-		try {
-			IRepository coreRepository = Runtime.getCurrentRuntime().getRepository();
-			Properties properties = new Properties();
-			properties.put(IRepository.TARGET_ENGINE, "gstring");
-			properties.put("mdd.target.ui-js.template", getClass().getResource("/" + getTemplateFileName() ).toString());
-			String utilClassName = getClass().getPackage().getName() + ".Util";
-			String importUtil = "import static " + utilClassName + ".*;";
-			String importKirraUIHelper = "import static " + KirraUIHelper.class.getName() + ".*;";
-			properties.put("mdd.target.ui-js.imports", StringUtils.join(Arrays.asList(importKirraUIHelper, importUtil), "\n"));
-			properties.put("mdd.target.ui-js.helperUris", getClass().getResource("/" + utilClassName.replace('.',  '/') + ".groovy").toString());
-	        ITargetPlatform platform  = TargetCore.getPlatform(properties, "ui-js");
-	        ITopLevelMapper<T> mapper = platform.getMapper(MDDUtil.fromEMFToJava(coreRepository.getBaseURI()));
-	        
-	        String generated = map(coreRepository, mapper);
-			StringRepresentation applicationSource = new StringRepresentation(generated, MediaType.APPLICATION_JAVASCRIPT);
-			applicationSource.setExpirationDate(new Date(0));
-			return applicationSource;
-		} catch (MappingException e) {
-			LogUtils.log(IStatus.ERROR, getClass().getPackage().getName(), "Generation error", e);
-			ResourceUtils.ensure(false, e.getMessage(), Status.SERVER_ERROR_INTERNAL);
-			return null;
-		}
-	}
+    @Get
+    public Representation generateCode() {
+        // List<String> namespaces = getRepository().getNamespaces();
+        // ResourceUtils.ensure(!namespaces.isEmpty(),
+        // "No entity namespaces found", Status.CLIENT_ERROR_NOT_FOUND);
+        try {
+            IRepository coreRepository = Runtime.getCurrentRuntime().getRepository();
+            Properties properties = new Properties();
+            properties.put(IRepository.TARGET_ENGINE, "gstring");
+            properties.put("mdd.target.ui-js.template", getClass().getResource("/" + getTemplateFileName()).toString());
+            String utilClassName = getClass().getPackage().getName() + ".Util";
+            String importUtil = "import static " + utilClassName + ".*;";
+            String importKirraUIHelper = "import static " + KirraUIHelper.class.getName() + ".*;";
+            properties.put("mdd.target.ui-js.imports", StringUtils.join(Arrays.asList(importKirraUIHelper, importUtil), "\n"));
+            properties.put("mdd.target.ui-js.helperUris", getClass().getResource("/" + utilClassName.replace('.', '/') + ".groovy")
+                    .toString());
+            ITargetPlatform platform = TargetCore.getPlatform(properties, "ui-js");
+            ITopLevelMapper<T> mapper = platform.getMapper(MDDUtil.fromEMFToJava(coreRepository.getBaseURI()));
 
-	protected abstract String map(IRepository coreRepository, ITopLevelMapper<T> mapper);
+            String generated = map(coreRepository, mapper);
+            StringRepresentation applicationSource = new StringRepresentation(generated, MediaType.APPLICATION_JAVASCRIPT);
+            applicationSource.setExpirationDate(new Date(0));
+            return applicationSource;
+        } catch (MappingException e) {
+            LogUtils.log(IStatus.ERROR, getClass().getPackage().getName(), "Generation error", e);
+            ResourceUtils.ensure(false, e.getMessage(), Status.SERVER_ERROR_INTERNAL);
+            return null;
+        }
+    }
 
-	public String mapNamespaces(IRepository coreRepository, ITopLevelMapper<Package> mapper) {
-		Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(coreRepository.getTopLevelPackages(null));
-		String generated = mapper.mapAll(new ArrayList<Package>(applicationPackages));
-		return generated;
-	}
-	
-	public String mapElement(IRepository coreRepository, ITopLevelMapper<T> mapper, T element) {
-		String generated = mapper.map(element);
-		return generated;
-	}
+    public String mapElement(IRepository coreRepository, ITopLevelMapper<T> mapper, T element) {
+        String generated = mapper.map(element);
+        return generated;
+    }
 
+    public String mapNamespaces(IRepository coreRepository, ITopLevelMapper<Package> mapper) {
+        Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(coreRepository.getTopLevelPackages(null));
+        String generated = mapper.mapAll(new ArrayList<Package>(applicationPackages));
+        return generated;
+    }
 
-	protected abstract String getTemplateFileName();
+    protected abstract String getTemplateFileName();
+
+    protected abstract String map(IRepository coreRepository, ITopLevelMapper<T> mapper);
 }

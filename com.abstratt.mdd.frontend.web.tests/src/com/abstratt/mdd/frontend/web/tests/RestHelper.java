@@ -30,111 +30,100 @@ import com.abstratt.mdd.frontend.web.WebFrontEnd;
 
 public class RestHelper {
 
-	private HttpClient httpClient;
-	private String workspaceName;
+    private HttpClient httpClient;
+    private String workspaceName;
 
-	public RestHelper(String name) {
-		httpClient = new HttpClient();
-		workspaceName = name;
-	}
+    public RestHelper(String name) {
+        httpClient = new HttpClient();
+        workspaceName = name;
+    }
 
-	public HttpMethod buildMultipartRequest(URI location,
-			Map<String, byte[]> toUpload) throws HttpException, IOException {
-		PostMethod filePost = new PostMethod(location.toASCIIString());
-		List<Part> parts = new ArrayList<Part>(toUpload.size());
-		for (Entry<String, byte[]> entry : toUpload.entrySet())
-			parts.add(new FilePart(entry.getKey(), new ByteArrayPartSource(
-					entry.getKey(), entry.getValue())));
-		filePost.setRequestEntity(new MultipartRequestEntity(parts
-				.toArray(new Part[0]), filePost.getParams()));
-		return filePost;
-	}
+    public HttpMethod buildGetRequest(URI location) throws HttpException, IOException {
+        return new GetMethod(location.toASCIIString());
+    }
 
-	public HttpMethod buildUploadRequest(URI location,
-			Map<String, byte[]> toUpload) throws HttpException, IOException {
-		return buildMultipartRequest(location, toUpload);
-	}
+    public HttpMethod buildMultipartRequest(URI location, Map<String, byte[]> toUpload) throws HttpException, IOException {
+        PostMethod filePost = new PostMethod(location.toASCIIString());
+        List<Part> parts = new ArrayList<Part>(toUpload.size());
+        for (Entry<String, byte[]> entry : toUpload.entrySet())
+            parts.add(new FilePart(entry.getKey(), new ByteArrayPartSource(entry.getKey(), entry.getValue())));
+        filePost.setRequestEntity(new MultipartRequestEntity(parts.toArray(new Part[0]), filePost.getParams()));
+        return filePost;
+    }
 
-	public HttpMethod buildGetRequest(URI location) throws HttpException,
-			IOException {
-		return new GetMethod(location.toASCIIString());
-	}
-	
-	public byte[] executeMethod(int expectedStatus, HttpMethod method)
-			throws IOException, HttpException {
-		return executeMethod(httpClient, expectedStatus, method);
-	}
+    public void buildProject(Map<String, byte[]> sources) throws IOException {
+        HttpMethod uploadRequest = buildMultipartRequest(getProjectUri(), sources);
+        try {
+            Assert.assertEquals(200, httpClient.executeMethod(uploadRequest));
+            String responseText = uploadRequest.getResponseBodyAsString();
+            Assert.assertTrue(responseText, responseText.startsWith("<results status=\"success\""));
+        } finally {
+            uploadRequest.releaseConnection();
+        }
+    }
 
-	public byte[] executeMethod(HttpClient httpClient, int expectedStatus, HttpMethod method)
-			throws IOException, HttpException {
-		try {
-			int response = httpClient.executeMethod(method);
-			byte[] body = method.getResponseBody();
-			Assert.assertEquals("Method: " + method.getName() + " - URI: " + method.getURI() + "\n" + (body == null ? "" : new String(body)), expectedStatus, response);
-			return body;
-		} finally {
-			method.releaseConnection();
-		}
-	}
+    public void buildProject(String source) throws IOException {
+        buildProject(Collections.singletonMap("foo.tuml", source.getBytes()));
+    }
 
-	
-	public <T extends JsonNode> T executeJsonMethod(int expectedStatus, HttpMethod method)
-			throws IOException, HttpException {
-		return (T) JsonHelper.parse(new InputStreamReader(new ByteArrayInputStream(executeMethod(expectedStatus, method))));
-	}
+    public HttpMethod buildUploadRequest(URI location, Map<String, byte[]> toUpload) throws HttpException, IOException {
+        return buildMultipartRequest(location, toUpload);
+    }
 
-	public void buildProject(String source) throws IOException {
-		buildProject(Collections.singletonMap("foo.tuml", source.getBytes()));
-	}
+    public void dispose() throws Exception {
+        // cleans up repository
+        DeleteMethod delete = new DeleteMethod(getProjectUri().toASCIIString());
+        try {
+            httpClient.executeMethod(delete);
+        } finally {
+            delete.releaseConnection();
+        }
+    }
 
-	public void buildProject(Map<String, byte[]> sources) throws IOException {
-		HttpMethod uploadRequest = buildMultipartRequest(getProjectUri(),
-				sources);
-		try {
-			Assert.assertEquals(200, httpClient.executeMethod(uploadRequest));
-			String responseText = uploadRequest.getResponseBodyAsString();
-			Assert.assertTrue(responseText, responseText.startsWith("<results status=\"success\""));
-		} finally {
-			uploadRequest.releaseConnection();
-		}
-	}
+    public <T extends JsonNode> T executeJsonMethod(int expectedStatus, HttpMethod method) throws IOException, HttpException {
+        return (T) JsonHelper.parse(new InputStreamReader(new ByteArrayInputStream(executeMethod(expectedStatus, method))));
+    }
 
-	public URI getProjectUri() {
-		return URI.create("http://localhost" + WebFrontEnd.PUBLISHER_PATH + getWorkspaceName() + '/');
-	}
-	
-	public URI getApiUri() throws IOException, HttpException {
-		return URI.create("http://localhost" + WebFrontEnd.APP_API_PATH + getWorkspaceName() + "/");
-	}
-	
-	public URI getDeployerUri() throws IOException, HttpException {
-		return URI.create("http://localhost" + WebFrontEnd.DEPLOYER_PATH + "?path=/test/" + getWorkspaceName() + "/mdd.properties");
-	}
+    public byte[] executeMethod(HttpClient httpClient, int expectedStatus, HttpMethod method) throws IOException, HttpException {
+        try {
+            int response = httpClient.executeMethod(method);
+            byte[] body = method.getResponseBody();
+            Assert.assertEquals("Method: " + method.getName() + " - URI: " + method.getURI() + "\n"
+                    + (body == null ? "" : new String(body)), expectedStatus, response);
+            return body;
+        } finally {
+            method.releaseConnection();
+        }
+    }
 
-	
-	public String getWorkspaceName() {
-		return workspaceName;
-	}
+    public byte[] executeMethod(int expectedStatus, HttpMethod method) throws IOException, HttpException {
+        return executeMethod(httpClient, expectedStatus, method);
+    }
 
-	public void dispose() throws Exception {
-		// cleans up repository
-		DeleteMethod delete = new DeleteMethod(getProjectUri()
-				.toASCIIString());
-		try {
-			httpClient.executeMethod(delete);
-		} finally {
-			delete.releaseConnection();
-		}
-	}
+    public URI getApiUri() throws IOException, HttpException {
+        return URI.create("http://localhost" + WebFrontEnd.APP_API_PATH + getWorkspaceName() + "/");
+    }
 
-	public void initDB() throws IOException {
-		PostMethod init = new PostMethod(getApiUri().resolve(Paths.DATA).toString());
-		try {
-			int result = httpClient.executeMethod(init);
-			Assert.assertTrue(result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
-		} finally {
-			init.releaseConnection();
-		}
-	}
+    public URI getDeployerUri() throws IOException, HttpException {
+        return URI.create("http://localhost" + WebFrontEnd.DEPLOYER_PATH + "?path=/test/" + getWorkspaceName() + "/mdd.properties");
+    }
+
+    public URI getProjectUri() {
+        return URI.create("http://localhost" + WebFrontEnd.PUBLISHER_PATH + getWorkspaceName() + '/');
+    }
+
+    public String getWorkspaceName() {
+        return workspaceName;
+    }
+
+    public void initDB() throws IOException {
+        PostMethod init = new PostMethod(getApiUri().resolve(Paths.DATA).toString());
+        try {
+            int result = httpClient.executeMethod(init);
+            Assert.assertTrue(result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
+        } finally {
+            init.releaseConnection();
+        }
+    }
 
 }

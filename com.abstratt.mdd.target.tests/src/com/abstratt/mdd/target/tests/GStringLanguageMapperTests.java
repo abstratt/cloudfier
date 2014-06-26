@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Arrays;
 
 import junit.framework.Test;
+import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
 import org.apache.commons.io.FileUtils;
@@ -20,12 +21,15 @@ import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.mdd.core.tests.harness.AssertHelper;
 import com.abstratt.mdd.core.util.MDDUtil;
 
-public class  GStringLanguageMapperTests extends AbstractRepositoryBuildingTests {
+public class GStringLanguageMapperTests extends AbstractRepositoryBuildingTests {
+
+    public static Test suite() {
+        return new TestSuite(GStringLanguageMapperTests.class);
+    }
 
     public GStringLanguageMapperTests(String name) {
         super(name);
     }
-
 
     public void testSimple() throws CoreException, IOException {
         String source = "";
@@ -38,22 +42,21 @@ public class  GStringLanguageMapperTests extends AbstractRepositoryBuildingTests
         source += "  end;\n";
         source += "end.";
         parseAndCheck(source);
-        
+
         File repositoryDir = getRepositoryDir().toLocalFile(EFS.NONE, null);
-        FileUtils.writeLines(new File(repositoryDir, "foobar.gt"), Arrays.asList("import com.abstratt.mdd.target.engine.gstring.*;\nimport org.eclipse.uml2.uml.*;\nclass Simple extends GroovyTemplate {\nString generate(Classifier clazz) {\nclazz.ownedAttributes.collect{attr-> \"Attribute: ${attr.name}\"}.join('\\n') } }"));
+        FileUtils
+                .writeLines(
+                        new File(repositoryDir, "foobar.gt"),
+                        Arrays.asList("import com.abstratt.mdd.target.engine.gstring.*;\nimport org.eclipse.uml2.uml.*;\nclass Simple extends GroovyTemplate {\nString generate(Classifier clazz) {\nclazz.ownedAttributes.collect{attr-> \"Attribute: ${attr.name}\"}.join('\\n') } }"));
         getRepository().getProperties().setProperty("mdd.target.engine", "gstring");
         getRepository().getProperties().setProperty("mdd.target.foobar.template", "foobar.gt");
-        ITargetPlatform platform  = TargetCore.getPlatform(getRepository().getProperties(), "foobar");
+        ITargetPlatform platform = TargetCore.getPlatform(getRepository().getProperties(), "foobar");
         ITopLevelMapper mapper = platform.getMapper(MDDUtil.fromEMFToJava(getRepositoryURI()));
         Class class1 = getRepository().findNamedElement("simple::Class1", UMLPackage.Literals.CLASS, null);
         String mapped1 = mapper.map(class1);
-        assertTrue(mapped1, AssertHelper.areEqual("Attribute: attr1", mapped1));
+        TestCase.assertTrue(mapped1, AssertHelper.areEqual("Attribute: attr1", mapped1));
         Class class2 = getRepository().findNamedElement("simple::Class2", UMLPackage.Literals.CLASS, null);
         String mapped2 = mapper.map(class2);
-        assertTrue(mapped2, AssertHelper.areEqual("Attribute: attr2", mapped2));
-    }
-
-    public static Test suite() {
-        return new TestSuite(GStringLanguageMapperTests.class);
+        TestCase.assertTrue(mapped2, AssertHelper.areEqual("Attribute: attr2", mapped2));
     }
 }

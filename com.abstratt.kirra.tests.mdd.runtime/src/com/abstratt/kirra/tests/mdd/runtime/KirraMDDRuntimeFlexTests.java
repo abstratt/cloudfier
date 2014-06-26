@@ -22,7 +22,7 @@
 //		model += "attribute attr2 : Double;\n";
 //		model += "attribute attr3 : String;\n";
 //		model += "attribute attr4 : Boolean;\n";
-//		model += "attribute attr5 : Date;\n";		
+//		model += "attribute attr5 : Date;\n";
 //		model += "end;\n";
 //		model += "[Entity] class MyClass2\n";
 //        model += "reference ref1 : MyClass1;\n";
@@ -33,8 +33,8 @@
 //	public KirraMDDRuntimeFlexTests(String name) {
 //		super(name);
 //	}
-//	
-//	
+//
+//
 //	@Override
 //	public void setUp() throws Exception {
 //		super.setUp();
@@ -56,8 +56,8 @@
 //		assertEquals("Boolean", attr4.getTypeRef().getTypeName());
 //		assertEquals("Date", attr5.getTypeRef().getTypeName());
 //	}
-//	
-//	
+//
+//
 //	public void testReferenceTypes() throws CoreException {
 //		parseAndCheck(model);
 //		Repository kirra = getKirra();
@@ -73,5 +73,5 @@
 //	protected IClientTranslator getTranslator() {
 //		return new JavaFlexTranslator();
 //	}
-//	
-//}
+//
+// }

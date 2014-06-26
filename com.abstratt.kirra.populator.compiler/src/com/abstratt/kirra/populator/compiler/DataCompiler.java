@@ -22,7 +22,7 @@ import com.abstratt.mdd.frontend.core.spi.CompilationContext;
 import com.abstratt.mdd.frontend.core.spi.ICompiler;
 
 public class DataCompiler implements ICompiler {
-	
+
     public static class DataProblem extends Problem {
 
         private String message;
@@ -36,11 +36,12 @@ public class DataCompiler implements ICompiler {
             this(Severity.ERROR, message);
         }
 
+        @Override
         public String getMessage() {
             return message;
         }
     }
-    
+
     private static DataProblem addProblem(CompilationContext context, Severity severity, String message) {
         DataProblem toReport = new DataProblem(severity, message);
         context.getProblemTracker().add(toReport);
@@ -54,40 +55,40 @@ public class DataCompiler implements ICompiler {
             if (root == null)
                 return;
             if (!root.isObject())
-            	addProblem(context, WARNING, "Data ignored, root object must be a map (of package names to maps of classes)");
+                DataCompiler.addProblem(context, WARNING, "Data ignored, root object must be a map (of package names to maps of classes)");
             final ErrorCollector errorCollector = new ErrorCollector() {
-            	@Override
-            	public void addError(String description) {
-            		addProblem(context, ERROR, removeNewLines(description));
-            		
-            	}
-            	@Override
-            	public void addWarning(String description) {
-            		addProblem(context, WARNING, removeNewLines(description));
-            	}
+                @Override
+                public void addError(String description) {
+                    DataCompiler.addProblem(context, ERROR, removeNewLines(description));
+
+                }
+
+                @Override
+                public void addWarning(String description) {
+                    DataCompiler.addProblem(context, WARNING, removeNewLines(description));
+                }
             };
             SchemaManagement schema = RepositoryService.DEFAULT.getFeature(SchemaManagement.class);
-    		new DataValidator(schema, errorCollector).validate(root);
+            new DataValidator(schema, errorCollector).validate(root);
         } catch (JsonProcessingException e) {
-            DataProblem reported = addProblem(context, ERROR, removeNewLines(e.getMessage()));
+            DataProblem reported = DataCompiler.addProblem(context, ERROR, removeNewLines(e.getMessage()));
             reported.setAttribute(IProblem.LINE_NUMBER, e.getLocation().getLineNr());
         } catch (IOException e) {
-            addProblem(context, ERROR, "Could not read data: " + e.getMessage());
+            DataCompiler.addProblem(context, ERROR, "Could not read data: " + e.getMessage());
         }
     }
 
-	@Override
-	public String findModelName(String toParse)
-			throws UnsupportedOperationException {
-		throw new UnsupportedOperationException();
-	}
+    @Override
+    public String findModelName(String toParse) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException();
+    }
 
-	@Override
-	public String format(String toFormat) {
-		return toFormat;
-	}
+    @Override
+    public String format(String toFormat) {
+        return toFormat;
+    }
 
-	protected String removeNewLines(String text) {
-		return text.replace("\n", "").replace("\r", "");
-	}
+    protected String removeNewLines(String text) {
+        return text.replace("\n", "").replace("\r", "");
+    }
 }

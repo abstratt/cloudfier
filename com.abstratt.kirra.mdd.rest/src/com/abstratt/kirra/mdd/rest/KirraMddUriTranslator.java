@@ -8,8 +8,8 @@ import com.abstratt.kirra.rest.resources.URITranslator;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
 
 public class KirraMddUriTranslator extends URITranslator {
-	@Override
-	public URI toExternalURI(URI toTranslate) {
-		return ReferenceUtils.getExternal(new Reference(toTranslate)).toUri();
-	}
+    @Override
+    public URI toExternalURI(URI toTranslate) {
+        return ReferenceUtils.getExternal(new Reference(toTranslate)).toUri();
+    }
 }

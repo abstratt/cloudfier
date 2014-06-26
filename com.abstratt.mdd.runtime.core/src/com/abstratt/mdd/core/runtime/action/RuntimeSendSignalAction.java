@@ -13,25 +13,27 @@ import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 
 public class RuntimeSendSignalAction extends RuntimeAction {
-	public RuntimeSendSignalAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeSendSignalAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		SendSignalAction instance = (SendSignalAction) getInstance();
-		
-		BasicType target = (BasicType) getRuntimeObjectNode(instance.getTarget()).getValue();
-		
-		if (target == null)
-			throw new ModelExecutionException("Attempt to send " + instance.getSignal().getQualifiedName() + " to a null target", context.currentFrame().getActivity(), this);
-		
-		RuntimeObject runtimeSignal = context.getRuntime().newInstance(instance.getSignal(), false, false);
-		
-		for (Property property : instance.getSignal().getAllAttributes()) {
-			InputPin valuePin = instance.getArgument(property.getName(), property.getType());
-			if (valuePin != null)
-			    runtimeSignal.setValue(property, getRuntimeObjectNode(valuePin).getValue());
-		}
-		context.getRuntime().sendSignal(target, runtimeSignal);
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        SendSignalAction instance = (SendSignalAction) getInstance();
+
+        BasicType target = getRuntimeObjectNode(instance.getTarget()).getValue();
+
+        if (target == null)
+            throw new ModelExecutionException("Attempt to send " + instance.getSignal().getQualifiedName() + " to a null target", context
+                    .currentFrame().getActivity(), this);
+
+        RuntimeObject runtimeSignal = context.getRuntime().newInstance(instance.getSignal(), false, false);
+
+        for (Property property : instance.getSignal().getAllAttributes()) {
+            InputPin valuePin = instance.getArgument(property.getName(), property.getType());
+            if (valuePin != null)
+                runtimeSignal.setValue(property, getRuntimeObjectNode(valuePin).getValue());
+        }
+        context.getRuntime().sendSignal(target, runtimeSignal);
+    }
 }

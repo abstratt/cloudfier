@@ -6,38 +6,38 @@ import java.util.Collection;
  * An abstraction for a data persistence mechanism.
  */
 public interface INodeStoreCatalog {
-	String getName();
-	
-	INodeStore createStore(String name);
-	
-	/**
-	 * Returns an existing store. Returns <code>null</code> if not found.
-	 */
-	INodeStore getStore(String name);
+    public void abortTransaction();
 
-	void deleteStore(String name);
+    public void beginTransaction();
 
-	INode newNode();
+    public void commitTransaction();
 
-	Collection<String> listStores();
+    public boolean exists(NodeReference ref);
 
-	public INode resolve(NodeReference ref);
+    public INode resolve(NodeReference ref);
 
-	public boolean exists(NodeReference ref);
-	
-	public void beginTransaction();
-	
-	public void commitTransaction();
-	
-	public void abortTransaction();
+    void clearCaches();
 
-	void zap();
+    INodeStore createStore(String name);
 
-	void prime();
+    void deleteStore(String name);
 
-	boolean isInitialized();
+    String getName();
 
-	void validateConstraints();
+    /**
+     * Returns an existing store. Returns <code>null</code> if not found.
+     */
+    INodeStore getStore(String name);
 
-	void clearCaches();
+    boolean isInitialized();
+
+    Collection<String> listStores();
+
+    INode newNode();
+
+    void prime();
+
+    void validateConstraints();
+
+    void zap();
 }

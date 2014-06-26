@@ -46,7 +46,7 @@
 //		}
 //		return null;
 //	}
-//	
+//
 //	public Object runOperation(ExecutionContext context, Object target, Operation operation, Object... arguments) {
 //		try {
 //			Method externalMethod = externalClass.selectMethod(delegate, operation.getName(), new Class[] {ExecutionContext.class, RuntimeObject.class, Object[].class});
@@ -57,10 +57,10 @@
 //		}
 //		return null;
 //	}
-//	
+//
 //	@Override
 //	public Object runOperation(ExecutionContext context, Operation operation,
 //	        Object... arguments) {
 //	    return runOperation(context, delegate, operation, arguments);
 //	}
-//}
+// }

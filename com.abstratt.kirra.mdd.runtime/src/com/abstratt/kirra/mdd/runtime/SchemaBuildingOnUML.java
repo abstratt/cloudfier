@@ -15,22 +15,22 @@ import com.abstratt.kirra.TupleType;
 
 public interface SchemaBuildingOnUML {
 
-	Entity getEntity(Class umlClass);
+    Entity getEntity(Class umlClass);
 
-	TupleType getTupleType(Classifier umlClass);
+    Operation getEntityOperation(org.eclipse.uml2.uml.Operation umlOperation);
 
-	Service getService(BehavioredClassifier serviceClassifier);
+    Property getEntityProperty(org.eclipse.uml2.uml.Property umlAttribute);
 
-	Operation getEntityOperation(org.eclipse.uml2.uml.Operation umlOperation);
+    Relationship getEntityRelationship(org.eclipse.uml2.uml.Property umlAttribute);
 
-	Operation getServiceOperation(org.eclipse.uml2.uml.BehavioralFeature umlOperation);
+    List<Relationship> getEntityRelationships(Class modelClass);
 
-	Property getEntityProperty(org.eclipse.uml2.uml.Property umlAttribute);
+    String getNamespace(org.eclipse.uml2.uml.NamedElement umlClass);
 
-	Relationship getEntityRelationship(org.eclipse.uml2.uml.Property umlAttribute);
+    Service getService(BehavioredClassifier serviceClassifier);
 
-	List<Relationship> getEntityRelationships(Class modelClass);
+    Operation getServiceOperation(org.eclipse.uml2.uml.BehavioralFeature umlOperation);
 
-	String getNamespace(org.eclipse.uml2.uml.NamedElement umlClass);
+    TupleType getTupleType(Classifier umlClass);
 
 }

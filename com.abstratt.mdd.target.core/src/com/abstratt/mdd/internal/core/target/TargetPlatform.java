@@ -9,34 +9,34 @@ import com.abstratt.mdd.core.target.ITopLevelMapper;
 
 public class TargetPlatform implements ITargetPlatform {
 
-	private String id;
-	private ITopLevelMapper mapper;
-	private String name;
+    private String id;
+    private ITopLevelMapper mapper;
+    private String name;
 
-	@Override
-	public String getId() {
-		return id;
-	}
-	
-	@Override
-	public String getName() {
-		return name;
-	}
+    public TargetPlatform(String id, String name, ITopLevelMapper mapper) {
+        super();
+        this.id = id;
+        this.name = name;
+        this.mapper = mapper;
+    }
 
-	@Override
-	public ITopLevelMapper getMapper(URI baseURI) {
-		return mapper;
-	}
+    @Override
+    public String getId() {
+        return id;
+    }
 
-	public TargetPlatform(String id, String name, ITopLevelMapper mapper) {
-		super();
-		this.id = id;
-		this.name = name;
-		this.mapper = mapper;
-	}
+    @Override
+    public ITopLevelMapper getMapper(URI baseURI) {
+        return mapper;
+    }
 
-	@Override
-	public Map<String, String> getProperties() {
-	    return Collections.emptyMap();
-	}
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        return Collections.emptyMap();
+    }
 }

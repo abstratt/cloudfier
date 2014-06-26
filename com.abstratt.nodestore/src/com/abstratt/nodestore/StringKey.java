@@ -9,14 +9,6 @@ public class StringKey implements INodeKey {
     }
 
     @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((innerKey == null) ? 0 : innerKey.hashCode());
-        return result;
-    }
-
-    @Override
     public boolean equals(Object obj) {
         if (this == obj)
             return true;
@@ -32,7 +24,15 @@ public class StringKey implements INodeKey {
             return false;
         return true;
     }
-    
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + (innerKey == null ? 0 : innerKey.hashCode());
+        return result;
+    }
+
     @Override
     public String toString() {
         return innerKey;

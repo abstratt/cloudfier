@@ -14,17 +14,18 @@ import com.abstratt.mdd.core.runtime.RuntimeObject;
 
 public class RuntimeCreateLinkAction extends RuntimeAction {
 
-	public RuntimeCreateLinkAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeCreateLinkAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		CreateLinkAction instance = (CreateLinkAction) getInstance();
-		List<LinkEndData> endData = instance.getEndData();
-		RuntimeObject targetObject = (RuntimeObject) getRuntimeObjectNode(endData.get(0).getValue()).getValue();
-		Property targetEnd = endData.get(0).getEnd();
-		RuntimeObject otherObject  = (RuntimeObject) getRuntimeObjectNode(endData.get(1).getValue()).getValue();
-		Property otherEnd = targetEnd.getOtherEnd();
-		targetObject.link(otherEnd, otherObject);
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        CreateLinkAction instance = (CreateLinkAction) getInstance();
+        List<LinkEndData> endData = instance.getEndData();
+        RuntimeObject targetObject = (RuntimeObject) getRuntimeObjectNode(endData.get(0).getValue()).getValue();
+        Property targetEnd = endData.get(0).getEnd();
+        RuntimeObject otherObject = (RuntimeObject) getRuntimeObjectNode(endData.get(1).getValue()).getValue();
+        Property otherEnd = targetEnd.getOtherEnd();
+        targetObject.link(otherEnd, otherObject);
+    }
 }

@@ -28,112 +28,112 @@ import com.abstratt.mdd.core.util.StereotypeUtils;
 
 public class RuntimeUtils {
 
-	public static BasicType extractValueFromSpecification(ValueSpecification valueSpec) {
-		return extractValueFromSpecification(null, valueSpec);
-	}
-	
-	public static BasicType extractValueFromSpecification(RuntimeObject self, ValueSpecification valueSpec) {
-		if (MDDExtensionUtils.isBasicValue(valueSpec))
-			return PrimitiveType.fromValue(valueSpec.getType(), MDDExtensionUtils.getBasicValue(valueSpec));
-		if (ActivityUtils.isBehaviorReference(valueSpec)) {
-			Activity behavior = (Activity) ActivityUtils.resolveBehaviorReference(valueSpec);
-			if (ActivityUtils.getClosureInputParameters(behavior).size() == 0) {
-				// no parameters, evaluate on the spot
-				Runtime runtime = Runtime.get();
-				return (BasicType) runtime.runBehavior(self, behavior.getName(), (Activity) behavior);
-			}
-			return new ElementReferenceType(behavior);
-		}
-		if (MDDExtensionUtils.isVertexLiteral(valueSpec))
-			return new StateMachineType(MDDExtensionUtils.getVertexLiteral(valueSpec));
-		if (valueSpec instanceof LiteralNull)
-			return null;
-    	if (valueSpec instanceof LiteralSpecification)
-			return PrimitiveType.fromStringValue(valueSpec.getType(), valueSpec.stringValue());
-		if (valueSpec instanceof InstanceValue) {
-			InstanceSpecification instanceSpec = ((InstanceValue) valueSpec).getInstance();
-			if (instanceSpec instanceof EnumerationLiteral)
-				return new EnumerationType((EnumerationLiteral) instanceSpec);
-		}			
-		throw new IllegalArgumentException("Unsupported value spec: " + valueSpec.eClass().getInstanceClassName());
-	}
-	
-	public static String toString(BasicType value) {
-		return toString(value, 1);
-	}
-	
-	public static String toString(BasicType value, int depth) {
-		if (value == null)
-			return "";
-		if (value instanceof CollectionType) {
-			StringBuffer buf = new StringBuffer();
-			buf.append("[");
-			for (BasicType element : ((CollectionType) value).getBackEnd()) {
-				buf.append(toString(element, depth-1));
+    public static BasicType extractValueFromSpecification(RuntimeObject self, ValueSpecification valueSpec) {
+        if (MDDExtensionUtils.isBasicValue(valueSpec))
+            return PrimitiveType.fromValue(valueSpec.getType(), MDDExtensionUtils.getBasicValue(valueSpec));
+        if (ActivityUtils.isBehaviorReference(valueSpec)) {
+            Activity behavior = (Activity) ActivityUtils.resolveBehaviorReference(valueSpec);
+            if (ActivityUtils.getClosureInputParameters(behavior).size() == 0) {
+                // no parameters, evaluate on the spot
+                Runtime runtime = Runtime.get();
+                return (BasicType) runtime.runBehavior(self, behavior.getName(), behavior);
+            }
+            return new ElementReferenceType(behavior);
+        }
+        if (MDDExtensionUtils.isVertexLiteral(valueSpec))
+            return new StateMachineType(MDDExtensionUtils.getVertexLiteral(valueSpec));
+        if (valueSpec instanceof LiteralNull)
+            return null;
+        if (valueSpec instanceof LiteralSpecification)
+            return PrimitiveType.fromStringValue(valueSpec.getType(), valueSpec.stringValue());
+        if (valueSpec instanceof InstanceValue) {
+            InstanceSpecification instanceSpec = ((InstanceValue) valueSpec).getInstance();
+            if (instanceSpec instanceof EnumerationLiteral)
+                return new EnumerationType((EnumerationLiteral) instanceSpec);
+        }
+        throw new IllegalArgumentException("Unsupported value spec: " + valueSpec.eClass().getInstanceClassName());
+    }
+
+    public static BasicType extractValueFromSpecification(ValueSpecification valueSpec) {
+        return RuntimeUtils.extractValueFromSpecification(null, valueSpec);
+    }
+
+    public static BasicType getDefaultValue(Classifier type) {
+        if (PrimitiveType.hasConverter(type))
+            return PrimitiveType.fromStringValue(type, "");
+        if (type instanceof Enumeration && !((Enumeration) type).getOwnedLiterals().isEmpty())
+            // questionable decision... but we can't have null enumeration
+            // values
+            return new EnumerationType(((Enumeration) type).getOwnedLiterals().get(0));
+        return null;
+    }
+
+    public static String toString(BasicType value) {
+        return RuntimeUtils.toString(value, 1);
+    }
+
+    public static String toString(BasicType value, int depth) {
+        if (value == null)
+            return "";
+        if (value instanceof CollectionType) {
+            StringBuffer buf = new StringBuffer();
+            buf.append("[");
+            for (BasicType element : ((CollectionType) value).getBackEnd()) {
+                buf.append(RuntimeUtils.toString(element, depth - 1));
                 buf.append(",");
-	        }
-			if (buf.charAt(buf.length()-1) == ',')
-				buf.deleteCharAt(buf.length() - 1);
-			buf.append("]");
-			return buf.toString();
-		}
-		if (!(value instanceof RuntimeObject))
-			return value.toString();
-		RuntimeObject instance = (RuntimeObject) value;
-		Classifier classifier = instance.getRuntimeClass().getModelClassifier();
-		
-		if (StereotypeUtils.hasStereotype(classifier, "formatting::Format")) {
-			Pattern pattern = Pattern.compile("\\[\\w[\\w|\\d]*\\]");
-			Stereotype stereotype = classifier.getAppliedStereotype("formatting::Format");
-			String mask = (String) classifier.getValue(stereotype, "mask");
-			Matcher matcher = pattern.matcher(mask);
-			String result = mask;
-			while (matcher.find()) {
-				String group = matcher.group();
-				String propertyName = group.substring(1, group.length() - 1);
-				Property property = classifier.getAttribute(propertyName, null);
-				result = result.replaceAll("\\[" + propertyName + "\\]", toString(instance.getValue(property)));
-			}
-			return result;
-		}
-		
-		List<Property> allAttributes = classifier.getAllAttributes();
-		for (Property current : allAttributes)
-			if (StereotypeUtils.hasStereotype(current, "identification::MainAttribute")) {
-				BasicType slotValue = instance.getValue(current);
-				if (slotValue == null)
-					continue;
-				return toString(slotValue, depth-1);
-			}
-		if (depth < 0)
-			return "...";
-		StringBuffer instanceStringValue = new StringBuffer();
-		
-		instanceStringValue.append(":" + classifier.getName());
-		instanceStringValue.append(" [");
-		for (Property attribute : allAttributes) {
-			BasicType slotValue = instance.getValue(attribute);
-			if (slotValue == null)
-				continue;
-			instanceStringValue.append(attribute.getName());
-			instanceStringValue.append ("=");
-			instanceStringValue.append(toString(slotValue, depth-1));
-			instanceStringValue.append (",");
-		}
-		if (instanceStringValue.length() > 0 && instanceStringValue.charAt(instanceStringValue.length() - 1) == ',')
-			instanceStringValue.deleteCharAt(instanceStringValue.length() - 1);
-		instanceStringValue.append("]");
-		return instanceStringValue.toString();
-	}
+            }
+            if (buf.charAt(buf.length() - 1) == ',')
+                buf.deleteCharAt(buf.length() - 1);
+            buf.append("]");
+            return buf.toString();
+        }
+        if (!(value instanceof RuntimeObject))
+            return value.toString();
+        RuntimeObject instance = (RuntimeObject) value;
+        Classifier classifier = instance.getRuntimeClass().getModelClassifier();
 
-	public static BasicType getDefaultValue(Classifier type) {
-		if (PrimitiveType.hasConverter(type))
-			return PrimitiveType.fromStringValue(type, "");
-		if (type instanceof Enumeration && !((Enumeration) type).getOwnedLiterals().isEmpty())
-			// questionable decision... but we can't have null enumeration values
-			return new EnumerationType(((Enumeration) type).getOwnedLiterals().get(0));
-		return null;
-	}
+        if (StereotypeUtils.hasStereotype(classifier, "formatting::Format")) {
+            Pattern pattern = Pattern.compile("\\[\\w[\\w|\\d]*\\]");
+            Stereotype stereotype = classifier.getAppliedStereotype("formatting::Format");
+            String mask = (String) classifier.getValue(stereotype, "mask");
+            Matcher matcher = pattern.matcher(mask);
+            String result = mask;
+            while (matcher.find()) {
+                String group = matcher.group();
+                String propertyName = group.substring(1, group.length() - 1);
+                Property property = classifier.getAttribute(propertyName, null);
+                result = result.replaceAll("\\[" + propertyName + "\\]", RuntimeUtils.toString(instance.getValue(property)));
+            }
+            return result;
+        }
 
+        List<Property> allAttributes = classifier.getAllAttributes();
+        for (Property current : allAttributes)
+            if (StereotypeUtils.hasStereotype(current, "identification::MainAttribute")) {
+                BasicType slotValue = instance.getValue(current);
+                if (slotValue == null)
+                    continue;
+                return RuntimeUtils.toString(slotValue, depth - 1);
+            }
+        if (depth < 0)
+            return "...";
+        StringBuffer instanceStringValue = new StringBuffer();
+
+        instanceStringValue.append(":" + classifier.getName());
+        instanceStringValue.append(" [");
+        for (Property attribute : allAttributes) {
+            BasicType slotValue = instance.getValue(attribute);
+            if (slotValue == null)
+                continue;
+            instanceStringValue.append(attribute.getName());
+            instanceStringValue.append("=");
+            instanceStringValue.append(RuntimeUtils.toString(slotValue, depth - 1));
+            instanceStringValue.append(",");
+        }
+        if (instanceStringValue.length() > 0 && instanceStringValue.charAt(instanceStringValue.length() - 1) == ',')
+            instanceStringValue.deleteCharAt(instanceStringValue.length() - 1);
+        instanceStringValue.append("]");
+        return instanceStringValue.toString();
+    }
 
 }

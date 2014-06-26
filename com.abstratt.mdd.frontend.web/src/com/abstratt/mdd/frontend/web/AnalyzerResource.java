@@ -17,38 +17,35 @@ import com.abstratt.mdd.frontend.core.spi.ISourceAnalyzer.SourceElement;
 import com.abstratt.pluginutils.LogUtils;
 
 public class AnalyzerResource extends AbstractWorkspaceResource {
-	@Post
-	public Representation analyze(Representation entity) {
-		if (entity == null) {
-			return new EmptyRepresentation();
-		}
-		String filename = getQuery().getFirstValue("fileName");
-		String defaultExtension = getQuery().getFirstValue("defaultExtension");
-		String extension;
-		if (filename != null) {
-			extension = StringUtils.trimToNull(new Path(filename)
-					.getFileExtension());
-			if (extension == null)
-				extension = defaultExtension;
-		} else
-			extension = defaultExtension;
-		String toAnalyze;
-		try {
-			toAnalyze = entity.getText();
-		} catch (IOException e) {
-			setStatus(Status.SERVER_ERROR_INTERNAL);
-			return ResourceUtils.buildErrorResponse(e); 
-		}
-		ResourceUtils.ensure(extension != null, "Missing fileName", Status.CLIENT_ERROR_BAD_REQUEST);
-		try {
-			List<SourceElement> elements = FrontEnd.getCompilationDirector()
-					.analyze(extension, toAnalyze);
-			return new StringRepresentation(JsonHelper.renderAsJson(elements));
-		} catch (CoreException e) {
-			LogUtils.logWarning(getClass().getPackage().getName(),
-					"Core error", e);
-			setStatus(Status.SERVER_ERROR_INTERNAL);
-			return ResourceUtils.buildErrorResponse(e);
-		}
-	}
+    @Post
+    public Representation analyze(Representation entity) {
+        if (entity == null) {
+            return new EmptyRepresentation();
+        }
+        String filename = getQuery().getFirstValue("fileName");
+        String defaultExtension = getQuery().getFirstValue("defaultExtension");
+        String extension;
+        if (filename != null) {
+            extension = StringUtils.trimToNull(new Path(filename).getFileExtension());
+            if (extension == null)
+                extension = defaultExtension;
+        } else
+            extension = defaultExtension;
+        String toAnalyze;
+        try {
+            toAnalyze = entity.getText();
+        } catch (IOException e) {
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return ResourceUtils.buildErrorResponse(e);
+        }
+        ResourceUtils.ensure(extension != null, "Missing fileName", Status.CLIENT_ERROR_BAD_REQUEST);
+        try {
+            List<SourceElement> elements = FrontEnd.getCompilationDirector().analyze(extension, toAnalyze);
+            return new StringRepresentation(JsonHelper.renderAsJson(elements));
+        } catch (CoreException e) {
+            LogUtils.logWarning(getClass().getPackage().getName(), "Core error", e);
+            setStatus(Status.SERVER_ERROR_INTERNAL);
+            return ResourceUtils.buildErrorResponse(e);
+        }
+    }
 }

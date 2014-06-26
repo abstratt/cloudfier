@@ -7,6 +7,7 @@ import org.eclipse.uml2.uml.Signal;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 
 public interface ExternalObjectDelegate {
-	BasicType getData(Classifier classifier, Operation operation, Object... arguments);
-	void receiveSignal(Classifier classifier, Signal signal, Object... arguments);
+    BasicType getData(Classifier classifier, Operation operation, Object... arguments);
+
+    void receiveSignal(Classifier classifier, Signal signal, Object... arguments);
 }

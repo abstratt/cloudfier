@@ -6,8 +6,11 @@ import java.util.Map;
 import org.eclipse.uml2.uml.NamedElement;
 
 public interface ITargetPlatform {
-	String getId();
-	String getName();
-	<T extends NamedElement> ITopLevelMapper<T> getMapper(URI baseURI);
+    String getId();
+
+    <T extends NamedElement> ITopLevelMapper<T> getMapper(URI baseURI);
+
+    String getName();
+
     Map<String, String> getProperties();
 }

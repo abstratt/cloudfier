@@ -26,10 +26,10 @@
 //			return null;
 //		String className = MDDExtensionUtils.getExternalClassName(classifier);
 //		if (className == null) {
-//			// no class name, assume it is under the external package 
+//			// no class name, assume it is under the external package
 //			String externalPackageName = ExternalClass.class.getPackage().getName();
 //			className = externalPackageName + '.' + classifier.getQualifiedName().replaceAll(NamedElement.SEPARATOR, ".");
-//		}			
+//		}
 //		try {
 //			return (Class<? extends ExternalClass>) Class.forName(className);
 //		} catch (ClassNotFoundException e) {
@@ -96,4 +96,4 @@
 //	public Method selectMethod(Object delegate, String operationName, Class[] classes) throws NoSuchMethodException {
 //		return delegate.getClass().getMethod(operationName, new Class[] {ExecutionContext.class, RuntimeObject.class, Object[].class});
 //	}
-//}
+// }

@@ -9,13 +9,13 @@ import com.abstratt.mdd.target.tests.AllTargetTests;
 import com.abstratt.nodestore.tests.AllNodeStoreTests;
 
 public class AllKirraAutomatedTests {
-	public static Test suite() {
-		TestSuite suite = new TestSuite(AllKirraAutomatedTests.class.getName());
-		suite.addTest(AllTargetTests.suite());
-		suite.addTest(AllRuntimeTests.suite());
-		suite.addTest(AllNodeStoreTests.suite());
-		suite.addTest(AllKirraMDDRuntimeTests.suite());
-		suite.addTest(AllWebFrontEndTests.suite());
-		return suite;
-	}
+    public static Test suite() {
+        TestSuite suite = new TestSuite(AllKirraAutomatedTests.class.getName());
+        suite.addTest(AllTargetTests.suite());
+        suite.addTest(AllRuntimeTests.suite());
+        suite.addTest(AllNodeStoreTests.suite());
+        suite.addTest(AllKirraMDDRuntimeTests.suite());
+        suite.addTest(AllWebFrontEndTests.suite());
+        return suite;
+    }
 }

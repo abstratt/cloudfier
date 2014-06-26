@@ -11,17 +11,18 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 
 public class RuntimeReadIsClassifiedObjectAction extends RuntimeAction {
-	public RuntimeReadIsClassifiedObjectAction(Action instance, CompositeRuntimeAction parent) {
-		super(instance, parent);
-	}
+    public RuntimeReadIsClassifiedObjectAction(Action instance, CompositeRuntimeAction parent) {
+        super(instance, parent);
+    }
 
-	public void executeBehavior(ExecutionContext context) {
-		ReadIsClassifiedObjectAction instance = (ReadIsClassifiedObjectAction) getInstance();
-		BasicType toTest = (BasicType) this.getRuntimeObjectNode(instance.getObject()).getValue();
-		boolean result = false; 
-		// no support for primitives yet
-		if (toTest instanceof RuntimeObject)
-			result = ((RuntimeObject) toTest).getRuntimeClass().getModelClassifier().conformsTo(instance.getClassifier());
-		addResultValue(instance.getResult(), BooleanType.fromValue(result));
-	}
+    @Override
+    public void executeBehavior(ExecutionContext context) {
+        ReadIsClassifiedObjectAction instance = (ReadIsClassifiedObjectAction) getInstance();
+        BasicType toTest = this.getRuntimeObjectNode(instance.getObject()).getValue();
+        boolean result = false;
+        // no support for primitives yet
+        if (toTest instanceof RuntimeObject)
+            result = ((RuntimeObject) toTest).getRuntimeClass().getModelClassifier().conformsTo(instance.getClassifier());
+        addResultValue(instance.getResult(), BooleanType.fromValue(result));
+    }
 }
