@@ -163,7 +163,7 @@ public class SQLGenerator {
             if (!isMappingTableRelationship(relationship)) {
                 Collection<Long> singleRef = references.get(relationship.getName());
                 Long fkValue = singleRef == null || singleRef.isEmpty() ? null : singleRef.iterator().next();
-                fkValue = fkValue == null && relationship.isRequired() ? (Long) - 1L : fkValue;
+                fkValue = fkValue == null && relationship.isRequired() ? -1L : fkValue;
                 stmt += ", " + fkValue;
             }
         }
