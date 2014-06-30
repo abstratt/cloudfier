@@ -3,6 +3,7 @@ package com.abstratt.kirra.mdd.runtime;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.uml2.uml.AggregationKind;
@@ -52,36 +53,42 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         IRepository repository = RepositoryService.DEFAULT.getFeature(IRepository.class);
         Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null));
         List<Namespace> namespaces = new ArrayList<Namespace>();
-        for (Package package1 : applicationPackages) {
+        for (Package current : applicationPackages) {
             List<Entity> entities = new ArrayList<Entity>();
             List<Service> services = new ArrayList<Service>();
             List<TupleType> tupleTypes = new ArrayList<TupleType>();
-            for (Type type : package1.getOwnedTypes())
+            for (Type type : current.getOwnedTypes())
                 if (KirraHelper.isEntity(type))
                     entities.add(getEntity((Class) type));
                 else if (KirraHelper.isService(type))
                     services.add(getService((BehavioredClassifier) type));
                 else if (KirraHelper.isTupleType(type))
                     tupleTypes.add(getTupleType((Classifier) type));
-            if (!entities.isEmpty() || !services.isEmpty() || !tupleTypes.isEmpty()) {
-                Namespace namespace = new Namespace(KirraHelper.getName(package1));
-                namespace.setLabel(KirraHelper.getLabel(package1));
-                namespace.setDescription(KirraHelper.getDescription(package1));
-                namespace.setTimestamp(MDDUtil.getGeneratedTimestamp(package1));
-                namespace.setEntities(entities);
-                namespace.setServices(services);
-                namespace.setTupleTypes(tupleTypes);
-                namespaces.add(namespace);
-            }
+            if (!entities.isEmpty() || !services.isEmpty() || !tupleTypes.isEmpty())
+                namespaces.add(buildNamespace(current, entities, services, tupleTypes));
         }
         Schema schema = new Schema();
         schema.setNamespaces(namespaces);
+        Properties repositoryProperties = repository.getProperties();
+        schema.setApplicationName(repositoryProperties.getProperty(IRepository.APPLICATION_NAME));
         if (!namespaces.isEmpty()) {
             Namespace first = namespaces.get(0);
             schema.setBuild(first.getTimestamp());
-            schema.setApplicationName(first.getLabel());
+            if (schema.getApplicationName() == null)
+                schema.setApplicationName(first.getLabel());
         }
         return schema;
+    }
+
+    private Namespace buildNamespace(Package umlPackage, List<Entity> entities, List<Service> services, List<TupleType> tupleTypes) {
+        Namespace namespace = new Namespace(KirraHelper.getName(umlPackage));
+        namespace.setLabel(KirraHelper.getLabel(umlPackage));
+        namespace.setDescription(KirraHelper.getDescription(umlPackage));
+        namespace.setTimestamp(MDDUtil.getGeneratedTimestamp(umlPackage));
+        namespace.setEntities(entities);
+        namespace.setServices(services);
+        namespace.setTupleTypes(tupleTypes);
+        return namespace;
     }
 
     @Override
