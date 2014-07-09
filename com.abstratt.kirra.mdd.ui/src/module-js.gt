@@ -816,7 +816,7 @@ def actionItem(entity, action, navigableCollection) {
 """
 var ${getSymbol(action)}Btn = new qx.ui.toolbar.Button('${modelToScreen(getLabel(action))}');
 ${
-    getDescription(action) ? "${getSymbol(action)}Btn.setToolTipText('${getDescription(action).replace("'", "\\'")}');" : ""
+    getDescription(action) ? "${getSymbol(action)}Btn.setToolTipText('${getDescription(action).replace("'", "\\'").replace("\n", " ")}');" : ""
 }
 actionToolbar.add(${getSymbol(action)}Btn);
 ${getSymbol(action)}Btn.addListener("execute", function(e) {
@@ -854,7 +854,7 @@ def buildActionWindow(recordVar, action) {
         action.ownedComments.collect { comment ->
             i++
             """
-            var comment${i} = new qx.ui.basic.Label('${comment.body.replace("'", "\\'")}');
+            var comment${i} = new qx.ui.basic.Label('${comment.body.replace("'", "\\'").replace("\n", " ")}');
             comment${i}.setAllowGrowX(false);
             comment${i}.setAlignX("center");
             ${getSymbol(action)}ActionWindow.add(comment${i}, {row: actionWindowRow, column: 0, colSpan: 3});
