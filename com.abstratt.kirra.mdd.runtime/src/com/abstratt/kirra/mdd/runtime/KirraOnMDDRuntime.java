@@ -634,6 +634,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private Tuple convertFromRuntimeObject(RuntimeObject source) {
+        if (source == null)
+            return null;
         if (source.isTuple())
             return convertToTuple(source);
         final boolean first = convertedToInstance.isEmpty();
@@ -736,7 +738,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         Classifier targetType = (Classifier) ((TypedElement) targetElement).getType();
         CollectionType targetCollection = CollectionType.createCollectionFor(targetElement);
         for (Object value : values)
-            targetCollection.add(convertSingleToBasicType((org.eclipse.uml2.uml.NamedElement) targetElement, value, targetType));
+            targetCollection.add(convertToBasicType(value, (org.eclipse.uml2.uml.MultiplicityElement) targetElement));
         return targetCollection;
     }
 
@@ -797,8 +799,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private Tuple convertToTuple(RuntimeObject source) {
-        Tuple tuple = new Tuple();
         Classifier modelClassifier = source.getRuntimeClass().getModelClassifier();
+        Tuple tuple = new Tuple(KirraMDDSchemaBuilder.convertType(modelClassifier));
         EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
         for (org.eclipse.uml2.uml.Property property : allAttributes) {
             BasicType value = source.getValue(property);

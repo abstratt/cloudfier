@@ -267,14 +267,14 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         return basicOperation;
     }
 
-    private TypeRef convertType(Type umlType) {
+    public static TypeRef convertType(Type umlType) {
         if (umlType == null)
             return null;
         String mappedTypeName = KirraMDDSchemaBuilder.mapToClientType(umlType.getQualifiedName());
         return new TypeRef(mappedTypeName, getKind(umlType));
     }
 
-    private TypeKind getKind(Type umlType) {
+    public static TypeKind getKind(Type umlType) {
         if (umlType instanceof Enumeration || umlType instanceof StateMachine)
             return TypeKind.Enumeration;
         if (KirraHelper.isService(umlType))
