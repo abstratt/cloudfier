@@ -10,6 +10,7 @@ import org.restlet.resource.Post;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.runtime.KirraActorSelector;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
@@ -42,11 +43,12 @@ public class ProfileResource extends AbstractKirraRepositoryResource {
         ResourceUtils.ensure(profileEntity.isUser(), profileEntity.getTypeRef().getFullName() + " is not a user entity",
                 Status.CLIENT_ERROR_BAD_REQUEST);
 
-        Instance newInstance = getRepository().newInstance(profileEntity.getEntityNamespace(), profileEntity.getName());
-        TupleParser.updateInstanceFromJsonRepresentation(toCreate, profileEntity, newInstance);
+        Repository repository = getRepository();
+        Instance newInstance = repository.newInstance(profileEntity.getEntityNamespace(), profileEntity.getName());
+        new TupleParser(repository).updateInstanceFromJsonRepresentation(toCreate, profileEntity, newInstance);
         newInstance.setValue("username", currentUserName);
         setStatus(Status.SUCCESS_CREATED);
-        return jsonToStringRepresentation(getInstanceJSONRepresentation(getRepository().createInstance(newInstance), profileEntity));
+        return jsonToStringRepresentation(getInstanceJSONRepresentation(repository.createInstance(newInstance), profileEntity));
     }
 
 }

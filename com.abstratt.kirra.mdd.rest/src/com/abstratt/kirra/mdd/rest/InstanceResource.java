@@ -12,6 +12,7 @@ import org.restlet.resource.Put;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.Repository;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 
@@ -48,10 +49,11 @@ public class InstanceResource extends AbstractKirraRepositoryResource {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return new EmptyRepresentation();
         }
-        Entity entity = getRepository().getEntity(getEntityNamespace(), getEntityName());
-        TupleParser.updateInstanceFromJsonRepresentation(toUpdate, entity, existingInstance);
+        Repository repository = getRepository();
+        Entity entity = repository.getEntity(getEntityNamespace(), getEntityName());
+        new TupleParser(repository).updateInstanceFromJsonRepresentation(toUpdate, entity, existingInstance);
         setStatus(Status.SUCCESS_OK);
-        return jsonToStringRepresentation(getInstanceJSONRepresentation(getRepository().updateInstance(existingInstance), entity));
+        return jsonToStringRepresentation(getInstanceJSONRepresentation(repository.updateInstance(existingInstance), entity));
     }
 
     protected String getObjectId() {

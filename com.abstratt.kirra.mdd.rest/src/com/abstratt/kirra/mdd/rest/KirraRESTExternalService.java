@@ -125,7 +125,8 @@ public class KirraRESTExternalService implements ExternalService {
                 return Arrays.asList();
             }
             JsonNode jsonValues = JsonHelper.parse(new InputStreamReader(method.getResponseBodyAsStream(), "UTF-8"));
-            return TupleParser.getValuesFromJsonRepresentation(KirraRESTUtils.getRepository(), jsonValues, operation.getTypeRef(),
+            LogUtils.logInfo(LegacyKirraMDDRestletApplication.ID, "Response: " + jsonValues, null);
+            return new TupleParser(KirraRESTUtils.getRepository()).getValuesFromJsonRepresentation(jsonValues, operation.getTypeRef(),
                     operation.isMultiple());
         } catch (IOException e) {
             throw new KirraException("Error executing retriever " + operation + " (at " + uri + ")", e, KirraException.Kind.EXTERNAL);

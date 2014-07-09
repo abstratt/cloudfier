@@ -77,6 +77,7 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
             boolean queryParameters) {
         Operation operation = findOperation(entityNamespace, entityName, operationName);
         ResourceUtils.ensure(operation != null, "Unknown operation: " + operationName, Status.CLIENT_ERROR_BAD_REQUEST);
+        TupleParser tupleParser = new TupleParser(getRepository());
 
         try {
             List<Parameter> parameters = operation.getParameters();
@@ -94,18 +95,21 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
                 // parameters in entity
                 JsonNode invocation = JsonHelper.parse(getRequestEntity().getReader());
                 Iterator<String> argNames = invocation.getFieldNames();
-                Map<String, Object> argumentMap = new HashMap<String, Object>();
+                Map<String, JsonNode> argumentMap = new HashMap<String, JsonNode>();
                 while (argNames.hasNext()) {
                     String argName = argNames.next();
                     JsonNode argValueNode = invocation.get(argName);
-                    argumentMap.put(argName, TupleParser.convertSlotValue(argName, argValueNode));
+                    argumentMap.put(argName, argValueNode);
                 }
                 for (Parameter parameter : parameters) {
                     ResourceUtils.ensure(argumentMap.containsKey(parameter.getName()) || !parameter.isRequired(), "Parameter is required: "
                             + parameter.getName(), Status.CLIENT_ERROR_BAD_REQUEST);
-                    Object argumentValue = argumentMap.get(parameter.getName());
+                    JsonNode argumentValueNode = argumentMap.get(parameter.getName());
+                    Object argumentValue;
                     if (parameter.getTypeRef().getKind() == TypeKind.Entity)
-                        argumentValue = TupleParser.resolveLink((String) argumentValue, parameter.getTypeRef());
+                        argumentValue = tupleParser.resolveLink(argumentValueNode.getTextValue(), parameter.getTypeRef());
+                    else
+                        argumentValue = tupleParser.convertSlotValue(parameter.getTypeRef(), argumentValueNode);
                     arguments.add(argumentValue);
                 }
             }

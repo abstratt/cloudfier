@@ -40,14 +40,15 @@ public class RelatedInstanceListResource extends AbstractInstanceListResource {
         Entity targetEntity = getTargetEntity();
         JsonNode existingUri = toCreate.get("uri");
 
+        TupleParser tupleParser = new TupleParser(getRepository());
         if (existingUri != null && !existingUri.isNull()) {
-            TupleParser.updateRelationship(anchorEntity, anchorInstance, relationship, existingUri);
+            tupleParser.updateRelationship(anchorEntity, anchorInstance, relationship, existingUri);
             setStatus(Status.SUCCESS_OK);
             getRepository().updateInstance(anchorInstance);
-            return jsonToStringRepresentation(TupleParser.resolveLink(existingUri, relationship.getTypeRef()));
+            return jsonToStringRepresentation(tupleParser.resolveLink(existingUri, relationship.getTypeRef()));
         }
         Instance newRelatedInstance = getRepository().newInstance(targetEntity.getEntityNamespace(), targetEntity.getName());
-        TupleParser.updateInstanceFromJsonRepresentation(toCreate, targetEntity, newRelatedInstance);
+        tupleParser.updateInstanceFromJsonRepresentation(toCreate, targetEntity, newRelatedInstance);
         if (relationship.getOpposite() != null)
             newRelatedInstance.setSingleRelated(relationship.getOpposite(), anchorInstance);
         Instance createdInstance = getRepository().createInstance(newRelatedInstance);
