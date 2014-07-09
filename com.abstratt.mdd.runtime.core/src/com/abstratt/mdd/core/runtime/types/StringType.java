@@ -37,6 +37,10 @@ public class StringType extends PrimitiveType<String> {
     public boolean isEmpty() {
         return this.value == null || value.trim().isEmpty();
     }
+    
+    public BooleanType isEmpty(ExecutionContext context) {
+        return BooleanType.fromValue(this.isEmpty());
+    }
 
     @Override
     public String primitiveValue() {

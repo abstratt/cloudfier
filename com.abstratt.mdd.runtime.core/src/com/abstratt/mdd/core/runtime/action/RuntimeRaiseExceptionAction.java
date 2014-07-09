@@ -33,7 +33,8 @@ public class RuntimeRaiseExceptionAction extends RuntimeAction {
         Operation toString = FeatureUtils.findOperation(repository, exceptionType, "toString", Collections.<TypedElement> emptyList());
         MetaClass<?> exceptionMetaClass = exception.getMetaClass();
         Object toStringResult = exceptionMetaClass.runOperation(context, exception, toString);
-        throw new RuntimeRaisedException(exception, toStringResult.toString(), context.getCallSites(),
+        String message = toStringResult == null ? exceptionType.getName() : toStringResult.toString();
+        throw new RuntimeRaisedException(exception, message, context.getCallSites(),
                 ActivityUtils.getActionActivity(instance));
     }
 

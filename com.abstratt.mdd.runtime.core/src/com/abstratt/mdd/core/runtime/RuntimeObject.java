@@ -338,7 +338,7 @@ public class RuntimeObject extends BasicType {
             return derivedValue(property);
         if (isAssociationEnd(property))
             return traverse(property);
-        Assert.isLegal(!property.isMultivalued());
+        Assert.isLegal(this.isTuple() || !property.isMultivalued());
         return getSlotValue(property, node.getProperties());
     }
 

@@ -1,5 +1,6 @@
 package com.abstratt.mdd.core.runtime;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
@@ -124,7 +125,10 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         IntegerKey key = objectIdToKey(objectId);
         if (!getNodeStore().containsNode(key))
             return CollectionType.createCollectionFor(property);
-        return CollectionType.createCollectionFor(property, getOrLoadInstance(key).getRelated(property));
+        RuntimeObject loaded = getOrLoadInstance(key);
+        if (loaded == null)
+            return CollectionType.createCollectionFor(property);
+        return CollectionType.createCollectionFor(property, loaded.getRelated(property));
     }
 
     public Runtime getRuntime() {
@@ -202,8 +206,11 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
 
     protected Collection<RuntimeObject> nodesToRuntimeObjects(Collection<INodeKey> keys) {
         Collection<RuntimeObject> result = new HashSet<RuntimeObject>();
-        for (INodeKey key : keys)
-            result.add(getInstance(key));
+        for (INodeKey key : keys) {
+            RuntimeObject related = getInstance(key);
+            if (related != null)
+                result.add(related);
+        }
         return result;
     }
 
