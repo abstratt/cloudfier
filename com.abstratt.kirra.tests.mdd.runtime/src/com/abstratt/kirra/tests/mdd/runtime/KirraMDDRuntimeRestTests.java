@@ -201,7 +201,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         });
 
         DeleteMethod delete = new DeleteMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + created.getObjectId()).toASCIIString());
-        executeMethod(200, delete);
+        executeMethod(204, delete);
 
         RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Object>() {
             @Override
@@ -550,7 +550,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         final String username = getName() + "@foo.com";
 
         // first sign up should work
-        signUp(username, "pass", 200);
+        signUp(username, "pass", 204);
 
         // double sign up should fail
         signUp(username, "pass", 400);

@@ -6,6 +6,7 @@ import junit.framework.TestSuite;
 public class AllKirraMDDRuntimeTests {
     public static Test suite() {
         TestSuite suite = new TestSuite(AllKirraMDDRuntimeTests.class.getName());
+        suite.addTest(new TestSuite(TupleParserTests.class));
         suite.addTest(new TestSuite(RepositoryServiceTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeResourceTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeSchemaTests.class));

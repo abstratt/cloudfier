@@ -92,7 +92,7 @@ public class AbstractKirraRestTests extends AbstractRepositoryTests {
         PostMethod loginMethod = new PostMethod(sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.LOGIN).toString());
         loginMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
                 "application/x-www-form-urlencoded", "UTF-8"));
-        restHelper.executeMethod(200, loginMethod);
+        restHelper.executeMethod(204, loginMethod);
     }
 
     protected void logout() throws HttpException, IOException {
@@ -108,7 +108,7 @@ public class AbstractKirraRestTests extends AbstractRepositoryTests {
     }
 
     protected void signUp(String username, String password) throws HttpException, IOException {
-        signUp(username, password, 200);
+        signUp(username, password, 204);
     }
 
     protected void signUp(String username, String password, int expected) throws HttpException, IOException {

@@ -117,7 +117,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr6"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr 6"));
         }
         newInstance.setValue("attr6", "100");
         kirra.createInstance(newInstance);
@@ -213,7 +213,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Ref2"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Ref 2"));
         }
 
         Instance newInstance3 = new Instance();
@@ -265,7 +265,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr1"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr 1"));
         }
         newInstance.setValue("attr1", 100);
 
@@ -275,7 +275,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr2"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr 2"));
         }
 
         newInstance.setValue("attr2", "Foo");
@@ -302,7 +302,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr1"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr 1"));
         }
         created.setValue("attr1", 100);
 
@@ -312,7 +312,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr2"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Attr 2"));
         }
 
         created.setValue("attr2", "Foo");
@@ -352,7 +352,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Ref2"));
+            TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Ref 2"));
         }
 
         Instance newInstance3 = kirra.newInstance("mypackage", "MyClass3");
