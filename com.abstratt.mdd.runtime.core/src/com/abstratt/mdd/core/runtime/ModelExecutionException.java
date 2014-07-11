@@ -9,6 +9,7 @@ public class ModelExecutionException extends RuntimeException {
     private static final long serialVersionUID = 1L;
     private RuntimeAction executing;
     private NamedElement context;
+    private String userFacingMessage;
 
     public ModelExecutionException(String message, NamedElement context, RuntimeAction executing) {
         super(message);
@@ -26,7 +27,7 @@ public class ModelExecutionException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        return super.getMessage();
+        return userFacingMessage == null ? super.getMessage() : userFacingMessage;
     }
 
     public void setExecuting(RuntimeAction executing) {
@@ -35,5 +36,9 @@ public class ModelExecutionException extends RuntimeException {
 
     protected String getContextName() {
         return context == null ? null : context.getQualifiedName();
+    }
+    
+    public String getUserFacingMessage() {
+        return userFacingMessage;
     }
 }

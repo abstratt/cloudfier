@@ -69,14 +69,9 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         }
         Schema schema = new Schema();
         schema.setNamespaces(namespaces);
-        Properties repositoryProperties = repository.getProperties();
-        schema.setApplicationName(repositoryProperties.getProperty(IRepository.APPLICATION_NAME));
-        if (!namespaces.isEmpty()) {
-            Namespace first = namespaces.get(0);
-            schema.setBuild(first.getTimestamp());
-            if (schema.getApplicationName() == null)
-                schema.setApplicationName(first.getLabel());
-        }
+        schema.setApplicationName(KirraHelper.getApplicationName(repository, applicationPackages));
+        if (!namespaces.isEmpty())
+            schema.setBuild(namespaces.get(0).getTimestamp());
         return schema;
     }
 

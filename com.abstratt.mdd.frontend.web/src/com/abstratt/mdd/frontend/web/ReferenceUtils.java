@@ -11,6 +11,7 @@ public class ReferenceUtils {
         if (internal == null)
             return null;
         internal = internal.clone();
+//        internal.setHostPort(null);
         String internalAsString = internal.toString();
         if (!internalAsString.startsWith(ReferenceUtils.INTERNAL_BASE))
             return internal;

@@ -18,8 +18,8 @@ cloudfier.corelib = {
         currentUserReq.addListenerOnce("success", function(e) {
             var currentUser = currentUserReq.getResponse().currentUser;
             cloudfier.currentUser = currentUser;
+            cloudfier.applicationName = currentUserReq.getResponse().applicationName;
             cloudfier.application.fireDataEvent("currentUserChanged", currentUser);
-            
         }, this);
         currentUserReq.addListenerOnce("statusError", function(e) {
             cloudfier.currentUser = undefined;

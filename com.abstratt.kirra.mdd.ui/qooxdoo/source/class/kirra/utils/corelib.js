@@ -16,13 +16,14 @@ cloudfier.corelib = {
     refreshCurrentUser: function () {
         var currentUserReq = new qx.io.request.Xhr(cloudfier.apiBase, "GET");
         currentUserReq.addListenerOnce("success", function(e) {
-            var currentUser = currentUserReq.getResponse().currentUser;
-            cloudfier.currentUser = currentUser;
-            cloudfier.application.fireDataEvent("currentUserChanged", currentUser);
+            cloudfier.applicationName = currentUserReq.getResponse().applicationName;
+            cloudfier.currentUser = currentUserReq.getResponse().currentUser;
+            cloudfier.application.fireDataEvent("currentUserChanged", cloudfier.currentUser);
             
         }, this);
         currentUserReq.addListenerOnce("statusError", function(e) {
             cloudfier.currentUser = undefined;
+            cloudfier.applicationName = "Error";
             cloudfier.application.fireDataEvent("currentUserChanged", cloudfier.currentUser);
         }, this);
         currentUserReq.send();

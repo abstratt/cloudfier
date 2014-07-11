@@ -7,7 +7,7 @@ def generateAll(List<org.eclipse.uml2.uml.Package> namespaces) {
 
 cloudfier = qx.lang.Object.mergeWith(cloudfier || {}, {
     // first package is the main application
-    applicationName: '${modelToScreen(getLabel(namespaces[0]))}', 
+    applicationName: null, 
     qooxdooBase: '../../../qooxdoo/framework/source/',
     qooxdooTheme: 'Oxygen/16',
     apiBase: location.href.replace('/ui/', '/api/').replace('root/source/', '').replace(/\\?.*/, ''),
@@ -143,8 +143,9 @@ cloudfier = qx.lang.Object.mergeWith(cloudfier || {}, {
           window.addListener("keypress", stdKeyListener);   
         },
         handleError : function (req) {
-            var message = req.getStatus() != 500 ? req._getParsedResponse().message : "Server error" ;
-            alert("Error: " + req.getStatus() + " - " + message);
+            var parsedMessage = req._getParsedResponse().message;
+            var message = parsedMessage || ("Error: " + req.getStatus() + " - Server error");
+            alert(message);
 /*        
             // qooxdoo won't load response in case of error
             var response = req._getParsedResponse();
@@ -511,8 +512,6 @@ qx.Class.define("kirra.Application", {
 
         ${ defineJsonStore() }       
         
-        document.title = cloudfier.applicationName;
-        
         var req = new qx.io.request.Xhr(cloudfier.apiBase, "GET");
      
      console.log(cloudfier.apiBase);
@@ -555,6 +554,7 @@ qx.Class.define("kirra.Application", {
         root.add(loginCtr, {left:500, top:0});
         
         this.addListener("currentUserChanged", function () {
+            document.title = cloudfier.applicationName;
             var currentUser = cloudfier.currentUser;
 	        console.log("Current user changed");
             if (!currentUser || !currentUser.username || "guest" == currentUser.username) {

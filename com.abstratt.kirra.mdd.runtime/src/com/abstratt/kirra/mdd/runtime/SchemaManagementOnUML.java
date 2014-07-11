@@ -28,7 +28,7 @@ public class SchemaManagementOnUML implements SchemaManagement {
     }
 
     static KirraException convertModelExecutionException(ModelExecutionException rre, Kind kind) {
-        return new KirraException(rre.getMessage(), rre, kind, rre.getContext() != null ? rre.getContext().getQualifiedName() : null);
+        return KirraOnMDDRuntime.convertModelExecutionException(rre, kind);
     }
 
     private SchemaManagementOnUML() {

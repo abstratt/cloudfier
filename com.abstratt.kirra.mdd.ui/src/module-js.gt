@@ -154,8 +154,9 @@ def classTab(entity) {
     var loadRecord = function (newPos, skipSelection) {
         var changed = newPos != currentRecord;
         //cloudfier.refreshCurrentUser();
-        console.log("Loading record "+ newPos + " for " + ${current()}.name);
         var totalRecords = store.getModel().getLength() - 1;
+        newPos = Math.min(totalRecords, newPos);
+        console.log("Loading record "+ newPos + " for " + ${current()}.name);
         if (store.getModel().getItem(newPos)) {
             currentRecord = newPos;
         } else {
@@ -171,6 +172,7 @@ def classTab(entity) {
             store.bind("model[" + currentRecord + "].values", controller, "model");
             if (skipSelection === undefined) 
                 ${current()}.table.getSelectionModel().setSelectionInterval(currentRecord, currentRecord);
+            ${current()}.table.setFocusedCell(null, currentRecord, true);
             enableButtons(store.getModel().getItem(currentRecord));
         }
         store.fireDataEvent("recordSelected", store.getModel());
@@ -956,8 +958,9 @@ def buildSaveFunction(entity, creationUrlExpression) {
 """function(toSave) {
     ${getFormFields(entity).findAll { isReadOnly(it, true) && !isDerived(it) }.collect { "toSave.getValues().reset${getSymbol(it).capitalize()}();" }.join("\n") }
     var saveUri = toSave.getUri();
-    var method = "PUT" 
-    if (!saveUri) {
+    var creation = !saveUri;
+    var method = "PUT";
+    if (creation) {
         saveUri = ${creationUrlExpression};
         method = "POST"; 
     }
@@ -965,9 +968,14 @@ def buildSaveFunction(entity, creationUrlExpression) {
     req.addListener("loadEnd", function(e) {
         if (qx.util.Request.isSuccessful(req.getStatus())) {
             // update the grid
+            ${current()}.store.addListenerOnce("loaded", function () {
+                if (creation) {
+                    loadRecord(Infinity);
+                }
+                // update the focus entity and relationships
+                ${current()}.reloadRootObject();
+            });
             ${current()}.store.reload();
-            // update the focus entity and relationships
-            ${current()}.reloadRootObject();
         } else {
             // qooxdoo won't load response in case of error
             var response = req._getParsedResponse();
@@ -1166,7 +1174,7 @@ ${!navigableCollection ? "" : """
     lastBtn.setToolTipText("Go to last record");
     navToolbarPart.add(lastBtn);
     lastBtn.addListener("execute", function(e) {
-        loadRecord(store.getModel().getLength() - 1);
+        loadRecord(Infinity);
     }, this);
 """}
 

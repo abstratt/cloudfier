@@ -2,8 +2,10 @@ package com.abstratt.kirra.mdd.rest;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -82,8 +84,16 @@ public class KirraRESTExternalService implements ExternalService {
             if (argument.getValue() != null)
                 arguments.set(argument.getKey(), argument.getValue().toString());
         try {
+            StringBuilder queryString = new StringBuilder();
+            for (int i = 0; i < arguments.size(); i++) {
+                if (i > 0)
+                    queryString.append('&');
+                queryString.append(arguments.get(i).getName());
+                queryString.append('=');
+                queryString.append(arguments.get(i).getValue());
+            }
             return new URI(resolved.getScheme(), resolved.getUserInfo(), resolved.getHost(), resolved.getPort(), resolved.getPath(),
-                    StringUtils.trimToEmpty(resolved.getQuery()) + "&" + arguments.getQueryString(), resolved.getFragment());
+                    queryString.toString(), resolved.getFragment());
         } catch (URISyntaxException e) {
             throw new KirraException("Unexpected", e, KirraException.Kind.EXTERNAL);
         }

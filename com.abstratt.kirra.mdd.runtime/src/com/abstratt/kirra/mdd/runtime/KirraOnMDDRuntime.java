@@ -62,6 +62,7 @@ import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeClass;
 import com.abstratt.mdd.core.runtime.RuntimeMessageEvent;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
+import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
@@ -96,7 +97,10 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     static KirraException convertModelExecutionException(ModelExecutionException rre, Kind kind) {
-        return new KirraException(rre.getMessage(), rre, kind, rre.getContext() != null ? rre.getContext().getQualifiedName() : null);
+        String symbol = (rre instanceof RuntimeRaisedException) ? ((RuntimeRaisedException) rre).getExceptionType().getName() : null;
+        String message = rre.getUserFacingMessage() == null && symbol != null ? KirraHelper.getLabelFromSymbol(symbol) : rre.getMessage();
+        String context = rre.getContext() != null ? rre.getContext().getQualifiedName() : null;
+        return new KirraException(message, rre, kind, context, symbol);
     }
 
     static KirraException convertNodeStoreException(NodeStoreException rre) {
@@ -730,7 +734,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         try {
             return PrimitiveType.convertToBasicType(targetType, value);
         } catch (ValueConverter.ConversionException e) {
-            throw new KirraException(e.toString(), e, Kind.VALIDATION, targetElement.getName());
+            throw new KirraException(e.toString(), e, Kind.VALIDATION, targetElement.getName(), null);
         }
     }
 
@@ -783,8 +787,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 if (attribute.getAssociation() == null)
                     throw new KirraException("Attribute " + attribute.getQualifiedName() + " is not an association end", null, Kind.SCHEMA);
                 if (!attribute.isNavigable())
-                    throw new KirraException("Attribute " + attribute.getQualifiedName() + " is not a navigable association end", null,
-                            Kind.SCHEMA);
+                    // just ignore
+                    continue;
                 target.setValue(attribute, convertToBasicType(entry.getValue(), attribute));
             }
             if (instance.isNew())
