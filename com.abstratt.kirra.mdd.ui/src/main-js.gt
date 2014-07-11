@@ -316,7 +316,7 @@ cloudfier = qx.lang.Object.mergeWith(cloudfier || {}, {
         showLoginWindow : function() {
             var layout = new qx.ui.layout.VBox(10, "middle");
             
-            var loginWindow = new qx.ui.window.Window("Login to " + cloudfier.applicationName);
+            var loginWindow = new qx.ui.window.Window("Login");
             loginWindow.setShowMaximize(false);
             loginWindow.setShowMinimize(false);
             loginWindow.setShowClose(false);
