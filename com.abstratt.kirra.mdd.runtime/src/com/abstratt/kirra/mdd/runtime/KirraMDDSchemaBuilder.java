@@ -140,8 +140,10 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         setName(umlAttribute, entityRelationship);
 
         org.eclipse.uml2.uml.Property otherEnd = umlAttribute.getOtherEnd();
-        if (otherEnd != null && KirraHelper.isRelationship(otherEnd))
+        if (otherEnd != null && KirraHelper.isRelationship(otherEnd)) {
             entityRelationship.setOpposite(otherEnd.getName());
+            entityRelationship.setOppositeRequired(KirraHelper.isRequired(otherEnd));
+        }
 
         Style style;
 

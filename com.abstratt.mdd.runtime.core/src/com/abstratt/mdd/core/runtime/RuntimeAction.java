@@ -85,6 +85,7 @@ public abstract class RuntimeAction {
         if (getState() != READY)
             throw new IllegalStateException();
         try {
+            context.currentFrame().recordCallSite(instance);
             setState(EXECUTING);
             this.executeBehavior(context);
             // run after advices

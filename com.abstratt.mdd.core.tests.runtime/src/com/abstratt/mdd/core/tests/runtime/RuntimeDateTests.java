@@ -10,7 +10,9 @@ import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.DateType;
+import com.abstratt.mdd.core.runtime.types.DurationType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
+import com.abstratt.mdd.core.runtime.types.RealType;
 
 public class RuntimeDateTests extends AbstractRuntimeTests {
 
@@ -82,7 +84,7 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "end;\n";
         model += "static operation dateTranspose(d : Date,diff : Integer) : Date;\n";
         model += "begin\n";
-        model += "  return d.transpose(diff);\n";
+        model += "  return d.transpose(Duration#days(diff));\n";
         model += "end;\n";
         model += "static operation yearDiff(d1 : Date,d2 : Date) : Integer;\n";
         model += "begin\n";
@@ -102,7 +104,7 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         IntegerType diff = (IntegerType) runStaticOperation("tests::DateUtil", "dateDiff", d1, d2);
         TestCase.assertEquals(6, diff.primitiveValue().intValue());
 
-        DateType transposed = (DateType) runStaticOperation("tests::DateUtil", "dateTranspose", d1, new IntegerType(6));
+        DateType transposed = (DateType) runStaticOperation("tests::DateUtil", "dateTranspose", d1, RealType.fromValue(6));
         TestCase.assertEquals(d2.primitiveValue().getYear(), transposed.primitiveValue().getYear());
         TestCase.assertEquals(d2.primitiveValue().getMonth(), transposed.primitiveValue().getMonth());
         TestCase.assertEquals(d2.primitiveValue().getDate(), transposed.primitiveValue().getDate());

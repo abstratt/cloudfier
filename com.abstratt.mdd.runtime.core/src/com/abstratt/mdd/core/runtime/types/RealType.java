@@ -16,8 +16,6 @@ public class RealType extends NumberType<Double> {
      */
     private static final long serialVersionUID = 1L;
 
-    private double value;
-
     public RealType(double value) {
         this.value = value;
     }
@@ -32,11 +30,6 @@ public class RealType extends NumberType<Double> {
     @Override
     public NumberType<Double> add(ExecutionContext context, NumberType<?> another) {
         return new RealType(value + another.asDouble());
-    }
-
-    @Override
-    public double asDouble() {
-        return value;
     }
 
     @Override
@@ -55,11 +48,6 @@ public class RealType extends NumberType<Double> {
     }
 
     @Override
-    public Double primitiveValue() {
-        return Double.valueOf(value);
-    }
-
-    @Override
     public NumberType subtract(ExecutionContext context) {
         return new RealType(-value);
     }
@@ -71,6 +59,7 @@ public class RealType extends NumberType<Double> {
 
     @Override
     protected RealType asReal() {
+        // one less object
         return this;
     }
 }

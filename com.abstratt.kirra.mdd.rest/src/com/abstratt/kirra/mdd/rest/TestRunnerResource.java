@@ -15,6 +15,7 @@ import com.abstratt.kirra.mdd.rest.TestRunnerResource.TestResult.Status;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.runtime.ExecutionContext.CallSite;
+import com.abstratt.mdd.core.runtime.ModelExecutionException;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.types.BasicType;
@@ -110,13 +111,17 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
 
             TestResult pass = new TestResult(testClassName, testCaseName, TestResult.Status.Pass, null, testLocation);
             return jsonToStringRepresentation(pass);
-        } catch (RuntimeRaisedException rre) {
-            String message = rre.getMessage();
+        } catch (ModelExecutionException mee) {
+            String message = mee.getMessage();
             if (TestResource.shouldFail(testCase)) {
                 String expectedContext = TestResource.getExpectedContext(testCase);
                 String expectedConstraint = TestResource.getExpectedConstraint(testCase);
-                String actualConstraint = rre.getConstraint() == null ? null : rre.getConstraint().getName();
-                String actualContext = rre.getContext() == null ? null : rre.getContext().getName();
+                String actualConstraint = null;
+                if (mee instanceof RuntimeRaisedException) {
+                    RuntimeRaisedException rre = (RuntimeRaisedException) mee;
+                    actualConstraint = rre.getConstraint() == null ? null : rre.getConstraint().getName();
+                }
+                String actualContext = mee.getContext() == null ? null : mee.getContext().getName();
                 boolean matchExpectation = true;
                 if (!StringUtils.isBlank(expectedContext)
                         && !StringUtils.trimToEmpty(expectedContext).equals(StringUtils.trimToEmpty(actualContext))) {
@@ -133,7 +138,7 @@ public class TestRunnerResource extends AbstractKirraRepositoryResource {
             }
 
             TestResult testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, message, testLocation);
-            for (CallSite callSite : rre.getCallSites())
+            for (CallSite callSite : mee.getCallSites())
                 testResult.errorLocation
                         .add(new SourceLocation(callSite.getSourceFile(), callSite.getLineNumber(), callSite.getFrameName()));
             return jsonToStringRepresentation(testResult);

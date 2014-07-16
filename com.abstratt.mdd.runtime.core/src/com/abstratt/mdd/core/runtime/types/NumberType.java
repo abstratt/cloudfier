@@ -2,12 +2,23 @@ package com.abstratt.mdd.core.runtime.types;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
-public abstract class NumberType<T> extends PrimitiveType<T> {
+public abstract class NumberType<T extends Number> extends PrimitiveType<T> {
     private static final long serialVersionUID = 1L;
+    
+    
+    protected T value;
+    
+    @Override
+    public T primitiveValue() {
+        return value;
+    }
+    
 
     public abstract NumberType<?> add(ExecutionContext context, NumberType<?> another);
 
-    public abstract double asDouble();
+    public final double asDouble() {
+        return value.doubleValue();
+    }
 
     public abstract NumberType<?> divide(ExecutionContext context, NumberType<?> number);
 

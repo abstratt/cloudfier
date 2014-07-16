@@ -1,5 +1,6 @@
 package com.abstratt.mdd.core.runtime.types;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.uml2.uml.Operation;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
@@ -33,7 +34,7 @@ public abstract class BasicType {
             LogUtils.logWarning(Runtime.ID, "Null was dereferenced", e);
             throw new ModelExecutionException("Null was dereferenced", operation, null);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e + " - " + target.getClass().getName());
+            throw new RuntimeException(e.getMessage() + "(" + StringUtils.join(arguments) + ") in " + javaClass.getName());
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }

@@ -284,15 +284,15 @@ public class JDBCNodeStore implements INodeStore {
 
     @Override
     public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship) {
-        Map<INodeKey, List<INodeKey>> relationshipCache = relatedNodeKeys.get(relationship);
-        if (relationshipCache == null)
-            relatedNodeKeys.put(relationship, relationshipCache = new LinkedHashMap<INodeKey, List<INodeKey>>());
-        List<INodeKey> nodeRelationshipCache = relationshipCache.get(key);
-        if (nodeRelationshipCache != null)
-            return nodeRelationshipCache;
+//        Map<INodeKey, List<INodeKey>> relationshipCache = relatedNodeKeys.get(relationship);
+//        if (relationshipCache == null)
+//            relatedNodeKeys.put(relationship, relationshipCache = new LinkedHashMap<INodeKey, List<INodeKey>>());
+//        List<INodeKey> nodeRelationshipCache = relationshipCache.get(key);
+//        if (nodeRelationshipCache != null)
+//            return nodeRelationshipCache;
         Relationship attribute = clazz.getRelationship(relationship);
         List<INodeKey> relatedNodeKeys = loadMany(new LoadKeyHandler(), getGenerator().generateSelectRelatedKeys(attribute, keyToId(key)));
-        relationshipCache.put(key, relatedNodeKeys);
+        //relationshipCache.put(key, relatedNodeKeys);
         return relatedNodeKeys;
     }
 

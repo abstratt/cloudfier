@@ -26,7 +26,6 @@ public class RuntimeCallOperationAction extends RuntimeAction {
     @Override
     public void executeBehavior(ExecutionContext context) {
         CallOperationAction instance = (CallOperationAction) getInstance();
-        context.currentFrame().recordCallSite(instance);
         List<InputPin> instanceArguments = instance.getArguments();
         List<BasicType> arguments = new ArrayList<BasicType>(instanceArguments.size());
         for (InputPin current : instanceArguments)

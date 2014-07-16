@@ -1,6 +1,10 @@
 package com.abstratt.mdd.core.runtime;
 
+import java.util.List;
+
 import org.eclipse.uml2.uml.NamedElement;
+
+import com.abstratt.mdd.core.runtime.ExecutionContext.CallSite;
 
 public class ModelExecutionException extends RuntimeException {
     /**
@@ -10,11 +14,22 @@ public class ModelExecutionException extends RuntimeException {
     private RuntimeAction executing;
     private NamedElement context;
     private String userFacingMessage;
+    private List<CallSite> callSites;
 
     public ModelExecutionException(String message, NamedElement context, RuntimeAction executing) {
+        this(message, context, executing, null);
+    }
+    
+    public ModelExecutionException(String message, NamedElement context, RuntimeAction executing, List<CallSite> callSites) {
         super(message);
         this.executing = executing;
         this.context = context;
+        this.callSites = callSites;
+    }
+
+    
+    public List<CallSite> getCallSites() {
+        return callSites;
     }
 
     public NamedElement getContext() {
@@ -41,4 +56,20 @@ public class ModelExecutionException extends RuntimeException {
     public String getUserFacingMessage() {
         return userFacingMessage;
     }
+    
+
+    public Integer getLineNumber() {
+        CallSite latestSite = getLatestSite();
+        return latestSite == null ? null : latestSite.getLineNumber();
+    }
+
+    public String getSourceFile() {
+        CallSite latestSite = getLatestSite();
+        return latestSite == null ? null : latestSite.getSourceFile();
+    }
+
+    private CallSite getLatestSite() {
+        return callSites.isEmpty() ? null : callSites.get(0);
+    }
+
 }

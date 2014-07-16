@@ -9,7 +9,7 @@ import com.abstratt.mdd.core.runtime.RuntimeEvent;
 public enum BuiltInMetaClass implements MetaClass<BuiltInClass> {
     System("mdd_types::System", SystemType.class), Assert("mdd_types::Assert", AssertType.class), Boolean("mdd_types::Boolean",
             BooleanType.class), Integer("mdd_types::Integer", IntegerType.class), Decimal("mdd_types::Double", RealType.class), String(
-            "mdd_types::String", StringType.class), Memo("mdd_types::Memo", MemoType.class), Date("mdd_types::Date", DateType.class), Set(
+            "mdd_types::String", StringType.class), Memo("mdd_types::Memo", MemoType.class), Duration("mdd_types::Duration", DurationType.class), Date("mdd_types::Date", DateType.class), Set(
             "mdd_collections::Set", SetType.class), Bag("mdd_collections::Bag", BagType.class), OrderedSet("mdd_collections::OrderedSet",
             OrderedSetType.class), Sequence("mdd_collections::Sequence", SequenceType.class), Grouping("mdd_collections::Grouping",
             GroupingType.class);

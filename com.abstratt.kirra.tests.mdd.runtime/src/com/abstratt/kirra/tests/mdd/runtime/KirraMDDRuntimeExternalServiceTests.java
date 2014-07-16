@@ -110,7 +110,7 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
 
         executeKirraOperation("tests", "EmailService", null, "issueChanged", Arrays.asList(event));
         TestCase.assertNotNull(requestPath[0]);
-        TestCase.assertEquals("&", requestQuery[0]);
+        TestCase.assertEquals(null, requestQuery[0]);
         TestCase.assertEquals("POST", requestMethod[0]);
         TestCase.assertEquals("/externalpath/events/tests.EmailService/issueChanged", requestPath[0]);
 
@@ -188,7 +188,7 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
         executeKirraOperation(created.getEntityNamespace(), created.getEntityName(), created.getObjectId(), "compute",
                 Collections.emptyList());
         TestCase.assertNotNull(requestPath[0]);
-        TestCase.assertEquals("&number1=31&number2=11", requestQuery[0]);
+        TestCase.assertEquals("number1=31&number2=11", requestQuery[0]);
         TestCase.assertEquals("GET", requestMethod[0]);
         TestCase.assertEquals("/externalpath/retrievers/tests.CalculatorService/addNumbers", requestPath[0]);
 

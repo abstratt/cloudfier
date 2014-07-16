@@ -77,10 +77,10 @@ public class DateType extends PrimitiveType<Date> {
         return new StringType(new SimpleDateFormat("yyyy/MM/dd").format(this.primitiveValue()));
     }
 
-    public DateType transpose(ExecutionContext context, IntegerType delta) {
+    public DateType transpose(ExecutionContext context, DurationType delta) {
         Calendar cal = Calendar.getInstance();
         cal.setTime(this.primitiveValue());
-        cal.add(Calendar.DATE, delta.primitiveValue().intValue());
+        cal.add(Calendar.DATE, (int) (delta.primitiveValue() / 1000 / 60 / 60 / 24));
         return new DateType(cal.getTime());
     }
 

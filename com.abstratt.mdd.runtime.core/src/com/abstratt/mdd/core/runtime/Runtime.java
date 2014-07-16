@@ -206,6 +206,8 @@ public class Runtime {
             RuntimeAction runtimeBody = createAction(ActivityUtils.getRootAction(behavior), null);
             try {
                 runtimeBody.execute(this.context);
+            } catch (NullPointerException npe) {
+                throw new ModelExecutionException("Null was dereferenced", behavior.getSpecification(), runtimeBody, context.getCallSites());
             } catch (ActivityFinishedException e) {
                 // activity execution finished
             }

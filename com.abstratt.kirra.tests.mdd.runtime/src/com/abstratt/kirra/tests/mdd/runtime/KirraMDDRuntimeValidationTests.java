@@ -99,7 +99,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             kirra.saveContext();
             TestCase.fail();
         } catch (KirraException e) {
-            TestCase.assertTrue(e.toString(), e.getMessage().contains("attr1"));
+            TestCase.assertTrue(e.toString(), e.getContext().equals("mypackage::MyClass1::attr1"));
             TestCase.assertEquals(e.toString(), Kind.VALIDATION, e.getKind());
         }
     }

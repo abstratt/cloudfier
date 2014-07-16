@@ -16,7 +16,7 @@ public class IntegerType extends NumberType<Long> {
      */
     private static final long serialVersionUID = 1L;
 
-    private long value;
+    
 
     public IntegerType(long value) {
         this.value = value;
@@ -27,11 +27,6 @@ public class IntegerType extends NumberType<Long> {
         if (another instanceof RealType)
             return new RealType(this.asDouble() + another.asDouble());
         return new IntegerType(value + ((IntegerType) another).value);
-    }
-
-    @Override
-    public double asDouble() {
-        return value;
     }
 
     @Override
@@ -51,11 +46,6 @@ public class IntegerType extends NumberType<Long> {
         if (another instanceof RealType)
             return new RealType(this.asDouble() * another.asDouble());
         return new IntegerType(value * ((IntegerType) another).value);
-    }
-
-    @Override
-    public Long primitiveValue() {
-        return Long.valueOf(value);
     }
 
     @Override

@@ -386,7 +386,7 @@ public class ExecutionContext {
                 success = true;
             }
         } finally {
-
+            runtime.getNodeStoreCatalog().clearCaches();
             level--;
             if (level == 0) {
                 clearWorkingSet();
@@ -455,8 +455,6 @@ public class ExecutionContext {
      *            WFT does this mean?
      */
     public void saveContext(boolean preserve) {
-        if (preserve)
-            runtime.getNodeStoreCatalog().clearCaches();
         boolean originalSaveChanges = saveChanges;
         Collection<RuntimeObject> objectsToCheck = this.workingSet.values();
         try {
