@@ -322,7 +322,7 @@ public class RuntimeAssociationTests extends AbstractRuntimeTests {
         runStaticOperation("tests::TestDriver", "build", e1, e2b);
 
         saveContext();
-        
+
         // check links
         TestCase.assertEquals(e1, runStaticOperation("tests::TestDriver", "getEndOne", e2a));
         TestCase.assertEquals(e1, runStaticOperation("tests::TestDriver", "getEndOne", e2b));
@@ -332,14 +332,5 @@ public class RuntimeAssociationTests extends AbstractRuntimeTests {
         TestCase.assertTrue(allMany.contains(e2a));
         TestCase.assertTrue(allMany.contains(e2b));
         TestCase.assertFalse(allMany.contains(e2c));
-        
-        runStaticOperation("tests::TestDriver", "build", e1, e2c);
-        
-        saveContext();
-
-        TestCase.assertEquals(e1, runStaticOperation("tests::TestDriver", "getEndOne", e2c));
-        allMany = (CollectionType) runStaticOperation("tests::TestDriver", "getEndMany", e1);
-        TestCase.assertEquals(3, allMany.getBackEnd().size());
-        TestCase.assertTrue(allMany.contains(e2c));
     }
 }
