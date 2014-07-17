@@ -12,7 +12,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import org.eclipse.core.runtime.Assert;
+import org.apache.commons.lang.Validate;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Relationship;
@@ -46,7 +46,7 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
     private Map<String, JDBCNodeStore> stores = new LinkedHashMap<String, JDBCNodeStore>();
 
     public JDBCNodeStoreCatalog(String name, SchemaManagement schema) {
-        Assert.isNotNull(schema);
+        Validate.isTrue(schema != null);
         this.name = name;
         this.metadata = schema;
         this.generator = new SQLGenerator(name, schema);

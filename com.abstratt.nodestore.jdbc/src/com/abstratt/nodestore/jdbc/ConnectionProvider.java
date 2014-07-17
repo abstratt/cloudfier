@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import org.eclipse.core.runtime.Assert;
+import org.apache.commons.lang.Validate;
 import org.postgresql.ds.PGSimpleDataSource;
 
 /**
@@ -36,7 +36,7 @@ public class ConnectionProvider {
     public Connection acquireConnection() throws SQLException {
         // System.out.println("acquireConnection - " + level.get());
         boolean firstRequest = level.getAndIncrement() == 0;
-        Assert.isLegal(connection == null == firstRequest, "First? " + firstRequest);
+        Validate.isTrue(connection == null == firstRequest, "First? " + firstRequest);
         if (firstRequest) {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
@@ -45,7 +45,7 @@ public class ConnectionProvider {
     }
 
     public void commit() throws SQLException {
-        Assert.isTrue(this.connection != null);
+        Validate.isTrue(this.connection != null);
         JDBCNodeStore.logSQLStatement(databaseName + " - committing ");
         this.connection.commit();
     }
@@ -57,11 +57,11 @@ public class ConnectionProvider {
     public void releaseConnection(boolean success) throws SQLException {
         // System.out.println("releaseConnection - " + level.get());
         if (level.get() == 0) {
-            Assert.isTrue(this.connection == null);
+            Validate.isTrue(this.connection == null);
             // someone being overly zealous
             return;
         }
-        Assert.isTrue(level.get() > 0);
+        Validate.isTrue(level.get() > 0);
         boolean lastRelease = level.decrementAndGet() == 0;
         if (lastRelease) {
             try {
@@ -79,7 +79,7 @@ public class ConnectionProvider {
     }
 
     public void rollback() throws SQLException {
-        Assert.isTrue(this.connection != null);
+        Validate.isTrue(this.connection != null);
         JDBCNodeStore.logSQLStatement(databaseName + " - rolling back");
         this.connection.rollback();
     }

@@ -6,14 +6,13 @@ Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Import-Package: org.apache.commons.logging,
- org.postgresql.ds,
- org.postgresql.ds.common
-Export-Package: com.abstratt.nodestore.jdbc
-Require-Bundle: com.abstratt.kirra.api, 
- org.eclipse.core.runtime,
- com.abstratt.resman, 
- com.abstratt.pluginutils,
  org.apache.commons.lang,
- com.abstratt.nodestore;visibility:=reexport
+ org.postgresql.ds,
+ org.postgresql.ds.common,
+ com.abstratt.kirra,
+ com.abstratt.resman,
+ com.abstratt.pluginutils,
+ com.abstratt.nodestore
+Export-Package: com.abstratt.nodestore.jdbc
 
 

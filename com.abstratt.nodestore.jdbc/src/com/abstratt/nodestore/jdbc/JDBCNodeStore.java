@@ -19,7 +19,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.Assert;
+import org.apache.commons.lang.Validate;
 
 import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
@@ -220,13 +220,13 @@ public class JDBCNodeStore implements INodeStore {
     private Map<String, Map<INodeKey, List<INodeKey>>> relatedNodeKeys = new LinkedHashMap<String, Map<INodeKey, List<INodeKey>>>();
 
     public JDBCNodeStore(JDBCNodeStoreCatalog catalog, ConnectionProvider connectionProvider, SchemaManagement schema, TypeRef typeRef) {
-        Assert.isNotNull(typeRef);
-        Assert.isNotNull(connectionProvider);
-        Assert.isNotNull(schema);
-        Assert.isNotNull(catalog);
+        Validate.isTrue(typeRef != null);
+        Validate.isTrue(connectionProvider != null);
+        Validate.isTrue(schema != null);
+        Validate.isTrue(catalog != null);
         this.catalog = catalog;
         this.clazz = schema.getEntity(typeRef);
-        Assert.isNotNull(clazz, typeRef.toString());
+        Validate.isTrue(clazz != null, typeRef.toString());
         this.connectionProvider = connectionProvider;
     }
 

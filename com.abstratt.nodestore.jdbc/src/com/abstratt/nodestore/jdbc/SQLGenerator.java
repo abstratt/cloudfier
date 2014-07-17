@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.eclipse.core.runtime.Assert;
+import org.apache.commons.lang.Validate;
 
 import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
@@ -22,7 +22,6 @@ import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.nodestore.NodeStoreException;
 
 /**
  * Heuristics for generating a database schema from a Kirra domain model.
@@ -42,7 +41,7 @@ import com.abstratt.nodestore.NodeStoreException;
 public class SQLGenerator {
 
     public static boolean isMappingTableRelationship(SchemaManagement metadata, Relationship element) {
-        Assert.isTrue(!element.isDerived());
+        Validate.isTrue(!element.isDerived());
         Relationship opposite = metadata.getOpposite(element);
         if (opposite == null)
             return element.isMultiple();
@@ -66,7 +65,7 @@ public class SQLGenerator {
     public SQLGenerator(String catalogName, SchemaManagement metadata) {
         this.catalogName = escape(sanitizeName(catalogName));
         this.metadata = metadata;
-        Assert.isNotNull(metadata);
+        Validate.isTrue(metadata != null);
     }
 
     public String escape(String name) {
@@ -236,7 +235,7 @@ public class SQLGenerator {
 
     public List<String> generateSetRelated(Relationship myRelationship, long targetKey, Collection<Long> relatedKeys,
             boolean replaceExisting) {
-        Assert.isNotNull(myRelationship);
+        Validate.isTrue(myRelationship != null);
         Relationship otherEnd = metadata.getOpposite(myRelationship);
         List<String> result = new ArrayList<String>();
         if (otherEnd == null) {
@@ -349,7 +348,7 @@ public class SQLGenerator {
     }
 
     public List<String> generateValidate(Relationship relationship) {
-        Assert.isNotNull(relationship);
+        Validate.isTrue(relationship != null);
         if (relationship.isDerived() || !relationship.isNavigable())
             return Collections.emptyList();
         List<String> statements = new ArrayList<String>();
@@ -422,7 +421,7 @@ public class SQLGenerator {
     }
 
     protected String basicModelToSchemaName(DataElement property) {
-        Assert.isLegal(property.getName() != null);
+        Validate.isTrue(property.getName() != null);
         String propertyName = property.getName();
         validateSchemaName(property.getClass().getSimpleName(), propertyName);
         return propertyName;
@@ -519,7 +518,7 @@ public class SQLGenerator {
 
     protected void validateSchemaName(String kind, String schemaName) {
         if (schemaName.length() > 63)
-            throw new NodeStoreException(kind + " name is too long: " + schemaName);
+            throw new RuntimeException(kind + " name is too long: " + schemaName);
     }
 
     boolean isMappingTableRelationship(Relationship element) {
@@ -527,7 +526,7 @@ public class SQLGenerator {
     }
 
     private Collection<String> generateMappingConstraints(Entity contextEntity, Relationship multiPrimary) {
-        Assert.isLegal(multiPrimary.isPrimary());
+        Validate.isTrue(multiPrimary.isPrimary());
         Relationship multiSecondary = metadata.getOpposite(multiPrimary);
         String selfToOppositeFK = generateSelfToOppositeFK(multiPrimary);
         String oppositeToSelfFK = generateOppositeToSelfFK(multiSecondary);
@@ -548,7 +547,7 @@ public class SQLGenerator {
     }
 
     private Collection<String> generateMappingTable(Entity contextEntity, Relationship multi) {
-        Assert.isLegal(multi.isPrimary());
+        Validate.isTrue(multi.isPrimary());
         Relationship opposite = metadata.getOpposite(multi);
         String selfToOppositeFK = generateSelfToOppositeFK(multi);
         String oppositeToSelfFK = generateOppositeToSelfFK(opposite);
@@ -611,7 +610,7 @@ public class SQLGenerator {
     }
 
     private Collection<? extends String> generateUniqueConstraints(Entity contextEntity, Property uniqueProperty) {
-        Assert.isLegal(uniqueProperty.isUnique());
+        Validate.isTrue(uniqueProperty.isUnique());
 
         String tableName = modelToSchemaName(contextEntity);
         String stmt1 = "alter table " + tableName;
