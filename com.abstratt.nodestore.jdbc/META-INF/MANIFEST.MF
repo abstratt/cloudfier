@@ -10,9 +10,9 @@ Import-Package: org.apache.commons.logging,
  org.postgresql.ds,
  org.postgresql.ds.common,
  com.abstratt.kirra,
- com.abstratt.resman,
  com.abstratt.pluginutils,
- com.abstratt.nodestore
+ com.abstratt.nodestore,
+ com.abstratt.resman;resolution:=optional
 Export-Package: com.abstratt.nodestore.jdbc
 
 
