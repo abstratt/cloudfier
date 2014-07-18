@@ -24,7 +24,7 @@ public abstract class NumberType<T extends Number> extends PrimitiveType<T> {
 
     @Override
     public BooleanType equals(ExecutionContext context, BasicType other) {
-        return BooleanType.fromValue(asReal().primitiveValue().compareTo(((NumberType<?>) other).asReal().primitiveValue()) == 0);
+        return BooleanType.fromValue(other != null && asReal().primitiveValue().compareTo(((NumberType<?>) other).asReal().primitiveValue()) == 0);
     }
 
     @Override

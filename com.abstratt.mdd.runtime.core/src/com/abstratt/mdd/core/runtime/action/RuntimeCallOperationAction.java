@@ -5,16 +5,14 @@ import java.util.List;
 
 import org.eclipse.uml2.uml.Action;
 import org.eclipse.uml2.uml.CallOperationAction;
-import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.InputPin;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.OutputPin;
-import org.eclipse.uml2.uml.Parameter;
 
 import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
+import com.abstratt.mdd.core.runtime.ModelExecutionException;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
-import com.abstratt.mdd.core.runtime.RuntimeUtils;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 
@@ -36,22 +34,14 @@ public class RuntimeCallOperationAction extends RuntimeAction {
         if (!operation.isStatic()) {
             target = getRuntimeObjectNode(instance.getTarget()).getValue();
             if (target == null) {
-                if (operation.getName().equals("same")) {
+                if (operation.getName().equals("same"))
                     addResultValue(resultPin, BooleanType.fromValue(arguments.get(0) == null));
-                } else {
-                    // non static operation invoked on null value
-                    // does nothing but returns a default value if required
-                    Parameter returnResult = operation.getReturnResult();
-                    if (returnResult != null && returnResult.getLower() > 0 && resultPin != null) {
-                        BasicType defaultValue = RuntimeUtils.getDefaultValue((Classifier) returnResult.getType());
-                        addResultValue(resultPin, defaultValue);
-                    }
-                }
+                else
+                    throw new ModelExecutionException("Null was dereferenced", operation, this, context.getCallSites());
                 return;
             }
         }
 
-        // TODO support async calls
         Object result = context.getRuntime().runOperation(target, operation, arguments.toArray());
         if (resultPin != null)
             addResultValue(resultPin, (BasicType) result);

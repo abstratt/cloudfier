@@ -226,7 +226,8 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     List<Property> getEntityProperties(Classifier umlClass) {
         List<Property> entityProperties = new ArrayList<Property>();
         for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getProperties(umlClass))
-            entityProperties.add(getEntityProperty(attribute));
+            if (KirraHelper.isUserVisible(attribute))
+                entityProperties.add(getEntityProperty(attribute));
         return entityProperties;
     }
 

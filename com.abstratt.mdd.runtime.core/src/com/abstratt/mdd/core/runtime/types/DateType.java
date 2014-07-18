@@ -27,6 +27,15 @@ public class DateType extends PrimitiveType<Date> {
     }
 
     public static DateType today(@SuppressWarnings("unused") ExecutionContext context) {
+        Date value = new Date();
+        value.setHours(0);
+        value.setMinutes(0);
+        value.setSeconds(0);
+        value.setTime((value.getTime() / 1000) * 1000);
+        return new DateType(value);
+    }
+    
+    public static DateType now(@SuppressWarnings("unused") ExecutionContext context) {
         return new DateType(new Date());
     }
 
