@@ -37,7 +37,10 @@ public class RuntimeCallOperationAction extends RuntimeAction {
                 if (operation.getName().equals("same"))
                     addResultValue(resultPin, BooleanType.fromValue(arguments.get(0) == null));
                 else
-                    throw new ModelExecutionException("Null was dereferenced", operation, this, context.getCallSites());
+                    if (operation.getName().equals("notNull"))
+                        addResultValue(resultPin, BooleanType.FALSE);
+                    else
+                        throw new ModelExecutionException("Null was dereferenced", operation, this, context.getCallSites());
                 return;
             }
         }
