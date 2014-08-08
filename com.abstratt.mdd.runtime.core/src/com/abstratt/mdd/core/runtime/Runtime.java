@@ -30,6 +30,7 @@ import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStoreCatalog;
+import com.abstratt.pluginutils.LogUtils;
 
 /**
  * The runtime runs executable UML models.
@@ -207,6 +208,7 @@ public class Runtime {
             try {
                 runtimeBody.execute(this.context);
             } catch (NullPointerException npe) {
+                LogUtils.logError(Runtime.ID, null, npe);
                 throw new ModelExecutionException("Null was dereferenced", behavior.getSpecification(), runtimeBody, context.getCallSites());
             } catch (ActivityFinishedException e) {
                 // activity execution finished

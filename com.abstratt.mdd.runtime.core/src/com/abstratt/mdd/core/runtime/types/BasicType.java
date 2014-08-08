@@ -80,6 +80,10 @@ public abstract class BasicType {
     public StringType toString(ExecutionContext context) {
         return new StringType(this.toString());
     }
+    
+    public BooleanType notNull(ExecutionContext context) {
+        return BooleanType.TRUE;
+    }
 
     /**
      * Should be invoked by any method implementing instance method invocation.

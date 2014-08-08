@@ -15,7 +15,7 @@ import org.restlet.routing.Filter;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.runtime.KirraOnMDDRuntime;
-import com.abstratt.kirra.rest.resources.KirraContext;
+import com.abstratt.kirra.rest.common.KirraContext;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.pluginutils.ISharedContextRunnable;
