@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -179,9 +180,8 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        JDBCNodeStore.perform(connectionProvider, generator.generateCreateSchema(), false, false);
-        for (String pkg : findAllPackages())
-            JDBCNodeStore.perform(connectionProvider, generator.generateCreateTables(pkg), false, false);
+        List<String> creationStatements = generator.generateFullCreateSchema(findAllPackages());
+        JDBCNodeStore.perform(connectionProvider, creationStatements, false, false);
     }
 
     @Override

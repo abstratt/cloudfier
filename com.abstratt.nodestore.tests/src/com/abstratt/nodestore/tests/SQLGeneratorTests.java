@@ -5,6 +5,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -225,6 +226,29 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
                         + "Engine as carEngine on carEngine.id = engineCar.carEngine where carEngine.id = 17;");
     }
 
+    public void testAssociation_crossPackages() throws CoreException {
+        String model1 = "";
+        model1 += "package custom1;\n";
+        model1 += "import custom2;\n";
+        model1 += "class Class1\n";
+        model1 += "attribute attr1 : String[0, 1];\n";
+        model1 += "attribute ref1 : Class2[0, 1];\n";
+        model1 += "end;\n";
+        model1 += "end.";
+
+        String model2 = "";
+        model2 += "package custom2;\n";
+        model2 += "import custom1;\n";
+        model2 += "class Class2\n";
+        model2 += "attribute attr2 : String[0, 1];\n";
+        model2 += "attribute ref2 : Class1[0, 1];\n";
+        model2 += "end;\n";
+        model2 += "end.";
+        parseAndCheck(model1, model2);
+
+    }
+
+    
     public void testAssociation_singleMemberOwned_navigableMultipleAssociationOwned() throws CoreException {
         String model = "";
         model += "package custom;\n";
@@ -904,9 +928,10 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         Connection connection = connectionProvider.acquireConnection();
         try {
             // ensures the schema to be created for the current repo is sane
-            runSql(connection, generator.generateCreateSchema());
+            List<String> allPackages = new ArrayList<String>();
             for (Package package_ : getRepository().getTopLevelPackages(null))
-                runSql(connection, generator.generateCreateTables(package_.getName()));
+                allPackages.add(package_.getName());
+            runSql(connection, generator.generateFullCreateSchema(allPackages));
         } finally {
             connectionProvider.releaseConnection(false);
         }

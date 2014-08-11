@@ -109,18 +109,31 @@ public class SQLGenerator {
         statements.add("create sequence " + catalogName + ".sequence;");
         return statements;
     }
+    
+    public List<String> generateFullCreateSchema(Collection<String> allPackages) {
+        List<String> creationStatements = new ArrayList<String>();
+        creationStatements.addAll(generateCreateSchema());
+        for (String pkg : allPackages)
+            creationStatements.addAll(generateCreateTables(pkg));
+        for (String pkg : allPackages)
+            creationStatements.addAll(generateTableConstraints(pkg));
+        return creationStatements;
+    }
 
     public List<String> generateCreateTables(String namespace) {
-        List<Entity> classes = new ArrayList<Entity>();
-        for (Entity type : metadata.getEntities(namespace))
-            classes.add(type);
         List<String> statements = new ArrayList<String>();
-        for (Entity clazz : classes)
+        for (Entity clazz : metadata.getEntities(namespace))
             statements.addAll(generateTable(clazz));
-        for (Entity clazz : classes)
+        return statements;
+    }
+    
+    public List<String> generateTableConstraints(String namespace) {
+        List<String> statements = new ArrayList<String>();
+        for (Entity clazz : metadata.getEntities(namespace))
             statements.addAll(generateConstraints(clazz));
         return statements;
     }
+
 
     public List<String> generateDelete(Entity clazz, long id) {
         String stmt = "delete from " + modelToSchemaName(clazz) + " where id = " + id + ";";
