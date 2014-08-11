@@ -27,7 +27,7 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         KirraDataPopulatorTests.accountModel += "package banking;\n";
         KirraDataPopulatorTests.accountModel += "apply kirra;\n";
         KirraDataPopulatorTests.accountModel += "import base;\n";
-        KirraDataPopulatorTests.accountModel += "enumeration Status Open, Closed end;\n";
+        KirraDataPopulatorTests.accountModel += "enumeration Status Open; Closed; end;\n";
         KirraDataPopulatorTests.accountModel += "class Account\n";
         KirraDataPopulatorTests.accountModel += "  attribute number : String[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  attribute balance : Double[0,1];\n";

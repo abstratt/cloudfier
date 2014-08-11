@@ -75,6 +75,10 @@ public class DateType extends PrimitiveType<Date> {
     public IntegerType month(@SuppressWarnings("unused") ExecutionContext context) {
         return IntegerType.fromValue(1 + this.primitiveValue().getMonth());
     }
+    
+    public IntegerType day(@SuppressWarnings("unused") ExecutionContext context) {
+        return IntegerType.fromValue(this.primitiveValue().getDate());
+    }
 
     @Override
     public Date primitiveValue() {

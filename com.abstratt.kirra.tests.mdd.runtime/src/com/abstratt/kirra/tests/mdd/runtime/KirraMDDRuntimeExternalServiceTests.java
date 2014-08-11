@@ -62,7 +62,7 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
     public void testEvent() throws Exception {
         String source = "";
         source += "model tests;\n";
-        source += "enumeration IssueStatus Open, Resolved, Closed end;\n";
+        source += "enumeration IssueStatus Open; Resolved; Closed; end;\n";
         source += "signal IssueChange\n";
         source += "    attribute issueNumber : String;\n";
         source += "    attribute newStatus : IssueStatus;\n";

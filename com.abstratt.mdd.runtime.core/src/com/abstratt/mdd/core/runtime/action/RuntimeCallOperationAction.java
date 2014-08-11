@@ -15,6 +15,7 @@ import com.abstratt.mdd.core.runtime.ModelExecutionException;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
+import com.abstratt.mdd.core.util.TypeUtils;
 
 public class RuntimeCallOperationAction extends RuntimeAction {
     public RuntimeCallOperationAction(Action instance, CompositeRuntimeAction parent) {
@@ -40,7 +41,10 @@ public class RuntimeCallOperationAction extends RuntimeAction {
                     if (operation.getName().equals("notNull"))
                         addResultValue(resultPin, BooleanType.FALSE);
                     else
-                        throw new ModelExecutionException("Null was dereferenced", operation, this, context.getCallSites());
+                        if (operation.getReturnResult() != null && operation.getReturnResult().getType().getQualifiedName().equals(TypeUtils.makeTypeName("Boolean"))) 
+                            addResultValue(resultPin, BooleanType.FALSE);
+                        else
+                            throw new ModelExecutionException("Null was dereferenced", operation, this, context.getCallSites());
                 return;
             }
         }

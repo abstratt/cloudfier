@@ -207,7 +207,7 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         String model = "";
         model += "package mypackage;\n";
         model += "apply kirra;\n";
-        model += "enumeration Enum1 value1, value2, value3 end;\n";
+        model += "enumeration Enum1 value1; value2; value3; end;\n";
         model += "class MyClass\n";
         model += "reference enum1 : Enum1;\n";
         model += "end;\n";

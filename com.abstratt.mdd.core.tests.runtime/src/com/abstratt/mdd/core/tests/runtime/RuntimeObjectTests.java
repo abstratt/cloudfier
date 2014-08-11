@@ -32,7 +32,7 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
     static {
         RuntimeObjectTests.model += "model tests;\n";
         RuntimeObjectTests.model += "  import base;\n";
-        RuntimeObjectTests.model += "  enumeration Role OWNER, EMPLOYEE, FAMILY end;\n";
+        RuntimeObjectTests.model += "  enumeration Role OWNER; EMPLOYEE; FAMILY; end;\n";
         RuntimeObjectTests.model += "  interface Named\n";
         RuntimeObjectTests.model += "    operation getName() : String;\n";
         RuntimeObjectTests.model += "  end;\n";
