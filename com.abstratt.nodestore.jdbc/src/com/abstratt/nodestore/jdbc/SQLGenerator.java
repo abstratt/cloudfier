@@ -10,6 +10,8 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -223,6 +225,32 @@ public class SQLGenerator {
         String stmt = generateSelect(clazz) + ";";
         return Arrays.asList(stmt);
     }
+    
+
+    public List<String> generateSelectSome(Entity clazz, Map<String, Collection<Object>> criteria) {
+        String stmt = generateSelect(clazz);
+        stmt += " where ";
+        List<String> terms = new ArrayList<String>();
+        for (Entry<String, Collection<Object>> entry : criteria.entrySet()) {
+            if (entry.getValue().size() == 1) {
+                Object singleValue = entry.getValue().iterator().next();
+                terms.add(entry.getKey() + " = " + (singleValue instanceof String ? ("'" + singleValue + "'") : singleValue));
+            } else if (entry.getValue().size() == 2) {
+                Collection<Object> multipleValues = entry.getValue();
+                String in = entry.getKey() + " in (";
+                List<String> items = new ArrayList<String>();
+                for (Object value : multipleValues)
+                    items.add(value instanceof String ? ("'" + value + "'") : (String) value);
+                in += StringUtils.join(items, ", ");
+                in += ")";
+                terms.add(in);
+            }
+        }
+        stmt += StringUtils.join(terms, " and ");
+        stmt += ";";
+        return Arrays.asList(stmt);
+    }
+
 
     public List<String> generateSelectOne(Entity clazz, long key) {
         String stmt = generateSelect(clazz);
@@ -701,5 +729,4 @@ public class SQLGenerator {
         validateSchemaName("constraint", constraintName);
         return constraintName;
     }
-
 }

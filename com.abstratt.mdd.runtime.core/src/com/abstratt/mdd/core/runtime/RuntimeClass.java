@@ -1,11 +1,16 @@
 package com.abstratt.mdd.core.runtime;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.BehavioredClassifier;
@@ -80,6 +85,18 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         Collection<RuntimeObject> fromDB = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().getNodeKeys()));
         fromDB.addAll(getRuntime().getCurrentContext().getWorkingObjects(this));
         Collection<RuntimeObject> allInstances = fromDB;
+        return CollectionType.createCollection(classifier, true, false, allInstances);
+    }
+    
+    public final CollectionType filterInstances(Map<Property, List<BasicType>> criteria) {
+        Map<String, Collection<Object>> nodeCriteria = new LinkedHashMap<String, Collection<Object>>();
+        for (Entry<Property, List<BasicType>> entry : criteria.entrySet()) {
+            List<Object> values = new ArrayList<Object>();
+            for (BasicType basicType : entry.getValue())
+                values.add(RuntimeObject.toExternalValue(basicType));
+            nodeCriteria.put(entry.getKey().getName(), values);
+        }
+        Collection<RuntimeObject> allInstances = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().filter(nodeCriteria)));
         return CollectionType.createCollection(classifier, true, false, allInstances);
     }
 

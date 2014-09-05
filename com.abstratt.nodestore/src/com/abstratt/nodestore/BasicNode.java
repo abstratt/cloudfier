@@ -98,7 +98,7 @@ public class BasicNode implements INode, Serializable {
     }
 
     @Override
-    public Object getProperties(boolean readonly) {
+    public Map<String, Object> getProperties(boolean readonly) {
         return readonly ? Collections.unmodifiableMap(properties) : getProperties();
     }
 

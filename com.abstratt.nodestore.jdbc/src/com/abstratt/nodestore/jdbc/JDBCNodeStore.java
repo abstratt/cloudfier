@@ -276,6 +276,11 @@ public class JDBCNodeStore implements INodeStore {
     public Collection<INodeKey> getNodeKeys() {
         return loadMany(new LoadKeyHandler(), getGenerator().generateSelectAll(getStoreClass()));
     }
+    
+    @Override
+    public Collection<INodeKey> filter(Map<String, Collection<Object>> criteria) {
+        return loadMany(new LoadKeyHandler(), getGenerator().generateSelectSome(getStoreClass(), criteria));
+    }
 
     @Override
     public Collection<INode> getNodes() {

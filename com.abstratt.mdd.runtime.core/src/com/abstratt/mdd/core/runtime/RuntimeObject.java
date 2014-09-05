@@ -869,14 +869,14 @@ public class RuntimeObject extends BasicType {
         return storeName.replace(".", NamedElement.SEPARATOR);
     }
 
-    private Object toExternalValue(BasicType value) {
-        if (this.isTuple())
-            return value;
+    static Object toExternalValue(BasicType value) {
         if (value instanceof EnumerationType)
             return ((EnumerationType) value).getValue().getName();
         if (value instanceof StateMachineType)
             return ((StateMachineType) value).toString();
-        return ((PrimitiveType<?>) value).primitiveValue();
+        if (value instanceof PrimitiveType) 
+            return ((PrimitiveType<?>) value).primitiveValue();
+        return value;
     }
 
 }

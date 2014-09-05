@@ -25,7 +25,7 @@ public interface INode {
 
     public Map<String, Object> getProperties();
 
-    public Object getProperties(boolean readonly);
+    public Map<String, Object> getProperties(boolean readonly);
 
     public Map<String, Collection<NodeReference>> getRelated();
 

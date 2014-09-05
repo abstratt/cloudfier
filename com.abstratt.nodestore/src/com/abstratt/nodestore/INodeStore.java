@@ -1,6 +1,8 @@
 package com.abstratt.nodestore;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Storage for hierarchical nodes. Services:
@@ -56,6 +58,8 @@ public interface INodeStore {
      * Returns the keys of all root nodes.
      */
     public Collection<INodeKey> getNodeKeys();
+    
+    public Collection<INodeKey> filter(Map<String, Collection<Object>> criteria);
 
     /**
      * Returns all root nodes.

@@ -2,7 +2,9 @@ package com.abstratt.mdd.core.runtime;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.Action;
@@ -11,6 +13,7 @@ import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Port;
+import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Signal;
 import org.eclipse.uml2.uml.StructuredActivityNode;
 import org.eclipse.uml2.uml.UMLPackage;
@@ -24,6 +27,7 @@ import com.abstratt.mdd.core.runtime.external.ExternalObject;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BuiltInMetaClass;
+import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
@@ -80,6 +84,7 @@ public class Runtime {
         context.enter();
     }
 
+    
     /**
      * Returns all instances of the given type. This is different from
      * {@link RuntimeClass#getAllInstances()} because that method only includes
@@ -96,7 +101,21 @@ public class Runtime {
         List<BasicType> allInstances = new ArrayList<BasicType>();
         for (Classifier concreteClassifier : concreteClasses) {
             RuntimeClass runtimeClass = getRuntimeClass(concreteClassifier);
-            allInstances.addAll(runtimeClass.getAllInstances().getBackEnd());
+            CollectionType instances = runtimeClass.getAllInstances();
+            allInstances.addAll(instances.getBackEnd());
+        }
+        return allInstances;
+    }
+
+    public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
+        if (criteria.isEmpty())
+            return getAllInstances(baseClass);
+        List<Classifier> concreteClasses = ClassifierUtils.findAllSpecifics(getRepository(), baseClass, false);
+        List<BasicType> allInstances = new ArrayList<BasicType>();
+        for (Classifier concreteClassifier : concreteClasses) {
+            RuntimeClass runtimeClass = getRuntimeClass(concreteClassifier);
+            CollectionType instances = runtimeClass.filterInstances(criteria);
+            allInstances.addAll(instances.getBackEnd());
         }
         return allInstances;
     }
@@ -279,5 +298,4 @@ public class Runtime {
         Object result = metaClass.runOperation(context, target, operation, arguments);
         return result;
     }
-
 }

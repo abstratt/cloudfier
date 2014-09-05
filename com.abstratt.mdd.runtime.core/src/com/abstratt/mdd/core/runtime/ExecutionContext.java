@@ -452,7 +452,7 @@ public class ExecutionContext {
     /**
      * 
      * @param preserve
-     *            WFT does this mean?
+     *            WTF does this mean?
      */
     public void saveContext(boolean preserve) {
         boolean originalSaveChanges = saveChanges;

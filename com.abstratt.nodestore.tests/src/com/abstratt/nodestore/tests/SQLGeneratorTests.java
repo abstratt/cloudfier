@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -427,6 +428,17 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         List<String> stmts1 = generator.generateSelectAll(schema.getEntity(ref(myClass)));
         TestCase.assertEquals(1, stmts1.size());
         String expected1 = "select id, attr1, attr2, attr3, myClass2, myClass3 from " + tablePrefix("mypackage") + "MyClass1;";
+        SQLGeneratorTests.compareStatements(expected1, stmts1.get(0));
+    }
+    
+    public void testGenerateSelectSome() throws CoreException {
+        Class myClass = getClass("mypackage::MyClass1");
+        Map<String, Collection<Object>> criteria = new LinkedHashMap<String, Collection<Object>>();
+        criteria.put("attr1", Arrays.<Object>asList(42));
+        criteria.put("attr2", Arrays.<Object>asList("value1", "value2"));
+        List<String> stmts1 = generator.generateSelectSome(schema.getEntity(ref(myClass)), criteria);
+        TestCase.assertEquals(1, stmts1.size());
+        String expected1 = "select id, attr1, attr2, attr3, myClass2, myClass3 from " + tablePrefix("mypackage") + "MyClass1 where attr1 = 42 and attr2 in ('value1', 'value2');";
         SQLGeneratorTests.compareStatements(expected1, stmts1.get(0));
     }
 

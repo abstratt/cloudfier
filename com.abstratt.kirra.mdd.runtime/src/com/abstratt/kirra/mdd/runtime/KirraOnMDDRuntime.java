@@ -301,6 +301,22 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
         return filterValidInstances(getRuntime().getAllInstances(umlClass));
     }
+    
+    @Override
+    public List<Instance> filterInstances(Map<String, List<Object>> kirraCriteria, String namespace, String name, boolean full) {
+        Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
+        Map<org.eclipse.uml2.uml.Property, List<BasicType>> runtimeCriteria = new LinkedHashMap<org.eclipse.uml2.uml.Property, List<BasicType>>();
+        for (Entry<String, List<Object>> entry : kirraCriteria.entrySet()) {
+            org.eclipse.uml2.uml.Property attribute = FeatureUtils.findAttribute(umlClass, entry.getKey(), false, true);
+            if (attribute == null)
+                throw new KirraException("Attribute " + entry.getKey() + " does not exist", null, Kind.SCHEMA);
+            List<BasicType> convertedValues = new ArrayList<BasicType>();
+            for (Object kirraValue : entry.getValue())
+                convertedValues.add(convertToBasicType(kirraValue, attribute));
+            runtimeCriteria.put(attribute, convertedValues);
+        }
+        return filterValidInstances(getRuntime().findInstances(umlClass, runtimeCriteria));
+    }
 
     public <NE extends org.eclipse.uml2.uml.NamedElement> NE getModelElement(String namespace, String name, EClass elementClass) {
         return getLookup().find(SchemaManagementOperations.getQualifiedName(namespace, name), elementClass);
