@@ -150,7 +150,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             asRuntimeObject.save();
             return (Instance) convertFromRuntimeObject(asRuntimeObject);
         } catch (NodeStoreException e) {
-            throw new KirraException("Could not create: " + e.getMessage(), e, Kind.VALIDATION);
+            throw new KirraException("Could not create '" + kirraInstance.getTypeRef() + "': " + e.getMessage(), e, Kind.VALIDATION);
         } catch (ModelExecutionException rre) {
             throw KirraOnMDDRuntime.convertModelExecutionException(rre, Kind.VALIDATION);
         }
@@ -943,6 +943,13 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 if (value == null || value.isEmpty())
                     throw new KirraException("A value is required for " + entityProperty.getLabel(), null, Kind.VALIDATION);
             } else {
+                // ensure provided links are to preexisting instances
+                Relationship entityRelationship = entity.getRelationship(property.getName());
+                List<Instance> linksProvided = kirraInstance.getRelated(KirraHelper.getName(property));
+                if (linksProvided != null)
+                    for (Instance linkedInstance : linksProvided)
+                        if (linkedInstance.isNew()) 
+                            throw new KirraException("Only previously persisted instances can be provided as links for " + entityRelationship.getLabel(), null, Kind.VALIDATION);
                 // TODO relationship validation disabled temporarily for release
                 // List<Instance> related =
                 // kirraInstance.getRelated(KirraHelper.getName(property));

@@ -5,29 +5,24 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class DateConverter implements ValueConverter {
+    private static String[] SUPPORTED_FORMATS = {"yyyy/MM/dd", "yyyy-MM-dd", "EEE MMM dd yyyy HH:mm:ss z (z)", "yyyy-MM-dd'T'HH:mmZ"}; 
     @Override
     public BasicType convertToBasicType(Object original) {
         if (original == null)
             return null;
+        if (original instanceof Date)
+            return DateType.fromValue((Date) original);
         if (original instanceof String) {
             if (((String) original).trim().isEmpty())
                 return null;
-            try {
-                return DateType.fromValue(new SimpleDateFormat("yyyy/MM/dd").parse((String) original));
-            } catch (ParseException e) {
+            for (String format : SUPPORTED_FORMATS)
                 try {
-                    return DateType.fromValue(new SimpleDateFormat("EEE MMM dd yyyy HH:mm:ss z (z)").parse((String) original));
-                } catch (ParseException e2) {
-                    try {
-                        return DateType.fromValue(new SimpleDateFormat("yyyy-MM-dd'T'HH:mmZ").parse((String) original));
-                    } catch (ParseException e3) {
-                        throw new RuntimeException(e);
-                    }
+                    return DateType.fromValue(new SimpleDateFormat(format).parse((String) original));
+                } catch (ParseException e) {
+                    // try next
                 }
-            }
+            throw new RuntimeException("Cannot parse date: '" + original + "'");
         }
-        if (original instanceof Date)
-            return DateType.fromValue((Date) original);
         throw new IllegalArgumentException("Unsupported type: " + original);
     }
 }
