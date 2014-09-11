@@ -60,7 +60,8 @@
 <!-- 		<module>com.abstratt.mdd.target.engine.st</module> -->
 		<module>com.abstratt.mdd.target.engine.gstring</module>
 		<module>com.abstratt.kirra.mdd.rest</module>
-		<module>com.abstratt.kirra.mdd.rest2</module>
+		<module>com.abstratt.kirra.mdd.rest.impl.v1</module>
+		<module>com.abstratt.kirra.mdd.rest.impl.v2</module>
 		<module>com.abstratt.kirra.mdd.ui</module>
 		<module>com.abstratt.mdd.frontend.web</module>
 		<module>com.abstratt.mdd.frontend.orion</module>
