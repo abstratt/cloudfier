@@ -43,4 +43,6 @@ Require-Bundle: org.restlet,
  org.apache.commons.collections,
  org.apache.commons.lang,
  org.apache.commons.logging
-Export-Package: com.abstratt.kirra.mdd.rest
+Export-Package: com.abstratt.kirra.mdd.rest,
+ com.abstratt.kirra.mdd.rest.representation,
+ com.abstratt.kirra.mdd.rest.resources

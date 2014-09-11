@@ -17,7 +17,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
 import com.abstratt.kirra.mdd.core.KirraHelper;
-import com.abstratt.kirra.mdd.rest.AbstractKirraRepositoryResource;
+import com.abstratt.kirra.mdd.rest.resources.AbstractKirraRepositoryResource;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.target.ITargetPlatform;
