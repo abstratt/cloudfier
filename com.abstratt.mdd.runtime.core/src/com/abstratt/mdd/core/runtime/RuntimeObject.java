@@ -44,6 +44,7 @@ import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
 import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
@@ -377,9 +378,10 @@ public class RuntimeObject extends BasicType {
                     this.setPropertyValue(property,
                             new StateMachineType(StateMachineUtils.getInitialVertex((StateMachine) property.getType())));
                 if (property.getDefaultValue() != null) {
-                    if (isAssociationEnd(property))
-                        throw new UnsupportedFeatureException(property, "default values on association ends");
-                    this.setValue(property, RuntimeUtils.extractValueFromSpecification(property.getDefaultValue()));
+                    BasicType computedValue = RuntimeUtils.extractValueFromSpecification(property.getDefaultValue());
+                    if (computedValue != null)
+                        // this is important for association ends (which may not admit being set to null)
+                        this.setValue(property, computedValue);
                 }
             }
     }
@@ -769,8 +771,6 @@ public class RuntimeObject extends BasicType {
 
     private BasicType getSlotValue(Property attribute, Map<String, Object> properties) {
         Object value = properties.get(nodeProperty(attribute));
-        if (this.isTuple())
-            return (BasicType) value;
         if (attribute.getType() instanceof StateMachine)
             return getStateMachineValue((StateMachine) attribute.getType(), value);
         if (value == null)

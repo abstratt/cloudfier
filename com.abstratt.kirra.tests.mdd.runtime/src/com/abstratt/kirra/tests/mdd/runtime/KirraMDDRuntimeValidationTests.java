@@ -234,7 +234,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         Instance newInstance = kirra.newInstance("mypackage", "MyClass4");
         newInstance.setValue("attr5", "bar");
 
-        Instance newInstance3 = kirra.newInstance("mypackage", "MyClass3");
+        Instance newInstance3 = kirra.createInstance(kirra.newInstance("mypackage", "MyClass3"));
 
         newInstance.setRelated("ref2", Arrays.asList(newInstance3));
 
@@ -355,7 +355,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.assertTrue(e.toString(), StringUtils.containsIgnoreCase(e.getMessage(), "Ref 2"));
         }
 
-        Instance newInstance3 = kirra.newInstance("mypackage", "MyClass3");
+        Instance newInstance3 = kirra.createInstance(kirra.newInstance("mypackage", "MyClass3"));
 
         newInstance.setRelated("ref2", Arrays.asList(newInstance3));
 
