@@ -6,19 +6,33 @@ import com.abstratt.resman.Resource;
 
 public class KirraRESTActorSelectorProvider implements ActivatableFeatureProvider {
 
+    private boolean enabled;
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
     @Override
     public void activateContext(Resource<?> resource) {
-        KirraRESTActorSelector actorSelector = getCurrentActorSelector(resource);
-        actorSelector.clearCache();
+        if (isEnabled()) {
+            KirraRESTActorSelector actorSelector = getCurrentActorSelector(resource);
+            actorSelector.clearCache();
+        }
     }
 
     @Override
     public void deactivateContext(Resource<?> resource, boolean operationSucceeded) {
-        KirraRESTActorSelector actorSelector = getCurrentActorSelector(resource);
-        actorSelector.clearCache();
+        if (isEnabled()) {
+            KirraRESTActorSelector actorSelector = getCurrentActorSelector(resource);
+            actorSelector.clearCache();
+        }
     }
 
-    public KirraRESTActorSelector getCurrentActorSelector(Resource<?> resource) {
+    private KirraRESTActorSelector getCurrentActorSelector(Resource<?> resource) {
         return (KirraRESTActorSelector) resource.getFeature(ActorSelector.class);
     }
 

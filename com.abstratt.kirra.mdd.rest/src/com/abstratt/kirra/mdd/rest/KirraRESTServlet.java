@@ -1,5 +1,11 @@
 package com.abstratt.kirra.mdd.rest;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import org.restlet.Application;
 import org.restlet.Context;
 import org.restlet.ext.jaxrs.JaxRsApplication;
@@ -17,5 +23,10 @@ public class KirraRESTServlet extends ServerServlet {
         KirraJaxRsApplication jaxApplication = new KirraJaxRsApplication();
         jaxRsApplication.add(jaxApplication);
         return jaxRsApplication;
+    }
+    
+    @Override
+    public void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        super.service(request, response);
     }
 }

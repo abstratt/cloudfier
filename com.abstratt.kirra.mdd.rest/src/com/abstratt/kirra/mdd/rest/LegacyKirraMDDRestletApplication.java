@@ -10,6 +10,29 @@ import org.restlet.routing.Router;
 import org.restlet.security.Authenticator;
 import org.restlet.service.LogService;
 
+import com.abstratt.kirra.mdd.rest.resources.DataResource;
+import com.abstratt.kirra.mdd.rest.resources.EntityListResource;
+import com.abstratt.kirra.mdd.rest.resources.EntityResource;
+import com.abstratt.kirra.mdd.rest.resources.FinderResultResource;
+import com.abstratt.kirra.mdd.rest.resources.IndexResource;
+import com.abstratt.kirra.mdd.rest.resources.InstanceActionResource;
+import com.abstratt.kirra.mdd.rest.resources.InstanceListResource;
+import com.abstratt.kirra.mdd.rest.resources.InstanceResource;
+import com.abstratt.kirra.mdd.rest.resources.LoginLogoutResource;
+import com.abstratt.kirra.mdd.rest.resources.ParameterDomainResource;
+import com.abstratt.kirra.mdd.rest.resources.PasswordResetResource;
+import com.abstratt.kirra.mdd.rest.resources.ProfileResource;
+import com.abstratt.kirra.mdd.rest.resources.RelatedInstanceListResource;
+import com.abstratt.kirra.mdd.rest.resources.RelatedInstanceResource;
+import com.abstratt.kirra.mdd.rest.resources.RelationshipDomainResource;
+import com.abstratt.kirra.mdd.rest.resources.ServiceInvocationResource;
+import com.abstratt.kirra.mdd.rest.resources.ServiceListResource;
+import com.abstratt.kirra.mdd.rest.resources.ServiceResource;
+import com.abstratt.kirra.mdd.rest.resources.SignupResource;
+import com.abstratt.kirra.mdd.rest.resources.StaticActionResource;
+import com.abstratt.kirra.mdd.rest.resources.TestResource;
+import com.abstratt.kirra.mdd.rest.resources.TestRunnerResource;
+
 public class LegacyKirraMDDRestletApplication extends Application {
     public static String ID = LegacyKirraMDDRestletApplication.class.getPackage().getName();
     private static boolean SHOW_TIMING = Boolean.parseBoolean(System.getProperty("kirra.timing", "true"));
