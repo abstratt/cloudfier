@@ -10,9 +10,12 @@ import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.security.User;
+import org.restlet.util.NamedValue;
+import org.restlet.util.Series;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
@@ -35,9 +38,13 @@ public class KirraRESTUtils {
         if (request == null)
             return null;
         User user = request.getClientInfo().getUser();
-        if (user == null)
-            return null;
-        return user.getIdentifier();
+        if (user != null)
+            return user.getIdentifier();
+        // fallback to a run-as header (which circumvents any security)
+        Series<NamedValue<String>> httpHeaders = (Series<NamedValue<String>>) request.getAttributes()
+                .get(HeaderConstants.ATTRIBUTE_HEADERS);
+        String runAs = httpHeaders.getFirstValue("X-Kirra-RunAs");
+        return runAs;
     }
 
     public static Properties getProperties(String workspace) {
