@@ -11,6 +11,8 @@ import com.abstratt.kirra.auth.TransientAuthenticationService;
 
 public class Activator implements BundleActivator {
 
+    public static final String ID = Activator.class.getPackage().getName();
+
     public static Activator getInstance() {
         return Activator.instance;
     }

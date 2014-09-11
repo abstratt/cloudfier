@@ -9,7 +9,7 @@ import org.restlet.routing.TemplateRoute;
 import org.restlet.routing.Variable;
 
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
-import com.abstratt.kirra.mdd.rest.LegacyKirraMDDRestletApplication;
+import com.abstratt.kirra.mdd.rest.impl.v1.LegacyKirraMDDRestletApplication;
 
 public class KirraUIApplication extends LegacyKirraMDDRestletApplication {
     public static String ID = KirraUIApplication.class.getPackage().getName();

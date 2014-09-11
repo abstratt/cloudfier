@@ -10,7 +10,7 @@ import org.eclipse.core.runtime.CoreException;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
-import com.abstratt.kirra.mdd.rest.representation.TupleParser;
+import com.abstratt.kirra.mdd.rest.impl.v1.representation.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 
 public class TupleParserTests extends AbstractKirraMDDRuntimeTests {

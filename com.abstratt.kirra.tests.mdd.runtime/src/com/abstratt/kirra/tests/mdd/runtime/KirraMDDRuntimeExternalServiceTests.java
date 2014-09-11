@@ -30,7 +30,7 @@ import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.kirra.mdd.rest.KirraRESTExternalService;
+import com.abstratt.kirra.mdd.rest.impl.v1.KirraRESTExternalService;
 import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 

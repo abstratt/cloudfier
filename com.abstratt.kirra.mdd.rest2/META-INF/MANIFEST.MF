@@ -1,14 +1,13 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Kirra MDD REST API
-Bundle-SymbolicName: com.abstratt.kirra.mdd.rest2;singleton:=true
+Bundle-SymbolicName: com.abstratt.kirra.mdd.rest.impl.v2;singleton:=true
 Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: com.abstratt.kirra.mdd.rest2.Activator
 Import-Package: com.abstratt.kirra.auth,
- com.abstratt.kirra.mdd.rest2,
+ com.abstratt.kirra.mdd.rest.impl.v2,
  com.abstratt.kirra.populator,
  com.abstratt.kirra.rest.common,
  com.abstratt.kirra.rest.resources,
@@ -33,9 +32,10 @@ Require-Bundle: org.restlet,
  com.abstratt.kirra.mdd.runtime,
  com.abstratt.kirra.mdd.core,
  com.abstratt.kirra.api,
+ com.abstratt.kirra.mdd.rest,
  org.apache.commons.httpclient,
  org.apache.commons.io,
  org.apache.commons.collections,
  org.apache.commons.lang,
  org.apache.commons.logging
-Export-Package: com.abstratt.kirra.mdd.rest2
+Export-Package: com.abstratt.kirra.mdd.rest.impl.v2

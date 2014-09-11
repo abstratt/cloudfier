@@ -72,6 +72,7 @@ public class KirraRESTUtils {
         Map<String, String> error = new HashMap<String, String>();
         error.put("message", e.getMessage());
         error.put("context", e.getContext());
+        error.put("symbol", e.getSymbol());
         return KirraRESTUtils.jsonToStringRepresentation(error);
     }
 

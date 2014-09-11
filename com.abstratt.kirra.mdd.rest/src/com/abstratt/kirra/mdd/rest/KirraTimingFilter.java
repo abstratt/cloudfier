@@ -10,7 +10,7 @@ import org.restlet.routing.Filter;
 import com.abstratt.pluginutils.LogUtils;
 
 /**
- * A filter that sets the current runtime.
+ * A filter that times requests.
  */
 public class KirraTimingFilter extends Filter {
     public static Restlet monitor(Restlet toMonitor) {
@@ -25,7 +25,7 @@ public class KirraTimingFilter extends Filter {
         watch.start();
         int result = super.doHandle(request, response);
         watch.stop();
-        LogUtils.log(IStatus.INFO, LegacyKirraMDDRestletApplication.ID, request.toString() + " - " + watch.getTime() + "ms", null);
+        LogUtils.log(IStatus.INFO, Activator.ID, request.toString() + " - " + watch.getTime() + "ms", null);
         return result;
     }
 }

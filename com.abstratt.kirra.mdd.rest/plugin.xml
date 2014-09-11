@@ -2,17 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="org.eclipse.equinox.http.registry.servlets">
-      <servlet
-            alias="/mdd/api"
-            class="com.abstratt.kirra.mdd.rest.LegacyKirraRESTServlet">
-      </servlet>
-   </extension>
-   <extension
          point="com.abstratt.resman.features">
-      <feature
-            provider="com.abstratt.kirra.mdd.rest.RESTExternalServiceProvider">
-      </feature>
     <feature
             provider="com.abstratt.kirra.mdd.rest.KirraRESTActorSelectorProvider">
       </feature>
