@@ -80,8 +80,8 @@ public class Runtime {
         return RuntimeActionFactory.getInstance().createRuntimeAction(instance, parent);
     }
 
-    public void enter() {
-        context.enter();
+    public void enter(boolean readOnly) {
+        context.enter(readOnly);
     }
 
     

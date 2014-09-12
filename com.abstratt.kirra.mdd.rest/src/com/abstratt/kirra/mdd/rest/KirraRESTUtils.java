@@ -9,6 +9,7 @@ import org.eclipse.emf.common.util.URI;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.data.MediaType;
+import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.Representation;
@@ -27,6 +28,7 @@ import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils.ResourceRunnable;
 import com.abstratt.pluginutils.ISharedContextRunnable;
+import com.abstratt.resman.TaskModeSelector.Mode;
 
 public class KirraRESTUtils {
     public static boolean doesWorkspaceExist(String workspace) {
@@ -89,11 +91,13 @@ public class KirraRESTUtils {
 
     public static <R> R runInKirraRepository(final Request request, final ISharedContextRunnable<IRepository, R> runnable) {
         String workspace = KirraRESTUtils.getWorkspaceFromProjectPath(request);
-        return KirraRESTUtils.runInKirraWorkspace(workspace, runnable);
+        return KirraRESTUtils.runInKirraWorkspace(workspace, runnable, request.getMethod());
     }
 
-    public static <R> R runInKirraWorkspace(final String workspace, final ISharedContextRunnable<IRepository, R> runnable) {
+    public static <R> R runInKirraWorkspace(final String workspace, final ISharedContextRunnable<IRepository, R> runnable, Method method) {
         try {
+            boolean safe = method.equals(Method.GET) || method.equals(Method.HEAD) || method.equals(Method.OPTIONS);
+            KirraRESTTaskModeSelector.setTaskMode(safe ? Mode.ReadOnly : Mode.ReadWrite);
             return RepositoryService.DEFAULT.runInRepository(ResourceUtils.getRepositoryURI(workspace), runnable);
         } catch (KirraException e) {
             ResourceUtils.fail(e, org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);
@@ -103,6 +107,8 @@ public class KirraRESTUtils {
             ResourceUtils.fail(e, null);
             // never runs
             return null;
+        } finally {
+            KirraRESTTaskModeSelector.setTaskMode(null);
         }
     }
 

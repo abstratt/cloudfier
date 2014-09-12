@@ -6,5 +6,8 @@
     <feature
             provider="com.abstratt.kirra.mdd.rest.KirraRESTActorSelectorProvider">
       </feature>
+      <feature
+            provider="com.abstratt.kirra.mdd.rest.KirraRESTTaskModeSelector">
+      </feature>
    </extension>
 </plugin>

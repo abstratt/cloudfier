@@ -6,12 +6,15 @@ import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.resman.ActivatableFeatureProvider;
 import com.abstratt.resman.Resource;
+import com.abstratt.resman.TaskModeSelector;
+import com.abstratt.resman.TaskModeSelector.Mode;
 
 public class RuntimeProvider implements ActivatableFeatureProvider {
 
     @Override
     public void activateContext(Resource<?> resource) {
-        resource.getFeature(Runtime.class).enter();
+        boolean readOnly = resource.getFeature(TaskModeSelector.class).getMode() == Mode.ReadOnly;
+        resource.getFeature(Runtime.class).enter(readOnly);
     }
 
     @Override
@@ -26,7 +29,7 @@ public class RuntimeProvider implements ActivatableFeatureProvider {
 
     @Override
     public Class<?>[] getRequiredFeatureTypes() {
-        return new Class<?>[] { IRepository.class, INodeStoreCatalog.class, ActorSelector.class };
+        return new Class<?>[] { IRepository.class, INodeStoreCatalog.class, ActorSelector.class, TaskModeSelector.class };
     }
 
     @Override

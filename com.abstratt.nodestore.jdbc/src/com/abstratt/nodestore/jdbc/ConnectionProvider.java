@@ -22,6 +22,7 @@ public class ConnectionProvider {
     private AtomicInteger level = new AtomicInteger();
     private DataSource dataSource;
     private String databaseName;
+    private boolean readOnly;
 
     public ConnectionProvider() {
         PGSimpleDataSource pgDataSource = new PGSimpleDataSource();
@@ -40,6 +41,7 @@ public class ConnectionProvider {
         if (firstRequest) {
             connection = dataSource.getConnection();
             connection.setAutoCommit(false);
+            connection.setReadOnly(readOnly);
         }
         return connection;
     }
@@ -82,6 +84,10 @@ public class ConnectionProvider {
         Validate.isTrue(this.connection != null);
         JDBCNodeStore.logSQLStatement(databaseName + " - rolling back");
         this.connection.rollback();
+    }
+
+    public void setReadOnly(boolean readOnly) {
+        this.readOnly = readOnly;
     }
 
 }

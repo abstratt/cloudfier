@@ -181,6 +181,8 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
      * Creates a new instance of the class represented. Adds the created
      * instance to the pool of instances of the class represented.
      *
+     * @param persistent whether the object is intended to be persisted (this is overruled if the context is read only, as no objects can be persisted in that case)
+     * @param initDefaults whether to initialize defaults
      * @return the created instance
      */
     public final RuntimeObject newInstance(boolean persistent, boolean initDefaults) {
@@ -188,7 +190,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
             throw new CannotInstantiateAbstractClassifier(classifier);
         RuntimeObject newObject;
 
-        if (persistent) {
+        if (persistent && !runtime.getCurrentContext().isReadOnly()) {
             newObject = new RuntimeObject(this, getNodeStoreCatalog().newNode());
         } else
             newObject = new RuntimeObject(this);

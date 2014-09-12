@@ -77,6 +77,7 @@ public class RuntimeObject extends BasicType {
 
     /**
      * Is this object meant to be stored in a node store?
+     * Tuples are not, and so aren't objects created in a read-only context.
      */
     private boolean isPersistable;
 
@@ -338,7 +339,7 @@ public class RuntimeObject extends BasicType {
         if (property.isDerived() && property.getDefaultValue() != null)
             return derivedValue(property);
         if (isAssociationEnd(property))
-            return traverse(property);
+            return isPersistable ? traverse(property) : (BasicType) node.getProperties(true).get(nodeProperty(property));
         Assert.isLegal(this.isTuple() || !property.isMultivalued());
         return getSlotValue(property, node.getProperties());
     }
@@ -551,7 +552,7 @@ public class RuntimeObject extends BasicType {
     public void setValue(Property property, BasicType value) {
         Assert.isTrue(isActive());
         Assert.isTrue(!isPersisted || !(property.getType() instanceof StateMachine));
-        if (isAssociationEnd(property)) {
+        if (isAssociationEnd(property) && isPersistable) {
             Collection<RuntimeObject> newPeers;
             if (property.isMultivalued()) {
                 newPeers = new HashSet<RuntimeObject>();
@@ -665,8 +666,10 @@ public class RuntimeObject extends BasicType {
     }
 
     protected void markDirty() {
-        isDirty = true;
-        getCurrentContext().markDirty();
+        if (isPersistable) {
+            isDirty = true;
+            getCurrentContext().markDirty();
+        }
     }
 
     protected void publishEvent(Operation operation, Object... arguments) {

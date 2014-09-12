@@ -252,9 +252,15 @@ public class ExecutionContext {
 
     private int level = 0;
 
+    private Boolean readOnly;
+
     public ExecutionContext(Runtime runtime) {
         this.runtime = runtime;
         this.id = ExecutionContext.globalId++;
+    }
+    
+    public boolean isReadOnly() {
+        return readOnly;
     }
 
     public void addToWorkingSet(RuntimeObject runtimeObject) {
@@ -310,14 +316,18 @@ public class ExecutionContext {
         currentFrame().dropScope();
     }
 
-    public boolean enter() {
+    public boolean enter(boolean readOnly) {
         boolean newTransaction = level++ == 0;
         if (newTransaction) {
             Assert.isTrue(this.events.isEmpty(), "Event backlog is not empty");
             Assert.isTrue(this.workingSet.isEmpty(), "Working set is not empty");
+            this.readOnly = readOnly;
+        } else {
+            Assert.isTrue(readOnly || !this.readOnly, "Attempt to change the context from R/O to R/W");
         }
         System.out.println("entered context level: " + level);
         if (newTransaction)
+            // even for read-only contexts we use transactions, for consistent reads
             runtime.getNodeStoreCatalog().beginTransaction();
         return newTransaction;
     }
@@ -382,16 +392,20 @@ public class ExecutionContext {
         boolean success = false;
         try {
             if (operationSucceeded) {
-                saveContext(false);
+                if (!readOnly)
+                    saveContext(false);
                 success = true;
             }
         } finally {
             runtime.getNodeStoreCatalog().clearCaches();
             level--;
             if (level == 0) {
+                boolean rollback = !success || readOnly;
+                // only set while a context is active
+                readOnly = null;
                 clearWorkingSet();
                 clearEventQueue();
-                if (success)
+                if (!rollback)
                     runtime.getNodeStoreCatalog().commitTransaction();
                 else
                     runtime.getNodeStoreCatalog().abortTransaction();

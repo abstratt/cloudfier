@@ -224,4 +224,8 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
     private ConnectionProvider getConnectionProvider() {
         return connectionProvider;
     }
+
+    public void setReadOnly(boolean readOnly) {
+        this.connectionProvider.setReadOnly(readOnly);
+    }
 }

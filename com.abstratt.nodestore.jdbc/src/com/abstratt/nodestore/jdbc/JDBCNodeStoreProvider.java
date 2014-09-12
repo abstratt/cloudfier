@@ -5,11 +5,15 @@ import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.resman.ActivatableFeatureProvider;
 import com.abstratt.resman.Resource;
+import com.abstratt.resman.TaskModeSelector;
+import com.abstratt.resman.TaskModeSelector.Mode;
 
 public class JDBCNodeStoreProvider implements ActivatableFeatureProvider {
     @Override
     public void activateContext(Resource<?> resource) {
-        // nothing to do here
+        JDBCNodeStoreCatalog contextCatalog = (JDBCNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
+        boolean readOnly = resource.getFeature(TaskModeSelector.class).getMode() == Mode.ReadOnly;
+        contextCatalog.setReadOnly(readOnly);
     }
 
     @Override
@@ -26,7 +30,7 @@ public class JDBCNodeStoreProvider implements ActivatableFeatureProvider {
 
     @Override
     public Class<?>[] getRequiredFeatureTypes() {
-        return new Class[] { SchemaManagement.class, KirraApplication.class };
+        return new Class[] { SchemaManagement.class, KirraApplication.class, TaskModeSelector.class };
     }
 
     @Override

@@ -8,6 +8,7 @@ import org.apache.commons.lang.StringUtils;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.data.Method;
 import org.restlet.data.Status;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
@@ -50,7 +51,7 @@ public class KirraRepositoryFilter extends Filter {
                         KirraContext.setBaseURI(null);
                     }
                 }
-            });
+            }, request.getMethod());
         } catch (ResourceException e) {
             if (e.getCause() != null) {
                 Throwable translated = KirraOnMDDRuntime.translateException(e.getCause());
