@@ -1,5 +1,6 @@
 package com.abstratt.mdd.core.tests.runtime;
 
+import java.util.Date;
 import java.util.Properties;
 
 import junit.framework.Test;
@@ -17,6 +18,7 @@ import com.abstratt.mdd.core.runtime.RuntimeClass;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
+import com.abstratt.mdd.core.runtime.types.DateType;
 import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.StringType;
@@ -193,6 +195,26 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         // basic operation testing
         runOperation(person, "setName", new StringType("Foo"));
         TestCase.assertEquals(new StringType("Foo"), runOperation(person, "getName"));
+    }
+    
+    
+    public void testRunOperationWithDefaultValueForParameter() throws CoreException {
+        String source = "";
+        source += "model someModel;\n";
+        source += "import base;\n";
+        source += "  class Helper\n";
+        source += "    static operation getYear(date : Date := { Date#today() }) : Integer;\n";
+        source += "    begin\n";
+        source += "      return date.year();\n";
+        source += "    end;\n";
+        source += "  end;\n";
+        source += "end.";
+        parseAndCheck(source);
+        IntegerType result1 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] {null} );
+        assertEquals((Long) (new Date().getYear() + 1900L), result1.primitiveValue());
+        
+        IntegerType result2 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] { DateType.fromValue(new Date(1974, 1, 1))});
+        assertEquals((Long) (1974L), result2.primitiveValue());
     }
 
     public void testToString() throws CoreException {
