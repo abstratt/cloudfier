@@ -26,11 +26,11 @@ import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
+import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.core.util.MDDUtil;
-import com.abstratt.mdd.frontend.core.IProblem;
-import com.abstratt.mdd.frontend.core.IProblem.Severity;
 
 public class DeployerResource extends AbstractBuildDirectoryResource {
 

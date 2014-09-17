@@ -16,8 +16,8 @@ import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.populator.DataPopulator;
+import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.tests.harness.FixtureHelper;
-import com.abstratt.mdd.frontend.core.IProblem;
 
 public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
