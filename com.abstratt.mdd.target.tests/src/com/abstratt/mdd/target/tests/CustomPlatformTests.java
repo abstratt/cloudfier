@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.UMLPackage;
 
+import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.target.ITargetPlatform;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.TargetCore;
@@ -22,7 +23,6 @@ import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.mdd.core.tests.harness.AssertHelper;
 import com.abstratt.mdd.core.tests.harness.FixtureHelper;
 import com.abstratt.mdd.core.util.MDDUtil;
-import com.abstratt.mdd.frontend.core.IProblem;
 
 //import com.abstratt.mdd.target.engine.st.STValidator.STProblem;
 

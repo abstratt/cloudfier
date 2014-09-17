@@ -10,6 +10,7 @@ import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
+import org.eclipse.uml2.uml.DataType;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.Package;
@@ -210,8 +211,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         final TupleType tupleType = new TupleType();
         tupleType.setNamespace(getNamespace(umlClass));
         setName(umlClass, tupleType);
-        // piggyback on entity properties for now
-        tupleType.setProperties(getEntityProperties(umlClass));
+        tupleType.setProperties(getTupleProperties(umlClass));
         return tupleType;
     }
 
@@ -223,12 +223,20 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         return entityOperations;
     }
 
-    List<Property> getEntityProperties(Classifier umlClass) {
+    List<Property> getEntityProperties(Class umlClass) {
         List<Property> entityProperties = new ArrayList<Property>();
         for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getProperties(umlClass))
             if (KirraHelper.isUserVisible(attribute))
                 entityProperties.add(getEntityProperty(attribute));
         return entityProperties;
+    }
+    
+    List<Property> getTupleProperties(Classifier dataType) {
+        List<Property> tupleProperties = new ArrayList<Property>();
+        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getTupleProperties(dataType))
+            // piggyback on entity properties for now
+            tupleProperties.add(getEntityProperty(attribute));
+        return tupleProperties;
     }
 
     List<Operation> getServiceOperations(BehavioredClassifier serviceClass) {

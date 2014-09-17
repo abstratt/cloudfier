@@ -15,9 +15,9 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 
-import com.abstratt.mdd.frontend.core.IProblem;
-import com.abstratt.mdd.frontend.core.IProblem.Severity;
-import com.abstratt.mdd.frontend.core.UnclassifiedProblem;
+import com.abstratt.mdd.core.IProblem;
+import com.abstratt.mdd.core.UnclassifiedProblem;
+import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.pluginutils.LogUtils;
 
 public class BuilderResource extends AbstractBuildDirectoryResource {

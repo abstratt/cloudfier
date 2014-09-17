@@ -19,7 +19,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 
-import com.abstratt.mdd.frontend.core.IProblem;
+import com.abstratt.mdd.core.IProblem;
 
 /**
  * Validator resource.

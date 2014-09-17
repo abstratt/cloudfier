@@ -1,7 +1,7 @@
 package com.abstratt.kirra.populator.compiler;
 
-import static com.abstratt.mdd.frontend.core.IProblem.Severity.ERROR;
-import static com.abstratt.mdd.frontend.core.IProblem.Severity.WARNING;
+import static com.abstratt.mdd.core.IProblem.Severity.ERROR;
+import static com.abstratt.mdd.core.IProblem.Severity.WARNING;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -14,10 +14,10 @@ import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.populator.DataParser;
 import com.abstratt.kirra.populator.DataValidator;
 import com.abstratt.kirra.populator.DataValidator.ErrorCollector;
+import com.abstratt.mdd.core.IProblem;
+import com.abstratt.mdd.core.Problem;
 import com.abstratt.mdd.core.RepositoryService;
-import com.abstratt.mdd.frontend.core.IProblem;
-import com.abstratt.mdd.frontend.core.IProblem.Severity;
-import com.abstratt.mdd.frontend.core.Problem;
+import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.frontend.core.spi.CompilationContext;
 import com.abstratt.mdd.frontend.core.spi.ICompiler;
 

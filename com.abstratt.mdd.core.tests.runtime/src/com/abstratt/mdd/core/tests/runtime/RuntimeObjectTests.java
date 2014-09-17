@@ -213,7 +213,7 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         IntegerType result1 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] {null} );
         assertEquals((Long) (new Date().getYear() + 1900L), result1.primitiveValue());
         
-        IntegerType result2 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] { DateType.fromValue(new Date(1974, 1, 1))});
+        IntegerType result2 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] { DateType.fromValue(new Date(1974 - 1900, 0, 1))});
         assertEquals((Long) (1974L), result2.primitiveValue());
     }
 

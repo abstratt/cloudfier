@@ -35,11 +35,11 @@ import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
+import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.MDDCore;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.TemplateUtils;
-import com.abstratt.mdd.frontend.core.IProblem;
 import com.abstratt.pluginutils.LogUtils;
 
 /**
