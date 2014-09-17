@@ -42,14 +42,14 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ResourceException;
 import org.restlet.util.Series;
 
+import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.core.UnclassifiedProblem;
+import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.frontend.core.ICompilationDirector;
-import com.abstratt.mdd.frontend.core.IProblem;
-import com.abstratt.mdd.frontend.core.IProblem.Severity;
 import com.abstratt.mdd.frontend.core.LocationContext;
-import com.abstratt.mdd.frontend.core.UnclassifiedProblem;
 import com.abstratt.mdd.frontend.internal.core.CompilationDirector;
 import com.abstratt.pluginutils.ISharedContextRunnable;
 import com.abstratt.pluginutils.LogUtils;
@@ -77,13 +77,13 @@ public class ResourceUtils {
     public static String buildJSONResponse(List<IProblem> results) {
         List<String> problemMarkup = new ArrayList<String>();
         for (IProblem current : results) {
-            Number lineNumber = (Number) current.getAttribute(IProblem.LINE_NUMBER);
-            if (lineNumber == null)
-                lineNumber = 1;
-            IFileStore fileStore = (IFileStore) current.getAttribute(IProblem.FILE_NAME);
-            String filename = fileStore == null ? null : fileStore.getName();
-            problemMarkup.add("{ \"reason\": \"" + current.getMessage() + "\", \"end\": 1, \"character\": 1, \"line\": " + lineNumber
-                    + ", \"severity\": \"" + current.getSeverity().name().toLowerCase() + "\", \"file\": \"" + filename + "\"}");
+            Object localFileName = current.getAttribute(IProblem.FILE_NAME);
+            Integer lineNumber = (Integer) current.getAttribute(IProblem.LINE_NUMBER);
+            String fileName = localFileName == null ? "" : localFileName instanceof IFileStore ? ((IFileStore) localFileName).getName()
+                    : localFileName.toString();
+            String lineNumberString = lineNumber == null ? "1" : lineNumber.toString();
+            problemMarkup.add("{ \"reason\": \"" + current.getMessage() + "\", \"end\": 1, \"character\": 1, \"line\": " + lineNumberString
+                    + ", \"severity\": \"" + current.getSeverity().name().toLowerCase() + "\", \"file\": \"" + fileName + "\"}");
         }
         return "{\"problems\": [" + StringUtils.join(problemMarkup, ',') + "]}";
     }
@@ -96,7 +96,7 @@ public class ResourceUtils {
             String tag = current.getSeverity().toString().toLowerCase();
             Object localFileName = current.getAttribute(IProblem.FILE_NAME);
             Integer lineNumber = (Integer) current.getAttribute(IProblem.LINE_NUMBER);
-            String fileName = localFileName == null ? "" : localFileName instanceof IFileStore ? ((IFileStore) localFileName).getName()
+            String fileName = localFileName == null ? null : localFileName instanceof IFileStore ? ((IFileStore) localFileName).getName()
                     : localFileName.toString();
             String lineNumberString = lineNumber == null ? "" : lineNumber.toString();
             problemsMarkup.append("\t\t<" + tag + " file=\"" + fileName + "\" line=\"" + lineNumberString + "\" message=\"");
