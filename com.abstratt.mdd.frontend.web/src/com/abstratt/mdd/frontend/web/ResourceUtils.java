@@ -129,10 +129,7 @@ public class ResourceUtils {
                 new ISharedContextRunnable<IRepository, Object>() {
                     @Override
                     public Object runInContext(IRepository repository) {
-                        int mode = ICompilationDirector.CLEAN | ICompilationDirector.FULL_BUILD;
-                        boolean testsEnabled = Boolean.parseBoolean(repository.getProperties().getProperty(IRepository.TESTS_ENABLED));
-                        if (testsEnabled)
-                            mode |= ICompilationDirector.DEBUG;
+                        int mode = ICompilationDirector.CLEAN | ICompilationDirector.FULL_BUILD | ICompilationDirector.DEBUG;
                         long startCompilation = System.currentTimeMillis();
                         try {
                             IProblem[] compilationProblems = CompilationDirector.getInstance().compile(null, repository, context, mode,
