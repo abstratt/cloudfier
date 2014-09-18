@@ -1,6 +1,8 @@
 package com.abstratt.kirra.mdd.runtime;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
@@ -14,7 +16,7 @@ import com.abstratt.mdd.core.runtime.ActorSelector;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.types.BasicType;
-import com.abstratt.mdd.core.util.FeatureUtils;
+import com.abstratt.mdd.core.runtime.types.StringType;
 
 public abstract class KirraActorSelector implements ActorSelector {
 
@@ -35,14 +37,10 @@ public abstract class KirraActorSelector implements ActorSelector {
             return null;
         for (Class userClass : userClasses) {
             Property usernameAttribute = KirraHelper.getUsernameProperty(userClass);
-            for (BasicType runtimeObject : runtime.getAllInstances(userClass)) {
+            Map<Property, List<BasicType>> filter = Collections.singletonMap(usernameAttribute, Collections.singletonList((BasicType) new StringType(userMnemonic)));
+            for (BasicType runtimeObject : runtime.findInstances(userClass, filter)) {
                 RuntimeObject user = (RuntimeObject) runtimeObject;
-                BasicType value = user.getValue(usernameAttribute);
-                if (value != null) {
-                    String mnemonicValue = value.toString();
-                    if (userMnemonic.equalsIgnoreCase(mnemonicValue))
-                        return user;
-                }
+                return user;
             }
         }
         return null;
