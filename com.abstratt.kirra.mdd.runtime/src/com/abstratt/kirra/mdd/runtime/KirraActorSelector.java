@@ -5,6 +5,7 @@ import java.util.List;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
 import org.eclipse.uml2.uml.Class;
+import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.kirra.mdd.core.KirraHelper;
@@ -32,16 +33,18 @@ public abstract class KirraActorSelector implements ActorSelector {
         }, false);
         if (userClasses.isEmpty())
             return null;
-        for (Class userClass : userClasses)
+        for (Class userClass : userClasses) {
+            Property usernameAttribute = KirraHelper.getUsernameProperty(userClass);
             for (BasicType runtimeObject : runtime.getAllInstances(userClass)) {
                 RuntimeObject user = (RuntimeObject) runtimeObject;
-                BasicType value = user.getValue(FeatureUtils.findAttribute(userClass, "username", false, true));
+                BasicType value = user.getValue(usernameAttribute);
                 if (value != null) {
                     String mnemonicValue = value.toString();
                     if (userMnemonic.equalsIgnoreCase(mnemonicValue))
                         return user;
                 }
             }
+        }
         return null;
     }
 

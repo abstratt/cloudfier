@@ -16,7 +16,7 @@ public class KirraRESTActorSelector extends KirraActorSelector {
 
     @Override
     public RuntimeObject getCurrentActor(Runtime runtime) {
-        if (!cached) {
+        if (!cached || (cachedActor == null && KirraRESTUtils.getCurrentUserName() != null)) {
             cachedActor = super.getCurrentActor(runtime);
             cached = true;
         }
