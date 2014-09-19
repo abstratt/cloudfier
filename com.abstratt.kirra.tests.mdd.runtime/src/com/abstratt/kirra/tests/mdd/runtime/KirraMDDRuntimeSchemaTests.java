@@ -1,12 +1,15 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import junit.framework.TestCase;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.uml2.uml.Enumeration;
+import org.eclipse.uml2.uml.Stereotype;
 import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.kirra.Entity;
@@ -20,6 +23,8 @@ import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Schema;
 import com.abstratt.kirra.TypeRef.TypeKind;
+import com.abstratt.mdd.core.util.MDDExtensionUtils;
+import com.abstratt.mdd.core.util.StereotypeUtils;
 
 public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
@@ -509,7 +514,9 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         Enumeration enum1 = this.getRepository().findNamedElement("mypackage::Enum1", UMLPackage.Literals.ENUMERATION, null);
         TestCase.assertNotNull(enum1);
-        TestCase.assertEquals(enum1.getAppliedStereotypes().toString(), 0, enum1.getAppliedStereotypes().size());
+        List<Stereotype> appliedStereotypes = new ArrayList<Stereotype>(enum1.getAppliedStereotypes());
+        appliedStereotypes.remove(StereotypeUtils.findStereotype(MDDExtensionUtils.DEBUGGABLE_STEREOTYPE));
+        TestCase.assertEquals(appliedStereotypes.toString(), 0, appliedStereotypes.size());
     }
 
     public void testInheritance() throws CoreException {
@@ -630,7 +637,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertNotNull(schema);
 
         List<Namespace> namespaces = schema.getNamespaces();
-        TestCase.assertEquals(2, namespaces.size());
+        TestCase.assertEquals(namespaces.toString(), 2, namespaces.size());
         sortNamedElements(namespaces);
         TestCase.assertEquals("pack1", namespaces.get(0).getName());
         TestCase.assertEquals("pack2", namespaces.get(1).getName());
