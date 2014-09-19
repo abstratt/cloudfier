@@ -141,7 +141,7 @@ class Util extends KirraUIHelper {
 	{
         ${
 	        getEntities(namespaces).findAll { 
-	            isConcreteEntity(it)
+	            KirraUIHelper.isConcreteEntity(it)
 	        }.collect {
 	            """
 	                '${getName(it)}': { 
@@ -174,7 +174,7 @@ class Util extends KirraUIHelper {
 	
 	static createStores(namespaces) {
         getEntities(namespaces).findAll { 
-            isConcreteEntity(it)
+            KirraUIHelper.isConcreteEntity(it)
         }.collect {
             createEntityStore(it)
         }.join('\n')
