@@ -14,6 +14,7 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 
 import com.abstratt.kirra.auth.AuthenticationService;
+import com.abstratt.pluginutils.ConfigUtils;
 import com.abstratt.pluginutils.LogUtils;
 
 public class StormpathAuthenticationService implements AuthenticationService {
@@ -108,7 +109,7 @@ public class StormpathAuthenticationService implements AuthenticationService {
         try {
             HttpClient client = new HttpClient();
             client.getState().setCredentials(new AuthScope("api.stormpath.com", 443),
-                    new UsernamePasswordCredentials("1P119F48A43RCO4XQ519PJCFH", "epMuyOKd2Jz4nvFsohoX+5RKql+xmsKQXFUqGQ7eupY"));
+                    new UsernamePasswordCredentials(ConfigUtils.get("KIRRA_STORMPATH_API_USER"), ConfigUtils.get("KIRRA_STORMPATH_API_PASSWORD")));
             PostMethod send = new PostMethod("https://api.stormpath.com/v1/" + path);
             String requestAsJson = toJSON(request);
             System.out.println(requestAsJson);

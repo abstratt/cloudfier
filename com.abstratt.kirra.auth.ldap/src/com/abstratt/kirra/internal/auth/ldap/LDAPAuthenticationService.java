@@ -17,6 +17,7 @@ import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
 
 import com.abstratt.kirra.auth.AuthenticationService;
+import com.abstratt.pluginutils.ConfigUtils;
 import com.abstratt.pluginutils.LogUtils;
 
 public class LDAPAuthenticationService implements AuthenticationService {
@@ -26,10 +27,10 @@ public class LDAPAuthenticationService implements AuthenticationService {
     public LDAPAuthenticationService() throws NamingException {
         Hashtable<String, String> env = new Hashtable<String, String>();
         env.put(Context.INITIAL_CONTEXT_FACTORY, "com.sun.jndi.ldap.LdapCtxFactory");
-        env.put(Context.PROVIDER_URL, System.getProperty("ldap.providerUrl", "ldap://localhost:10389/dc=cloudfier,dc=com"));
+        env.put(Context.PROVIDER_URL, System.getProperty("ldap.providerUrl", ConfigUtils.get("KIRRA_LDAP_PROVIDER_URL", "ldap://localhost:10389/dc=abstratt,dc=com")));
         env.put(Context.SECURITY_AUTHENTICATION, System.getProperty("ldap.authentication", "simple"));
-        env.put(Context.SECURITY_PRINCIPAL, System.getProperty("ldap.principal", "cn=admin,dc=cloudfier,dc=com"));
-        env.put(Context.SECURITY_CREDENTIALS, System.getProperty("ldap.credentials", "Cloudfier123"));
+        env.put(Context.SECURITY_PRINCIPAL, System.getProperty("ldap.principal", ConfigUtils.get("KIRRA_LDAP_PRINCIPAL", "cn=admin,dc=abstratt,dc=com")));
+        env.put(Context.SECURITY_CREDENTIALS, System.getProperty("ldap.credentials", ConfigUtils.get("KIRRA_LDAP_CREDENTIALS", "")));
         this.initialContext = new InitialDirContext(env);
     }
 
@@ -70,7 +71,7 @@ public class LDAPAuthenticationService implements AuthenticationService {
         matchAttrs.put(new BasicAttribute("objectclass", "organizationalPerson"));
         matchAttrs.put(new BasicAttribute("objectclass", "inetorgperson"));
         try {
-            this.initialContext.bind("cn=" + username + "," + System.getProperty("ldap.userContext", "ou=users,o=apps"), initialContext,
+            this.initialContext.bind("cn=" + username + "," + System.getProperty("ldap.userContext", ConfigUtils.get("KIRRA_LDAP_USER_CONTEXT", "ou=users,o=apps")), initialContext,
                     matchAttrs);
             return true;
         } catch (NamingException e) {

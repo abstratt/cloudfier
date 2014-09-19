@@ -17,14 +17,14 @@ public class MandrillEmailService implements EmailService {
     @Override
     public boolean send(String addresseeEmail, String addresseeName, String sender, String subject, String content) {
         Map<String, Object> request = new HashMap<String, Object>();
-        request.put("api", "0-5RwD0c9FC5iDv_KH175A");
+        request.put("api", System.getProperty("KIRRA_MANDRILL_API_KEY"));
 
         Map<String, Object> message = new HashMap<String, Object>();
         request.put("message", message);
         message.put("html", content);
         message.put("subject", subject);
-        message.put("from_email", "cloudfier@abstratt.com");
-        message.put("from_name", "Cloudfier Support");
+        message.put("from_email", System.getProperty("KIRRA_FROM_EMAIL"));
+        message.put("from_name", System.getProperty("KIRRA_FROM_NAME"));
 
         Map<String, String> to = new HashMap<String, String>();
         message.put("to", to);

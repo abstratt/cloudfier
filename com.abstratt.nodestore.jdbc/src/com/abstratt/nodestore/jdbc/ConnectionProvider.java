@@ -9,6 +9,8 @@ import javax.sql.DataSource;
 import org.apache.commons.lang.Validate;
 import org.postgresql.ds.PGSimpleDataSource;
 
+import com.abstratt.pluginutils.ConfigUtils;
+
 /**
  * Provides connections from a datasource. If a connection is required multiple
  * times in a thread, all requests end up with the same connection (only one
@@ -27,9 +29,9 @@ public class ConnectionProvider {
     public ConnectionProvider() {
         PGSimpleDataSource pgDataSource = new PGSimpleDataSource();
         // TODO need a way to pass properties into node store factory
-        databaseName = System.getProperty("cloudfier.database.name", "cloudfier");
+        databaseName = ConfigUtils.get("KIRRA_DATABASE_NAME", "cloudfier");
         pgDataSource.setDatabaseName(databaseName);
-        String username = System.getProperty("cloudfier.database.username", "cloudfier");
+        String username = ConfigUtils.get("KIRRA_DATABASE_USERNAME", "cloudfier");
         pgDataSource.setUser(username);
         this.dataSource = pgDataSource;
     }
