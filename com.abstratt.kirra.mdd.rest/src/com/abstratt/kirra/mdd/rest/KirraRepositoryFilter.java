@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang.time.StopWatch;
+import org.eclipse.core.runtime.IStatus;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
@@ -32,9 +34,11 @@ public class KirraRepositoryFilter extends Filter {
 
     @Override
     protected int doHandle(final Request request, final Response response) {
+        StopWatch watch = new StopWatch();
+        watch.start();
         String workspace = getWorkspace(request);
         try {
-            return KirraRESTUtils.runInKirraWorkspace(workspace, new ISharedContextRunnable<IRepository, Integer>() {
+            int result = KirraRESTUtils.runInKirraWorkspace(workspace, new ISharedContextRunnable<IRepository, Integer>() {
                 @Override
                 public Integer runInContext(IRepository context) {
                     Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
@@ -52,6 +56,10 @@ public class KirraRepositoryFilter extends Filter {
                     }
                 }
             }, request.getMethod());
+            watch.stop();
+            LogUtils.log(IStatus.INFO, Activator.ID, request.toString(), null);
+            LogUtils.log(IStatus.INFO, Activator.ID, "Time: " + watch.getTime(), null);
+            return result;
         } catch (ResourceException e) {
             if (e.getCause() != null) {
                 Throwable translated = KirraOnMDDRuntime.translateException(e.getCause());

@@ -227,7 +227,7 @@ public class SQLGenerator {
     }
     
 
-    public List<String> generateSelectSome(Entity clazz, Map<String, Collection<Object>> criteria) {
+    public List<String> generateSelectSome(Entity clazz, Map<String, Collection<Object>> criteria, Integer limit) {
         String stmt = generateSelect(clazz);
         stmt += " where ";
         List<String> terms = new ArrayList<String>();
@@ -247,6 +247,8 @@ public class SQLGenerator {
             }
         }
         stmt += StringUtils.join(terms, " and ");
+        if (limit != null)
+            stmt += " LIMIT " + limit;
         stmt += ";";
         return Arrays.asList(stmt);
     }

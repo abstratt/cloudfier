@@ -278,10 +278,10 @@ public class JDBCNodeStore implements INodeStore {
     }
     
     @Override
-    public Collection<INodeKey> filter(Map<String, Collection<Object>> criteria) {
-        return loadMany(new LoadKeyHandler(), getGenerator().generateSelectSome(getStoreClass(), criteria));
+    public Collection<INodeKey> filter(Map<String, Collection<Object>> criteria, Integer limit) {
+        return loadMany(new LoadKeyHandler(), getGenerator().generateSelectSome(getStoreClass(), criteria, limit));
     }
-
+    
     @Override
     public Collection<INode> getNodes() {
         return loadMany(new LoadNodeHandler(), getGenerator().generateSelectAll(getStoreClass()));

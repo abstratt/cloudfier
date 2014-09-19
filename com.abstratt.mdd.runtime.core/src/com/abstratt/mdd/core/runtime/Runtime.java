@@ -84,40 +84,22 @@ public class Runtime {
         context.enter(readOnly);
     }
 
-    
-    /**
-     * Returns all instances of the given type. This is different from
-     * {@link RuntimeClass#getAllInstances()} because that method only includes
-     * instances of the exact target type (and not instances of subclasses) and
-     * as such only works on concrete classes. This method works on any classes,
-     * and can return instances of different classes if more than one class
-     * conforms to the given base class.
-     * 
-     * @param baseClass
-     * @return
-     */
     public List<BasicType> getAllInstances(final Classifier baseClass) {
-        List<Classifier> concreteClasses = ClassifierUtils.findAllSpecifics(getRepository(), baseClass, false);
-        List<BasicType> allInstances = new ArrayList<BasicType>();
-        for (Classifier concreteClassifier : concreteClasses) {
-            RuntimeClass runtimeClass = getRuntimeClass(concreteClassifier);
-            CollectionType instances = runtimeClass.getAllInstances();
-            allInstances.addAll(instances.getBackEnd());
-        }
-        return allInstances;
+        RuntimeClass runtimeClass = getRuntimeClass(baseClass);
+        return new ArrayList<BasicType>(runtimeClass.getAllInstances().getBackEnd());
     }
 
     public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
         if (criteria.isEmpty())
             return getAllInstances(baseClass);
-        List<Classifier> concreteClasses = ClassifierUtils.findAllSpecifics(getRepository(), baseClass, false);
-        List<BasicType> allInstances = new ArrayList<BasicType>();
-        for (Classifier concreteClassifier : concreteClasses) {
-            RuntimeClass runtimeClass = getRuntimeClass(concreteClassifier);
-            CollectionType instances = runtimeClass.filterInstances(criteria);
-            allInstances.addAll(instances.getBackEnd());
-        }
-        return allInstances;
+        RuntimeClass runtimeClass = getRuntimeClass(baseClass);
+        return new ArrayList<BasicType>(runtimeClass.filterInstances(criteria).getBackEnd());
+    }
+    
+
+    public RuntimeObject findOneInstance(Class baseClass, Map<Property, List<BasicType>> criteria) {
+        RuntimeClass runtimeClass = getRuntimeClass(baseClass);
+        return runtimeClass.findOneInstance(criteria);
     }
 
     public ExecutionContext[] getContexts() {
@@ -298,4 +280,5 @@ public class Runtime {
         Object result = metaClass.runOperation(context, target, operation, arguments);
         return result;
     }
+
 }

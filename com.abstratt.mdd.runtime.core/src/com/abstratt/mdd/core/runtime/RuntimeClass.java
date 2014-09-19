@@ -89,6 +89,11 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
     
     public final CollectionType filterInstances(Map<Property, List<BasicType>> criteria) {
+        Collection<RuntimeObject> runtimeObjects = findInstances(criteria, null);
+        return CollectionType.createCollection(classifier, true, false, new LinkedHashSet<RuntimeObject>(runtimeObjects));
+    }
+
+    private Collection<RuntimeObject> findInstances(Map<Property, List<BasicType>> criteria, Integer limit) {
         Map<String, Collection<Object>> nodeCriteria = new LinkedHashMap<String, Collection<Object>>();
         for (Entry<Property, List<BasicType>> entry : criteria.entrySet()) {
             List<Object> values = new ArrayList<Object>();
@@ -96,8 +101,14 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
                 values.add(RuntimeObject.toExternalValue(basicType));
             nodeCriteria.put(entry.getKey().getName(), values);
         }
-        Collection<RuntimeObject> allInstances = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().filter(nodeCriteria)));
-        return CollectionType.createCollection(classifier, true, false, allInstances);
+        Collection<RuntimeObject> runtimeObjects = nodesToRuntimeObjects(getNodeStore().filter(nodeCriteria, limit));
+        return runtimeObjects;
+    }
+    
+
+    public RuntimeObject findOneInstance(Map<Property, List<BasicType>> criteria) {
+        Collection<RuntimeObject> runtimeObjects = findInstances(criteria, 1);
+        return runtimeObjects.isEmpty() ? null : runtimeObjects.iterator().next();
     }
 
     public final RuntimeClassObject getClassObject() {
@@ -240,4 +251,5 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     INodeStoreCatalog getNodeStoreCatalog() {
         return runtime.getNodeStoreCatalog();
     }
+
 }
