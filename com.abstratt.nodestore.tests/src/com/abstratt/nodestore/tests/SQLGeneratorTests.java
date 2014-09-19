@@ -436,7 +436,7 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         Map<String, Collection<Object>> criteria = new LinkedHashMap<String, Collection<Object>>();
         criteria.put("attr1", Arrays.<Object>asList(42));
         criteria.put("attr2", Arrays.<Object>asList("value1", "value2"));
-        List<String> stmts1 = generator.generateSelectSome(schema.getEntity(ref(myClass)), criteria);
+        List<String> stmts1 = generator.generateSelectSome(schema.getEntity(ref(myClass)), criteria, null);
         TestCase.assertEquals(1, stmts1.size());
         String expected1 = "select id, attr1, attr2, attr3, myClass2, myClass3 from " + tablePrefix("mypackage") + "MyClass1 where attr1 = 42 and attr2 in ('value1', 'value2');";
         SQLGeneratorTests.compareStatements(expected1, stmts1.get(0));

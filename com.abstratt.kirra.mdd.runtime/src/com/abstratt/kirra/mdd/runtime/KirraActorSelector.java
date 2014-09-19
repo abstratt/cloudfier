@@ -38,10 +38,9 @@ public abstract class KirraActorSelector implements ActorSelector {
         for (Class userClass : userClasses) {
             Property usernameAttribute = KirraHelper.getUsernameProperty(userClass);
             Map<Property, List<BasicType>> filter = Collections.singletonMap(usernameAttribute, Collections.singletonList((BasicType) new StringType(userMnemonic)));
-            for (BasicType runtimeObject : runtime.findInstances(userClass, filter)) {
-                RuntimeObject user = (RuntimeObject) runtimeObject;
+            RuntimeObject user = runtime.findOneInstance(userClass, filter);
+            if (user != null)
                 return user;
-            }
         }
         return null;
     }

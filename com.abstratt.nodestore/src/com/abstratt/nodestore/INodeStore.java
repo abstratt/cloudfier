@@ -59,7 +59,6 @@ public interface INodeStore {
      */
     public Collection<INodeKey> getNodeKeys();
     
-    public Collection<INodeKey> filter(Map<String, Collection<Object>> criteria);
 
     /**
      * Returns all root nodes.
@@ -98,4 +97,6 @@ public interface INodeStore {
      * @param node
      */
     public void updateNode(INode node);
+
+    public Collection<INodeKey> filter(Map<String, Collection<Object>> nodeCriteria, Integer limit);
 }
