@@ -65,14 +65,8 @@
 
 		<location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
-			<unit id="org.codehaus.groovy21.feature.feature.group" version="0.0.0" />
-			<repository location="http://dist.springsource.org/release/GRECLIPSE/e4.3/" />
-		</location>
-
-		<location includeAllPlatforms="false" includeMode="planner"
-			includeSource="true" type="InstallableUnit">
-			<unit id="org.springframework.ide.eclipse.security.feature.feature.group" version="0.0.0" />
-			<repository location="http://dist.springsource.com/release/TOOLS/update/e4.3/" />
+			<unit id="org.codehaus.groovy23.feature.feature.group" version="0.0.0" />
+			<repository location="http://dist.springsource.com/release/TOOLS/update/3.6.1.RELEASE/e4.4/" />
 		</location>
 
 		<location includeAllPlatforms="false" includeMode="planner"
