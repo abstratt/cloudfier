@@ -214,12 +214,12 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         kirra.createInstance(new Instance("mypackage", "MyClass2a"));
         TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2a", true).size());
         TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2b", true).size());
-        TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
 
         kirra.createInstance(new Instance("mypackage", "MyClass2b"));
         TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2a", true).size());
         TestCase.assertEquals(1, kirra.getInstances("mypackage", "MyClass2b", true).size());
-        TestCase.assertEquals(2, kirra.getInstances("mypackage", "MyClass2", true).size());
+        TestCase.assertEquals(0, kirra.getInstances("mypackage", "MyClass2", true).size());
 
     }
 
