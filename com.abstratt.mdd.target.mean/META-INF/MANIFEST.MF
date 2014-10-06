@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: Abstratt Technologies
+Bundle-Version: 1.120.1.qualifier
+Bundle-SymbolicName: com.abstratt.mdd.target.mean;singleton:=true
+Bundle-ActivationPolicy: lazy
+Require-Bundle: com.abstratt.mdd.target.core,
+ org.eclipse.xtext.xbase.lib,
+ com.abstratt.kirra.api,
+ org.eclipse.uml2.uml,
+ com.abstratt.mdd.core,
+ com.abstratt.kirra.mdd.core,
+ com.abstratt.kirra.mdd.schema
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: com.abstratt.mdd.target.mean,
+ com.abstratt.mdd.target.mean.mongoose
