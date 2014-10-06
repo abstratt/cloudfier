@@ -14,12 +14,16 @@
 	<build>
 		<plugins>
 			<plugin>
+				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>xtend-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
 					<testSuite>com.abstratt.mdd.target.mean.tests</testSuite>
-					<testClass>com.abstratt.mdd.target.mean.tests.AllTargetTests</testClass>
+					<testClass>com.abstratt.mdd.target.mean.tests.AllTests</testClass>
 				        <systemProperties>
 						  <eclipse.consoleLog>true</eclipse.consoleLog>
 						  <org.eclipse.uml2.common.util.CacheAdapter.ThreadLocal/>
