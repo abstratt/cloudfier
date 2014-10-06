@@ -23,8 +23,8 @@ public class CustomTargetPlatform implements ITargetPlatform {
     }
 
     @Override
-    public ITopLevelMapper getMapper(URI baseURI) {
-        return engine.createLanguageMapper(this, baseURI);
+    public ITopLevelMapper<?> getMapper(String artifactType) {
+        return engine.createLanguageMapper(this);
     }
 
     @Override

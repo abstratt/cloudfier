@@ -9,7 +9,7 @@ public interface IMappingContext {
 
     public Style getCurrentStyle();
 
-    public ILanguageMapper getLanguageMapper();
+    public ITopLevelMapper<?> getLanguageMapper();
 
     public String map(Action target);
 

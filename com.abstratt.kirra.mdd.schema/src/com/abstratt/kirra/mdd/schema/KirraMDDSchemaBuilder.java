@@ -1,16 +1,14 @@
-package com.abstratt.kirra.mdd.runtime;
+package com.abstratt.kirra.mdd.schema;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Properties;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
-import org.eclipse.uml2.uml.DataType;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.Package;

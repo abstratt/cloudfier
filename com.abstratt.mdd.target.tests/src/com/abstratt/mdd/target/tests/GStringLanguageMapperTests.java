@@ -51,12 +51,12 @@ public class GStringLanguageMapperTests extends AbstractRepositoryBuildingTests 
         getRepository().getProperties().setProperty("mdd.target.engine", "gstring");
         getRepository().getProperties().setProperty("mdd.target.foobar.template", "foobar.gt");
         ITargetPlatform platform = TargetCore.getPlatform(getRepository().getProperties(), "foobar");
-        ITopLevelMapper mapper = platform.getMapper(MDDUtil.fromEMFToJava(getRepositoryURI()));
+        ITopLevelMapper mapper = platform.getMapper(null);
         Class class1 = getRepository().findNamedElement("simple::Class1", UMLPackage.Literals.CLASS, null);
-        String mapped1 = mapper.map(class1);
+        String mapped1 = mapper.map(class1).toString();
         TestCase.assertTrue(mapped1, AssertHelper.areEqual("Attribute: attr1", mapped1));
         Class class2 = getRepository().findNamedElement("simple::Class2", UMLPackage.Literals.CLASS, null);
-        String mapped2 = mapper.map(class2);
+        String mapped2 = mapper.map(class2).toString();
         TestCase.assertTrue(mapped2, AssertHelper.areEqual("Attribute: attr2", mapped2));
     }
 }

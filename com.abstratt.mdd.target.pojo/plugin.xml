@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="operationMapper" name="Operation Mapper" schema="schema/operationMapper.exsd"/>
+   <extension-point id="externalTypeMapper" name="External Type Mapper" schema="schema/externalTypeMapper.exsd"/>
+   <extension
+         point="com.abstratt.mdd.target.core.targetPlatform">
+      <target
+            id="pojo"
+            mapper="com.abstratt.mdd.target.pojo.POJOMapper"/>
+   </extension>
+   <extension
+         point="com.abstratt.mdd.target.pojo.externalTypeMapper">
+      <externalType
+            typeName="base::Console"
+            mapper="com.abstratt.mdd.internal.target.pojo.ConsoleMapper"/>
+   </extension>
+</plugin>

@@ -6,7 +6,7 @@ import junit.framework.TestSuite;
 public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite(AllTests.class.getName());
-        // suite.addTest(QueryTests.suite());
+        suite.addTest(QueryTests.suite());
         return suite;
     }
 }

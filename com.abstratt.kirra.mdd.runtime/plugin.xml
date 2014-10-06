@@ -6,8 +6,6 @@
       <feature
             provider="com.abstratt.kirra.mdd.runtime.KirraRepositoryProvider"/>
       <feature
-            provider="com.abstratt.kirra.mdd.runtime.KirraSchemaProvider"/>
-      <feature
             provider="com.abstratt.kirra.mdd.runtime.KirraApplicationProvider"/>
    </extension>
 

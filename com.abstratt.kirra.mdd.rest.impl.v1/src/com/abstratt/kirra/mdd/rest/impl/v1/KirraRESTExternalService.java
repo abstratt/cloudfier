@@ -118,7 +118,7 @@ public class KirraRESTExternalService implements ExternalService {
             int response = httpClient.executeMethod(method);
             if (response != 200)
                 LogUtils.logError(LegacyKirraMDDRestletApplication.ID,
-                        "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(64 * 1024), null);
+                        "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(), null);
             // no use for response, not expected
         } catch (IOException e) {
             throw new KirraException("", e, KirraException.Kind.EXTERNAL);

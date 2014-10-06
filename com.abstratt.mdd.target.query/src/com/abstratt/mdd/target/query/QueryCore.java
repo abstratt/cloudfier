@@ -92,9 +92,7 @@ public class QueryCore {
 
     private AddVariableValueAction findReturnAction(StructuredActivityNode block, Variable returnValue) {
         AddVariableValueAction returnStatement = null;
-        Collection<Action> subActions = MDDUtil.filterByClass(block.getNodes(), IRepository.PACKAGE.getAction());
-        // TODO need action search helper methods
-        for (Action subAction : subActions) {
+        for (Action subAction : ActivityUtils.findStatements(block)) {
             if (ActivityUtils.isTerminal(subAction)) {
                 if (returnStatement != null)
                     throw new UnsupportedOperationException("No support for multiple terminal actions");

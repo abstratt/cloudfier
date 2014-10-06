@@ -64,8 +64,8 @@ public class BuilderTests extends AbstractWebFrontEndTest {
         validSource += "end;\n";
         validSource += "end.\n";
         IFileStore projectArea = BuildDirectoryUtils.getSourcePath(projectPath);
-        FileUtils.write(projectArea.getChild("valid.tuml").toLocalFile(EFS.NONE, null), validSource);
-        FileUtils.write(projectArea.getChild("invalid.tuml").toLocalFile(EFS.NONE, null), "foobar");
+        FileUtils.writeStringToFile(projectArea.getChild("valid.tuml").toLocalFile(EFS.NONE, null), validSource);
+        FileUtils.writeStringToFile(projectArea.getChild("invalid.tuml").toLocalFile(EFS.NONE, null), "foobar");
 
         File buildDirectory = BuildDirectoryUtils.getDeployDirectory(projectPath);
 

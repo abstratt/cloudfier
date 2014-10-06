@@ -18,7 +18,7 @@ public class KirraTimingFilter extends Filter {
         monitor.setNext(toMonitor);
         return monitor;
     }
-
+    
     @Override
     protected int doHandle(final Request request, final Response response) {
         StopWatch watch = new StopWatch();

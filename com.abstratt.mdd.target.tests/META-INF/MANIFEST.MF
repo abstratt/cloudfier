@@ -10,6 +10,7 @@ Require-Bundle: com.abstratt.mdd.core.tests.harness,
  com.abstratt.mdd.target.core,
  org.apache.commons.lang,
  org.apache.commons.io,
+ com.abstratt.mdd.target.query,
  com.abstratt.mdd.target.engine.gstring,
  com.abstratt.kirra.mdd.core
 Export-Package: com.abstratt.mdd.target.tests

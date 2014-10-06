@@ -5,18 +5,18 @@ import java.util.Stack;
 import org.eclipse.uml2.uml.Action;
 
 import com.abstratt.mdd.core.target.IActionMapper;
-import com.abstratt.mdd.core.target.ILanguageMapper;
 import com.abstratt.mdd.core.target.IMappingContext;
+import com.abstratt.mdd.core.target.ITopLevelMapper;
 
 public class MappingContext implements IMappingContext {
 
-    private ILanguageMapper languageMapper;
+    private ITopLevelMapper<?> languageMapper;
 
     private Stack<Style> styles;
 
     private MapperFinder mapperFinder;
 
-    public MappingContext(ILanguageMapper mapper, Style defaultStyle, MapperFinder finder) {
+    public MappingContext(ITopLevelMapper<?> mapper, Style defaultStyle, MapperFinder finder) {
         this.languageMapper = mapper;
         styles = new Stack<Style>();
         mapperFinder = finder;
@@ -29,7 +29,7 @@ public class MappingContext implements IMappingContext {
     }
 
     @Override
-    public ILanguageMapper getLanguageMapper() {
+    public ITopLevelMapper<?> getLanguageMapper() {
         return this.languageMapper;
     }
 

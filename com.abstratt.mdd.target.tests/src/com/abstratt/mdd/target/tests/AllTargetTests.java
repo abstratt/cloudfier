@@ -10,7 +10,7 @@ public class AllTargetTests {
         suite.addTest(com.abstratt.mdd.target.tests.query.AllTests.suite());
         // suite.addTest(com.abstratt.mdd.target.tests.pojo.AllTests.suite());
         // suite.addTest(com.abstratt.mdd.target.tests.jpa.AllTests.suite());
-        // suite.addTest(com.abstratt.mdd.target.tests.sql.AllTests.suite());
+        suite.addTest(com.abstratt.mdd.target.tests.sql.AllTests.suite());
         return suite;
     }
 }

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+<!--
+   <extension
+         point="com.abstratt.mdd.target.pojo.operationMapper">
+      <operationMapper
+            annotation="base_profile::create"
+            class="com.abstratt.mdd.internal.target.pojo.hibernate.CreateOperationMapper"/>
+      <operationMapper
+            annotation="base_profile::retrieve"
+            class="com.abstratt.mdd.internal.target.pojo.hibernate.RetrieveOperationMapper"/>
+   </extension>
+-->
+</plugin>

@@ -42,7 +42,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import javax.persistence.*; @Entity public class Account {}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }
@@ -60,7 +60,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Customer", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import java.util.Set; import javax.persistence.*; @Entity public class Customer { private Set<Account> accounts; @ManyToMany public Set<Account> getAccounts() { return this.accounts; }}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }
@@ -78,7 +78,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import javax.persistence.*; @Entity public class Account { private Customer owner; @ManyToOne(optional=false) public Customer getOwner() { return this.owner; }}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }
@@ -94,7 +94,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import javax.persistence.*; @Entity public class Account { private Customer owner; @ManyToOne(optional=false) public Customer getOwner() { return this.owner; }}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }
@@ -112,7 +112,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Customer", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import java.util.Set; import javax.persistence.*; @Entity public class Customer { private Set<Account> accounts; @OneToMany public Set<Account> getAccounts() { return this.accounts; }}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }
@@ -130,7 +130,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import javax.persistence.*; @Entity public class Account { private Customer owner; @OneToOne(optional=false) public Customer getOwner() { return this.owner; }}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }
@@ -145,7 +145,7 @@ public class JPABasicTests extends AbstractRepositoryBuildingTests {
         source += "end.";
         parseAndCheck(source);
         org.eclipse.uml2.uml.Class clazz = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String actual = jpaMapper.map(clazz);
+        String actual = jpaMapper.map(clazz).toString();
         String expected = "package simple; import javax.persistence.*; @Entity public class Account { private String name; public String getName(){return this.name;} public void setName(String name){this.name=name;}}";
         Assert.assertTrue(actual, AssertHelper.areEqual(expected, actual));
     }

@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.RegistryFactory;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.target.ILanguageMapper;
 import com.abstratt.mdd.core.target.ITargetPlatform;
+import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.TargetCore;
 import com.abstratt.mdd.core.target.spi.CustomTargetPlatform;
 import com.abstratt.mdd.core.target.spi.ITransformationEngine;
@@ -103,10 +104,10 @@ public class TargetPlatformRegistry {
             for (IConfigurationElement configElement : configElements) {
                 String id = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ID);
                 String name = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_NAME);
-                ILanguageMapper mapper = null;
+                ITopLevelMapper<?> mapper = null;
                 try {
                     if (configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_MAPPER) != null)
-                        mapper = (ILanguageMapper) configElement.createExecutableExtension(TargetPlatformRegistry.ATTRIBUTE_MAPPER);
+                        mapper = (ITopLevelMapper<?>) configElement.createExecutableExtension(TargetPlatformRegistry.ATTRIBUTE_MAPPER);
                 } catch (CoreException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

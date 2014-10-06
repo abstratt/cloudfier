@@ -52,9 +52,9 @@ public class CustomPlatformTests extends AbstractRepositoryBuildingTests {
         getRepository().getProperties().setProperty("mdd.target.foobar.template", "foobar.stg");
         getRepository().getProperties().setProperty("mdd.target.foobar.base", "pojo");
         ITargetPlatform platform = TargetCore.getPlatform(getRepository().getProperties(), "foobar");
-        ITopLevelMapper mapper = platform.getMapper(MDDUtil.fromEMFToJava(getRepositoryURI()));
+        ITopLevelMapper mapper = platform.getMapper(null);
         Class toMap = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String mapped = mapper.map(toMap);
+        String mapped = mapper.map(toMap).toString();
         TestCase.assertTrue(mapped, AssertHelper.areEqual("Attribute: Attr1", mapped));
     }
 
@@ -104,9 +104,9 @@ public class CustomPlatformTests extends AbstractRepositoryBuildingTests {
         getRepository().getProperties().setProperty("mdd.target.foobar.template", "foobar.stg");
         getRepository().getProperties().setProperty("mdd.target.foobar.base", "pojo");
         ITargetPlatform platform = TargetCore.getPlatform(getRepository().getProperties(), "foobar");
-        ITopLevelMapper mapper = platform.getMapper(MDDUtil.fromEMFToJava(getRepositoryURI()));
+        ITopLevelMapper mapper = platform.getMapper(null);
         Class toMap = getRepository().findNamedElement("simple::Account", UMLPackage.Literals.CLASS, null);
-        String mapped = mapper.map(toMap);
+        String mapped = mapper.map(toMap).toString();
         TestCase.assertTrue(mapped, AssertHelper.areEqual("{ return 1;}", mapped));
     }
 

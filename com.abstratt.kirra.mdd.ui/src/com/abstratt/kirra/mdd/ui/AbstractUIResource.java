@@ -49,7 +49,7 @@ public abstract class AbstractUIResource<T extends NamedElement> extends Abstrac
             properties.put("mdd.target.ui-js.helperUris", getClass().getResource("/" + utilClassName.replace('.', '/') + ".groovy")
                     .toString());
             ITargetPlatform platform = TargetCore.getPlatform(properties, "ui-js");
-            ITopLevelMapper<T> mapper = platform.getMapper(MDDUtil.fromEMFToJava(coreRepository.getBaseURI()));
+            ITopLevelMapper<T> mapper = platform.getMapper(null);
 
             String generated = map(coreRepository, mapper);
             StringRepresentation applicationSource = new StringRepresentation(generated, MediaType.APPLICATION_JAVASCRIPT);
@@ -63,13 +63,13 @@ public abstract class AbstractUIResource<T extends NamedElement> extends Abstrac
     }
 
     public String mapElement(IRepository coreRepository, ITopLevelMapper<T> mapper, T element) {
-        String generated = mapper.map(element);
+        String generated = mapper.map(element).toString();
         return generated;
     }
 
     public String mapNamespaces(IRepository coreRepository, ITopLevelMapper<Package> mapper) {
         Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(coreRepository.getTopLevelPackages(null));
-        String generated = mapper.mapAll(new ArrayList<Package>(applicationPackages));
+        String generated = mapper.mapAll(new ArrayList<Package>(applicationPackages)).toString();
         return generated;
     }
 

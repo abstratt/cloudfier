@@ -22,8 +22,10 @@ import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.NamedElement;
 
 import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.MappingException;
+import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.pluginutils.LogUtils;
 
 public class GroovyLanguageMapper<T extends NamedElement> implements ITopLevelMapper<T> {
@@ -36,7 +38,8 @@ public class GroovyLanguageMapper<T extends NamedElement> implements ITopLevelMa
 
     private ArrayList<URI> baseURIs;
 
-    public GroovyLanguageMapper(Map<String, String> properties, URI baseURI) {
+    public GroovyLanguageMapper(Map<String, String> properties) {
+        URI baseURI = MDDUtil.fromEMFToJava(RepositoryService.DEFAULT.getCurrentRepository().getBaseURI());
         this.properties = properties;
         try {
             String templateLocation = properties.get("template");
@@ -57,33 +60,10 @@ public class GroovyLanguageMapper<T extends NamedElement> implements ITopLevelMa
         }
     }
 
-    @Override
-    public String applyChildMapper(String mapperName, Element element) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public MapperInfo describeChildMapper(String mapperName) {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Collection<String> getChildMappers() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public Map<String, String> getFormalArgs(String mapperName) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String getProperty(String key) {
-        return properties.get(key);
-    }
+//    @Override
+//    public String getProperty(String key) {
+//        return properties.get(key);
+//    }
 
     @Override
     public String map(final T toMap) {

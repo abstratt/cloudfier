@@ -14,6 +14,7 @@ import com.abstratt.kirra.mdd.core.KirraMDDCore;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.target.ILanguageMapper;
 import com.abstratt.mdd.core.target.ITargetPlatform;
+import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.TargetCore;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.mdd.core.tests.harness.AssertHelper;
@@ -27,7 +28,7 @@ public class SelectTests extends AbstractRepositoryBuildingTests {
         return new TestSuite(SelectTests.class);
     }
 
-    private ILanguageMapper sqlMapper;
+    private ITopLevelMapper<Operation> sqlMapper;
 
     public SelectTests(String name) {
         super(name);
@@ -38,7 +39,7 @@ public class SelectTests extends AbstractRepositoryBuildingTests {
         super.setUp();
         ITargetPlatform platform = TargetCore.getBuiltInPlatform("sql");
         Assert.assertNotNull(platform);
-        sqlMapper = (ILanguageMapper) platform.getMapper(null);
+        sqlMapper = platform.getMapper(null);
         Assert.assertNotNull(sqlMapper);
     }
 
@@ -46,7 +47,7 @@ public class SelectTests extends AbstractRepositoryBuildingTests {
         buildAccountCustomerModel();
         Operation getCustomersWithAccountOperation = getRepository().findNamedElement("simple::Customer::getCustomersWithAccount",
                 UMLPackage.Literals.OPERATION, null);
-        String actual = sqlMapper.mapBehavior(getCustomersWithAccountOperation);
+        String actual = sqlMapper.map(getCustomersWithAccountOperation).toString();
         String expected = "select _owner_.* from Account _account_ inner join Customer _owner_ on _account_._ownerID_ = _owner_._customerID_";
         Assert.assertEquals(AssertHelper.trim(expected), AssertHelper.trim(actual));
     }
@@ -64,7 +65,7 @@ public class SelectTests extends AbstractRepositoryBuildingTests {
         parseAndCheck(source);
         Operation getAllAccountsOperation = getRepository().findNamedElement("simple::Account::getAllAccounts",
                 UMLPackage.Literals.OPERATION, null);
-        String actual = sqlMapper.mapBehavior(getAllAccountsOperation);
+        String actual = sqlMapper.map(getAllAccountsOperation).toString();
         String expected = "select _account_.*from Account _account_";
         Assert.assertEquals(AssertHelper.trim(expected), AssertHelper.trim(actual));
     }
@@ -89,7 +90,7 @@ public class SelectTests extends AbstractRepositoryBuildingTests {
         parseAndCheck(source);
         Operation findAccountByNumberOperation = getRepository().findNamedElement("simple::Account::findAccountByNumber",
                 UMLPackage.Literals.OPERATION, null);
-        String actual = sqlMapper.mapBehavior(findAccountByNumberOperation);
+        String actual = sqlMapper.map(findAccountByNumberOperation).toString();
         String expected = "select _account_.* from Account _account_ where _account_.number = ?";
         Assert.assertEquals(AssertHelper.trim(expected), AssertHelper.trim(actual));
     }
@@ -113,7 +114,7 @@ public class SelectTests extends AbstractRepositoryBuildingTests {
         parseAndCheck(source);
         Operation getGoodAccountsOperation = getRepository().findNamedElement("simple::Account::getGoodAccounts",
                 UMLPackage.Literals.OPERATION, null);
-        String actual = sqlMapper.mapBehavior(getGoodAccountsOperation);
+        String actual = sqlMapper.map(getGoodAccountsOperation).toString();
         String expected = "select _account_.* from Account _account_ where _account_.balance >= 0";
         Assert.assertEquals(AssertHelper.trim(expected), AssertHelper.trim(actual));
     }

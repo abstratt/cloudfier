@@ -10,6 +10,8 @@ Require-Bundle:
  com.abstratt.mdd.target.core,
  org.apache.commons.io,
  org.apache.commons.lang,
+ com.abstratt.pluginutils,
+ com.abstratt.mdd.core,
  com.abstratt.kirra.mdd.core;visibility:=reexport
 Export-Package: com.abstratt.mdd.target.engine.gstring
 Eclipse-BuddyPolicy: registered

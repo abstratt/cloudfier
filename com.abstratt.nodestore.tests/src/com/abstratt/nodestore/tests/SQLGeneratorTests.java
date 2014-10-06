@@ -29,7 +29,7 @@ import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.SchemaManagementSnapshot;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
-import com.abstratt.kirra.mdd.runtime.KirraMDDSchemaBuilder;
+import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.nodestore.jdbc.ConnectionProvider;

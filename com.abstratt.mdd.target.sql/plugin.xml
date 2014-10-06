@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension-point id="actionMapper" name="Action Mappers" schema="schema/actionMapper.exsd"/>
+   <extension
+         point="com.abstratt.mdd.target.core.targetPlatform">
+      <target
+            id="sql" 
+            mapper="com.abstratt.mdd.target.sql.SQLMapper">
+      </target> 
+   </extension>
+   <extension
+         point="com.abstratt.mdd.target.sql.actionMapper">
+      <actionMapper
+            action="uml::ReadExtentAction"
+            mapper="com.abstratt.mdd.target.sql.mappers.select.ReadExtentAction">
+      </actionMapper>
+      <actionMapper
+            action="uml::CallOperationAction"
+            mapper="com.abstratt.mdd.target.sql.mappers.select.CallSelectOperationAction">
+      </actionMapper>
+      <actionMapper
+            action="uml::CallOperationAction"
+            mapper="com.abstratt.mdd.target.sql.mappers.select.CallCollectOperationAction">
+      </actionMapper>
+   </extension>
+</plugin>

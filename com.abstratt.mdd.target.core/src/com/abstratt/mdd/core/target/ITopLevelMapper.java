@@ -1,9 +1,5 @@
 package com.abstratt.mdd.core.target;
 
-import java.util.Collection;
-import java.util.Map;
-
-import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.NamedElement;
 
 /** Transforms a UML element into text. */
@@ -32,15 +28,15 @@ public interface ITopLevelMapper<T extends NamedElement> extends IMapper<T> {
         }
     }
 
-    public String applyChildMapper(String mapperName, Element element);
+//    public String applyChildMapper(String mapperName, Element element);
 
-    public MapperInfo describeChildMapper(String mapperName);
+//    public MapperInfo describeChildMapper(String mapperName);
 
-    public Collection<String> getChildMappers();
+//    public Collection<String> getChildMappers();
 
-    public Map<String, String> getFormalArgs(String mapperName);
+//    public Map<String, String> getFormalArgs(String mapperName);
 
     public String mapFileName(T element);
 
-    String getProperty(String key);
+//    String getProperty(String key);
 }

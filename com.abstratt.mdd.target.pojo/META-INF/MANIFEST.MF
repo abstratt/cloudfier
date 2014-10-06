@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: MDD POJO Target
+Bundle-SymbolicName: com.abstratt.mdd.target.pojo;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: abstratt
+Bundle-Localization: plugin
+Require-Bundle: com.abstratt.mdd.core,
+ org.eclipse.equinox.registry,
+ com.abstratt.mdd.target.core,
+ org.apache.commons.lang,
+ org.antlr.stringtemplate,
+ com.abstratt.mdd.target.engine.st;visibility:=reexport
+Eclipse-LazyStart: true
+Export-Package: com.abstratt.mdd.internal.target.pojo,
+ com.abstratt.mdd.target.pojo
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6

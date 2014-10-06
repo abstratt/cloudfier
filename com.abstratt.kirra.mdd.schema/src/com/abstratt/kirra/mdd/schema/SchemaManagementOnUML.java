@@ -1,4 +1,4 @@
-package com.abstratt.kirra.mdd.runtime;
+package com.abstratt.kirra.mdd.schema;
 
 import java.util.Collection;
 import java.util.List;
@@ -6,8 +6,6 @@ import java.util.List;
 import org.eclipse.emf.ecore.EClass;
 
 import com.abstratt.kirra.Entity;
-import com.abstratt.kirra.KirraException;
-import com.abstratt.kirra.KirraException.Kind;
 import com.abstratt.kirra.Namespace;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
@@ -19,16 +17,11 @@ import com.abstratt.kirra.TypeRef;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.NamedElementLookupCache;
 import com.abstratt.mdd.core.RepositoryService;
-import com.abstratt.mdd.core.runtime.ModelExecutionException;
 
 public class SchemaManagementOnUML implements SchemaManagement {
 
     public static SchemaManagementOnUML create() {
         return new SchemaManagementOnUML();
-    }
-
-    static KirraException convertModelExecutionException(ModelExecutionException rre, Kind kind) {
-        return KirraOnMDDRuntime.convertModelExecutionException(rre, kind);
     }
 
     private SchemaManagementOnUML() {

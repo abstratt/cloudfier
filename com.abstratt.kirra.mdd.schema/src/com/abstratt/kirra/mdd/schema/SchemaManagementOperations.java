@@ -1,4 +1,4 @@
-package com.abstratt.kirra.mdd.runtime;
+package com.abstratt.kirra.mdd.schema;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Relationship;
