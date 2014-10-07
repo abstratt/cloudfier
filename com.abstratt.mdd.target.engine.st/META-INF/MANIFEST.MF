@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: StringTemplate-based Code Generation
+Bundle-SymbolicName: com.abstratt.mdd.target.engine.st;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Require-Bundle: org.antlr.stringtemplate;bundle-version="3.2.1",
+ org.apache.commons.lang;bundle-version="2.4.0",
+ com.abstratt.mdd.target.core,
+ org.apache.commons.io;bundle-version="1.4.0",
+ com.abstratt.mdd.frontend.core;resolution:=optional,
+ com.abstratt.mdd.target.query;bundle-version="1.0.0"
+Export-Package: com.abstratt.mdd.target.engine.st

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.abstratt.mdd.target.core.transformationEngine">
+       <engine
+            id="stringtemplate"
+            class="com.abstratt.mdd.target.engine.st.STEngine"/>
+   </extension>
+   <extension
+         point="com.abstratt.mdd.frontend.core.frontEndLanguage">
+      <language
+            compiler="com.abstratt.mdd.target.engine.st.STValidator"
+            file-extension="stg"
+            name="StringTemplate group validator">
+      </language>
+   </extension>
+
+</plugin>
