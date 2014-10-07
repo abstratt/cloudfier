@@ -119,8 +119,6 @@
       <plugin id="org.eclipse.uml2.common"/>
       <plugin id="org.eclipse.uml2.types"/>
       <plugin id="org.eclipse.uml2.uml"/>
-      <plugin id="org.eclipse.uml2.uml.profile.l2"/>
-      <plugin id="org.eclipse.uml2.uml.profile.l3"/>
       <plugin id="org.eclipse.uml2.uml.resources"/>
       <plugin id="org.hamcrest.core"/>
       <plugin id="org.json"/>
