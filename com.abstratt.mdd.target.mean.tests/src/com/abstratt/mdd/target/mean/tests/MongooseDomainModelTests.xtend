@@ -34,11 +34,9 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val platform = TargetCore.getPlatform(getRepository().getProperties(), "mean")
-        val mapper = platform.getMapper(null)
-        val class1 = getRepository().findNamedElement("simple::Class1", UMLPackage.Literals.CLASS, null)
-        val mapped = mapper.map(class1).toString()
-        assertTrue(mapped, AssertHelper.areEqual(
+        val mapped = map("simple::Class1")
+        
+        AssertHelper.assertStringsEqual(
         '''
         var class1Schema = new Schema({ 
             attr1: String, 
@@ -47,7 +45,7 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         }); 
         var Class1 = mongoose.model('Class1', class1Schema);      
         '''
-        , mapped))
+        , mapped)
     }
     
     def testAction() throws CoreException, IOException {
@@ -65,10 +63,8 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val platform = TargetCore.getPlatform(getRepository().getProperties(), "mean")
-        val mapper = platform.getMapper(null)
-        val class1 = getRepository().findNamedElement("simple::Class1", UMLPackage.Literals.CLASS, null)
-        val mapped = mapper.map(class1).toString()
+        val mapped = map("simple::Class1")
+        
         AssertHelper.assertStringsEqual(
         '''
         var class1Schema = new Schema({ 
@@ -92,5 +88,12 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         // so classes extend Object by default (or else weaver ignores them)
         defaultSettings.setProperty(IRepository.EXTEND_BASE_OBJECT, Boolean.TRUE.toString())
         return defaultSettings
+    }
+    
+    private def map(String className) {
+        val platform = TargetCore.getPlatform(getRepository().getProperties(), "mean")
+        val mapper = platform.getMapper(null)
+        val class1 = getRepository().findNamedElement(className, UMLPackage.Literals.CLASS, null)
+        return mapper.map(class1).toString()
     }
 }

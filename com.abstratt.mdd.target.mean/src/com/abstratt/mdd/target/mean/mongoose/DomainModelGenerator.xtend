@@ -24,12 +24,13 @@ class DomainModelGenerator {
     
     def generateEntity(Class entity) {
         val schemaVar = getSchemaVar(entity)
-        val modelVar = entity.name
+        val modelName = entity.name
+        val modelVar = modelName
         
     '''
         var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
         «generateInstanceOperations(entity)»
-        var «modelVar» = mongoose.model('«entity.name»', «schemaVar»);
+        var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
     '''
     }
     
