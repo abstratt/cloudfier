@@ -8,5 +8,5 @@ public class AllTests {
         val suite = new TestSuite(AllTests.getName())
         suite.addTest(MongooseDomainModelTests.suite())
         return suite
-    }
+    } 
 }

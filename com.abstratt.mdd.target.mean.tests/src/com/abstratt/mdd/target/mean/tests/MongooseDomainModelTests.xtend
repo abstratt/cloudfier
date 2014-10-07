@@ -50,7 +50,7 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         , mapped))
     }
     
-    def _testAction() throws CoreException, IOException {
+    def testAction() throws CoreException, IOException {
         val source = '''
         model simple;
         

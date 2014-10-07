@@ -1,7 +1,6 @@
 package com.abstratt.mdd.target.mean
 
 import com.abstratt.kirra.SchemaManagement
-import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.RepositoryService
 import com.abstratt.mdd.core.target.ITopLevelMapper
 import com.abstratt.mdd.target.mean.mongoose.DomainModelGenerator
@@ -15,9 +14,7 @@ class MEANPlatform implements ITopLevelMapper<Class> {
     }
     
     override map(Class toMap) {
-        val typeRef = KirraMDDSchemaBuilder.convertType(toMap)
-        val asEntity = currentSchema.getEntity(typeRef)
-        new DomainModelGenerator().generateEntity(asEntity)
+        new DomainModelGenerator().generateEntity(toMap)
     }
     
     def getCurrentSchema() {

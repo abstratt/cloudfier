@@ -8,7 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.6
 Require-Bundle: 
  com.abstratt.mdd.core,
  com.abstratt.kirra.mdd.core,
- com.abstratt.kirra.api,
+ com.abstratt.kirra.api;visibility:=reexport,
  com.abstratt.resman
 Export-Package: com.abstratt.kirra.mdd.schema
 Import-Package: com.abstratt.resman,

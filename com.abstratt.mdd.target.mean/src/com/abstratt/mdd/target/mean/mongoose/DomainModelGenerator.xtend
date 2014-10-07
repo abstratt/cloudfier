@@ -1,15 +1,28 @@
 package com.abstratt.mdd.target.mean.mongoose
 
-import com.abstratt.kirra.Entity
-import com.abstratt.kirra.Operation
-import com.abstratt.kirra.Property
 import com.abstratt.kirra.TypeRef
+import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
+import com.abstratt.mdd.core.util.ActivityUtils
+import com.abstratt.mdd.core.util.BasicTypeUtils
+import org.eclipse.uml2.uml.Action
+import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
+import org.eclipse.uml2.uml.CallOperationAction
+import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadSelfAction
+import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static com.abstratt.kirra.TypeRef.TypeKind.*
+import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.ReadVariableAction
 
 class DomainModelGenerator {
     
-    def generateEntity(Entity entity) {
+    def generateEntity(Class entity) {
         val schemaVar = getSchemaVar(entity)
         val modelVar = entity.name
         
@@ -20,27 +33,113 @@ class DomainModelGenerator {
     '''
     }
     
-    def getSchemaVar(Entity entity)
+    def getSchemaVar(Class entity)
         '''«entity.name.toFirstLower»Schema'''
     
     
-    def generateInstanceOperations(Entity entity) {
-        entity.operations.map[generateInstanceOperation(entity, it)].join(',\n')
+    def generateInstanceOperations(Class entity) {
+        KirraHelper.getActions(entity).map[generateInstanceAction(entity, it)].join(',\n')
     }
     
-    def generateInstanceOperation(Entity entity, Operation operation) '''
-    «getSchemaVar(entity)».methods.«operation.name» = function («operation.parameters.map[name].join(', ')») {
-    };
+    def generateInstanceAction(Class entity, Operation operation) '''
+    «getSchemaVar(entity)».methods.«operation.name» = function («KirraHelper.getParameters(operation).map[name].join(', ')») «generateOperationBehavior(operation)»;
     '''
+    
+    def generateOperationBehavior(Operation operation) {
+        val firstMethod = operation.methods?.get(0)
+        if (firstMethod == null) return '{}' 
+        generateBehavior(firstMethod as Activity)
+    }
+    
+    def generateBehavior(Activity behavior) {
+        generateAction(ActivityUtils.getRootAction(behavior))
+    }
+    
+    def dispatch CharSequence generateAction(StructuredActivityNode node) {
+        '''{
+            «ActivityUtils.findStatements(node).map[generateStatement].join('\n')»
+        }'''
+    }
+    
+    def dispatch CharSequence generateAction(Action action) {
+        // should never pick this version - a more specific variant should exist for all supported actions
+        '''Unsupported «action.eClass.name»'''
+    }
+    
+    def dispatch CharSequence generateAction(CallOperationAction action) {
+        if (action.operation.static) return '''calling static operations still unsupported «action.operation.name»'''
+        
+        val target = action.target.source
+        if (BasicTypeUtils.isBasicType(action.target.type))
+            generateCallAsOperator(action)
+        else
+            '''«generateAction(target)».(«action.arguments.map[generateAction(source)].join(', ')»)'''    
+    }
+    
+    def generateCallAsOperator(CallOperationAction action) {
+        val operator = switch (action.operation.name) {
+            case 'add' : '+'
+            case 'subtract' : '-'
+            case 'multiply' : '*'
+            case 'divide' : '/'
+            case 'minus' : '-'
+            case 'and' : '&&'
+            case 'or' : '||'
+            case 'not' : '!'
+            case 'lowerThan' : '<'
+            case 'greaterThan' : '>'
+            case 'lowerOrEquals' : '<='
+            case 'greaterOrEquals' : '>='
+            case 'equals' : '=='
+            case 'same' : '==='
+        }
+        switch (action.arguments.size()) {
+            // unary operator
+            case 0 : '''«operator»«generateAction(action.target.source)»'''
+            case 1 : '''«generateAction(action.target.source)» «operator» «generateAction(action.arguments.head.source)»'''
+            default : '''Unsupported operation «action.operation.name»'''
+        }
+    }
+    
+    def getSource(InputPin pin) {
+        ActivityUtils.getSource(pin).owner as Action
+    }
+    
+    def dispatch CharSequence generateAction(AddStructuralFeatureValueAction action) {
+        val target = action.object.source
+        val value = action.value.source
+        val featureName = action.structuralFeature.name
+        
+        '''«generateAction(target)».«featureName» = «generateAction(value)»'''
+    }
+    
+    def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
+        val target = action.object.source
+        val featureName = action.structuralFeature.name
+        '''«generateAction(target)».«featureName»'''
+    }
+    
+    def dispatch CharSequence generateAction(ReadVariableAction action) {
+        '''«action.variable.name»'''
+    }
+    
+    def dispatch CharSequence generateAction(ReadSelfAction action) {
+        'this'
+    }
+    
+    def generateStatement(Action statementAction) {
+        '''«generateAction(statementAction)»;'''        
+    }
+    
 
-    def generateSchema(Entity clazz) '''
+    def generateSchema(Class clazz) '''
     {
-        «clazz.properties.map[generateSchemaAttribute(it)].join(',\n')»
+        «KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)].join(',\n')»
     }
     '''
 
     def generateSchemaAttribute(Property attribute) '''
-        «attribute.name» : «generateTypeDef(attribute.typeRef)»
+        «attribute.name» : «generateTypeDef(KirraMDDSchemaBuilder.convertType(attribute.type))»
     '''
 
     def generateTypeDef(TypeRef type) {
