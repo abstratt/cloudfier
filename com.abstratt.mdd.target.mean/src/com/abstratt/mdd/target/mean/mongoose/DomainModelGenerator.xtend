@@ -21,122 +21,123 @@ import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
 
 class DomainModelGenerator {
-    
+
     def generateEntity(Class entity) {
         val schemaVar = getSchemaVar(entity)
         val modelName = entity.name
         val modelVar = modelName
-        
-    '''
-        var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
-        «generateInstanceOperations(entity)»
-        var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
-    '''
+
+        '''
+            var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
+            «generateInstanceOperations(entity)»
+            var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
+        '''
     }
-    
-    def getSchemaVar(Class entity)
-        '''«entity.name.toFirstLower»Schema'''
-    
-    
+
+    def getSchemaVar(Class entity) '''«entity.name.toFirstLower»Schema'''
+
     def generateInstanceOperations(Class entity) {
         KirraHelper.getActions(entity).map[generateInstanceAction(entity, it)].join(',\n')
     }
-    
-    def generateInstanceAction(Class entity, Operation operation) '''
-    «getSchemaVar(entity)».methods.«operation.name» = function («KirraHelper.getParameters(operation).map[name].join(', ')») «generateOperationBehavior(operation)»;
-    '''
-    
+
+    def generateInstanceAction(Class entity, Operation operation) {
+        val schemaVar = getSchemaVar(entity)
+        val parameters = KirraHelper.getParameters(operation)
+        '''
+            «schemaVar».methods.«operation.name» = function («parameters.map[name].join(', ')») «generateOperationBehavior(operation)»;
+        '''
+    }
+
     def generateOperationBehavior(Operation operation) {
         val firstMethod = operation.methods?.get(0)
-        if (firstMethod == null) return '{}' 
+        if(firstMethod == null) return '{}'
         generateBehavior(firstMethod as Activity)
     }
-    
+
     def generateBehavior(Activity behavior) {
         generateAction(ActivityUtils.getRootAction(behavior))
     }
-    
+
     def dispatch CharSequence generateAction(StructuredActivityNode node) {
         '''{
             «ActivityUtils.findStatements(node).map[generateStatement].join('\n')»
         }'''
     }
-    
+
     def dispatch CharSequence generateAction(Action action) {
+
         // should never pick this version - a more specific variant should exist for all supported actions
         '''Unsupported «action.eClass.name»'''
     }
-    
+
     def dispatch CharSequence generateAction(CallOperationAction action) {
-        if (action.operation.static) return '''calling static operations still unsupported «action.operation.name»'''
-        
+        if(action.operation.static) return '''calling static operations still unsupported «action.operation.name»'''
+
         val target = action.target.source
         if (BasicTypeUtils.isBasicType(action.target.type))
             generateCallAsOperator(action)
-        else
-            '''«generateAction(target)».(«action.arguments.map[generateAction(source)].join(', ')»)'''    
+        else '''«generateAction(target)».(«action.arguments.map[generateAction(source)].join(', ')»)'''
     }
-    
+
     def generateCallAsOperator(CallOperationAction action) {
         val operator = switch (action.operation.name) {
-            case 'add' : '+'
-            case 'subtract' : '-'
-            case 'multiply' : '*'
-            case 'divide' : '/'
-            case 'minus' : '-'
-            case 'and' : '&&'
-            case 'or' : '||'
-            case 'not' : '!'
-            case 'lowerThan' : '<'
-            case 'greaterThan' : '>'
-            case 'lowerOrEquals' : '<='
-            case 'greaterOrEquals' : '>='
-            case 'equals' : '=='
-            case 'same' : '==='
+            case 'add': '+'
+            case 'subtract': '-'
+            case 'multiply': '*'
+            case 'divide': '/'
+            case 'minus': '-'
+            case 'and': '&&'
+            case 'or': '||'
+            case 'not': '!'
+            case 'lowerThan': '<'
+            case 'greaterThan': '>'
+            case 'lowerOrEquals': '<='
+            case 'greaterOrEquals': '>='
+            case 'equals': '=='
+            case 'same': '==='
         }
         switch (action.arguments.size()) {
             // unary operator
-            case 0 : '''«operator»«generateAction(action.target.source)»'''
-            case 1 : '''«generateAction(action.target.source)» «operator» «generateAction(action.arguments.head.source)»'''
-            default : '''Unsupported operation «action.operation.name»'''
+            case 0: '''«operator»«generateAction(action.target.source)»'''
+            case 1: '''«generateAction(action.target.source)» «operator» «generateAction(action.arguments.head.source)»'''
+            default: '''Unsupported operation «action.operation.name»'''
         }
     }
-    
+
     def getSource(InputPin pin) {
         ActivityUtils.getSource(pin).owner as Action
     }
-    
+
     def dispatch CharSequence generateAction(AddStructuralFeatureValueAction action) {
         val target = action.object.source
         val value = action.value.source
         val featureName = action.structuralFeature.name
-        
+
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
     }
-    
+
     def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
         val target = action.object.source
         val featureName = action.structuralFeature.name
         '''«generateAction(target)».«featureName»'''
     }
-    
+
     def dispatch CharSequence generateAction(ReadVariableAction action) {
         '''«action.variable.name»'''
     }
-    
+
     def dispatch CharSequence generateAction(ReadSelfAction action) {
         'this'
     }
-    
+
     def generateStatement(Action statementAction) {
-        '''«generateAction(statementAction)»;'''        
+        '''«generateAction(statementAction)»;'''
     }
-    
 
     def generateSchema(Class clazz) '''
-    {
-        «KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)].join(',\n')»
-    }
+        {
+            «KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)].join(',\n')»
+        }
     '''
 
     def generateSchemaAttribute(Property attribute) '''
@@ -151,12 +152,12 @@ class DomainModelGenerator {
                 type.typeName
             case Primitive:
                 switch (type.typeName) {
-                    case 'Integer' : 'Number'
-                    case 'Double' : 'Number'
-                    case 'Date' : 'Date'
-                    case 'String' : 'String'
-                    case 'Boolean' : 'Boolean'
-                    default : 'UNEXPECTED TYPE: «type.typeName»'
+                    case 'Integer': 'Number'
+                    case 'Double': 'Number'
+                    case 'Date': 'Date'
+                    case 'String': 'String'
+                    case 'Boolean': 'Boolean'
+                    default: 'UNEXPECTED TYPE: «type.typeName»'
                 }
             default:
                 'UNEXPECTED KIND: «type.kind»'
