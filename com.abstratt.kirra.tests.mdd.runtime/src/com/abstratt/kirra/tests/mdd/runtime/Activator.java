@@ -1,11 +1,10 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.osgi.service.resolver.BundleDescription;
-import org.eclipse.osgi.service.resolver.State;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
+import org.osgi.framework.Constants;
 
 public class Activator implements BundleActivator {
 
@@ -25,12 +24,14 @@ public class Activator implements BundleActivator {
         // nothing to do
     }
 
+    private Bundle getBundle(BundleContext context, String symbolicName) throws BundleException {    
+        for (Bundle current : context.getBundles())
+            if (symbolicName.equals(current.getSymbolicName()))
+                return current;
+        return null;
+    }
+
     private void ensureBundleStarted(BundleContext context, String symbolicName) throws BundleException {
-        State state = Platform.getPlatformAdmin().getState();
-        BundleDescription bundleDesc = state.getBundle(symbolicName, null);
-        if (bundleDesc == null)
-            throw new IllegalStateException("Could not find bundle " + symbolicName);
-        long bundleId = bundleDesc.getBundleId();
-        context.getBundle(bundleId).start();
+        getBundle(context, symbolicName).start();
     }
 }
