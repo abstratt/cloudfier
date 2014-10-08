@@ -13,7 +13,7 @@ public class Activator implements BundleActivator {
     @Override
     public void start(BundleContext context) {
         for (Bundle current : context.getBundles())
-            if (current.getBundleId() != context.getBundle().getBundleId() && current.getEntries().get(Constants.FRAGMENT_HOST) == null)
+            if (current.getBundleId() != context.getBundle().getBundleId() && current.getHeaders().get(Constants.FRAGMENT_HOST) == null)
                 try {
                     current.start();
                 } catch (BundleException e) {
