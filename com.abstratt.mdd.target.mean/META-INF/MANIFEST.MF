@@ -5,6 +5,7 @@ Bundle-Version: 1.120.1.qualifier
 Bundle-SymbolicName: com.abstratt.mdd.target.mean;singleton:=true
 Bundle-ActivationPolicy: lazy
 Require-Bundle: com.abstratt.mdd.target.core,
+ com.abstratt.mdd.target.query,
  org.eclipse.xtext.xbase.lib;bundle-version="2.7.0",
  com.abstratt.kirra.api,
  org.eclipse.uml2.uml,

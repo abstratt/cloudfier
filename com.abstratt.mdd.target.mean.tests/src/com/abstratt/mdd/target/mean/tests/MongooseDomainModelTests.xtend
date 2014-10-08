@@ -77,6 +77,97 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         ''', mapped)
     }
     
+    def testExtent() throws CoreException, IOException {
+        val source = '''
+        model crm;
+        
+        class Customer
+            attribute name : String;
+            static query allCustomers() : Customer[*];
+            begin
+                return Customer extent;
+            end;            
+        end;
+        end.
+        '''
+        parseAndCheck(source)
+
+        val mapped = map("crm::Customer")
+        
+        AssertHelper.assertStringsEqual(
+        '''
+        var customerSchema = new Schema({ 
+            name : String
+        }); 
+        customerSchema.statics.allCustomers = function (callback) {
+            this.model('Customer').find().exec(callback); 
+        };
+        var Customer = mongoose.model('Customer', customerSchema);      
+        ''', mapped)
+    }
+    
+    def testSelectByBooleanProperty() throws CoreException, IOException {
+        val source = '''
+        model crm;
+        
+        class Customer
+            attribute name : String;
+            attribute mvp : Boolean;
+            static query mvpCustomers() : Customer[*];
+            begin
+                return Customer extent.select((c : Customer) : Boolean { c.mvp = true});
+            end;            
+        end;
+        end.
+        '''
+        parseAndCheck(source)
+
+        val mapped = map("crm::Customer")
+        
+        AssertHelper.assertStringsEqual(
+        '''
+        var customerSchema = new Schema({  
+            name : String,
+            mvp : Boolean 
+        });
+        customerSchema.statics.mvpCustomers = function (callback) {
+            this.model('Customer').find().where('mvp').equals(true).exec(callback); 
+        };
+        var Customer = mongoose.model('Customer', customerSchema);      
+        ''', mapped)
+    }
+    
+
+    def testSelectByPropertyGreaterThan() throws CoreException, IOException {
+        val source = '''
+        model banking;
+        
+        class Account
+            attribute number : String;
+            attribute balance : Double;
+            static query bestAccounts(threshold : Double) : Account[*];
+            begin
+                return Account extent.select((a : Account) : Boolean { a.balance > threshold });
+            end;            
+        end;
+        end.
+        '''
+        parseAndCheck(source)
+
+        val mapped = map("banking::Account")
+        
+        AssertHelper.assertStringsEqual(
+        '''
+        var accountSchema = new Schema({  
+            number : String,
+            balance : Number
+        });
+        accountSchema.statics.bestAccounts = function (threshold, callback) {
+            this.model('Account').find().where('balance').gt(threshold).exec(callback); 
+        };
+        var Account = mongoose.model('Account', accountSchema);      
+        ''', mapped)
+    }
     
     override Properties createDefaultSettings() {
         val defaultSettings = super.createDefaultSettings()
