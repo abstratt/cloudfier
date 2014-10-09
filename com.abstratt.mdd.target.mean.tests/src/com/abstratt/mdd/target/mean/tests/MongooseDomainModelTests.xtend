@@ -51,7 +51,6 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
     def testAction() throws CoreException, IOException {
         val source = '''
         model simple;
-        
         class Class1
             attribute attr1 : Integer;
             operation incAttr1(value : Integer);
@@ -80,7 +79,6 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
     def testExtent() throws CoreException, IOException {
         val source = '''
         model crm;
-        
         class Customer
             attribute name : String;
             static query allCustomers() : Customer[*];
@@ -109,7 +107,6 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
     def testSelectByBooleanProperty() throws CoreException, IOException {
         val source = '''
         model crm;
-        
         class Customer
             attribute name : String;
             attribute mvp : Boolean;
@@ -141,7 +138,6 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
     def testSelectByPropertyGreaterThan() throws CoreException, IOException {
         val source = '''
         model banking;
-        
         class Account
             attribute number : String;
             attribute balance : Double;
@@ -168,6 +164,37 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         var Account = mongoose.model('Account', accountSchema);      
         ''', mapped)
     }
+
+    def _testAggregate() throws CoreException, IOException {
+        val source = '''
+        model banking;
+        class Account
+            attribute number : String;
+            attribute balance : Double;
+            static query totalBalance() : Double;
+            begin
+                return (Account extent.reduce((a : Account, total : Double) : Double { a.balance + total }, 0.0) as Double);
+            end;            
+        end;
+        end.
+        '''
+        parseAndCheck(source)
+
+        val mapped = map("banking::Account")
+        
+        AssertHelper.assertStringsEqual(
+        '''
+        var accountSchema = new Schema({  
+            number : String,
+            balance : Number
+        });
+        accountSchema.statics.bestAccounts = function (threshold, callback) {
+            this.model('Account').find().where('balance').gt(threshold).exec(callback); 
+        };
+        var Account = mongoose.model('Account', accountSchema);      
+        ''', mapped)
+    }
+
     
     override Properties createDefaultSettings() {
         val defaultSettings = super.createDefaultSettings()

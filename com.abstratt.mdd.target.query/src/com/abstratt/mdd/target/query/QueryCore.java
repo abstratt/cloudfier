@@ -1,7 +1,6 @@
 package com.abstratt.mdd.target.query;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.uml2.uml.Action;
@@ -14,7 +13,6 @@ import org.eclipse.uml2.uml.ReadExtentAction;
 import org.eclipse.uml2.uml.StructuredActivityNode;
 import org.eclipse.uml2.uml.Variable;
 
-import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 
