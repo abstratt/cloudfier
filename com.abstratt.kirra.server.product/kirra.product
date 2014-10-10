@@ -61,6 +61,7 @@
       <plugin id="com.abstratt.mdd.runtime.core"/>
       <plugin id="com.abstratt.mdd.target.core"/>
       <plugin id="com.abstratt.mdd.target.engine.gstring"/>
+      <plugin id="com.abstratt.mdd.target.mean"/>
       <plugin id="com.abstratt.modelrenderer"/>
       <plugin id="com.abstratt.nodestore"/>
       <plugin id="com.abstratt.nodestore.jdbc"/>
@@ -69,6 +70,7 @@
       <plugin id="com.abstratt.wrapped.postgresql"/>
       <plugin id="com.fasterxml.jackson.core.jackson-annotations"/>
       <plugin id="com.fasterxml.jackson.core.jackson-core"/>
+      <plugin id="com.google.guava"/>
       <plugin id="com.google.gson" version="2.2.4"/>
       <plugin id="com.ibm.icu"/>
       <plugin id="jackson-core-asl"/>
@@ -119,7 +121,10 @@
       <plugin id="org.eclipse.uml2.common"/>
       <plugin id="org.eclipse.uml2.types"/>
       <plugin id="org.eclipse.uml2.uml"/>
+      <plugin id="org.eclipse.uml2.uml.profile.l2"/>
+      <plugin id="org.eclipse.uml2.uml.profile.l3"/>
       <plugin id="org.eclipse.uml2.uml.resources"/>
+      <plugin id="org.eclipse.xtext.xbase.lib"/>
       <plugin id="org.hamcrest.core"/>
       <plugin id="org.json"/>
       <plugin id="org.junit"/>

@@ -8,8 +8,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Properties;
 import java.util.Set;
 
+import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -38,6 +40,8 @@ import org.restlet.resource.Post;
 import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.MDDCore;
+import com.abstratt.mdd.core.target.ITargetPlatform;
+import com.abstratt.mdd.core.target.TargetCore;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.TemplateUtils;
 import com.abstratt.pluginutils.LogUtils;
@@ -175,21 +179,13 @@ public class PublisherResource extends AbstractWorkspaceResource {
                 .append(timestamp).append("'>\n");
         for (String element : fileElements)
             workspaceMarkup.append("\t").append(element).append('\n');
-        MDDUtil.loadRepositoryProperties(MDDUtil.fromJavaToEMF(getWorkspaceDir(false).toURI()));
-        // for (String platformId : TargetCore.getPlatformIds(repoProperties)) {
-        // ITargetPlatform platform = TargetCore.getPlatform(repoProperties,
-        // platformId);
-        // if (MapUtils.getBooleanValue(platform.getProperties(), "testing"))
-        // continue;
-        // String generatorURI = baseReference
-        // .clone()
-        // .addSegment(platformId)
-        // .toString()
-        // .replace(WebFrontEnd.PUBLISHER_SEGMENT,
-        // WebFrontEnd.GENERATOR_SEGMENT);
-        // workspaceMarkup.append("\t<generator platform=\"" + platformId
-        // + "\" uri=\"" + generatorURI + "\"/>\n");
-        // }
+        Properties repoProperties = MDDUtil.loadRepositoryProperties(MDDUtil.fromJavaToEMF(getWorkspaceDir(false).toURI()));
+        for (String platformId : TargetCore.getPlatformIds(repoProperties)) {
+            ITargetPlatform platform = TargetCore.getPlatform(repoProperties, platformId);
+            String generatorURI = baseReference.clone().addSegment(platformId).toString()
+                    .replace(WebFrontEnd.PUBLISHER_SEGMENT, WebFrontEnd.GENERATOR_SEGMENT);
+            workspaceMarkup.append("\t<generator platform=\"" + platformId + "\" uri=\"" + generatorURI + "\"/>\n");
+        }
         String archiveURI = baseReference.getParentRef().addSegment(getWorkspaceDir(false).getName() + ".zip").toString();
         workspaceMarkup.append("<archive uri=\"" + archiveURI + "\"/>");
         if (includeClasses)
