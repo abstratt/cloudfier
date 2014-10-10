@@ -4,7 +4,6 @@ import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.target.mean.js.JSGenerator
-import com.abstratt.mdd.target.query.QueryCore
 import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddVariableValueAction
@@ -13,6 +12,7 @@ import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.StructuredActivityNode
@@ -20,9 +20,9 @@ import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static com.abstratt.kirra.TypeRef.TypeKind.*
+import static com.abstratt.mdd.target.mean.Utils.*
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static com.abstratt.mdd.target.mean.Utils.*
 
 class DomainModelGenerator extends JSGenerator {
 
@@ -33,38 +33,15 @@ class DomainModelGenerator extends JSGenerator {
 
         '''
             var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
-            «generateInstanceActions(entity, KirraHelper.getActions(entity))»
-            «generateQueries(entity, KirraHelper.getQueries(entity))»
+            «generateActionOperations(KirraHelper.getActions(entity))»
+            «generateQueryOperations(KirraHelper.getQueries(entity))»
             var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
         '''
     }
 
     def getSchemaVar(Class entity) '''«entity.name.toFirstLower»Schema'''
 
-    def generateQueries(Class entity, List<Operation> queries) {
-        queries.map[generateQueryOperation(entity, it)].join(',\n')
-    }
-    
-    def generateQueryOperation(Class entity, Operation query) {
-        val schemaVar = getSchemaVar(entity)
-        val parameters = KirraHelper.getParameters(query)
-        '''
-            «schemaVar».statics.«query.name» = function («parameters.map[name].join(', ')» «if (parameters.empty) '' else ', '»callback) {
-                «generateQueryOperationBody(entity, query)»
-            };
-        '''
-    }
-    
-    def generateQueryOperationBody(Class entity, Operation queryOperation) {
-        val firstMethod = queryOperation.methods?.get(0)
-        if(firstMethod == null) return '{}'
-        val query = new QueryCore().transformActivityToQuery(firstMethod as Activity);
-        val sourceModel = query.sourceType.name
-        '''
-        this.model('«sourceModel»').find()«query.filters.map[generateFilter].join('.')».exec(callback);
-        '''
-    }
-    
+
     /**
      * Generates the filtering of a query based on a predicate.
      */
@@ -112,19 +89,118 @@ class DomainModelGenerator extends JSGenerator {
     def dispatch CharSequence generateFilterAction(CallOperationAction action) {
         '''«generateFilterAction(action.target.sourceAction)».«action.operation.toQueryOperator»(«generateFilterAction(action.arguments.head.sourceAction)»)'''
     }
-
-    def generateInstanceActions(Class entity, List<Operation> actions) {
-        actions.map[generateInstanceActionOperation(entity, it)].join(',\n')
+    
+    def generateActionOperations(List<Operation> actions) {
+        actions.map[generateActionOperation(it)].join(',\n')
     }
 
-    def generateInstanceActionOperation(Class entity, Operation actionOperation) {
-        val schemaVar = getSchemaVar(entity)
+    def generateActionOperation(Operation actionOperation) {
+        val schemaVar = getSchemaVar(actionOperation.class_)
         val parameters = KirraHelper.getParameters(actionOperation)
         '''
-            «schemaVar».methods.«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionBehavior(entity, actionOperation)»;
+            «schemaVar».methods.«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionOperationBehavior(actionOperation)»;
         '''
     }
-
+    
+    def generateActionOperationBehavior(Operation action) {
+        val firstMethod = action.methods?.get(0)
+        if(firstMethod == null) return '{}'
+        generateAction((firstMethod as Activity).rootAction)
+    }
+    
+    def generateQueryOperations(List<Operation> queries) {
+        queries.map[generateQueryOperation(it)].join(',\n')
+    }
+    
+    def generateQueryOperation(Operation query) {
+        val schemaVar = getSchemaVar(query.class_)
+        val parameters = KirraHelper.getParameters(query)
+        '''
+            «schemaVar».statics.«query.name» = function («parameters.map[name].join(', ')») «generateQueryOperationBody(query)»;
+        '''
+    }
+    
+    def generateQueryOperationBody(Operation queryOperation) {
+        generateActionOperationBehavior(queryOperation)
+    }
+    
+    def dispatch CharSequence generateAction(ReadExtentAction action) {
+        '''this.model('«action.classifier.name»').find()'''
+    }
+    
+    override dispatch CharSequence generateAction(AddVariableValueAction action) {
+        if (action.variable.name == '') 
+            '''return «generateAction(action.value.sourceAction)».exec()'''
+        else
+            '''«action.variable.name» = «generateAction(action.value.sourceAction)».exec()'''
+    }
+    
+    override dispatch CharSequence generateAction(CallOperationAction action) {
+        generateCallOperationAction(action) 
+    }
+    
+    override generateCallOperationAction(CallOperationAction action) {
+        if (action.target == null) return ''
+        if (!action.target.multivalued)
+            super.generateCallOperationAction(action)
+        else 
+            switch action.operation.name {
+                case 'select' : generateSelect(action)
+                case 'collect' : generateCollect(action)
+                case 'reduce' : generateReduce(action)
+                case 'sum' : generateAggregation(action, "sum")
+                case 'max' : generateAggregation(action, "max")
+                case 'min' : generateAggregation(action, "min")
+                default : unsupportedElement(action)
+            }
+    }
+    
+    private def generateSelect(CallOperationAction action) {
+        '''«generateAction(action.target.sourceAction)»«generateFilter(action.arguments.head.sourceClosure)»'''
+    }
+    
+    private def generateCollect(CallOperationAction action) {
+        'collect'
+    }
+    
+    private def generateReduce(CallOperationAction action) {
+        'reduce'
+    }
+    
+    private def generateAggregation(CallOperationAction action, String operator) {
+        val transformer = action.arguments.head.sourceClosure
+        val rootAction = transformer.rootAction.findStatements.head.sourceAction 
+        if (rootAction instanceof ReadStructuralFeatureAction) {
+            val property = rootAction.structuralFeature 
+            '''
+            this.model('«action.target.type.name»').aggregate()
+              .group({ _id: null, result: { $«operator»: '$«property.name»' } })
+              .select('-id result')
+            '''
+        } else
+            unsupportedElement(transformer)
+    }
+    
+    def generateAggregation(Activity reductor) {
+        //TODO taking only first statement into account
+        val statementAction = reductor.rootAction.findStatements.head
+        if (statementAction instanceof CallOperationAction) generateAggregation(statementAction) else unsupportedElement(statementAction)
+    }
+    
+    def generateAggregation(CallOperationAction action) {
+        val aggregateOp = toAggregateOperator(action.operation)
+        '''
+        .group({ _id: null, result: { $«aggregateOp»: '$balance' } }).select('-id maxBalance')
+        '''
+    }
+    
+    private def toAggregateOperator(Operation operation) {
+        switch (operation.name) {
+            case 'sum': 'sum'
+            default : unsupportedElement(operation)
+        }
+    }
+    
     private def toQueryOperator(Operation operation) {
         switch (operation.name) {
             case 'and': 'and'

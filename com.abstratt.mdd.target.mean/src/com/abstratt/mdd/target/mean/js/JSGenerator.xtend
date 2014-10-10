@@ -2,11 +2,9 @@ package com.abstratt.mdd.target.mean.js
 
 import com.abstratt.mdd.core.util.BasicTypeUtils
 import org.eclipse.uml2.uml.Action
-import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
+import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.CallOperationAction
-import org.eclipse.uml2.uml.Class
-import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
@@ -18,12 +16,6 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
  * A UML-to-Javascript code generator.
  */
 class JSGenerator {
-    def generateActionBehavior(Class entity, Operation action) {
-        val firstMethod = action.methods?.get(0)
-        if(firstMethod == null) return '{}'
-        generateAction((firstMethod as Activity).rootAction)
-    }
-    
     def generateStatement(Action statementAction) {
         '''«generateAction(statementAction)»;'''
     }
@@ -35,18 +27,22 @@ class JSGenerator {
     }
 
     def dispatch CharSequence generateAction(Action action) {
-
         // should never pick this version - a more specific variant should exist for all supported actions
         '''Unsupported «action.eClass.name»'''
     }
 
     def dispatch CharSequence generateAction(CallOperationAction action) {
+        generateCallOperationAction(action)
+    }
+    
+    def generateCallOperationAction(CallOperationAction action) {
         if(action.operation.static) return '''calling static operations still unsupported «action.operation.name»'''
-
+        
         val target = action.target.sourceAction
         if (BasicTypeUtils.isBasicType(action.target.type))
             generateCallAsOperator(action)
-        else '''«generateAction(target)».(«action.arguments.map[generateAction(sourceAction)].join(', ')»)'''
+        else 
+            '''«generateAction(target)».(«action.arguments.map[generateAction(sourceAction)].join(', ')»)'''
     }
 
     private def generateCallAsOperator(CallOperationAction action) {
@@ -81,6 +77,13 @@ class JSGenerator {
         val featureName = action.structuralFeature.name
 
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
+    }
+    
+    def dispatch CharSequence generateAction(AddVariableValueAction action) {
+        if (action.variable.name == '') 
+            '''return «generateAction(action.value.sourceAction)»'''
+        else
+            '''«action.variable.name» = «generateAction(action.value.sourceAction)»'''
     }
 
     def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {

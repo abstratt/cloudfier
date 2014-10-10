@@ -5,6 +5,7 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.TargetCore
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
 import com.abstratt.mdd.core.tests.harness.AssertHelper
+import com.abstratt.mdd.target.mean.mongoose.DomainModelGenerator
 import java.io.IOException
 import java.util.Properties
 import junit.framework.Test
@@ -13,6 +14,8 @@ import org.eclipse.core.runtime.CoreException
 import org.eclipse.uml2.uml.UMLPackage
 
 class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
+
+    DomainModelGenerator generator = new DomainModelGenerator
 
     def static Test suite() {
         return new TestSuite(MongooseDomainModelTests)
@@ -90,18 +93,14 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val mapped = map("crm::Customer")
+        val mapped = generator.generateQueryOperation(getOperation("crm::Customer::allCustomers")).toString()
         
         AssertHelper.assertStringsEqual(
         '''
-        var customerSchema = new Schema({ 
-            name : String
-        }); 
-        customerSchema.statics.allCustomers = function (callback) {
-            this.model('Customer').find().exec(callback); 
+        customerSchema.statics.allCustomers = function () {
+            return this.model('Customer').find().exec(); 
         };
-        var Customer = mongoose.model('Customer', customerSchema);      
-        ''', mapped)
+        ''', mapped.toString)
     }
     
     def testSelectByBooleanProperty() throws CoreException, IOException {
@@ -119,18 +118,13 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val mapped = map("crm::Customer")
+        val mapped = generator.generateQueryOperation(getOperation("crm::Customer::mvpCustomers")).toString()
         
         AssertHelper.assertStringsEqual(
         '''
-        var customerSchema = new Schema({  
-            name : String,
-            mvp : Boolean 
-        });
-        customerSchema.statics.mvpCustomers = function (callback) {
-            this.model('Customer').find().where('mvp').equals(true).exec(callback); 
+        customerSchema.statics.mvpCustomers = function () {
+            return this.model('Customer').find().where('mvp').equals(true).exec(); 
         };
-        var Customer = mongoose.model('Customer', customerSchema);      
         ''', mapped)
     }
     
@@ -150,22 +144,17 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val mapped = map("banking::Account")
+        val mapped = generator.generateQueryOperation(getOperation("banking::Account::bestAccounts")).toString()
         
         AssertHelper.assertStringsEqual(
         '''
-        var accountSchema = new Schema({  
-            number : String,
-            balance : Number
-        });
-        accountSchema.statics.bestAccounts = function (threshold, callback) {
-            this.model('Account').find().where('balance').gt(threshold).exec(callback); 
+        accountSchema.statics.bestAccounts = function (threshold) {
+            return this.model('Account').find().where('balance').gt(threshold).exec(); 
         };
-        var Account = mongoose.model('Account', accountSchema);      
         ''', mapped)
     }
 
-    def _testAggregate() throws CoreException, IOException {
+    def testSum() throws CoreException, IOException {
         val source = '''
         model banking;
         class Account
@@ -173,28 +162,25 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
             attribute balance : Double;
             static query totalBalance() : Double;
             begin
-                return (Account extent.reduce((a : Account, total : Double) : Double { a.balance + total }, 0.0) as Double);
+                return Account extent.sum((a : Account) : Double { a.balance  });
             end;            
         end;
         end.
         '''
         parseAndCheck(source)
 
-        val mapped = map("banking::Account")
+        val mapped = generator.generateQueryOperation(getOperation("banking::Account::totalBalance")).toString()
         
         AssertHelper.assertStringsEqual(
         '''
-        var accountSchema = new Schema({  
-            number : String,
-            balance : Number
-        });
-        accountSchema.statics.bestAccounts = function (threshold, callback) {
-            this.model('Account').find().where('balance').gt(threshold).exec(callback); 
+        accountSchema.statics.totalBalance = function () {
+            return this.model('Account').aggregate()
+                .group({ _id: null, result: { $sum: '$balance' } })
+                .select('-id result')
+                .exec();
         };
-        var Account = mongoose.model('Account', accountSchema);      
         ''', mapped)
     }
-
     
     override Properties createDefaultSettings() {
         val defaultSettings = super.createDefaultSettings()

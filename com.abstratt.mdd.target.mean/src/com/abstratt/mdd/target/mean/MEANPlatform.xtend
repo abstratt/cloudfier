@@ -10,7 +10,7 @@ import org.eclipse.uml2.uml.Class
 class MEANPlatform implements ITopLevelMapper<Class> {
     
     override mapFileName(Class element) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        '''«element.name».js'''
     }
     
     override map(Class toMap) {
