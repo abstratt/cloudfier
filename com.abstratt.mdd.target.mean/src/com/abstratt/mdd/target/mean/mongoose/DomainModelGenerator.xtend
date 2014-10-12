@@ -7,22 +7,39 @@ import com.abstratt.mdd.target.mean.js.JSGenerator
 import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddVariableValueAction
+import org.eclipse.uml2.uml.AnyReceiveEvent
+import org.eclipse.uml2.uml.CallEvent
 import org.eclipse.uml2.uml.CallOperationAction
+import org.eclipse.uml2.uml.ChangeEvent
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.CreateObjectAction
+import org.eclipse.uml2.uml.Event
+import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadExtentAction
+import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.SignalEvent
+import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.StructuredActivityNode
+import org.eclipse.uml2.uml.TestIdentityAction
+import org.eclipse.uml2.uml.TimeEvent
+import org.eclipse.uml2.uml.Trigger
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
+import org.eclipse.uml2.uml.VisibilityKind
 
-import static com.abstratt.kirra.TypeRef.TypeKind.*
 import static com.abstratt.mdd.target.mean.Utils.*
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import org.eclipse.uml2.uml.Transition
+import org.eclipse.uml2.uml.Constraint
+import org.eclipse.uml2.uml.Vertex
+import org.eclipse.uml2.uml.State
 
 class DomainModelGenerator extends JSGenerator {
 
@@ -32,13 +49,31 @@ class DomainModelGenerator extends JSGenerator {
         val modelVar = modelName
 
         '''
+             var EventEmitter = require('events').EventEmit;        
+        
+            «entity.generateComment»
             var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
+            
+            /*************************** ACTIONS ***************************/
+            
             «generateActionOperations(KirraHelper.getActions(entity))»
+            
+            /*************************** QUERIES ***************************/
+            
             «generateQueryOperations(KirraHelper.getQueries(entity))»
+            
+            /*************************** PRIVATE OPS ***********************/
+            
+            «generatePrivateOperations(entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL])»
+            
+            /*************************** STATE MACHINES ********************/
+            
+            «entity.ownedBehaviors.filter[it instanceof StateMachine].map[it as StateMachine].head?.generateStateMachine(entity)»
             var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
+            «modelVar».emitter = new EventEmitter();
         '''
     }
-
+    
     def getSchemaVar(Class entity) '''«entity.name.toFirstLower»Schema'''
 
 
@@ -58,6 +93,7 @@ class DomainModelGenerator extends JSGenerator {
                 case 'String' : '''"«value.stringValue»"'''
                 default : value.stringValue
             }
+            LiteralNull : 'null'
             default : unsupportedElement(value)
         }
     }
@@ -67,8 +103,17 @@ class DomainModelGenerator extends JSGenerator {
         '''.where('«action.structuralFeature.name»')'''
     }
     
+    def dispatch CharSequence generateFilterAction(ReadLinkAction action) {
+        val fedEndData = action.endData?.head
+        '''.where('«fedEndData.end.otherEnd.name»')'''
+    }
+    
     def dispatch CharSequence generateFilterAction(ReadVariableAction action) {
         '''«action.variable.name»'''
+    }
+    
+    def dispatch CharSequence generateFilterAction(TestIdentityAction action) {
+        '''«generateFilterAction(action.first.sourceAction)».eq(«generateFilterAction(action.second.sourceAction)»)'''
     }
     
     def dispatch CharSequence generateFilterAction(ValueSpecificationAction action) {
@@ -90,33 +135,53 @@ class DomainModelGenerator extends JSGenerator {
         '''«generateFilterAction(action.target.sourceAction)».«action.operation.toQueryOperator»(«generateFilterAction(action.arguments.head.sourceAction)»)'''
     }
     
-    def generateActionOperations(List<Operation> actions) {
-        actions.map[generateActionOperation(it)].join(',\n')
+    def generatePrivateOperations(Iterable<Operation> operations) {
+        generateActionOperations(operations)
+    }
+    
+    def generateActionOperations(Iterable<Operation> actions) {
+        val result = new StringBuilder()
+        actions.forEach[
+            result.append(generateActionOperation(it))
+            result.append('\n')
+        ]
+        result
     }
 
     def generateActionOperation(Operation actionOperation) {
         val schemaVar = getSchemaVar(actionOperation.class_)
         val parameters = KirraHelper.getParameters(actionOperation)
+        val namespace = if (actionOperation.static) "statics" else "methods"
         '''
-            «schemaVar».methods.«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionOperationBehavior(actionOperation)»;
+        «actionOperation.generateComment»«schemaVar».«namespace».«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionOperationBehavior(actionOperation)»;
         '''
     }
     
     def generateActionOperationBehavior(Operation action) {
-        val firstMethod = action.methods?.get(0)
-        if(firstMethod == null) return '{}'
-        generateAction((firstMethod as Activity).rootAction)
+        val firstMethod = action.methods?.head
+        if(firstMethod == null) '{}' else generateActivity(firstMethod as Activity)
     }
     
-    def generateQueryOperations(List<Operation> queries) {
-        queries.map[generateQueryOperation(it)].join(',\n')
-    }
-    
-    def generateQueryOperation(Operation query) {
-        val schemaVar = getSchemaVar(query.class_)
-        val parameters = KirraHelper.getParameters(query)
+    def generateActivity(Activity activity) {
         '''
-            «schemaVar».statics.«query.name» = function («parameters.map[name].join(', ')») «generateQueryOperationBody(query)»;
+        {
+            «IF !activity.variables.empty»
+            var «activity.variables.map[name].join(', ')»;
+            «ENDIF»
+            «generateAction(activity.rootAction)»
+        }'''
+    }
+    
+    def generateQueryOperations(Iterable<Operation> queries) {
+        queries.map[generateQueryOperation(it)].join('\n')
+    }
+    
+    def generateQueryOperation(Operation queryOperation) {
+        val schemaVar = getSchemaVar(queryOperation.class_)
+        val parameters = KirraHelper.getParameters(queryOperation)
+        val namespace = if (queryOperation.static) "statics" else "methods"
+        '''
+            «schemaVar».«namespace».«queryOperation.name» = function («parameters.map[name].join(', ')») «generateQueryOperationBody(queryOperation)»;
         '''
     }
     
@@ -129,19 +194,25 @@ class DomainModelGenerator extends JSGenerator {
     }
     
     override dispatch CharSequence generateAction(AddVariableValueAction action) {
-        if (action.variable.name == '') 
-            '''return «generateAction(action.value.sourceAction)».exec()'''
+        val actionActivity = action.actionActivity
+        val execIfQuery = if (actionActivity.specification != null && KirraHelper.isFinder(actionActivity.specification as Operation)) '.exec()' else ''
+        
+        (if (action.variable.name == '') 
+            '''return «generateAction(action.value.sourceAction)»'''
         else
-            '''«action.variable.name» = «generateAction(action.value.sourceAction)».exec()'''
+            '''«action.variable.name» = «generateAction(action.value.sourceAction)»''') + execIfQuery
     }
     
     override dispatch CharSequence generateAction(CallOperationAction action) {
         generateCallOperationAction(action) 
     }
     
-    override generateCallOperationAction(CallOperationAction action) {
-        if (action.target == null) return ''
-        if (!action.target.multivalued)
+    override dispatch CharSequence generateAction(CreateObjectAction action) {
+        '''new «action.classifier.name»()'''
+    }
+    
+    protected override generateCallOperationAction(CallOperationAction action) {
+        if (action.target == null || !action.target.multivalued)
             super.generateCallOperationAction(action)
         else 
             switch action.operation.name {
@@ -217,15 +288,17 @@ class DomainModelGenerator extends JSGenerator {
     }
     
 
-    def generateSchema(Class clazz) '''
+    def generateSchema(Class clazz) {
+    '''
         {
             «KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)].join(',\n')»
         }
     '''
+    }
 
-    def generateSchemaAttribute(Property attribute) '''
-        «attribute.name» : «generateTypeDef(KirraMDDSchemaBuilder.convertType(attribute.type))»
-    '''
+    def generateSchemaAttribute(Property attribute) {
+        '''«attribute.name» : «generateTypeDef(KirraMDDSchemaBuilder.convertType(attribute.type))»'''
+    }
 
     def generateTypeDef(TypeRef type) {
         switch (type.kind) {
@@ -238,7 +311,8 @@ class DomainModelGenerator extends JSGenerator {
                     case 'Integer': 'Number'
                     case 'Double': 'Number'
                     case 'Date': 'Date'
-                    case 'String': 'String'
+                    case 'String' : 'String'
+                    case 'Memo' : 'String'
                     case 'Boolean': 'Boolean'
                     default: 'UNEXPECTED TYPE: «type.typeName»'
                 }
@@ -246,4 +320,75 @@ class DomainModelGenerator extends JSGenerator {
                 'UNEXPECTED KIND: «type.kind»'
         }
     }
+    
+    def generateStateMachine(StateMachine stateMachine, Class entity) {
+        val stateAttribute = entity.findStateProperties.head
+        if (stateAttribute == null) {
+            return ''
+        }
+        val triggersPerEvent = stateMachine.findTriggersPerEvent
+        triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')
+    }
+    
+    def generateEventHandler(Class entity, Property stateAttribute, Event event, List<Trigger> triggers) {
+        val modelName = entity.name;     
+        '''
+        «modelName».emitter.on('«event.generateName»', function () {
+            «IF (triggers.exists[(it.eContainer as Transition).guard != null])»
+            var guard;
+            «ENDIF»
+            «triggers.map[generateHandlerForTrigger(entity, stateAttribute, it)].join('\n')»
+        });     
+        '''
+    }
+    
+    def generateHandlerForTrigger(Class entity, Property stateAttribute, Trigger trigger) {
+        val transition = trigger.eContainer as Transition
+        val originalState = transition.source
+        val targetState = transition.target
+        '''
+        «transition.generateComment»if (this.«stateAttribute.name» == '«originalState.name»') {
+            «IF (transition.guard != null)»
+            guard = «generatePredicate(transition.guard)»;
+            if (guard()) {
+                «generateStateTransition(stateAttribute, originalState, targetState)»
+            }
+            «ELSE»
+            «generateStateTransition(stateAttribute, originalState, targetState)»
+            «ENDIF»
+        }'''
+    }
+    
+    def generateStateTransition(Property stateAttribute, Vertex originalState, Vertex newState) {
+        '''
+        «IF (originalState instanceof State)»
+            «IF (originalState.exit != null)»
+            (function() «generateActivity(originalState.exit as Activity)»)();
+            «ENDIF»
+        «ENDIF»
+        this.«stateAttribute.name» = '«newState.name»';
+        «IF (newState instanceof State)»
+            «IF (newState.entry != null)»
+            (function() «generateActivity(newState.entry as Activity)»)();
+            «ENDIF»
+        «ENDIF»
+        return;
+        '''
+    }
+    
+    def generatePredicate(Constraint predicate) {
+        val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
+        '''function() «generateActivity(predicateActivity)»'''        
+    }
+    
+    def generateName(Event e) {
+        switch (e) {
+            CallEvent : e.operation.name
+            SignalEvent : e.signal.name
+            TimeEvent : '_time'
+            AnyReceiveEvent : '_any'
+            default : unsupportedElement(e)
+        }
+    }
+    
 }

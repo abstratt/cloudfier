@@ -10,7 +10,8 @@ Require-Bundle: com.abstratt.mdd.target.core,
  org.eclipse.uml2.uml,
  com.abstratt.mdd.core,
  com.abstratt.kirra.mdd.core,
- com.abstratt.kirra.mdd.schema
+ com.abstratt.kirra.mdd.schema,
+ org.apache.commons.lang3
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.abstratt.mdd.target.mean,
  com.abstratt.mdd.target.mean.mongoose
