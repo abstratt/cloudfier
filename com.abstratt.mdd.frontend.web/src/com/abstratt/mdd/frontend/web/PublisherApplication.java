@@ -17,7 +17,9 @@ public class PublisherApplication extends Application {
         router.attach(WebFrontEnd.PUBLISHER_SEGMENT + "{workspace}/", PublisherResource.class);
         router.attach(WebFrontEnd.PUBLISHER_SEGMENT + "{workspace}.zip", ArchiverResource.class);
         router.attach(WebFrontEnd.PUBLISHER_SEGMENT + "{workspace}/{file}", FileResource.class);
+        router.attach(WebFrontEnd.GENERATOR_SEGMENT + "{workspace}/platform/{platform}", GeneratorResource.class);
         router.attach(WebFrontEnd.GENERATOR_SEGMENT + "{workspace}/platform/{platform}/mapper/{artifact}", GeneratorResource.class);
+               
         router.attach(WebFrontEnd.VALIDATOR_SEGMENT, ValidatorResource.class);
         router.attach(WebFrontEnd.FORMATTER_SEGMENT, FormatterResource.class);
         router.attach(WebFrontEnd.ANALYZER_SEGMENT, AnalyzerResource.class);

@@ -18,7 +18,7 @@
       </annotation>
       <complexType>
          <sequence>
-            <element ref="target"/>
+            <element ref="mapper" minOccurs="1" maxOccurs="unbounded"/>
          </sequence>
          <attribute name="point" type="string" use="required">
             <annotation>
@@ -47,33 +47,23 @@
       </complexType>
    </element>
 
-   <element name="target">
+   <element name="mapper">
       <complexType>
-         <attribute name="mapper" type="string" use="required">
+         <attribute name="class" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
                <appinfo>
-                  <meta.attribute kind="java" basedOn="com.abstratt.mdd.core.target.ILanguageMapper"/>
+                  <meta.attribute kind="java" basedOn=":com.abstratt.mdd.core.target.ITopLevelMapper"/>
                </appinfo>
             </annotation>
          </attribute>
-         <attribute name="id" type="string" use="required">
+         <attribute name="artifactType" type="string" use="required">
             <annotation>
                <documentation>
                   
                </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="formatter" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-               <appinfo>
-                  <meta.attribute kind="java" basedOn="com.abstratt.mdd.core.target.IOutputFormatter"/>
-               </appinfo>
             </annotation>
          </attribute>
       </complexType>

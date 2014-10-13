@@ -1,5 +1,6 @@
 package com.abstratt.mdd.internal.core.target;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
@@ -11,14 +12,12 @@ import com.abstratt.mdd.core.target.ITopLevelMapper;
 public class TargetPlatform implements ITargetPlatform {
 
     private String id;
-    private ITopLevelMapper<? extends NamedElement> mapper;
-    private String name;
+    private Map<String, ITopLevelMapper<? extends NamedElement>> mappers;
 
-    public TargetPlatform(String id, String name, ITopLevelMapper<? extends NamedElement> mapper) {
+    public TargetPlatform(String id, Map<String, ITopLevelMapper<? extends NamedElement>> mappers) {
         super();
         this.id = id;
-        this.name = name;
-        this.mapper = mapper;
+        this.mappers = mappers;
     }
 
     @Override
@@ -27,13 +26,13 @@ public class TargetPlatform implements ITargetPlatform {
     }
 
     @Override
-    public ITopLevelMapper<? extends NamedElement> getMapper(String artifact) {
-        return mapper;
+    public ITopLevelMapper<? extends NamedElement> getMapper(String mapperId) {
+        return mappers.get(mapperId);
     }
-
+    
     @Override
-    public String getName() {
-        return name;
+    public Collection<String> getArtifactTypes() {
+        return mappers.keySet();
     }
 
     @Override

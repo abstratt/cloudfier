@@ -1,4 +1,4 @@
-package com.abstratt.mdd.target.mean.js
+package com.abstratt.mdd.target.mean
 
 import com.abstratt.mdd.core.util.BasicTypeUtils
 import com.abstratt.mdd.target.mean.Utils
@@ -29,6 +29,7 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import org.eclipse.uml2.uml.Property
 
 /** 
  * A UML-to-Javascript code generator.
@@ -124,11 +125,12 @@ class JSGenerator {
     
     protected def generateCallOperationAction(CallOperationAction action) {
         val operation = action.operation
-        val classifier = action.operation.featuringClassifiers.head
-        if (BasicTypeUtils.isBasicType(classifier))
+        val classifier = action.operation.class_
+        // some operations have no class
+        if (classifier == null || BasicTypeUtils.isBasicType(classifier))
             generateBasicTypeOperationCall(classifier, action)
         else {
-            val target = if (operation.static) operation.featuringClassifiers.head.name else generateAction(action.target.sourceAction)
+            val target = if (operation.static) classifier.name else generateAction(action.target.sourceAction)
             '''«target».«operation.name»(«action.arguments.map[generateAction(sourceAction)].join(', ')»)'''
         }
     }
@@ -155,7 +157,7 @@ class JSGenerator {
         if (operator != null)
             switch (action.arguments.size()) {
                 // unary operator
-                case 0: '''«operator»«generateAction(action.target.sourceAction)»'''
+                case 0: '''«operator»(«generateAction(action.target.sourceAction)»)'''
                 case 1: '''«generateAction(action.target.sourceAction)» «operator» «generateAction(action.arguments.head.sourceAction)»'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
@@ -187,7 +189,7 @@ class JSGenerator {
     def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
         val feature = action.structuralFeature
         if (action.object == null) {
-            val clazz = action.structuralFeature.featuringClassifiers.head
+            val clazz = (action.structuralFeature as Property).class_
             '''«clazz.name».«feature.name»'''
         } else {
             val target = action.object.sourceAction

@@ -1,6 +1,7 @@
 package com.abstratt.mdd.core.target.spi;
 
-import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Map;
 
 import com.abstratt.mdd.core.target.ITargetPlatform;
@@ -26,10 +27,10 @@ public class CustomTargetPlatform implements ITargetPlatform {
     public ITopLevelMapper<?> getMapper(String artifactType) {
         return engine.createLanguageMapper(this);
     }
-
+    
     @Override
-    public String getName() {
-        return properties.get("name");
+    public Collection<String> getArtifactTypes() {
+        return Arrays.asList(id);
     }
 
     @Override

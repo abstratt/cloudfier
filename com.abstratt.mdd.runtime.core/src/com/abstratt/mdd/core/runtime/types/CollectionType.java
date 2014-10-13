@@ -180,7 +180,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
             partial = (BasicType) CollectionType.runClosureBehavior(context, reference, current, partial);
         return partial;
     }
-
+    
     public void remove(BasicType value) {
         backEnd.remove(value);
     }

@@ -27,6 +27,8 @@ public interface ITopLevelMapper<T extends NamedElement> extends IMapper<T> {
             return mapperName;
         }
     }
+    
+    boolean canMap(T element);
 
 //    public String applyChildMapper(String mapperName, Element element);
 

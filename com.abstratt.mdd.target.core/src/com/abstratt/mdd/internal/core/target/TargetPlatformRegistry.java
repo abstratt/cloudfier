@@ -2,6 +2,7 @@ package com.abstratt.mdd.internal.core.target;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -15,9 +16,9 @@ import org.eclipse.core.runtime.IExtension;
 import org.eclipse.core.runtime.IExtensionPoint;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.RegistryFactory;
+import org.eclipse.uml2.uml.NamedElement;
 
 import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.target.ILanguageMapper;
 import com.abstratt.mdd.core.target.ITargetPlatform;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.TargetCore;
@@ -30,11 +31,11 @@ public class TargetPlatformRegistry {
         return TargetPlatformRegistry.instance;
     }
 
-    private static final String ATTRIBUTE_ID = "id";
-    private static final String ATTRIBUTE_NAME = "name";
     private static final String ATTRIBUTE_ENGINE_ID = "id";
     private static final String ATTRIBUTE_ENGINE_CLASS = "class";
-    private static final String ATTRIBUTE_MAPPER = "mapper";
+    private static final String MAPPER_CLASS = "class";
+    private static final String MAPPER = "mapper";
+    private static final String ARTIFACT_TYPE = "artifactType";
 
     private static TargetPlatformRegistry instance = new TargetPlatformRegistry();
 
@@ -101,21 +102,23 @@ public class TargetPlatformRegistry {
         Map<String, ITargetPlatform> result = new HashMap<String, ITargetPlatform>();
         for (IExtension extension : extensions) {
             IConfigurationElement[] configElements = extension.getConfigurationElements();
+            Map<String, ITopLevelMapper<? extends NamedElement>> mappers = new LinkedHashMap<String, ITopLevelMapper<? extends NamedElement>>();
             for (IConfigurationElement configElement : configElements) {
-                String id = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ID);
-                String name = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_NAME);
-                ITopLevelMapper<?> mapper = null;
-                try {
-                    if (configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_MAPPER) != null)
-                        mapper = (ITopLevelMapper<?>) configElement.createExecutableExtension(TargetPlatformRegistry.ATTRIBUTE_MAPPER);
-                } catch (CoreException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                    break;
+                if (configElement.getName().equals(MAPPER)) {
+                    try {
+                        if (configElement.getAttribute(MAPPER_CLASS) != null) {
+                            ITopLevelMapper<?> mapper = (ITopLevelMapper<?>) configElement.createExecutableExtension(MAPPER_CLASS);
+                            mappers.put(configElement.getAttribute(ARTIFACT_TYPE), mapper);
+                        }
+                    } catch (CoreException e) {
+                        LogUtils.log(e.getStatus());
+                        break;
+                    }
                 }
-                ITargetPlatform targetPlatform = new TargetPlatform(id, name, mapper);
-                result.put(targetPlatform.getId(), targetPlatform);
             }
+            String id = extension.getSimpleIdentifier();
+            ITargetPlatform targetPlatform = new TargetPlatform(id, mappers);
+            result.put(targetPlatform.getId(), targetPlatform);
         }
         return result;
     }
@@ -130,9 +133,9 @@ public class TargetPlatformRegistry {
                 String id = configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ENGINE_ID);
                 ITransformationEngine engine = null;
                 try {
-                    if (configElement.getAttribute(TargetPlatformRegistry.ATTRIBUTE_ENGINE_CLASS) != null)
+                    if (configElement.getAttribute(ATTRIBUTE_ENGINE_CLASS) != null)
                         engine = (ITransformationEngine) configElement
-                                .createExecutableExtension(TargetPlatformRegistry.ATTRIBUTE_ENGINE_CLASS);
+                                .createExecutableExtension(ATTRIBUTE_ENGINE_CLASS);
                 } catch (CoreException e) {
                     // TODO Auto-generated catch block
                     e.printStackTrace();

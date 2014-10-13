@@ -59,6 +59,11 @@ public class GroovyLanguageMapper<T extends NamedElement> implements ITopLevelMa
             throw new RuntimeException(e);
         }
     }
+    
+    @Override
+    public boolean canMap(T element) {
+        return true;
+    }
 
 //    @Override
 //    public String getProperty(String key) {

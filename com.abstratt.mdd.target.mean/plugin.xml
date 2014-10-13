@@ -2,10 +2,12 @@
 <?eclipse version="3.2"?>
 <plugin>
    <extension
-         point="com.abstratt.mdd.target.core.targetPlatform">
-      <target
-            id="mean" 
-            mapper="com.abstratt.mdd.target.mean.MEANPlatform">
-      </target> 
+         point="com.abstratt.mdd.target.core.targetPlatform" id="mean" name="MEAN Platform">
+         <mapper artifactType="model"
+               class="com.abstratt.mdd.target.mean.ModelMapper">
+         </mapper>
+         <mapper artifactType="route"
+               class="com.abstratt.mdd.target.mean.RouteMapper">
+         </mapper>
    </extension>
 </plugin>

@@ -50,6 +50,11 @@ public class SQLMapper implements ITopLevelMapper<Operation> {
     }
     
     @Override
+    public boolean canMap(Operation element) {
+        return true;
+    }
+    
+    @Override
     public String mapFileName(Operation element) {
         throw new UnsupportedOperationException();
     }

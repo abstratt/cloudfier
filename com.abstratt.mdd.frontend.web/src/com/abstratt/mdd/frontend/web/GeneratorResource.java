@@ -3,6 +3,7 @@ package com.abstratt.mdd.frontend.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 import java.util.SortedMap;
@@ -38,16 +39,13 @@ public class GeneratorResource extends AbstractWorkspaceResource {
 			getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
 			return new StringRepresentation("platform parameter is required");
 		}
-        final String artifactType = (String) getRequestAttributes().get("artifact");
-        if (artifactType == null) {
-            getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return new StringRepresentation("mapper parameter is required");
-        }
         final ITargetPlatform platform = TargetCore.getPlatform(new Properties(), platformId);
         if (platform == null) {
             getResponse().setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return new StringRepresentation("platform not found: " + platformId);
         }
+        // it is optional - default is all mappers supported
+        final String artifactType = (String) getRequestAttributes().get("artifact");
 		File workspaceDir = getWorkspaceDir(true);
 		SortedMap<String, byte[]> result = RepositoryService.DEFAULT.runTask(MDDUtil.fromJavaToEMF(workspaceDir.toURI()), new Task<SortedMap<String, byte[]>>() {
 		    @Override
@@ -65,18 +63,25 @@ public class GeneratorResource extends AbstractWorkspaceResource {
 	                            return asClassifier.getName() != null && !TemplateUtils.isTemplateInstance(asClassifier) && (toGenerate.isEmpty() || toGenerate.contains(asClassifier.getQualifiedName()));
 	                        }
 	                    }, true);
-	            ITopLevelMapper<Classifier> mapper = platform.getMapper(artifactType);
+	            
+	            Collection<String> artifactTypesToGenerate = artifactType == null ? platform.getArtifactTypes() : Arrays.asList(artifactType);
 	            for (Classifier each : userClasses) {
-	                String mapped;
-	                try {
-	                    mapped = mapper.map(each).toString();
-	                } catch (RuntimeException re) {
-	                    log.error("Error rendering " + each.getQualifiedName() + " with platform "+ platform.getId() + " for repository " + repository.getBaseURI(), re);
-	                    mapped = re.toString();
-	                }
-	                if (mapped != null) {
-	                    String fileName = mapper.mapFileName(each);
-	                    result.put(fileName, mapped.getBytes());
+	                for (String artifactType : artifactTypesToGenerate) {
+	                    ITopLevelMapper<Classifier> mapper = platform.getMapper(artifactType);
+	                    ResourceUtils.ensure(mapper != null, "No mapper for artifact type: "+ artifactType, null);
+	                    if (mapper.canMap(each)) {
+    	                    String mapped;
+    	                    try {
+    	                        mapped = mapper.map(each).toString();
+    	                    } catch (RuntimeException re) {
+    	                        log.error("Error rendering " + each.getQualifiedName() + " with platform "+ platform.getId() + " for repository " + repository.getBaseURI(), re);
+    	                        mapped = re.toString();
+    	                    }
+    	                    if (mapped != null) {
+    	                        String fileName = mapper.mapFileName(each);
+    	                        result.put(fileName, mapped.getBytes());
+    	                    }
+	                    }
 	                }
 	            }
                 return result;
