@@ -1,9 +1,13 @@
 package com.abstratt.mdd.target.mean
 
+import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
+import com.abstratt.mdd.core.target.spi.TargetUtils
+import java.util.Arrays
 import java.util.List
 import org.eclipse.uml2.uml.Class
-import com.abstratt.kirra.mdd.core.KirraHelper
+import org.eclipse.uml2.uml.UMLPackage
 
 class ModelMapper implements ITopLevelMapper<Class> {
     
@@ -12,7 +16,7 @@ class ModelMapper implements ITopLevelMapper<Class> {
     }
     
     override map(Class toMap) {
-        new DomainModelGenerator().generateEntity(toMap)
+        new ModelGenerator().generateEntity(toMap)
     }
     
     override mapAll(List<Class> toMap) {
@@ -23,4 +27,7 @@ class ModelMapper implements ITopLevelMapper<Class> {
         KirraHelper.isEntity(element)
     }
     
+    override mapAll(IRepository repository) {
+        return TargetUtils.map(repository, this, UMLPackage.Literals.CLASS, Arrays.<String>asList());
+    }    
 }

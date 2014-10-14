@@ -5,19 +5,14 @@ import com.abstratt.mdd.core.target.ITopLevelMapper
 import java.util.List
 import org.eclipse.uml2.uml.Class
 
-class RouteMapper implements ITopLevelMapper<Class> {
-    
-    final String ROUTES_JS = "routes.js"
+class CRUDTestMapper implements ITopLevelMapper<Class> {
     
     override mapFileName(Class element) {
-        ""
+        throw new UnsupportedOperationException
     }
     
     override mapAll(IRepository repo) {
-        #{
-            (ROUTES_JS) -> 
-            new RouteGenerator(repo).generateRoutes
-        }
+        #{ 'test.js' -> new CRUDTestGenerator(repo).generateTests }
     }
     
     override map(Class toMap) {

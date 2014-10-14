@@ -10,6 +10,7 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -20,11 +21,13 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.eclipse.core.runtime.URIUtil;
 import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.NamedElement;
+import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.MappingException;
+import com.abstratt.mdd.core.target.spi.TargetUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.pluginutils.LogUtils;
 
@@ -99,6 +102,11 @@ public class GroovyLanguageMapper<T extends NamedElement> implements ITopLevelMa
             }
         });
     }
+    
+    @Override
+    public Map<String, CharSequence> mapAll(IRepository repository) {
+        return TargetUtils.map(repository, this, UMLPackage.Literals.CLASS, Arrays.<String>asList());
+    }
 
     private String invokeTemplate(ITemplateOperation operation) {
         GroovyClassLoader templateLoader = new GroovyClassLoader(getClass().getClassLoader());
@@ -149,6 +157,7 @@ public class GroovyLanguageMapper<T extends NamedElement> implements ITopLevelMa
         } finally {
             IOUtils.closeQuietly(contents);
             templateLoader.clearCache();
+            IOUtils.closeQuietly(templateLoader);
         }
         return null;
     }

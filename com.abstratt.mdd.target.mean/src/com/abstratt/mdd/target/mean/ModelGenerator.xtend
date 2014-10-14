@@ -40,7 +40,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import org.eclipse.uml2.uml.ReadSelfAction
 
-class DomainModelGenerator extends JSGenerator {
+class ModelGenerator extends JSGenerator {
 
     def generateEntity(Class entity) {
         val schemaVar = getSchemaVar(entity)
@@ -52,10 +52,14 @@ class DomainModelGenerator extends JSGenerator {
         val derivedAttributes = entity.allAttributes.filter[derived]
 
         '''
-            var EventEmitter = require('events').EventEmitter;        
+            var EventEmitter = require('events').EventEmitter;
+            var mongoose = require('mongoose');        
+            var Schema = mongoose.Schema;
         
             «entity.generateComment»
             var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
+            var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
+            «modelVar».emitter = new EventEmitter();
             
             «IF !actionOperations.empty»
             /*************************** ACTIONS ***************************/
@@ -82,8 +86,8 @@ class DomainModelGenerator extends JSGenerator {
             «entity.ownedBehaviors.filter[it instanceof StateMachine].map[it as StateMachine].head?.generateStateMachine(entity)»
             
             «ENDIF»
-            var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
-            «modelVar».emitter = new EventEmitter();
+            
+            var exports = module.exports = «modelVar»;
         '''
     }
     
@@ -317,23 +321,28 @@ class DomainModelGenerator extends JSGenerator {
     
 
     def generateSchema(Class clazz) {
+        val attributes = KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)]
+        val relationships = KirraHelper.getRelationships(clazz).map[generateSchemaRelationship(it)]
     '''
         {
-            «KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)].join(',\n')»
+            «(attributes + relationships).join(',\n')»
         }
     '''
     }
-
+    
     def generateSchemaAttribute(Property attribute) {
-        '''«attribute.name» : «generateTypeDef(KirraMDDSchemaBuilder.convertType(attribute.type))»'''
+        '''«attribute.name» : «generateTypeDef(attribute, KirraMDDSchemaBuilder.convertType(attribute.type))»'''
     }
 
-    def generateTypeDef(TypeRef type) {
+    def generateSchemaRelationship(Property relationship) {
+        val ref = '''{ type: Schema.Types.ObjectId, ref: '«relationship.type.name»' }'''
+        '''«relationship.name» : «if (relationship.isMultivalued) '''[«ref»]''' else ref»'''
+    }
+
+    def generateTypeDef(Property attribute, TypeRef type) {
         switch (type.kind) {
-            case Entity:
-                type.typeName
             case Enumeration:
-                type.typeName
+                'String'
             case Primitive:
                 switch (type.typeName) {
                     case 'Integer': 'Number'

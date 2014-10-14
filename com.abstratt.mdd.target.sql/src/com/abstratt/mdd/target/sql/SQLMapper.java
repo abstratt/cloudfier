@@ -2,7 +2,9 @@ package com.abstratt.mdd.target.sql;
 
 import static com.abstratt.mdd.core.util.ActivityUtils.getBodyNode;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.uml2.uml.Activity;
@@ -11,11 +13,14 @@ import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Property;
+import org.eclipse.uml2.uml.UMLPackage;
 
+import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.target.IMappingContext.Style;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.spi.MapperFinder;
 import com.abstratt.mdd.core.target.spi.MappingContext;
+import com.abstratt.mdd.core.target.spi.TargetUtils;
 import com.abstratt.mdd.target.query.Join;
 import com.abstratt.mdd.target.query.Query;
 import com.abstratt.mdd.target.query.QueryCore;
@@ -52,6 +57,11 @@ public class SQLMapper implements ITopLevelMapper<Operation> {
     @Override
     public boolean canMap(Operation element) {
         return true;
+    }
+    
+    @Override
+    public Map<String, CharSequence> mapAll(IRepository repository) {
+        return TargetUtils.map(repository, this, UMLPackage.Literals.CLASS, Arrays.<String>asList());
     }
     
     @Override

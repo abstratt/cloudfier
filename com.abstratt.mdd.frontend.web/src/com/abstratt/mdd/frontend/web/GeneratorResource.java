@@ -2,17 +2,16 @@ package com.abstratt.mdd.frontend.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
 import org.eclipse.uml2.uml.Classifier;
-import org.eclipse.uml2.uml.UMLPackage;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
@@ -27,7 +26,6 @@ import com.abstratt.mdd.core.target.ITargetPlatform;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.target.TargetCore;
 import com.abstratt.mdd.core.util.MDDUtil;
-import com.abstratt.mdd.core.util.TemplateUtils;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.Task;
 
@@ -47,42 +45,23 @@ public class GeneratorResource extends AbstractWorkspaceResource {
         // it is optional - default is all mappers supported
         final String artifactType = (String) getRequestAttributes().get("artifact");
 		File workspaceDir = getWorkspaceDir(true);
-		SortedMap<String, byte[]> result = RepositoryService.DEFAULT.runTask(MDDUtil.fromJavaToEMF(workspaceDir.toURI()), new Task<SortedMap<String, byte[]>>() {
+		SortedMap<String, byte[]> result = RepositoryService.DEFAULT.runTask(MDDUtil.fromJavaToEMF(workspaceDir.toURI()), new Task<SortedMap<String,  byte[]>>() {
 		    @Override
-		    public SortedMap<String, byte[]> run(Resource<?> resource) {
+		    public SortedMap<String,  byte[]> run(Resource<?> resource) {
 		        IRepository repository = RepositoryService.DEFAULT.getCurrentRepository();
-		        final List<String> toGenerate = Arrays.asList(getQuery().getValuesArray("class"));
-		        SortedMap<String, byte[]> result = new TreeMap<String, byte[]>();
-	            final List<Classifier> userClasses = repository.findAll(
-	                    new EObjectCondition() {
-	                        @Override
-	                        public boolean isSatisfied(EObject eObject) {
-	                            if (UMLPackage.Literals.CLASS != eObject.eClass())
-	                                return false;
-	                            Classifier asClassifier = (Classifier) eObject;
-	                            return asClassifier.getName() != null && !TemplateUtils.isTemplateInstance(asClassifier) && (toGenerate.isEmpty() || toGenerate.contains(asClassifier.getQualifiedName()));
-	                        }
-	                    }, true);
-	            
+		        SortedMap<String,  byte[]> result = new TreeMap<String, byte[]>();
 	            Collection<String> artifactTypesToGenerate = artifactType == null ? platform.getArtifactTypes() : Arrays.asList(artifactType);
-	            for (Classifier each : userClasses) {
-	                for (String artifactType : artifactTypesToGenerate) {
-	                    ITopLevelMapper<Classifier> mapper = platform.getMapper(artifactType);
-	                    ResourceUtils.ensure(mapper != null, "No mapper for artifact type: "+ artifactType, null);
-	                    if (mapper.canMap(each)) {
-    	                    String mapped;
-    	                    try {
-    	                        mapped = mapper.map(each).toString();
-    	                    } catch (RuntimeException re) {
-    	                        log.error("Error rendering " + each.getQualifiedName() + " with platform "+ platform.getId() + " for repository " + repository.getBaseURI(), re);
-    	                        mapped = re.toString();
-    	                    }
-    	                    if (mapped != null) {
-    	                        String fileName = mapper.mapFileName(each);
-    	                        result.put(fileName, mapped.getBytes());
-    	                    }
-	                    }
-	                }
+                for (String artifactType : artifactTypesToGenerate) {
+                    ITopLevelMapper<Classifier> mapper = platform.getMapper(artifactType);
+                    try {
+                        for (Map.Entry<String, CharSequence> entry : mapper.mapAll(repository).entrySet())
+                            result.put(entry.getKey(), entry.getValue().toString().getBytes());
+                    } catch (RuntimeException re) {
+                        log.error("Error mapping to platform "+ platform.getId() + " and artifact type " + artifactType + " for repository " + repository.getBaseURI(), re);
+                        StringWriter out = new StringWriter();
+                        re.printStackTrace(new PrintWriter(out));
+                        result.put("_error_" + artifactType, out.toString().getBytes());
+                    }
 	            }
                 return result;
 		    }

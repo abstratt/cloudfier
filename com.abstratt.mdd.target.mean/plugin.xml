@@ -4,10 +4,12 @@
    <extension
          point="com.abstratt.mdd.target.core.targetPlatform" id="mean" name="MEAN Platform">
          <mapper artifactType="model"
-               class="com.abstratt.mdd.target.mean.ModelMapper">
-         </mapper>
+               class="com.abstratt.mdd.target.mean.ModelMapper"/>
          <mapper artifactType="route"
-               class="com.abstratt.mdd.target.mean.RouteMapper">
-         </mapper>
+               class="com.abstratt.mdd.target.mean.RouteMapper"/>
+         <mapper artifactType="base"
+               class="com.abstratt.mdd.target.mean.ApplicationMapper"/>
+         <mapper artifactType="test"
+               class="com.abstratt.mdd.target.mean.CRUDTestMapper"/>
    </extension>
 </plugin>

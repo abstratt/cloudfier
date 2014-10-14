@@ -1,6 +1,11 @@
 package com.abstratt.mdd.core.target;
 
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.uml2.uml.NamedElement;
+
+import com.abstratt.mdd.core.IRepository;
 
 /** Transforms a UML element into text. */
 public interface ITopLevelMapper<T extends NamedElement> extends IMapper<T> {
@@ -39,6 +44,9 @@ public interface ITopLevelMapper<T extends NamedElement> extends IMapper<T> {
 //    public Map<String, String> getFormalArgs(String mapperName);
 
     public String mapFileName(T element);
-
+    
+    public Map<String, CharSequence> mapAll(IRepository repo);
+    
+    
 //    String getProperty(String key);
 }
