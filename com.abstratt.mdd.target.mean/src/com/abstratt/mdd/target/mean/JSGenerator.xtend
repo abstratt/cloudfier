@@ -30,6 +30,8 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 import org.eclipse.uml2.uml.Property
+import java.util.Map
+import java.util.Collection
 
 /** 
  * A UML-to-Javascript code generator.
@@ -217,6 +219,31 @@ class JSGenerator {
             default : Utils.unsupportedElement(value)
         }
     }
+    
+    def dispatch CharSequence generatePrimitiveValue(String value) {
+        '''«value»'''
+    }
+    
+    def dispatch CharSequence generatePrimitiveValue(Integer value) {
+        '''«value»'''
+    }
+    
+    def dispatch CharSequence generatePrimitiveValue(Boolean value) {
+        '''«value»'''
+    }
+    
+    def dispatch CharSequence generatePrimitiveValue(Map<String, Object> value) {
+        '''
+        {
+            «value.entrySet.map['''«it.key» : «generatePrimitiveValue(it.value)»'''].join(',\n')»
+        }
+        '''.toString.trim
+    }
+    
+    def dispatch CharSequence generatePrimitiveValue(Collection<?> toRender) {
+        '''[«toRender.map[generatePrimitiveValue(it)].join(', ')»]'''
+    } 
+    
     
     def dispatch CharSequence generateAction(TestIdentityAction action) {
         '''«generateAction(action.first.sourceAction)» == «generateAction(action.second.sourceAction)»'''

@@ -279,7 +279,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     }
 
     public static TypeKind getKind(Type umlType) {
-        if (umlType instanceof Enumeration || umlType instanceof StateMachine)
+        if (KirraHelper.isEnumeration(umlType))
             return TypeKind.Enumeration;
         if (KirraHelper.isService(umlType))
             return TypeKind.Service;
@@ -298,19 +298,8 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     }
 
     private void setTypeInfo(com.abstratt.kirra.TypedElement<?> typedElement, Type umlType) {
-        if (umlType instanceof Enumeration) {
-            Enumeration umlEnum = (Enumeration) umlType;
-            EList<EnumerationLiteral> umlLiterals = umlEnum.getOwnedLiterals();
-            List<String> enumValues = new ArrayList<String>(umlLiterals.size());
-            for (EnumerationLiteral literal : umlLiterals)
-                enumValues.add(literal.getName());
-            typedElement.setEnumerationLiterals(enumValues);
-        } else if (umlType instanceof StateMachine) {
-            List<String> enumValues = new ArrayList<String>();
-            for (Vertex literal : StateMachineUtils.getVertices((StateMachine) umlType))
-                enumValues.add(literal.getName());
-            typedElement.setEnumerationLiterals(enumValues);
-        }
+        if (umlType instanceof Enumeration || umlType instanceof StateMachine)
+            typedElement.setEnumerationLiterals(KirraHelper.getEnumerationLiterals(umlType));
         typedElement.setTypeRef(convertType(umlType));
     }
 }

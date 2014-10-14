@@ -19,6 +19,7 @@ import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.ReadLinkAction
+import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.SignalEvent
@@ -36,9 +37,11 @@ import org.eclipse.uml2.uml.VisibilityKind
 
 import static com.abstratt.mdd.target.mean.Utils.*
 
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.ReadSelfAction
+import java.util.Map
+import org.eclipse.uml2.uml.Enumeration
 
 class ModelGenerator extends JSGenerator {
 
@@ -46,8 +49,8 @@ class ModelGenerator extends JSGenerator {
         val schemaVar = getSchemaVar(entity)
         val modelName = entity.name
         val modelVar = modelName
-        val queryOperations = KirraHelper.getQueries(entity)
-        val actionOperations = KirraHelper.getActions(entity)
+        val queryOperations = entity.queries
+        val actionOperations = entity.actions
         val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
         val derivedAttributes = entity.allAttributes.filter[derived]
 
@@ -64,12 +67,12 @@ class ModelGenerator extends JSGenerator {
             «IF !actionOperations.empty»
             /*************************** ACTIONS ***************************/
             
-            «generateActionOperations(KirraHelper.getActions(entity))»
+            «generateActionOperations(entity.actions)»
             «ENDIF»
             «IF !queryOperations.empty»
             /*************************** QUERIES ***************************/
             
-            «generateQueryOperations(KirraHelper.getQueries(entity))»
+            «generateQueryOperations(entity.queries)»
             «ENDIF»
             «IF !derivedAttributes.empty»
             /*************************** DERIVED PROPERTIES ****************/
@@ -183,7 +186,7 @@ class ModelGenerator extends JSGenerator {
 
     def generateActionOperation(Operation actionOperation) {
         val schemaVar = getSchemaVar(actionOperation.class_)
-        val parameters = KirraHelper.getParameters(actionOperation)
+        val parameters = actionOperation.parameters
         val namespace = if (actionOperation.static) "statics" else "methods"
         '''
         «actionOperation.generateComment»«schemaVar».«namespace».«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionOperationBehavior(actionOperation)»;
@@ -211,7 +214,7 @@ class ModelGenerator extends JSGenerator {
     
     def generateQueryOperation(Operation queryOperation) {
         val schemaVar = getSchemaVar(queryOperation.class_)
-        val parameters = KirraHelper.getParameters(queryOperation)
+        val parameters = queryOperation.parameters
         val namespace = if (queryOperation.static) "statics" else "methods"
         '''
             «schemaVar».«namespace».«queryOperation.name» = function («parameters.map[name].join(', ')») «generateQueryOperationBody(queryOperation)»;
@@ -228,7 +231,7 @@ class ModelGenerator extends JSGenerator {
     
     override dispatch CharSequence generateAction(AddVariableValueAction action) {
         val actionActivity = action.actionActivity
-        val execIfQuery = if (actionActivity.specification != null && KirraHelper.isFinder(actionActivity.specification as Operation)) '.exec()' else ''
+        val execIfQuery = if (actionActivity.specification != null && (actionActivity.specification as Operation).finder) '.exec()' else ''
         
         (if (action.variable.name == '') 
             '''return «generateAction(action.value.sourceAction)»'''
@@ -321,7 +324,7 @@ class ModelGenerator extends JSGenerator {
     
 
     def generateSchema(Class clazz) {
-        val attributes = KirraHelper.getProperties(clazz).map[generateSchemaAttribute(it)]
+        val attributes = clazz.properties.map[generateSchemaAttribute(it)]
         val relationships = KirraHelper.getRelationships(clazz).map[generateSchemaRelationship(it)]
     '''
         {
@@ -331,12 +334,23 @@ class ModelGenerator extends JSGenerator {
     }
     
     def generateSchemaAttribute(Property attribute) {
-        '''«attribute.name» : «generateTypeDef(attribute, KirraMDDSchemaBuilder.convertType(attribute.type))»'''
+        val attributeDef = newLinkedHashMap()
+        val typeDef = generateTypeDef(attribute, KirraMDDSchemaBuilder.convertType(attribute.type))
+        attributeDef.put('type', typeDef)
+        if (attribute.required)
+            attributeDef.put('required', true)
+        if (attribute.type.enumeration)
+            attributeDef.put('enum', attribute.type.enumerationLiterals)
+        '''«attribute.name» : «generatePrimitiveValue(attributeDef)»'''
     }
 
     def generateSchemaRelationship(Property relationship) {
-        val ref = '''{ type: Schema.Types.ObjectId, ref: '«relationship.type.name»' }'''
-        '''«relationship.name» : «if (relationship.isMultivalued) '''[«ref»]''' else ref»'''
+        val relationshipDef = newLinkedHashMap()
+        relationshipDef.put('type', 'Schema.Types.ObjectId')
+        relationshipDef.put('ref', '''"«relationship.type.name»"''')
+        if (relationship.required)
+            relationshipDef.put('required', true)
+        '''«relationship.name» : «if (relationship.multivalued) #[generatePrimitiveValue(relationshipDef)] else generatePrimitiveValue(relationshipDef)»'''
     }
 
     def generateTypeDef(Property attribute, TypeRef type) {
