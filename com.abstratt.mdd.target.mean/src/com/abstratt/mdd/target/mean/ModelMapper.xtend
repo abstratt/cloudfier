@@ -1,33 +1,34 @@
 package com.abstratt.mdd.target.mean
 
-import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
-import com.abstratt.mdd.core.target.spi.TargetUtils
-import java.util.Arrays
 import java.util.List
 import org.eclipse.uml2.uml.Class
-import org.eclipse.uml2.uml.UMLPackage
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class ModelMapper implements ITopLevelMapper<Class> {
+    
+    private ModelGenerator generator = new ModelGenerator()
     
     override mapFileName(Class element) {
         '''models/«element.name».js'''
     }
     
     override map(Class toMap) {
-        new ModelGenerator().generateEntity(toMap)
+        throw new UnsupportedOperationException
     }
     
     override mapAll(List<Class> toMap) {
-        toMap.map[map].join('\n')
+        throw new UnsupportedOperationException
     }
     
     override canMap(Class element) {
-        KirraHelper.isEntity(element)
+        throw new UnsupportedOperationException
     }
     
     override mapAll(IRepository repository) {
-        return TargetUtils.map(repository, this, UMLPackage.Literals.CLASS, Arrays.<String>asList());
+        val appPackages = repository.getTopLevelPackages(null).applicationPackages
+        val topLevelEntities = appPackages.entities.filter[it.topLevel]
+        return topLevelEntities.toMap[mapFileName(it)].mapValues[generator.generateEntity(it)]
     }    
 }

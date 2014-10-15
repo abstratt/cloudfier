@@ -40,8 +40,7 @@ import static com.abstratt.mdd.target.mean.Utils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import java.util.Map
-import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.Classifier
 
 class ModelGenerator extends JSGenerator {
 
@@ -58,6 +57,8 @@ class ModelGenerator extends JSGenerator {
             var EventEmitter = require('events').EventEmitter;
             var mongoose = require('mongoose');        
             var Schema = mongoose.Schema;
+            var cls = require('continuation-local-storage');
+            
         
             «entity.generateComment»
             var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
@@ -175,8 +176,9 @@ class ModelGenerator extends JSGenerator {
         if (defaultValue == null)
             return ''
         val derivation = defaultValue.resolveBehaviorReference as Activity
+        val prefix = if (derivedAttribute.type.name == 'Boolean') 'is' else 'get'
         '''
-        «derivedAttribute.generateComment»«schemaVar».«namespace».get«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
+        «derivedAttribute.generateComment»«schemaVar».«namespace».«prefix»«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
         '''
     }
     
@@ -197,17 +199,7 @@ class ModelGenerator extends JSGenerator {
         val firstMethod = action.methods?.head
         if(firstMethod == null) '{}' else generateActivity(firstMethod as Activity)
     }
-    
-    def generateActivity(Activity activity) {
-        '''
-        {
-            «IF !activity.variables.empty»
-            var «activity.variables.map[name].join(', ')»;
-            «ENDIF»
-            «generateAction(activity.rootAction)»
-        }'''
-    }
-    
+
     def generateQueryOperations(Iterable<Operation> queries) {
         queries.map[generateQueryOperation(it)].join('\n')
     }
@@ -229,14 +221,11 @@ class ModelGenerator extends JSGenerator {
         '''this.model('«action.classifier.name»').find()'''
     }
     
-    override dispatch CharSequence generateAction(AddVariableValueAction action) {
+    override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
         val actionActivity = action.actionActivity
         val execIfQuery = if (actionActivity.specification != null && (actionActivity.specification as Operation).finder) '.exec()' else ''
         
-        (if (action.variable.name == '') 
-            '''return «generateAction(action.value.sourceAction)»'''
-        else
-            '''«action.variable.name» = «generateAction(action.value.sourceAction)»''') + execIfQuery
+        super.generateAddVariableValueAction(action) + execIfQuery
     }
     
     override dispatch CharSequence generateAction(CallOperationAction action) {
@@ -247,6 +236,19 @@ class ModelGenerator extends JSGenerator {
         '''new «action.classifier.name»()'''
     }
     
+    override generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
+        val operation = action.operation
+        
+        if (classifier != null)
+            return switch (classifier.qualifiedName) {
+                case 'mdd_types::System' : switch (operation.name) {
+                    case 'user' : '''cls.getNamespace('currentUser')'''
+                }
+                default: super.generateBasicTypeOperationCall(classifier, action)
+            }
+        super.generateBasicTypeOperationCall(classifier, action)         
+    }
+    
     protected override generateCallOperationAction(CallOperationAction action) {
         if (action.target == null || !action.target.multivalued)
             super.generateCallOperationAction(action)
@@ -255,9 +257,14 @@ class ModelGenerator extends JSGenerator {
                 case 'select' : generateSelect(action)
                 case 'collect' : generateCollect(action)
                 case 'reduce' : generateReduce(action)
+                case 'size' : generateCount(action)
+                case 'forEach' : generateForEach(action)
+                case 'isEmpty' : generateIsEmpty(action)
+                case 'any' : generateExists(action)
                 case 'sum' : generateAggregation(action, "sum")
                 case 'max' : generateAggregation(action, "max")
                 case 'min' : generateAggregation(action, "min")
+                case 'includes' : generateAggregation(action, "in")
                 default : unsupportedElement(action)
             }
     }
@@ -272,6 +279,22 @@ class ModelGenerator extends JSGenerator {
     
     private def generateReduce(CallOperationAction action) {
         'reduce'
+    }
+    
+    private def generateCount(CallOperationAction action) {
+        'count'
+    }
+    
+    private def generateForEach(CallOperationAction action) {
+        'forEach'
+    }
+    
+    private def generateIsEmpty(CallOperationAction action) {
+        'isEmpty'
+    }
+    
+    private def generateExists(CallOperationAction action) {
+        'count'
     }
     
     private def generateAggregation(CallOperationAction action, String operator) {
@@ -323,14 +346,14 @@ class ModelGenerator extends JSGenerator {
     }
     
 
-    def generateSchema(Class clazz) {
+    def CharSequence generateSchema(Class clazz) {
         val attributes = clazz.properties.map[generateSchemaAttribute(it)]
-        val relationships = KirraHelper.getRelationships(clazz).map[generateSchemaRelationship(it)]
-    '''
+        val relationships = KirraHelper.getRelationships(clazz).filter[!it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
+        val subschemas = KirraHelper.getRelationships(clazz).filter[it.childRelationship].map[generateSubSchema(it)]
+        '''
         {
-            «(attributes + relationships).join(',\n')»
-        }
-    '''
+            «(attributes + relationships + subschemas).join(',\n')»
+        }'''
     }
     
     def generateSchemaAttribute(Property attribute) {
@@ -340,7 +363,7 @@ class ModelGenerator extends JSGenerator {
         if (attribute.required)
             attributeDef.put('required', true)
         if (attribute.type.enumeration)
-            attributeDef.put('enum', attribute.type.enumerationLiterals)
+            attributeDef.put('enum', attribute.type.enumerationLiterals.map['''"«it»"'''])
         '''«attribute.name» : «generatePrimitiveValue(attributeDef)»'''
     }
 
@@ -351,6 +374,11 @@ class ModelGenerator extends JSGenerator {
         if (relationship.required)
             relationshipDef.put('required', true)
         '''«relationship.name» : «if (relationship.multivalued) #[generatePrimitiveValue(relationshipDef)] else generatePrimitiveValue(relationshipDef)»'''
+    }
+    
+    def generateSubSchema(Property relationship) {
+        val subSchema = generateSchema(relationship.type as Class)
+        '''«relationship.name» : «if (relationship.multivalued) '''[«subSchema»]''' else subSchema»'''
     }
 
     def generateTypeDef(Property attribute, TypeRef type) {

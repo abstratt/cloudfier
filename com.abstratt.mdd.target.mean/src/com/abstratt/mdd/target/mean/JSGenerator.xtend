@@ -1,12 +1,14 @@
 package com.abstratt.mdd.target.mean
 
-import com.abstratt.mdd.core.util.BasicTypeUtils
-import com.abstratt.mdd.target.mean.Utils
+import java.util.Collection
+import java.util.Map
 import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.uml2.uml.Action
+import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.CallOperationAction
+import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Clause
 import org.eclipse.uml2.uml.ConditionalNode
@@ -15,23 +17,29 @@ import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.Element
+import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
+import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.SendSignalAction
+import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.TestIdentityAction
+import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import org.eclipse.uml2.uml.Property
-import java.util.Map
-import java.util.Collection
+import org.eclipse.uml2.uml.OpaqueExpression
+import org.eclipse.uml2.uml.InstanceValue
+import org.eclipse.uml2.uml.EnumerationLiteral
 
 /** 
  * A UML-to-Javascript code generator.
@@ -94,7 +102,7 @@ class JSGenerator {
     }
 
     def dispatch CharSequence generateAction(CallOperationAction action) {
-        '''/*COA*/ «generateCallOperationAction(action)»'''
+        generateCallOperationAction(action)
     }
     
     def dispatch CharSequence generateAction(SendSignalAction action) {
@@ -113,7 +121,9 @@ class JSGenerator {
     
     def dispatch CharSequence generateAction(DestroyLinkAction action) {
         val endData = action.endData.head
-        '''delete «endData.value.sourceAction.generateAction».«endData.end.name»'''
+        '''
+        «endData.value.sourceAction.generateAction».«endData.end.otherEnd.name» = null;
+        «endData.value.sourceAction.generateAction» = null'''
     }
     
     def dispatch CharSequence generateAction(CreateLinkAction action) {
@@ -129,7 +139,7 @@ class JSGenerator {
         val operation = action.operation
         val classifier = action.operation.class_
         // some operations have no class
-        if (classifier == null || BasicTypeUtils.isBasicType(classifier))
+        if (classifier == null || classifier.package.hasStereotype("ModelLibrary"))
             generateBasicTypeOperationCall(classifier, action)
         else {
             val target = if (operation.static) classifier.name else generateAction(action.target.sourceAction)
@@ -137,7 +147,7 @@ class JSGenerator {
         }
     }
 
-    private def generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
+    def generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
         val operation = action.operation
         val operator = switch (operation.name) {
             case 'add': '+'
@@ -181,11 +191,15 @@ class JSGenerator {
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
     }
     
-    def dispatch CharSequence generateAction(AddVariableValueAction action) {
+    def CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
         if (action.variable.name == '') 
             '''return «generateAction(action.value.sourceAction)»'''
         else
             '''«action.variable.name» = «generateAction(action.value.sourceAction)»'''
+    }
+    
+    def dispatch CharSequence generateAction(AddVariableValueAction action) {
+        generateAddVariableValueAction(action)
     }
 
     def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
@@ -212,11 +226,30 @@ class JSGenerator {
             // the TextUML compiler maps all primitive values to LiteralString
             LiteralString : switch (value.type.name) {
                 case 'String' : '''"«value.stringValue»"'''
+                case 'Integer' : '''«value.stringValue»'''
+                case 'Double' : '''«value.stringValue»'''
+                case 'Boolean' : '''«value.stringValue»'''
                 default : '''UNKNOWN: «value.stringValue»'''
             }
             LiteralBoolean : '''«value.booleanValue»'''
             LiteralNull : 'null'
+            OpaqueExpression case value.behaviorReference : '''(function() «(value.resolveBehaviorReference as Activity).generateActivity»)()'''
+            InstanceValue case value.instance instanceof EnumerationLiteral: '''"«value.instance.name»"'''
             default : Utils.unsupportedElement(value)
+        }
+    }
+    
+    def generateDefaultValue(Type type) {
+        switch (type) {
+            StateMachine : '''"«type.initialVertex.name»"'''
+            Enumeration : '''"«type.ownedLiterals.head.name»"'''
+            Class : switch (type.name) {
+                case 'Boolean' : 'false'
+                case 'Integer' : '0'
+                case 'Double' : '0'
+                case 'Date' : 'new Date()'
+            }
+            default : null
         }
     }
     
@@ -252,4 +285,15 @@ class JSGenerator {
     def dispatch CharSequence generateAction(ReadSelfAction action) {
         'this'
     }
+        
+    def generateActivity(Activity activity) {
+        '''
+        {
+            «IF !activity.variables.empty»
+            var «activity.variables.map[name].join(', ')»;
+            «ENDIF»
+            «generateAction(activity.rootAction)»
+        }'''
+    }
+    
 }

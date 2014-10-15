@@ -5,6 +5,10 @@ var express = require('express');
 var fs = require('fs');
 var bodyParser = require('body-parser');
 var url = require("url");
+var cls = require('continuation-local-storage');
+var clsify= require('cls-middleware');
+var session = cls.createNamespace('session');
+
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/test');
 
@@ -78,6 +82,16 @@ var App = function() {
         self.app.use(bodyParser.urlencoded({
             extended: true
         }));
+        
+        // set the current user in the context
+        self.app.use(function(req, res, next) {
+            var namespace = cls.createNamespace('session');
+            namespace.run(function(context) {
+                context.username = req.get('X-Kirra-RunAs');
+                next();
+            });
+        });
+        
         self.app.use(bodyParser.json());
         routes.build(self.app, function (relative) { return self.baseUrl + relative; });
     };

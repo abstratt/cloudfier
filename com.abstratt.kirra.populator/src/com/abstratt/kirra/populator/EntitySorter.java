@@ -42,5 +42,4 @@ public class EntitySorter {
         for (TypeRef typeRef : sortedRefs)
             toSort.add(0, typeRefToEntity.get(typeRef));
     }
-
 }

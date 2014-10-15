@@ -15,7 +15,9 @@
     "mongodb": "1.4.19",
     "mongoose": "3.8.17",
     "q": "1.0.1",
-    "array.prototype.find": "1.0.0"
+    "array.prototype.find": "1.0.0",
+    "continuation-local-storage" : "3.1.1",
+    "cls-middleware" : "1.1.0"
   },
   "devDependencies": {
      "mocha": "1.21.5"
