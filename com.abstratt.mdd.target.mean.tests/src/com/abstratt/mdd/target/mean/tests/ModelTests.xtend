@@ -12,7 +12,6 @@ import java.util.Properties
 import junit.framework.Test
 import junit.framework.TestSuite
 import org.eclipse.core.runtime.CoreException
-import org.eclipse.uml2.uml.UMLPackage
 
 class ModelTests extends AbstractRepositoryBuildingTests {
 

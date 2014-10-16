@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,12 +18,10 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.TemplateableElement;
-import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
 import com.abstratt.mdd.core.util.TemplateUtils;
-import com.abstratt.pluginutils.LogUtils;
 
 public class TargetUtils {
     public static <T extends NamedElement> Map<String, CharSequence> map(IRepository repository, final ITopLevelMapper<T> mapper, final EClass supportedEClass, final List<String> toGenerate) {

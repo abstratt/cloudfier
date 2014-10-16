@@ -1,6 +1,5 @@
 package com.abstratt.mdd.core.target;
 
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.uml2.uml.NamedElement;
