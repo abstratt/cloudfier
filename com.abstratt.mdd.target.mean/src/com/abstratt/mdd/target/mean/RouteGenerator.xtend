@@ -120,6 +120,18 @@ class RouteGenerator {
             });
         });
         «ENDIF»
+        app.put("/entities/«fullName»/instances/:objectId", function(req, res) {
+            var instanceData = req.body;
+            return mongoose.model('«entity.name»').findByIdAndUpdate(req.params.objectId, instanceData).lean().exec(function(error, found) {
+                if (error) {
+                    console.log(error);
+                    res.status(400).json({ message: error.message });
+                } else {
+                    res.json(renderInstance('«fullName»', found));
+                }
+            });
+        });
+        
         '''
     }
     

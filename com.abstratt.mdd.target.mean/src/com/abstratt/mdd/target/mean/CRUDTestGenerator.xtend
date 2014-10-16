@@ -129,7 +129,29 @@ class CRUDTestGenerator {
                         assert.ok(created.uri);
                     }).then(done, done);
                 });
+                test('GET one', function(done) {
+                    var created;
+                    create«entity.name»().then(function(result) {
+                        created = result;
+                        return kirra.performRequestOnURL(created.uri, null, 200);
+                    }).then(function(retrieved) {
+                        assert.ok(retrieved);
+                        assert.ok(retrieved.uri);
+                    }).then(done, done);
+                });
+                
+                test('PUT', function(done) {
+                    var created;
+                    create«entity.name»().then(function(result) {
+                        created = result;
+                        return kirra.performRequestOnURL(created.uri, 'PUT', 200, created);
+                    }).then(function(updated) {
+                        assert.ok(updated);
+                        assert.ok(updated.uri);
+                    }).then(done, done);
+                });
                 «ENDIF»
+                
             });
         '''
     }
