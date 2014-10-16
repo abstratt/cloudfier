@@ -33,6 +33,17 @@ class RouteGenerator {
             
             var exports = module.exports = { 
                 build: function (app, resolveUrl) {
+                                
+                    // helps with removing internal metadata            
+                    var renderInstance = function (entityName, instance) {
+                        instance.objectId = instance._id;
+                        delete instance._id;
+                        delete instance.__v;
+                        instance.uri = resolveUrl('entities/'+ entityName + '/instances/' + instance.objectId);
+                        instance.entityUri = resolveUrl('entities/'+ entityName);
+                        return instance;
+                    };
+                    
                     «generateIndex()»
                     «entities.map[generateRoute].join("\n\n")»
                 }
@@ -53,25 +64,19 @@ class RouteGenerator {
                     console.log(error);
                     res.status(400).json({ message: error.message });
                 } else {
-                    found.objectId = found._id;
-                    delete found._id;
-                    delete found.__v;
-                    found.uri = resolveUrl('entities/«fullName»/instances/' + found.objectId);
-                    res.json(found);
+                    res.json(renderInstance('«fullName»', found));
                 }
             });
         });
         app.get("/entities/«fullName»/instances", function(req, res) {
-            return mongoose.model('«entity.name»').find().lean().exec(function(error, contents) {
+            return mongoose.model('«entity.name»').find().lean().exec(function(error, documents) {
+                var contents = [];
                 if (error) {
                     console.log(error);
                     res.status(400).json({ message: error.message });
                 } else {
-                    contents.forEach(function(each) {
-                        each.objectId = each._id;
-                        delete each._id;
-                        delete each.__v;
-                        each.uri = resolveUrl('entities/«fullName»/instances/' + each.objectId);
+                    documents.forEach(function(each) {
+                        contents.push(renderInstance('«fullName»', each));
                     });
                     res.json({
                         uri: resolveUrl('entities/«fullName»/instances'),
@@ -83,11 +88,11 @@ class RouteGenerator {
         });
         «IF entity.instantiable»
         app.get("/entities/«fullName»/template", function(req, res) {
-            var template = new «entity.name»();
+            var template = new «entity.name»().toObject();
             «entity.attributes.filter[!it.derived && it.defaultValue != null].map[
                 '''template.«it.name» = «new ModelGenerator().generateValue(it.defaultValue)»;'''
             ].join('\n')»
-            res.json(template);
+            res.json(renderInstance('«fullName»', template));
         });
         «ENDIF»
         «IF entity.instantiable»

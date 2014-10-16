@@ -50,11 +50,12 @@ class ModelGenerator extends JSGenerator {
         val modelVar = modelName
         val queryOperations = entity.queries
         val actionOperations = entity.actions
+        val derivedAttributes = entity.properties.filter[derived]
+        val derivedRelationships = entity.entityRelationships.filter[derived]
         val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
-        val derivedAttributes = entity.allAttributes.filter[derived]
+        val hasState = !entity.findStateProperties.empty
 
         '''
-            var EventEmitter = require('events').EventEmitter;
             var mongoose = require('mongoose');        
             var Schema = mongoose.Schema;
             var cls = require('continuation-local-storage');
@@ -63,7 +64,6 @@ class ModelGenerator extends JSGenerator {
             «entity.generateComment»
             var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
             var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
-            «modelVar».emitter = new EventEmitter();
             
             «IF !actionOperations.empty»
             /*************************** ACTIONS ***************************/
@@ -80,14 +80,19 @@ class ModelGenerator extends JSGenerator {
             
             «generateDerivedAttributes(derivedAttributes)»
             «ENDIF»
+            «IF !derivedRelationships.empty»
+            /*************************** DERIVED RELATIONSHIPS ****************/
+            
+            «generateDerivedRelationships(derivedRelationships)»
+            «ENDIF»
             «IF !privateOperations.empty»
             /*************************** PRIVATE OPS ***********************/
             
             «generatePrivateOperations(privateOperations)»
             «ENDIF»
-            «IF entity.allAttributes.exists[it.type instanceof StateMachine]»
+            «IF hasState»
             /*************************** STATE MACHINE ********************/
-            «entity.ownedBehaviors.filter[it instanceof StateMachine].map[it as StateMachine].head?.generateStateMachine(entity)»
+            «entity.findStateProperties.map[it.type as StateMachine].head?.generateStateMachine(entity)»
             
             «ENDIF»
             
@@ -169,16 +174,35 @@ class ModelGenerator extends JSGenerator {
         derivedAttributes.map[generateDerivedAttribute].join('\n')
     }
     
+    def generateDerivedRelationships(Iterable<Property> derivedRelationships) {
+        derivedRelationships.map[generateDerivedRelationship].join('\n')
+    }
+    
     def generateDerivedAttribute(Property derivedAttribute) {
         val schemaVar = getSchemaVar(derivedAttribute.class_)
-        val namespace = if (derivedAttribute.static) "statics" else "methods"
         val defaultValue = derivedAttribute.defaultValue
         if (defaultValue == null)
             return ''
         val derivation = defaultValue.resolveBehaviorReference as Activity
         val prefix = if (derivedAttribute.type.name == 'Boolean') 'is' else 'get'
         '''
-        «derivedAttribute.generateComment»«schemaVar».«namespace».«prefix»«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
+        «IF derivedAttribute.static»
+        «derivedAttribute.generateComment»«schemaVar».static.«prefix»«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
+        «ELSE»
+        «derivedAttribute.generateComment»«schemaVar».virtual('«derivedAttribute.name»').get(function () «derivation.generateActivity»);
+        «ENDIF»
+        '''
+    }
+    
+    def generateDerivedRelationship(Property derivedRelationship) {
+        val schemaVar = getSchemaVar(derivedRelationship.class_)
+        val defaultValue = derivedRelationship.defaultValue
+        if (defaultValue == null)
+            return ''
+        val derivation = defaultValue.resolveBehaviorReference as Activity
+        val namespace = if (derivedRelationship.static) 'static' else 'method' 
+        '''
+        «derivedRelationship.generateComment»«schemaVar».«namespace».get«derivedRelationship.name.toFirstUpper» = function () «derivation.generateActivity»;
         '''
     }
     
@@ -197,7 +221,26 @@ class ModelGenerator extends JSGenerator {
     
     def generateActionOperationBehavior(Operation action) {
         val firstMethod = action.methods?.head
-        if(firstMethod == null) '{}' else generateActivity(firstMethod as Activity)
+        if(firstMethod == null) 
+            '''
+            {
+                «IF(!action.class_.findStateProperties.empty)»
+                this.handleEvent('«action.name»');    
+                «ENDIF»
+            }''' 
+        else 
+            generateActivity(firstMethod as Activity)
+    }
+    
+    override generateActivityRootAction(Activity activity) {
+        val hasState = activity.specification instanceof Operation && !activity.specification.static && !(activity.specification as Operation).class_.findStateProperties.empty
+        '''
+        «super.generateActivityRootAction(activity)»
+        «IF hasState»
+        this.handleEvent('«activity.specification.name»');
+        «ENDIF»
+        '''
+                
     }
 
     def generateQueryOperations(Iterable<Operation> queries) {
@@ -347,9 +390,9 @@ class ModelGenerator extends JSGenerator {
     
 
     def CharSequence generateSchema(Class clazz) {
-        val attributes = clazz.properties.map[generateSchemaAttribute(it)]
-        val relationships = KirraHelper.getRelationships(clazz).filter[!it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
-        val subschemas = KirraHelper.getRelationships(clazz).filter[it.childRelationship].map[generateSubSchema(it)]
+        val attributes = clazz.properties.filter[!derived].map[generateSchemaAttribute(it)]
+        val relationships = clazz.entityRelationships.filter[!derived && !it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
+        val subschemas = clazz.entityRelationships.filter[!derived && it.childRelationship].map[generateSubSchema(it)]
         '''
         {
             «(attributes + relationships + subschemas).join(',\n')»
@@ -406,18 +449,26 @@ class ModelGenerator extends JSGenerator {
             return ''
         }
         val triggersPerEvent = stateMachine.findTriggersPerEvent
-        triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')
+        val schemaVar = getSchemaVar(entity)
+        val needsGuard = stateMachine.vertices.exists[it.outgoings.exists[it.guard != null]]
+        '''
+            «schemaVar».methods.handleEvent = function (event) {
+                «IF (needsGuard)»
+                var guard;
+                «ENDIF»
+                switch (event) {
+                    «triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')»
+                }
+            };
+        '''
+        
     }
     
     def generateEventHandler(Class entity, Property stateAttribute, Event event, List<Trigger> triggers) {
-        val modelName = entity.name;     
         '''
-        «modelName».emitter.on('«event.generateName»', function () {
-            «IF (triggers.exists[(it.eContainer as Transition).guard != null])»
-            var guard;
-            «ENDIF»
+        case '«event.generateName»' :
             «triggers.map[generateHandlerForTrigger(entity, stateAttribute, it)].join('\n')»
-        });     
+            break;
         '''
     }
     
@@ -442,12 +493,14 @@ class ModelGenerator extends JSGenerator {
         '''
         «IF (originalState instanceof State)»
             «IF (originalState.exit != null)»
+            // on exiting «originalState.name»
             (function() «generateActivity(originalState.exit as Activity)»)();
             «ENDIF»
         «ENDIF»
         this.«stateAttribute.name» = '«newState.name»';
         «IF (newState instanceof State)»
             «IF (newState.entry != null)»
+            // on entering «newState.name»
             (function() «generateActivity(newState.entry as Activity)»)();
             «ENDIF»
         «ENDIF»

@@ -5,7 +5,8 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.TargetCore
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
 import com.abstratt.mdd.core.tests.harness.AssertHelper
-import com.abstratt.mdd.target.mean.mongoose.DomainModelGenerator
+import com.abstratt.mdd.target.mean.ModelGenerator
+import com.abstratt.mdd.target.mean.ModelMapper
 import java.io.IOException
 import java.util.Properties
 import junit.framework.Test
@@ -13,12 +14,12 @@ import junit.framework.TestSuite
 import org.eclipse.core.runtime.CoreException
 import org.eclipse.uml2.uml.UMLPackage
 
-class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
+class ModelTests extends AbstractRepositoryBuildingTests {
 
-    DomainModelGenerator generator = new DomainModelGenerator
+    ModelGenerator generator = new ModelGenerator
 
     def static Test suite() {
-        return new TestSuite(MongooseDomainModelTests)
+        return new TestSuite(ModelTests)
     }
 
     new(String name) {
@@ -37,7 +38,7 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val mapped = map("simple::Class1")
+        val mapped = map()
         
         AssertHelper.assertStringsEqual(
         '''
@@ -65,7 +66,7 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val mapped = map("simple::Class1")
+        val mapped = map()
         
         AssertHelper.assertStringsEqual(
         '''
@@ -194,10 +195,9 @@ class MongooseDomainModelTests extends AbstractRepositoryBuildingTests {
         return defaultSettings
     }
     
-    private def map(String className) {
-        val platform = TargetCore.getPlatform(getRepository().getProperties(), "mean")
-        val mapper = platform.getMapper(null)
-        val class1 = getRepository().findNamedElement(className, UMLPackage.Literals.CLASS, null)
-        return mapper.map(class1).toString()
+    private def map() {
+        val mapper = new ModelMapper()
+        val mapped = mapper.mapAll(repository)
+        return mapped.values.head.toString
     }
 }

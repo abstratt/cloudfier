@@ -6,7 +6,7 @@ import junit.framework.TestSuite
 public class AllTests {
     def static Test suite() {
         val suite = new TestSuite(AllTests.getName())
-        suite.addTest(MongooseDomainModelTests.suite())
+        suite.addTest(ModelTests.suite())
         return suite
     } 
 }

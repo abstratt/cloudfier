@@ -292,8 +292,12 @@ class JSGenerator {
             «IF !activity.variables.empty»
             var «activity.variables.map[name].join(', ')»;
             «ENDIF»
-            «generateAction(activity.rootAction)»
+            «generateActivityRootAction(activity)»
         }'''
+    }
+    
+    def generateActivityRootAction(Activity activity) {
+        generateAction(activity.rootAction)
     }
     
 }
