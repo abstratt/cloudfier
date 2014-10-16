@@ -2,11 +2,9 @@ package com.abstratt.mdd.target.mean.tests
 
 import com.abstratt.kirra.mdd.core.KirraMDDCore
 import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.core.target.TargetCore
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
 import com.abstratt.mdd.core.tests.harness.AssertHelper
 import com.abstratt.mdd.target.mean.ModelGenerator
-import com.abstratt.mdd.target.mean.ModelMapper
 import java.io.IOException
 import java.util.Properties
 import junit.framework.Test
@@ -31,20 +29,20 @@ class ModelTests extends AbstractRepositoryBuildingTests {
           class Class1
               attribute attr1 : String;
               attribute attr2 : Integer;
-              attribute attr3 : Date;            
+              attribute attr3 : Date[0,1];            
           end;
         end.
         '''
         parseAndCheck(source)
 
-        val mapped = map()
+        val mapped = generator.generateSchema(getClass('simple::Class1')).toString
         
         AssertHelper.assertStringsEqual(
         '''
         var class1Schema = new Schema({ 
-            attr1: String, 
-            attr2: Number,
-            attr3: Date
+            attr1: { type: String, required: true }, 
+            attr2: { type: Number, required: true },
+            attr3: { type: Date }
         }); 
         var Class1 = mongoose.model('Class1', class1Schema);      
         '''
@@ -65,17 +63,13 @@ class ModelTests extends AbstractRepositoryBuildingTests {
         '''
         parseAndCheck(source)
 
-        val mapped = map()
+        val mapped = generator.generateActionOperation(getOperation('simple::Class1::incAttr1')).toString
         
         AssertHelper.assertStringsEqual(
         '''
-        var class1Schema = new Schema({ 
-            attr1: Number 
-        }); 
         class1Schema.methods.incAttr1 = function (value) {
             this.attr1 = this.attr1 + value; 
         };
-        var Class1 = mongoose.model('Class1', class1Schema);      
         ''', mapped)
     }
     
@@ -192,11 +186,5 @@ class ModelTests extends AbstractRepositoryBuildingTests {
         // so classes extend Object by default (or else weaver ignores them)
         defaultSettings.setProperty(IRepository.EXTEND_BASE_OBJECT, Boolean.TRUE.toString())
         return defaultSettings
-    }
-    
-    private def map() {
-        val mapper = new ModelMapper()
-        val mapped = mapper.mapAll(repository)
-        return mapped.values.head.toString
     }
 }

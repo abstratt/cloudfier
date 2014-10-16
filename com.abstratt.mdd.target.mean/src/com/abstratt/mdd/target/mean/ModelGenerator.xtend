@@ -1,7 +1,6 @@
 package com.abstratt.mdd.target.mean
 
 import com.abstratt.kirra.TypeRef
-import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import java.util.List
 import org.eclipse.uml2.uml.Activity
@@ -10,6 +9,7 @@ import org.eclipse.uml2.uml.AnyReceiveEvent
 import org.eclipse.uml2.uml.CallEvent
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.Event
@@ -40,30 +40,36 @@ import static com.abstratt.mdd.target.mean.Utils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.Classifier
 
 class ModelGenerator extends JSGenerator {
 
     def generateEntity(Class entity) {
-        val schemaVar = getSchemaVar(entity)
         val modelName = entity.name
-        val modelVar = modelName
+        '''
+            var mongoose = require('mongoose');        
+            var Schema = mongoose.Schema;
+            var cls = require('continuation-local-storage');
+            
+            «generateSchema(entity)»        
+            
+            var exports = module.exports = «modelName»;
+        '''
+    }
+    
+    def generateSchema(Class entity) {
+        val modelName = entity.name
+        val schemaVar = getSchemaVar(entity)
         val queryOperations = entity.queries
         val actionOperations = entity.actions
         val derivedAttributes = entity.properties.filter[derived]
         val derivedRelationships = entity.entityRelationships.filter[derived]
         val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
         val hasState = !entity.findStateProperties.empty
-
-        '''
-            var mongoose = require('mongoose');        
-            var Schema = mongoose.Schema;
-            var cls = require('continuation-local-storage');
-            
         
+        '''
             «entity.generateComment»
-            var «schemaVar» = new Schema(«generateSchema(entity).toString.trim»);
-            var «modelVar» = mongoose.model('«modelName»', «schemaVar»);
+            var «schemaVar» = new Schema(«generateSchemaCore(entity).toString.trim»);
+            var «modelName» = mongoose.model('«modelName»', «schemaVar»);
             
             «IF !actionOperations.empty»
             /*************************** ACTIONS ***************************/
@@ -95,8 +101,6 @@ class ModelGenerator extends JSGenerator {
             «entity.findStateProperties.map[it.type as StateMachine].head?.generateStateMachine(entity)»
             
             «ENDIF»
-            
-            var exports = module.exports = «modelVar»;
         '''
     }
     
@@ -389,7 +393,7 @@ class ModelGenerator extends JSGenerator {
     }
     
 
-    def CharSequence generateSchema(Class clazz) {
+    def CharSequence generateSchemaCore(Class clazz) {
         val attributes = clazz.properties.filter[!derived].map[generateSchemaAttribute(it)]
         val relationships = clazz.entityRelationships.filter[!derived && !it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
         val subschemas = clazz.entityRelationships.filter[!derived && it.childRelationship].map[generateSubSchema(it)]
@@ -420,7 +424,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     def generateSubSchema(Property relationship) {
-        val subSchema = generateSchema(relationship.type as Class)
+        val subSchema = generateSchemaCore(relationship.type as Class)
         '''«relationship.name» : «if (relationship.multivalued) '''[«subSchema»]''' else subSchema»'''
     }
 
