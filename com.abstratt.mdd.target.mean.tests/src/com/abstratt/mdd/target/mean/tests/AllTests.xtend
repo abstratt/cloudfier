@@ -6,7 +6,8 @@ import junit.framework.TestSuite
 public class AllTests {
     def static Test suite() {
         val suite = new TestSuite(AllTests.getName())
-        suite.addTest(ModelTests.suite())
+        suite.addTest(ModelGeneratorTests.suite())
+        suite.addTest(JSGeneratorTests.suite())
         return suite
     } 
 }

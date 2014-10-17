@@ -71,6 +71,10 @@ public class DateType extends PrimitiveType<Date> {
     public boolean isEmpty() {
         return this.value == null;
     }
+    
+    public IntegerType year(@SuppressWarnings("unused") ExecutionContext context) {
+        return IntegerType.fromValue(1900 + this.primitiveValue().getYear());
+    }
 
     public IntegerType month(@SuppressWarnings("unused") ExecutionContext context) {
         return IntegerType.fromValue(1 + this.primitiveValue().getMonth());
@@ -95,10 +99,6 @@ public class DateType extends PrimitiveType<Date> {
         cal.setTime(this.primitiveValue());
         cal.add(Calendar.DATE, (int) (delta.primitiveValue() / 1000 / 60 / 60 / 24));
         return new DateType(cal.getTime());
-    }
-
-    public IntegerType year(@SuppressWarnings("unused") ExecutionContext context) {
-        return IntegerType.fromValue(1900 + this.primitiveValue().getYear());
     }
 
     private IntegerType dateDifference(DateType start, DateType end, int divider) {

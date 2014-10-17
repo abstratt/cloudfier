@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="com.abstratt.mdd.target.core.targetPlatform" id="simple" name="Simple (Demo) Platform">
+         <mapper artifactType="simple"
+               class="com.abstratt.mdd.target.simple.SimpleMapper"/>
+   </extension>
+</plugin>

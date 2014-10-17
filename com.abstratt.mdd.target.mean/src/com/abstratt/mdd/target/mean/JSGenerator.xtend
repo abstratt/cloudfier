@@ -40,6 +40,10 @@ import static extension org.apache.commons.lang3.text.WordUtils.*
 import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.InstanceValue
 import org.eclipse.uml2.uml.EnumerationLiteral
+import org.eclipse.uml2.uml.LinkEndData
+import java.util.List
+import java.util.ArrayList
+import org.eclipse.uml2.uml.ReadLinkAction
 
 /** 
  * A UML-to-Javascript code generator.
@@ -126,16 +130,31 @@ class JSGenerator {
         «endData.value.sourceAction.generateAction» = null'''
     }
     
-    def dispatch CharSequence generateAction(CreateLinkAction action) {
-        val endDatas = action.endData
-        val end1 = endDatas.get(0).value.sourceAction
-        val end2 = endDatas.get(1).value.sourceAction
-        val featureName = endDatas.get(0).end.name
-
-        '''«generateAction(end1)».«featureName» = «generateAction(end2)»'''
+    def generateSetLinkEnd(List<LinkEndData> sides, boolean addSemiColon) {
+        val thisEnd = sides.get(0).end
+        val otherEnd = sides.get(1).end
+        val thisEndAction = sides.get(0).value.sourceAction
+        val otherEndAction = sides.get(1).value.sourceAction
+        if (!thisEnd.navigable) return ''
+        '''«generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }
     
-    protected def generateCallOperationAction(CallOperationAction action) {
+    def dispatch CharSequence generateAction(CreateLinkAction action) {
+        val endData = new ArrayList(action.endData)
+        '''
+        // link «endData.map[it.end.name].join(' and ')»
+        «generateSetLinkEnd(endData, true)»
+        «generateSetLinkEnd(endData.reverse, false)»''' 
+    }
+    
+    def dispatch CharSequence generateAction(ReadLinkAction action) {
+        val fedEndData = action.endData.get(0)
+        val target = fedEndData.value.sourceAction
+        val featureName = fedEndData.end.otherEnd.name
+        '''«generateAction(target)».«featureName»'''
+    }
+    
+    protected def CharSequence generateCallOperationAction(CallOperationAction action) {
         val operation = action.operation
         val classifier = action.operation.class_
         // some operations have no class
@@ -147,7 +166,7 @@ class JSGenerator {
         }
     }
 
-    def generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
+    def CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
         val operation = action.operation
         val operator = switch (operation.name) {
             case 'add': '+'
@@ -176,10 +195,29 @@ class JSGenerator {
         else
             switch (classifier.name) {
                 case 'Date' : switch (operation.name) {
+                    case 'year' : '.getYear()'
+                    case 'month' : '.getMonth()'
+                    case 'day' : '.getDate()'
                     case 'today' : 'new Date()'
-                    case 'now' : 'new Date()'    
+                    case 'now' : 'new Date()'
+                    case 'transpose' :
+                        '''new Date(«generateAction(action.target.sourceAction)» + «generateAction(action.arguments.head.sourceAction)»)'''
+                    case 'differenceInDays' :
+                        '''(«generateAction(action.arguments.head.sourceAction)» - «generateAction(action.target.sourceAction)») / (1000*60*60*24)'''                     
+                    default: '''Unsupported Date operation «operation.name»'''    
+                }
+                case 'Duration' : {
+                    val period = switch (operation.name) {
+                        case 'days' : '* 1000 * 60 * 60 * 24' 
+                        case 'hours' : '* 1000 * 60 * 60'
+                        case 'minutes' : '* 1000 * 60'
+                        case 'seconds' : '* 1000'
+                        case 'milliseconds' : ''
+                        default: '''Unsupported duration operation: «operation.name»'''
+                    }
+                    '''«generateAction(action.arguments.head.sourceAction)»«period» /*«operation.name»*/'''
                 }   
-                default: '''Unsupported operation «classifier.name»#«operation.name»'''         
+                default: '''Unsupported classifier «classifier.name» for operation «operation.name»'''         
             }
     }
     
@@ -195,7 +233,7 @@ class JSGenerator {
         if (action.variable.name == '') 
             '''return «generateAction(action.value.sourceAction)»'''
         else
-            '''«action.variable.name» = «generateAction(action.value.sourceAction)»'''
+            '''var «action.variable.name» = «generateAction(action.value.sourceAction)»'''
     }
     
     def dispatch CharSequence generateAction(AddVariableValueAction action) {
@@ -289,9 +327,6 @@ class JSGenerator {
     def generateActivity(Activity activity) {
         '''
         {
-            «IF !activity.variables.empty»
-            var «activity.variables.map[name].join(', ')»;
-            «ENDIF»
             «generateActivityRootAction(activity)»
         }'''
     }

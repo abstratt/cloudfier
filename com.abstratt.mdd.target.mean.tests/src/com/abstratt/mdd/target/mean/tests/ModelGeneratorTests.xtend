@@ -11,12 +11,12 @@ import junit.framework.Test
 import junit.framework.TestSuite
 import org.eclipse.core.runtime.CoreException
 
-class ModelTests extends AbstractRepositoryBuildingTests {
+class ModelGeneratorTests extends AbstractRepositoryBuildingTests {
 
     ModelGenerator generator = new ModelGenerator
 
     def static Test suite() {
-        return new TestSuite(ModelTests)
+        return new TestSuite(ModelGeneratorTests)
     }
 
     new(String name) {

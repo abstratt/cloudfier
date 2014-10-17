@@ -283,7 +283,7 @@ class ModelGenerator extends JSGenerator {
         '''new «action.classifier.name»()'''
     }
     
-    override generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
+    override CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
         val operation = action.operation
         
         if (classifier != null)
@@ -296,7 +296,7 @@ class ModelGenerator extends JSGenerator {
         super.generateBasicTypeOperationCall(classifier, action)         
     }
     
-    protected override generateCallOperationAction(CallOperationAction action) {
+    protected override CharSequence generateCallOperationAction(CallOperationAction action) {
         if (action.target == null || !action.target.multivalued)
             super.generateCallOperationAction(action)
         else 
@@ -308,10 +308,10 @@ class ModelGenerator extends JSGenerator {
                 case 'forEach' : generateForEach(action)
                 case 'isEmpty' : generateIsEmpty(action)
                 case 'any' : generateExists(action)
+                case 'includes' : generateIncludes(action)
                 case 'sum' : generateAggregation(action, "sum")
                 case 'max' : generateAggregation(action, "max")
                 case 'min' : generateAggregation(action, "min")
-                case 'includes' : generateAggregation(action, "in")
                 default : unsupportedElement(action)
             }
     }
@@ -342,6 +342,10 @@ class ModelGenerator extends JSGenerator {
     
     private def generateExists(CallOperationAction action) {
         'count'
+    }
+    
+    private def generateIncludes(CallOperationAction action) {
+        'includes'
     }
     
     private def generateAggregation(CallOperationAction action, String operator) {
@@ -389,6 +393,7 @@ class ModelGenerator extends JSGenerator {
             case 'greaterOrEquals': 'gte'
             case 'equals': 'equals'
             case 'same': 'equals'
+            default: '''/*unknown:«operation.name»*/«operation.name»'''
         }
     }
     

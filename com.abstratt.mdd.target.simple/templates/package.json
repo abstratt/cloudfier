@@ -1,0 +1,29 @@
+{
+  "name": "{applicationName}",
+  "version": "1.0.0",
+  "description": "{applicationDescription}",
+  "keywords": [
+  ],
+  "engines": {
+    "node": ">= 0.6.0",
+    "npm": ">= 1.0.0"
+  },
+
+  "dependencies": {
+    "express": "4.9.7",
+    "body-parser": "1.9.0",
+    "mongodb": "1.4.19",
+    "mongoose": "3.8.17",
+    "q": "1.0.1",
+    "array.prototype.find": "1.0.0",
+    "continuation-local-storage" : "3.1.1",
+    "cls-middleware" : "1.1.0"
+  },
+  "devDependencies": {
+     "mocha": "1.21.5"
+  },
+  "bundleDependencies": [],
+
+  "private": true,
+  "main": "server.js"
+}
