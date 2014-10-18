@@ -1,6 +1,8 @@
 package com.abstratt.mdd.target.mean
 
+import java.util.ArrayList
 import java.util.Collection
+import java.util.List
 import java.util.Map
 import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.uml2.uml.Action
@@ -18,10 +20,15 @@ import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.Element
 import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.EnumerationLiteral
+import org.eclipse.uml2.uml.InstanceValue
+import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
+import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
@@ -37,13 +44,6 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import org.eclipse.uml2.uml.OpaqueExpression
-import org.eclipse.uml2.uml.InstanceValue
-import org.eclipse.uml2.uml.EnumerationLiteral
-import org.eclipse.uml2.uml.LinkEndData
-import java.util.List
-import java.util.ArrayList
-import org.eclipse.uml2.uml.ReadLinkAction
 
 /** 
  * A UML-to-Javascript code generator.
@@ -241,6 +241,10 @@ class JSGenerator {
     }
 
     def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
+        generateReadStructuralFeatureAction(action)
+    }
+    
+    def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
         val feature = action.structuralFeature
         if (action.object == null) {
             val clazz = (action.structuralFeature as Property).class_

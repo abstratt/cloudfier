@@ -283,6 +283,17 @@ class ModelGenerator extends JSGenerator {
         '''new «action.classifier.name»()'''
     }
     
+    override dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
+        val asProperty = action.structuralFeature as Property
+        if (asProperty.derivedRelationship)
+            // derived relationships are actually getter functions
+            // no need to worry about statics - relationships are never static
+            '''«action.sourceAction.generateAction».get«asProperty.name.toFirstUpper»()'''
+        else
+            // default, read as slot
+            generateReadStructuralFeatureAction(action)
+    }
+    
     override CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
         val operation = action.operation
         
@@ -341,7 +352,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     private def generateExists(CallOperationAction action) {
-        'count'
+        'exists'
     }
     
     private def generateIncludes(CallOperationAction action) {
