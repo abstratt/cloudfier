@@ -36,7 +36,7 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
         val result = new LinkedHashMap<String, CharSequence>()
         val getContents = [ String path | ApplicationMapper.getResourceAsStream('''/templates/«path»''') ]
         result.putAll(#['package.json'].toInvertedMap[ name | TargetUtils.merge(getContents.apply(name), replacements)])
-        result.putAll(#['server.js', 'helpers.js', 'kirra-client.js'].toInvertedMap[ name | TargetUtils.renderStaticResource(getContents.apply(name))  ])
+        result.putAll(#['server.js', 'helpers.js', 'http-client.js'].toInvertedMap[ name | TargetUtils.renderStaticResource(getContents.apply(name))  ])
         return result
     }    
 }
