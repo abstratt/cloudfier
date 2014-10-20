@@ -2,6 +2,7 @@ package com.abstratt.mdd.target.mean
 
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
+import com.abstratt.mdd.core.IRepository
 import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddVariableValueAction
@@ -43,21 +44,43 @@ import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
 class ModelGenerator extends JSGenerator {
 
+    protected IRepository repository
+    
+    protected String applicationName
+
+    protected Iterable<Class> entities
+    
+    new(IRepository repository) {
+        this.repository = repository
+        val appPackages = repository.getTopLevelPackages(null).applicationPackages
+        this.applicationName = repository.getApplicationName(appPackages)
+        this.entities = appPackages.entities.filter[topLevel]
+    }
+    
+    def generateIndex() {
+        '''
+        var mongoose = require('mongoose');
+        «entities.toList.topologicalSort.map[ 
+            '''require('./«name».js');''' 
+        ].join('\n')» 
+        '''
+    }
+
     def generateEntity(Class entity) {
         val modelName = entity.name
         '''
-            var mongoose = require('mongoose');        
+            var mongoose = require('mongoose');    
             var Schema = mongoose.Schema;
             var cls = require('continuation-local-storage');
-            
+
             «generateSchema(entity)»        
             
-            var exports = module.exports = «modelName»;
+            // declare model on the schema
+            var exports = module.exports = mongoose.model('«modelName»', «modelName.toFirstLower»Schema);
         '''
     }
     
     def generateSchema(Class entity) {
-        val modelName = entity.name
         val schemaVar = getSchemaVar(entity)
         val queryOperations = entity.queries
         val actionOperations = entity.actions
@@ -68,8 +91,8 @@ class ModelGenerator extends JSGenerator {
         
         '''
             «entity.generateComment»
+            // declare schema
             var «schemaVar» = new Schema(«generateSchemaCore(entity).toString.trim»);
-            var «modelName» = mongoose.model('«modelName»', «schemaVar»);
             
             «IF !actionOperations.empty»
             /*************************** ACTIONS ***************************/
@@ -191,7 +214,7 @@ class ModelGenerator extends JSGenerator {
         val prefix = if (derivedAttribute.type.name == 'Boolean') 'is' else 'get'
         '''
         «IF derivedAttribute.static»
-        «derivedAttribute.generateComment»«schemaVar».static.«prefix»«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
+        «derivedAttribute.generateComment»«schemaVar».statics.«prefix»«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
         «ELSE»
         «derivedAttribute.generateComment»«schemaVar».virtual('«derivedAttribute.name»').get(function () «derivation.generateActivity»);
         «ENDIF»
@@ -204,7 +227,7 @@ class ModelGenerator extends JSGenerator {
         if (defaultValue == null)
             return ''
         val derivation = defaultValue.resolveBehaviorReference as Activity
-        val namespace = if (derivedRelationship.static) 'static' else 'method' 
+        val namespace = if (derivedRelationship.static) 'statics' else 'methods' 
         '''
         «derivedRelationship.generateComment»«schemaVar».«namespace».get«derivedRelationship.name.toFirstUpper» = function () «derivation.generateActivity»;
         '''
@@ -265,7 +288,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     def dispatch CharSequence generateAction(ReadExtentAction action) {
-        '''this.model('«action.classifier.name»').find()'''
+        '''getEntity('«action.classifier.name»').find()'''
     }
     
     override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
@@ -275,12 +298,14 @@ class ModelGenerator extends JSGenerator {
         super.generateAddVariableValueAction(action) + execIfQuery
     }
     
-    override dispatch CharSequence generateAction(CallOperationAction action) {
-        generateCallOperationAction(action) 
+    
+    
+    override def generateCreateObjectAction(CreateObjectAction action) {
+        '''new «generateClassReference(action.classifier)» ()'''
     }
     
-    override dispatch CharSequence generateAction(CreateObjectAction action) {
-        '''new «action.classifier.name»()'''
+    override def generateClassReference(Classifier classifier) {
+        '''require('./«classifier.name».js')''' 
     }
     
     override dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
@@ -364,7 +389,7 @@ class ModelGenerator extends JSGenerator {
         val rootAction = transformer.rootAction.findStatements.head.sourceAction 
         if (rootAction instanceof ReadStructuralFeatureAction) {
             val property = rootAction.structuralFeature 
-            '''this.model('«action.target.type.name»').aggregate()
+            '''getEntity('«action.target.type.name»').aggregate()
               .group({ _id: null, result: { $«operator»: '$«property.name»' } })
               .select('-id result')'''
         } else

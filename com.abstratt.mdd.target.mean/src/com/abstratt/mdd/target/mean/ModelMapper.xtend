@@ -4,11 +4,10 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
 import java.util.List
 import org.eclipse.uml2.uml.Class
+
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class ModelMapper implements ITopLevelMapper<Class> {
-    
-    private ModelGenerator generator = new ModelGenerator()
     
     override mapFileName(Class element) {
         '''models/«element.name».js'''
@@ -29,6 +28,9 @@ class ModelMapper implements ITopLevelMapper<Class> {
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val topLevelEntities = appPackages.entities.filter[it.topLevel]
-        return topLevelEntities.toMap[mapFileName(it)].mapValues[generator.generateEntity(it)]
+        val generator = new ModelGenerator(repository)
+        val result = newLinkedHashMap("models/index.js" -> generator.generateIndex)
+        result.putAll(topLevelEntities.toMap[mapFileName(it)].mapValues[generator.generateEntity(it)])
+        return result
     }    
 }

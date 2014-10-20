@@ -12,7 +12,7 @@ class CRUDTestMapper implements ITopLevelMapper<Class> {
     }
     
     override mapAll(IRepository repo) {
-        #{ 'test.js' -> new CRUDTestGenerator(repo).generateTests }
+        #{ 'test/CRUD.js' -> new CRUDTestGenerator(repo).generateTests }
     }
     
     override map(Class toMap) {

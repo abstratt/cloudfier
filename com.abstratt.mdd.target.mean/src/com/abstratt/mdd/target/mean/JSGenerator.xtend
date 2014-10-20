@@ -21,6 +21,7 @@ import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.Element
 import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.EnumerationLiteral
+import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.InstanceValue
 import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
@@ -110,31 +111,35 @@ class JSGenerator {
     }
     
     def dispatch CharSequence generateAction(SendSignalAction action) {
-        val target = action.target.sourceAction
+        val target = action.target
         val methodName = action.signal.name.toFirstLower
-        '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction(sourceAction)].join(', ')»)'''
+        '''/*«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)*/'''
     }
     
     def dispatch CharSequence generateAction(CreateObjectAction action) {
+        generateCreateObjectAction(action)
+    }
+    
+    def generateCreateObjectAction(CreateObjectAction action) { 
         '{ }'
     }
     
     def dispatch CharSequence generateAction(DestroyObjectAction action) {
-        '''delete «action.target.sourceAction.generateAction»'''
+        '''delete «action.target.generateAction»'''
     }
     
     def dispatch CharSequence generateAction(DestroyLinkAction action) {
         val endData = action.endData.head
         '''
-        «endData.value.sourceAction.generateAction».«endData.end.otherEnd.name» = null;
-        «endData.value.sourceAction.generateAction» = null'''
+        «endData.value.generateAction».«endData.end.otherEnd.name» = null;
+        «endData.value.generateAction» = null'''
     }
     
     def generateSetLinkEnd(List<LinkEndData> sides, boolean addSemiColon) {
         val thisEnd = sides.get(0).end
         val otherEnd = sides.get(1).end
-        val thisEndAction = sides.get(0).value.sourceAction
-        val otherEndAction = sides.get(1).value.sourceAction
+        val thisEndAction = sides.get(0).value
+        val otherEndAction = sides.get(1).value
         if (!thisEnd.navigable) return ''
         '''«generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }
@@ -149,7 +154,7 @@ class JSGenerator {
     
     def dispatch CharSequence generateAction(ReadLinkAction action) {
         val fedEndData = action.endData.get(0)
-        val target = fedEndData.value.sourceAction
+        val target = fedEndData.value
         val featureName = fedEndData.end.otherEnd.name
         '''«generateAction(target)».«featureName»'''
     }
@@ -161,9 +166,13 @@ class JSGenerator {
         if (classifier == null || classifier.package.hasStereotype("ModelLibrary"))
             generateBasicTypeOperationCall(classifier, action)
         else {
-            val target = if (operation.static) classifier.name else generateAction(action.target.sourceAction)
-            '''«target».«operation.name»(«action.arguments.map[generateAction(sourceAction)].join(', ')»)'''
+            val target = if (operation.static) generateClassReference(classifier) else generateAction(action.target)
+            '''«target».«operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
         }
+    }
+    
+    def generateClassReference(Classifier classifier) {
+        classifier.name
     }
 
     def CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
@@ -188,23 +197,24 @@ class JSGenerator {
         if (operator != null)
             switch (action.arguments.size()) {
                 // unary operator
-                case 0: '''«operator»(«generateAction(action.target.sourceAction)»)'''
-                case 1: '''«generateAction(action.target.sourceAction)» «operator» «generateAction(action.arguments.head.sourceAction)»'''
+                case 0: '''«operator»(«generateAction(action.target)»)'''
+                case 1: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
         else
             switch (classifier.name) {
                 case 'Date' : switch (operation.name) {
-                    case 'year' : '.getYear()'
-                    case 'month' : '.getMonth()'
-                    case 'day' : '.getDate()'
+                    case 'year' : '''«generateAction(action.target)».getYear()'''
+                    case 'month' : '''«generateAction(action.target)».getMonth()'''
+                    case 'day' : '''«generateAction(action.target)».getDate()'''
                     case 'today' : 'new Date()'
                     case 'now' : 'new Date()'
                     case 'transpose' :
-                        '''new Date(«generateAction(action.target.sourceAction)» + «generateAction(action.arguments.head.sourceAction)»)'''
+                        '''new Date(«generateAction(action.target)» + «generateAction(action.arguments.head)»)'''
                     case 'differenceInDays' :
-                        '''(«generateAction(action.arguments.head.sourceAction)» - «generateAction(action.target.sourceAction)») / (1000*60*60*24)'''                     
-                    default: '''Unsupported Date operation «operation.name»'''    
+                        '''(«generateAction(action.arguments.head)» - «generateAction(action.target)») / (1000*60*60*24)'''                     
+                    default: '''Unsupported Date operation «operation.name»'''
+                        
                 }
                 case 'Duration' : {
                     val period = switch (operation.name) {
@@ -215,15 +225,25 @@ class JSGenerator {
                         case 'milliseconds' : ''
                         default: '''Unsupported duration operation: «operation.name»'''
                     }
-                    '''«generateAction(action.arguments.head.sourceAction)»«period» /*«operation.name»*/'''
-                }   
+                    '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
+                }
+                case 'Collection' : {
+                    switch (operation.name) {
+                        case 'size' : '''«generateAction(action.target)».length''' 
+                        default: '''Unsupported Collection operation: «operation.name»'''
+                    }
+                }
                 default: '''Unsupported classifier «classifier.name» for operation «operation.name»'''         
             }
     }
     
+    def dispatch CharSequence generateAction(InputPin input) {
+        generateAction(input.sourceAction)
+    }
+    
     def dispatch CharSequence generateAction(AddStructuralFeatureValueAction action) {
-        val target = action.object.sourceAction
-        val value = action.value.sourceAction
+        val target = action.object
+        val value = action.value
         val featureName = action.structuralFeature.name
 
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
@@ -231,9 +251,9 @@ class JSGenerator {
     
     def CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
         if (action.variable.name == '') 
-            '''return «generateAction(action.value.sourceAction)»'''
+            '''return «generateAction(action.value)»'''
         else
-            '''var «action.variable.name» = «generateAction(action.value.sourceAction)»'''
+            '''var «action.variable.name» = «generateAction(action.value)»'''
     }
     
     def dispatch CharSequence generateAction(AddVariableValueAction action) {
@@ -250,8 +270,7 @@ class JSGenerator {
             val clazz = (action.structuralFeature as Property).class_
             '''«clazz.name».«feature.name»'''
         } else {
-            val target = action.object.sourceAction
-            '''«generateAction(target)».«feature.name»'''
+            '''«generateAction(action.object)».«feature.name»'''
         }
     }
 
@@ -321,7 +340,7 @@ class JSGenerator {
     
     
     def dispatch CharSequence generateAction(TestIdentityAction action) {
-        '''«generateAction(action.first.sourceAction)» == «generateAction(action.second.sourceAction)»'''
+        '''«generateAction(action.first)» == «generateAction(action.second)»'''
     }
 
     def dispatch CharSequence generateAction(ReadSelfAction action) {

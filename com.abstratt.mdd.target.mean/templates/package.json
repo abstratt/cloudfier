@@ -10,6 +10,7 @@
   },
 
   "dependencies": {
+    "rekuire": "0.1.5",
     "express": "4.9.7",
     "body-parser": "1.9.0",
     "mongodb": "1.4.19",

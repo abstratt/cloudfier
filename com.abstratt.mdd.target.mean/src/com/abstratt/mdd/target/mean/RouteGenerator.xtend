@@ -90,7 +90,7 @@ class RouteGenerator {
         app.get("/entities/«fullName»/template", function(req, res) {
             var template = new «entity.name»().toObject();
             «entity.attributes.filter[!it.derived && it.defaultValue != null].map[
-                '''template.«it.name» = «new ModelGenerator().generateValue(it.defaultValue)»;'''
+                '''template.«it.name» = «new ModelGenerator(repository).generateValue(it.defaultValue)»;'''
             ].join('\n')»
             res.json(renderInstance('«fullName»', template));
         });
@@ -169,6 +169,6 @@ class RouteGenerator {
         if (entity.instantiable) {
             link.put('templateUri', '''resolveUrl("entities/«fullName»/template")''')
         }
-        new ModelGenerator().generatePrimitiveValue(link)
+        new ModelGenerator(repository).generatePrimitiveValue(link)
     }
 }

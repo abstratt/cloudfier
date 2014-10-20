@@ -10,6 +10,10 @@
          <mapper artifactType="base"
                class="com.abstratt.mdd.target.mean.ApplicationMapper"/>
          <mapper artifactType="test"
+               class="com.abstratt.mdd.target.mean.TestMapper"/>
+         <mapper artifactType="crudTest"
                class="com.abstratt.mdd.target.mean.CRUDTestMapper"/>
+         <mapper artifactType="functionalTest"
+               class="com.abstratt.mdd.target.mean.FunctionalTestMapper"/>
    </extension>
 </plugin>

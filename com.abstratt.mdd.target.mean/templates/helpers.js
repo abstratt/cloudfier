@@ -30,5 +30,17 @@ exports.isMatchFor = function(name, object, properties) {
     return false;
 };
 
-
+exports.instantiate = function(moduleName, arguments) {
+    var module = require(moduleName);
+    if (module === undefined) {
+        throw new Error("Module not found: " + moduleName);
+    }
+    if (typeof module !== 'function') {
+        throw new Error("Module does not export a function: " + moduleName);
+    }
+    console.log('Creating instance of ' + moduleName);
+    var result = new module(arguments || {});
+    console.log('Result: ' + result);
+    return result;
+};
 
