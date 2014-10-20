@@ -340,10 +340,10 @@ class ModelGenerator extends JSGenerator {
     
     override dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
         val asProperty = action.structuralFeature as Property
-        if (asProperty.derivedRelationship)
+        if (asProperty.derivedRelationship && action.object != null)
             // derived relationships are actually getter functions
             // no need to worry about statics - relationships are never static
-            '''«action.sourceAction.generateAction».get«asProperty.name.toFirstUpper»()'''
+            '''«action.object.generateAction».get«asProperty.name.toFirstUpper»()'''
         else
             // default, read as slot
             generateReadStructuralFeatureAction(action)

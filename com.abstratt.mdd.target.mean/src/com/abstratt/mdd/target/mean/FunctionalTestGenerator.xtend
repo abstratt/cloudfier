@@ -76,12 +76,14 @@ class FunctionalTestGenerator extends ModelGenerator {
         var kirraApiUrl = process.env.KIRRA_API_URL || (kirraBaseUrl);
         var httpClient = new HttpClient(kirraApiUrl);
         «helperClasses.map['''var «it.name» = require('./«it.name».js');'''].join('\n')»
+
+        var «testClass.name» = {
+            «helpers.map[generateTestCaseHelper].join(',\n')»
+        };
         
         suite('«applicationName» functional tests - «testClass.name»', function() {
             this.timeout(10000);
 
-            «helpers.map[generateTestCaseHelper].join()»
-            
             «testCases.map[generateTestCase].join()»
         });
         
@@ -90,9 +92,9 @@ class FunctionalTestGenerator extends ModelGenerator {
     
     def CharSequence generateTestCaseHelper(Operation op) {
         '''
-            var «op.name» = function(«op.ownedParameters.inputParameters.map[name].join(', ')») {
+            «op.name» : function(«op.ownedParameters.inputParameters.map[name].join(', ')») {
                 «op.activity.generateActivityRootAction»
-            };
+            }
         '''
     }
     
@@ -111,7 +113,6 @@ class FunctionalTestGenerator extends ModelGenerator {
             «ENDIF»
             «testBehavior.rootAction.nodes.filter[(it as Action).terminal].map[
                 '''
-                // a block
                 «generateAction(it)»
                 '''
             ].join»
@@ -134,10 +135,10 @@ class FunctionalTestGenerator extends ModelGenerator {
         if (classifier != null)
             return switch (classifier.qualifiedName) {
                 case 'mdd_types::Assert' : switch (operation.name) {
-                    case 'isNull' : '''assert.ok(«generateAction(action.arguments.head)» == null, '«generateAction(action.arguments.head)»')'''
-                    case 'isNotNull' : '''assert.ok(«generateAction(action.arguments.head)» != null, '«generateAction(action.arguments.head)»: ' + «generateAction(action.arguments.head)»)'''
-                    case 'isTrue' : '''assert.ok(«generateAction(action.arguments.head)» === true, '«generateAction(action.arguments.head)»: ' + «generateAction(action.arguments.head)»)'''
-                    case 'areEqual' : '''assert.equal(«generateAction(action.arguments.head)», «generateAction(action.arguments.tail.head)», '«generateAction(action.arguments.head)» == «generateAction(action.arguments.tail.head)»')'''
+                    case 'isNull' : '''assert.ok(«generateAction(action.arguments.head)» == null)'''
+                    case 'isNotNull' : '''assert.ok(«generateAction(action.arguments.head)» != null)'''
+                    case 'isTrue' : '''assert.ok(«generateAction(action.arguments.head)» === true)'''
+                    case 'areEqual' : '''assert.equal(«generateAction(action.arguments.head)», «generateAction(action.arguments.tail.head)»)'''
                     default : '''Unsupported Assert operation: «operation.name»'''
                 }
                 default: super.generateBasicTypeOperationCall(classifier, action)

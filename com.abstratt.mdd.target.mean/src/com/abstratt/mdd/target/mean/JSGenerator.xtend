@@ -226,9 +226,15 @@ class JSGenerator {
                         case 'minutes' : '* 1000 * 60'
                         case 'seconds' : '* 1000'
                         case 'milliseconds' : ''
-                        default: '''Unsupported duration operation: «operation.name»'''
+                        default: '''Unsupported Duration operation: «operation.name»'''
                     }
                     '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
+                }
+                case 'Memo' : {
+                    switch (operation.name) {
+                        case 'fromString': generateAction(action.arguments.head)
+                        default: '''Unsupported Memo operation: «operation.name»'''
+                    }
                 }
                 case 'Collection' : {
                     switch (operation.name) {
