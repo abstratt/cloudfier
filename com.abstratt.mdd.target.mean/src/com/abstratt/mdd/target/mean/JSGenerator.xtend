@@ -14,6 +14,7 @@ import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Clause
 import org.eclipse.uml2.uml.ConditionalNode
+import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.DestroyLinkAction
@@ -28,6 +29,7 @@ import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.OpaqueExpression
+import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
@@ -42,6 +44,7 @@ import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
@@ -204,7 +207,7 @@ class JSGenerator {
         else
             switch (classifier.name) {
                 case 'Date' : switch (operation.name) {
-                    case 'year' : '''«generateAction(action.target)».getYear()'''
+                    case 'year' : '''(«generateAction(action.target)».getYear() + 1900)'''
                     case 'month' : '''«generateAction(action.target)».getMonth()'''
                     case 'day' : '''«generateAction(action.target)».getDate()'''
                     case 'today' : 'new Date()'
@@ -293,7 +296,10 @@ class JSGenerator {
                 default : '''UNKNOWN: «value.stringValue»'''
             }
             LiteralBoolean : '''«value.booleanValue»'''
-            LiteralNull : 'null'
+            LiteralNull : switch (value) {
+                case value.isVertexLiteral : '''"«value.resolveVertexLiteral.name»"'''
+                default : 'null'
+            }
             OpaqueExpression case value.behaviorReference : '''(function() «(value.resolveBehaviorReference as Activity).generateActivity»)()'''
             InstanceValue case value.instance instanceof EnumerationLiteral: '''"«value.instance.name»"'''
             default : Utils.unsupportedElement(value)
@@ -314,7 +320,11 @@ class JSGenerator {
         }
     }
     
-    def dispatch CharSequence generatePrimitiveValue(String value) {
+    def dispatch CharSequence generatePrimitiveValue(Object value) {
+        '''Unsupported value: «value» type: «value.class.name»'''
+    }
+    
+    def dispatch CharSequence generatePrimitiveValue(CharSequence value) {
         '''«value»'''
     }
     
@@ -324,6 +334,10 @@ class JSGenerator {
     
     def dispatch CharSequence generatePrimitiveValue(Boolean value) {
         '''«value»'''
+    }
+    
+    def dispatch CharSequence generatePrimitiveValue(Void value) {
+        '''null'''  
     }
     
     def dispatch CharSequence generatePrimitiveValue(Map<String, Object> value) {
@@ -347,9 +361,10 @@ class JSGenerator {
         'this'
     }
         
-    def generateActivity(Activity activity) {
+    def CharSequence generateActivity(Activity activity) {
         '''
         {
+            «IF activity.specification instanceof Operation»«(activity.specification as Operation).preconditions.map[generatePrecondition((activity.specification as Operation), it)].join()»«ENDIF»
             «generateActivityRootAction(activity)»
         }'''
     }
@@ -357,5 +372,21 @@ class JSGenerator {
     def generateActivityRootAction(Activity activity) {
         generateAction(activity.rootAction)
     }
+    
+        
+    def generatePredicate(Constraint predicate) {
+        val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
+        '''function() «generateActivity(predicateActivity)»'''        
+    }
+    
+    def generatePrecondition(Operation operation, Constraint constraint) {
+        '''
+        var precondition = «generatePredicate(constraint)»;
+        if (!precondition.call(this)) {
+            throw "Precondition on «operation.name» was violated"
+        }
+        '''
+    }
+    
     
 }

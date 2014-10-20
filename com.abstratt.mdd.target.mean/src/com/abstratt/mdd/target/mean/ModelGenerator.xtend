@@ -41,6 +41,7 @@ import static com.abstratt.mdd.target.mean.Utils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 
 class ModelGenerator extends JSGenerator {
 
@@ -67,13 +68,16 @@ class ModelGenerator extends JSGenerator {
     }
 
     def generateEntity(Class entity) {
+        val otherEntities = entities.toList.topologicalSort.filter[it != entity]
         val modelName = entity.name
         '''
             var mongoose = require('mongoose');    
             var Schema = mongoose.Schema;
             var cls = require('continuation-local-storage');
+            
+            «otherEntities.map[ '''var «name» = require('./«name».js');''' ].join('\n')»
 
-            «generateSchema(entity)»        
+            «generateSchema(entity)»
             
             // declare model on the schema
             var exports = module.exports = mongoose.model('«modelName»', «modelName.toFirstLower»Schema);
@@ -84,6 +88,8 @@ class ModelGenerator extends JSGenerator {
         val schemaVar = getSchemaVar(entity)
         val queryOperations = entity.queries
         val actionOperations = entity.actions
+        val attributes = entity.properties.filter[!derived]
+        val attributeInvariants = attributes.map[findInvariantConstraints].flatten
         val derivedAttributes = entity.properties.filter[derived]
         val derivedRelationships = entity.entityRelationships.filter[derived]
         val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
@@ -92,7 +98,12 @@ class ModelGenerator extends JSGenerator {
         '''
             «entity.generateComment»
             // declare schema
-            var «schemaVar» = new Schema(«generateSchemaCore(entity).toString.trim»);
+            var «schemaVar» = new Schema(«generateSchemaCore(entity, attributes).toString.trim»);
+            «IF !attributeInvariants.empty»
+            /*************************** INVARIANTS ***************************/
+            
+            «generateAttributeInvariants(attributeInvariants)»
+            «ENDIF»
             
             «IF !actionOperations.empty»
             /*************************** ACTIONS ***************************/
@@ -236,6 +247,21 @@ class ModelGenerator extends JSGenerator {
     def generateActionOperations(Iterable<Operation> actions) {
         actions.map[generateActionOperation].join('\n')
     }
+    
+    def generateAttributeInvariants(Iterable<Constraint> invariants) {
+        invariants.map[generateAttributeInvariant].join('\n')
+    }
+    
+    def generateAttributeInvariant(Constraint invariant) {
+        val property = invariant.constrainedElements.head as Property
+        val schemaVar = '''«property.class_.name.toFirstLower»Schema'''
+        '''
+        «schemaVar».path('«property.name»').validate(
+            «invariant.generatePredicate»,
+            'validation of `{PATH}` failed with value `{VALUE}`'
+        );
+        '''
+    }
 
     def generateActionOperation(Operation actionOperation) {
         val schemaVar = getSchemaVar(actionOperation.class_)
@@ -251,6 +277,7 @@ class ModelGenerator extends JSGenerator {
         if(firstMethod == null) 
             '''
             {
+                «action.preconditions.map[generatePrecondition(action, it)].join()»
                 «IF(!action.class_.findStateProperties.empty)»
                 this.handleEvent('«action.name»');    
                 «ENDIF»
@@ -260,14 +287,17 @@ class ModelGenerator extends JSGenerator {
     }
     
     override generateActivityRootAction(Activity activity) {
-        val hasState = activity.specification instanceof Operation && !activity.specification.static && !(activity.specification as Operation).class_.findStateProperties.empty
+        val isInstanceAction = activity.specification instanceof Operation && !activity.specification.static && (activity.specification as Operation).action
+        val hasState = isInstanceAction && !(activity.specification as Operation).class_.findStateProperties.empty
         '''
         «super.generateActivityRootAction(activity)»
-        «IF hasState»
+        «IF isInstanceAction»
+        «IF hasState && !(activity.specification as Operation).query»
         this.handleEvent('«activity.specification.name»');
         «ENDIF»
+        this.save();
+        «ENDIF»
         '''
-                
     }
 
     def generateQueryOperations(Iterable<Operation> queries) {
@@ -293,19 +323,19 @@ class ModelGenerator extends JSGenerator {
     
     override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
         val actionActivity = action.actionActivity
-        val execIfQuery = if (actionActivity.specification != null && (actionActivity.specification as Operation).finder) '.exec()' else ''
-        
-        super.generateAddVariableValueAction(action) + execIfQuery
+        if (actionActivity.specification instanceof Operation) {
+            val asOperation = actionActivity.specification as Operation
+            if (asOperation.query)
+                super.generateAddVariableValueAction(action) + '.exec()'
+            else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
+                super.generateAddVariableValueAction(action) + '.save()'
+            else super.generateAddVariableValueAction(action)
+        } else
+            super.generateAddVariableValueAction(action)
     }
-    
-    
     
     override def generateCreateObjectAction(CreateObjectAction action) {
-        '''new «generateClassReference(action.classifier)» ()'''
-    }
-    
-    override def generateClassReference(Classifier classifier) {
-        '''require('./«classifier.name».js')''' 
+        '''new «generateClassReference(action.classifier)»()'''
     }
     
     override dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
@@ -434,13 +464,13 @@ class ModelGenerator extends JSGenerator {
     }
     
 
-    def CharSequence generateSchemaCore(Class clazz) {
-        val attributes = clazz.properties.filter[!derived].map[generateSchemaAttribute(it)]
-        val relationships = clazz.entityRelationships.filter[!derived && !it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
-        val subschemas = clazz.entityRelationships.filter[!derived && it.childRelationship].map[generateSubSchema(it)]
+    def CharSequence generateSchemaCore(Class clazz, Iterable<Property> properties) {
+        val generatedAttributes = properties.map[generateSchemaAttribute(it)]
+        val generatedRelationships = clazz.entityRelationships.filter[!derived && !it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
+        val generatedSubschemas = clazz.entityRelationships.filter[!derived && it.childRelationship].map[generateSubSchema(it)]
         '''
         {
-            «(attributes + relationships + subschemas).join(',\n')»
+            «(generatedAttributes + generatedRelationships + generatedSubschemas).join(',\n')»
         }'''
     }
     
@@ -452,6 +482,11 @@ class ModelGenerator extends JSGenerator {
             attributeDef.put('required', true)
         if (attribute.type.enumeration)
             attributeDef.put('enum', attribute.type.enumerationLiterals.map['''"«it»"'''])
+        attributeDef.put('default', 
+            if (attribute.defaultValue != null) 
+                attribute.defaultValue.generateValue
+            else
+                attribute.type.generateDefaultValue)
         '''«attribute.name» : «generatePrimitiveValue(attributeDef)»'''
     }
 
@@ -465,7 +500,8 @@ class ModelGenerator extends JSGenerator {
     }
     
     def generateSubSchema(Property relationship) {
-        val subSchema = generateSchemaCore(relationship.type as Class)
+        val properties = (relationship.type as Class).properties.filter[!derived]
+        val subSchema = generateSchemaCore(relationship.type as Class, properties)
         '''«relationship.name» : «if (relationship.multivalued) '''[«subSchema»]''' else subSchema»'''
     }
 
@@ -525,7 +561,7 @@ class ModelGenerator extends JSGenerator {
         «transition.generateComment»if (this.«stateAttribute.name» == '«originalState.name»') {
             «IF (transition.guard != null)»
             guard = «generatePredicate(transition.guard)»;
-            if (guard()) {
+            if (guard.call(this)) {
                 «generateStateTransition(stateAttribute, originalState, targetState)»
             }
             «ELSE»
@@ -562,10 +598,4 @@ class ModelGenerator extends JSGenerator {
             default : unsupportedElement(e)
         }
     }
-    
-    def generatePredicate(Constraint predicate) {
-        val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
-        '''function() «generateActivity(predicateActivity)»'''        
-    }
-    
 }

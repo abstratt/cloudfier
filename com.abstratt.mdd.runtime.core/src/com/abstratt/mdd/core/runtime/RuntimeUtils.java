@@ -41,7 +41,7 @@ public class RuntimeUtils {
             return new ElementReferenceType(behavior);
         }
         if (MDDExtensionUtils.isVertexLiteral(valueSpec))
-            return new StateMachineType(MDDExtensionUtils.getVertexLiteral(valueSpec));
+            return new StateMachineType(MDDExtensionUtils.resolveVertexLiteral(valueSpec));
         if (valueSpec instanceof LiteralNull)
             return null;
         if (valueSpec instanceof LiteralSpecification)

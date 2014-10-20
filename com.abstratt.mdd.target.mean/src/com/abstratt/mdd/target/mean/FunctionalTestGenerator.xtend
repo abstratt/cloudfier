@@ -13,7 +13,6 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.TemplateUtils.*
-import org.eclipse.uml2.uml.CreateObjectAction
 
 class FunctionalTestGenerator extends ModelGenerator {
     
@@ -40,7 +39,7 @@ class FunctionalTestGenerator extends ModelGenerator {
     def CharSequence generateSuiteHelper(Class helperClass) {
         '''
         var mongoose = require('mongoose');
-        require('../models');
+        «entities.map['''var «name» = require('../models/«name».js');'''].join('\n')»
         
         var «helperClass.name» = {
             «helperClass.operations.map[ op |
@@ -89,33 +88,42 @@ class FunctionalTestGenerator extends ModelGenerator {
         '''
     }
     
-    override def generateClassReference(Classifier classifier) {
-        '''require('«IF classifier.entity»../models«ELSE».«ENDIF»/«classifier.name».js')'''
-    }
-    
     def CharSequence generateTestCaseHelper(Operation op) {
         '''
             var «op.name» = function(«op.ownedParameters.inputParameters.map[name].join(', ')») {
-                
+                «op.activity.generateActivityRootAction»
             };
         '''
     }
     
     def CharSequence generateTestCase(Operation testCase) {
         val testBehavior = testCase.methods.get(0) as Activity
+        val failureExpected = testCase.hasStereotype('Failure')
+        
         /*
          * We need to break the behavior into a sequence of blocks that run in order but asynchronously.
          * 
          */
         '''
         test('«testCase.name»', function(done) {
+            «IF failureExpected»
+            try {
+            «ENDIF»
             «testBehavior.rootAction.nodes.filter[(it as Action).terminal].map[
                 '''
                 // a block
                 «generateAction(it)»
                 '''
             ].join»
+            «IF failureExpected»
+            } catch (e) {
+                done();
+                return;
+            }
+            throw "Failure expected, but no failure occurred"
+            «ELSE»
             done();
+            «ENDIF»
         });
         '''
     }
