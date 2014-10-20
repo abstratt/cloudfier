@@ -13,8 +13,6 @@ import org.eclipse.core.runtime.CoreException
 
 class ModelGeneratorTests extends AbstractRepositoryBuildingTests {
 
-    ModelGenerator generator = new ModelGenerator
-
     def static Test suite() {
         return new TestSuite(ModelGeneratorTests)
     }
@@ -22,6 +20,10 @@ class ModelGeneratorTests extends AbstractRepositoryBuildingTests {
     new(String name) {
         super(name)
     }
+    
+    def ModelGenerator getGenerator() {
+        return new ModelGenerator(repository)
+    } 
 
     def testSimpleModel() throws CoreException, IOException {
         var source = '''
