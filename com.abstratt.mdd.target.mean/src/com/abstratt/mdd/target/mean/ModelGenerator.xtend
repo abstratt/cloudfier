@@ -295,7 +295,7 @@ class ModelGenerator extends JSGenerator {
         «IF hasState && !(activity.specification as Operation).query»
         this.handleEvent('«activity.specification.name»');
         «ENDIF»
-        this.save();
+        return this.save();
         «ENDIF»
         '''
     }
@@ -327,7 +327,7 @@ class ModelGenerator extends JSGenerator {
             val asOperation = actionActivity.specification as Operation
             if (asOperation.query)
                 super.generateAddVariableValueAction(action) + '.exec()'
-            else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
+            else if (false && action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
                 super.generateAddVariableValueAction(action) + '.save()'
             else super.generateAddVariableValueAction(action)
         } else

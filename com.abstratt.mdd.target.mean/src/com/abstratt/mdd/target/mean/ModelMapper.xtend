@@ -29,7 +29,7 @@ class ModelMapper implements ITopLevelMapper<Class> {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val topLevelEntities = appPackages.entities.filter[it.topLevel]
         val generator = new ModelGenerator(repository)
-        val result = newLinkedHashMap()
+        val result = newLinkedHashMap("models/index.js" -> generator.generateIndex)
         result.putAll(topLevelEntities.toMap[mapFileName(it)].mapValues[generator.generateEntity(it)])
         return result
     }    
