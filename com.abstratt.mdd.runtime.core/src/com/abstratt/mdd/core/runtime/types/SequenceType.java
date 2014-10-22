@@ -1,6 +1,8 @@
 package com.abstratt.mdd.core.runtime.types;
 
+import java.sql.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -28,8 +30,12 @@ public class SequenceType extends OrderedCollectionType {
                 .intValue());
     }
 
-    public BasicType first(@SuppressWarnings("unused") ExecutionContext context) {
+    public BasicType head(@SuppressWarnings("unused") ExecutionContext context) {
         return backEnd.isEmpty() ? null : ((List<BasicType>) backEnd).get(0);
+    }
+    
+    public SequenceType tail(@SuppressWarnings("unused") ExecutionContext context) {
+        return new SequenceType(getBaseType(), backEnd.size() < 2 ? Arrays.<BasicType>asList() : ((List<BasicType>) backEnd).subList(1, backEnd.size()));
     }
 
     @Override
