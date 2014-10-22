@@ -317,7 +317,7 @@ class ModelGenerator extends JSGenerator {
         generateActionOperationBehavior(queryOperation)
     }
     
-    def dispatch CharSequence generateAction(ReadExtentAction action) {
+    def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
         '''getEntity('«action.classifier.name»').find()'''
     }
     
@@ -338,7 +338,7 @@ class ModelGenerator extends JSGenerator {
         '''new «generateClassReference(action.classifier)»()'''
     }
     
-    override dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
+    override dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
         val asProperty = action.structuralFeature as Property
         if (asProperty.derivedRelationship && action.object != null)
             // derived relationships are actually getter functions

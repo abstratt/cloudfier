@@ -80,7 +80,11 @@ class JSGenerator {
         '''if («test.generateAction»)'''
     }
     
-    def dispatch CharSequence generateAction(ConditionalNode node) {
+    def dispatch CharSequence generateAction(Action toGenerate) {
+        doGenerateAction(toGenerate)
+    }
+    
+    def dispatch CharSequence doGenerateAction(ConditionalNode node) {
         val clauses = node.clauses
         val clauseCount = clauses.size()
         val current = new AtomicInteger(0)
@@ -94,32 +98,36 @@ class JSGenerator {
         '''«clauses.map[generateClause.apply(it)].join(' else ')»'''
     }
     
-    def dispatch CharSequence generateAction(StructuredActivityNode node) {
+    def dispatch CharSequence doGenerateAction(StructuredActivityNode node) {
         val container = node.eContainer
         // avoid putting a comma at a conditional node clause test 
         if (container instanceof ConditionalNode)
             if (container.clauses.exists[tests.contains(node)])
                 return '''«node.findStatements.head.generateAction»'''
-        // default path, generate as a statement        
-        '''«node.findStatements.map[generateStatement].join('\n')»'''
+        // default path, generate as a statement
+        '''«generateVariables(node)»«node.findTerminals.map[generateStatement].join('\n')»'''
+    }
+    
+    def generateVariables(StructuredActivityNode node) {
+        if(node.variables.empty) '' else node.variables.map['''var «name»;'''].join('\n') + '\n'
     }
 
-    def dispatch CharSequence generateAction(Action action) {
+    def dispatch CharSequence doGenerateAction(Action action) {
         // should never pick this version - a more specific variant should exist for all supported actions
         '''Unsupported «action.eClass.name»'''
     }
 
-    def dispatch CharSequence generateAction(CallOperationAction action) {
+    def dispatch CharSequence doGenerateAction(CallOperationAction action) {
         generateCallOperationAction(action)
     }
     
-    def dispatch CharSequence generateAction(SendSignalAction action) {
+    def dispatch CharSequence doGenerateAction(SendSignalAction action) {
         val target = action.target
         val methodName = action.signal.name.toFirstLower
         '''/*«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)*/'''
     }
     
-    def dispatch CharSequence generateAction(CreateObjectAction action) {
+    def dispatch CharSequence doGenerateAction(CreateObjectAction action) {
         generateCreateObjectAction(action)
     }
     
@@ -127,11 +135,11 @@ class JSGenerator {
         '{ }'
     }
     
-    def dispatch CharSequence generateAction(DestroyObjectAction action) {
+    def dispatch CharSequence doGenerateAction(DestroyObjectAction action) {
         '''delete «action.target.generateAction»'''
     }
     
-    def dispatch CharSequence generateAction(DestroyLinkAction action) {
+    def dispatch CharSequence doGenerateAction(DestroyLinkAction action) {
         val endData = action.endData.head
         '''
         «endData.value.generateAction».«endData.end.otherEnd.name» = null;
@@ -147,7 +155,7 @@ class JSGenerator {
         '''«generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }
     
-    def dispatch CharSequence generateAction(CreateLinkAction action) {
+    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
         val endData = new ArrayList(action.endData)
         '''
         // link «endData.map[it.end.name].join(' and ')»
@@ -155,7 +163,7 @@ class JSGenerator {
         «generateSetLinkEnd(endData.reverse, false)»''' 
     }
     
-    def dispatch CharSequence generateAction(ReadLinkAction action) {
+    def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
         val fedEndData = action.endData.get(0)
         val target = fedEndData.value
         val featureName = fedEndData.end.otherEnd.name
@@ -200,7 +208,7 @@ class JSGenerator {
         if (operator != null)
             switch (action.arguments.size()) {
                 // unary operator
-                case 0: '''«operator»(«generateAction(action.target)»)'''
+                case 0: '''«operator»«generateAction(action.target)»'''
                 case 1: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
@@ -250,7 +258,7 @@ class JSGenerator {
         generateAction(input.sourceAction)
     }
     
-    def dispatch CharSequence generateAction(AddStructuralFeatureValueAction action) {
+    def dispatch CharSequence doGenerateAction(AddStructuralFeatureValueAction action) {
         val target = action.object
         val value = action.value
         val featureName = action.structuralFeature.name
@@ -262,14 +270,14 @@ class JSGenerator {
         if (action.variable.name == '') 
             '''return «generateAction(action.value)»'''
         else
-            '''var «action.variable.name» = «generateAction(action.value)»'''
+            '''«action.variable.name» = «generateAction(action.value)»'''
     }
     
-    def dispatch CharSequence generateAction(AddVariableValueAction action) {
+    def dispatch CharSequence doGenerateAction(AddVariableValueAction action) {
         generateAddVariableValueAction(action)
     }
 
-    def dispatch CharSequence generateAction(ReadStructuralFeatureAction action) {
+    def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
         generateReadStructuralFeatureAction(action)
     }
     
@@ -283,11 +291,11 @@ class JSGenerator {
         }
     }
 
-    def dispatch CharSequence generateAction(ReadVariableAction action) {
+    def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
         '''«action.variable.name»'''
     }
     
-    def dispatch CharSequence generateAction(ValueSpecificationAction action) {
+    def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
         '''«action.value.generateValue»'''
     }
     
@@ -359,11 +367,11 @@ class JSGenerator {
     } 
     
     
-    def dispatch CharSequence generateAction(TestIdentityAction action) {
+    def dispatch CharSequence doGenerateAction(TestIdentityAction action) {
         '''«generateAction(action.first)» == «generateAction(action.second)»'''
     }
 
-    def dispatch CharSequence generateAction(ReadSelfAction action) {
+    def dispatch CharSequence doGenerateAction(ReadSelfAction action) {
         'this'
     }
         
@@ -376,7 +384,10 @@ class JSGenerator {
     }
     
     def generateActivityRootAction(Activity activity) {
-        generateAction(activity.rootAction)
+        val rootAction = activity.rootAction
+        '''
+        «generateAction(rootAction)»
+        '''
     }
     
         
