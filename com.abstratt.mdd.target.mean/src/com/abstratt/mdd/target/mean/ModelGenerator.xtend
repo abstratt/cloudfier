@@ -164,6 +164,7 @@ class ModelGenerator extends JSGenerator {
     
     def dispatch CharSequence generateFilterAction(ReadStructuralFeatureAction action) {
         /* TODO: in the case the predicate is just this action (no operator), generated code is incorrect */
+        val isCondition = action.result.type.name == 'Boolean'
         '''.where('«action.structuralFeature.name»')'''
     }
     
@@ -318,7 +319,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
-        '''getEntity('«action.classifier.name»').find()'''
+        '''«action.classifier.name».find()'''
     }
     
     override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
@@ -367,6 +368,8 @@ class ModelGenerator extends JSGenerator {
             super.generateCallOperationAction(action)
         else 
             switch action.operation.name {
+                case 'head' : action.target.generateAction
+                case 'asSequence' : action.target.generateAction
                 case 'select' : generateSelect(action)
                 case 'collect' : generateCollect(action)
                 case 'reduce' : generateReduce(action)
@@ -378,7 +381,7 @@ class ModelGenerator extends JSGenerator {
                 case 'sum' : generateAggregation(action, "sum")
                 case 'max' : generateAggregation(action, "max")
                 case 'min' : generateAggregation(action, "min")
-                default : unsupportedElement(action)
+                default : unsupportedElement(action, action.operation.name)
             }
     }
     
@@ -407,7 +410,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     private def generateExists(CallOperationAction action) {
-        'exists'
+        '''«action.generateSelect».findOne()'''
     }
     
     private def generateIncludes(CallOperationAction action) {
@@ -419,7 +422,7 @@ class ModelGenerator extends JSGenerator {
         val rootAction = transformer.rootAction.findStatements.head.sourceAction 
         if (rootAction instanceof ReadStructuralFeatureAction) {
             val property = rootAction.structuralFeature 
-            '''getEntity('«action.target.type.name»').aggregate()
+            '''«action.target.type.name».aggregate()
               .group({ _id: null, result: { $«operator»: '$«property.name»' } })
               .select('-id result')'''
         } else
