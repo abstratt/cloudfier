@@ -655,7 +655,7 @@ provider.registerServiceProvider("orion.edit.highlighter",
           },
           {  
              name: 'keyword.control.untitled',
-             match: '\\b(abstract|access|aggregation|alias|and|any|apply|association|as|attribute|begin|broadcast|by|class|component|composition|connector|constant|datatype|dependency|derived|destroy|do|else|elseif|end|entry|enumeration|exit|extends|external|function|id|if|implements|import|interface|in|initial|inout|invariant|is|link|model|navigable|new|nonunique|not|on|operation|or|ordered|out|package|port|postcondition|precondition|private|primitive|profile|property|protected|provided|public|query|raise|raises|readonly|reception|reference|required|return|role|self|send|signal|specializes|state|statemachine|static|stereotype|subsets|terminate|to|transition|type|unique|unlink|unordered|var|when)\\b'
+             match: '\\b(abstract|access|aggregation|alias|and|any|apply|association|as|attribute|begin|broadcast|by|class|component|composition|connector|constant|datatype|dependency|derived|destroy|do|else|elseif|end|entry|enumeration|exit|extends|external|function|id|if|implements|import|interface|in|initial|inout|invariant|is|link|model|navigable|new|nonunique|not|on|operation|or|ordered|out|package|port|postcondition|precondition|private|primitive|profile|property|protected|provided|public|query|raise|raises|readonly|reception|reference|required|return|role|self|send|signal|specializes|state|statemachine|static|stereotype|subsets|terminate|then|to|transition|type|unique|unlink|unordered|var|when)\\b'
           },
           {
             "match": "([a-zA-Z_][a-zA-Z0-9_]*)",
