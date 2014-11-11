@@ -1,20 +1,15 @@
 package com.abstratt.mdd.target.mean.tests
 
-import com.abstratt.kirra.mdd.core.KirraMDDCore
-import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
 import com.abstratt.mdd.core.tests.harness.AssertHelper
 import com.abstratt.mdd.target.mean.JSGenerator
 import java.io.IOException
-import java.util.Properties
 import junit.framework.Test
 import junit.framework.TestSuite
 import org.eclipse.core.runtime.CoreException
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 
-
-class JSGeneratorTests extends AbstractRepositoryBuildingTests {
+class JSGeneratorTests extends AbstractGeneratorTest {
 
     JSGenerator generator = new JSGenerator
 
@@ -76,17 +71,5 @@ class JSGeneratorTests extends AbstractRepositoryBuildingTests {
         }
         '''
         , mapped)
-    }
-    
-    override Properties createDefaultSettings() {
-        val defaultSettings = super.createDefaultSettings()
-        // so the kirra profile is available as a system package (no need to
-        // load)
-        defaultSettings.setProperty("mdd.enableKirra", Boolean.TRUE.toString())
-        // so kirra stereotypes are automatically applied
-        defaultSettings.setProperty(IRepository.WEAVER, KirraMDDCore.WEAVER)
-        // so classes extend Object by default (or else weaver ignores them)
-        defaultSettings.setProperty(IRepository.EXTEND_BASE_OBJECT, Boolean.TRUE.toString())
-        return defaultSettings
     }
 }

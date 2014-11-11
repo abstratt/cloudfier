@@ -204,16 +204,13 @@ public abstract class RuntimeAction {
     }
 
     protected void addResultValue(OutputPin resultPin, BasicType resultValue) {
-        this.getRuntimeObjectNode(resultPin).addValue(resultValue);
+        getRuntimeObjectNode(resultPin).addValue(resultValue);
     }
 
     protected void createObjectNodes() {
-        List ownedElements = this.instance.getOwnedElements();
-        for (Iterator i = ownedElements.iterator(); i.hasNext();) {
-            Element current = (Element) i.next();
+        for (Element current : instance.getOwnedElements())
             if (current instanceof Pin)
                 objectNodes.add(createRuntimeObjectNode((ObjectNode) current));
-        }
     }
 
     protected RuntimeObjectNode createRuntimeObjectNode(ObjectNode node) {

@@ -40,10 +40,10 @@ import static com.abstratt.mdd.target.mean.Utils.*
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
-class ModelGenerator extends JSGenerator {
+class ModelGenerator extends AsyncJSGenerator {
 
     protected IRepository repository
     
@@ -71,6 +71,7 @@ class ModelGenerator extends JSGenerator {
         val otherEntities = entities.toList.topologicalSort.filter[it != entity]
         val modelName = entity.name
         '''
+            var q = require("q");
             var mongoose = require('mongoose');    
             var Schema = mongoose.Schema;
             var cls = require('continuation-local-storage');
@@ -165,12 +166,15 @@ class ModelGenerator extends JSGenerator {
     def dispatch CharSequence generateFilterAction(ReadStructuralFeatureAction action) {
         /* TODO: in the case the predicate is just this action (no operator), generated code is incorrect */
         val isCondition = action.result.type.name == 'Boolean'
-        '''.where('«action.structuralFeature.name»')'''
+        //'''.where('«action.structuralFeature.name»')'''
+        
+        if (isCondition) '''{ '«action.structuralFeature.name»' : true }''' else '''«action.structuralFeature.name»'''
     }
     
     def dispatch CharSequence generateFilterAction(ReadLinkAction action) {
         val fedEndData = action.endData?.head
-        '''.where('«fedEndData.end.otherEnd.name»')'''
+        //'''.where('«fedEndData.end.otherEnd.name»')'''
+        '''{ '«fedEndData.end.otherEnd.name»' : «generateFilterAction(fedEndData.value.sourceAction)»  }'''
     }
     
     def dispatch CharSequence generateFilterAction(ReadVariableAction action) {
@@ -182,7 +186,8 @@ class ModelGenerator extends JSGenerator {
     }
     
     def dispatch CharSequence generateFilterAction(TestIdentityAction action) {
-        '''«generateFilterAction(action.first.sourceAction)».eq(«generateFilterAction(action.second.sourceAction)»)'''
+        //'''«generateFilterAction(action.first.sourceAction)».eq(«generateFilterAction(action.second.sourceAction)»)'''
+        '''{ «generateFilterAction(action.first.sourceAction)» : «generateFilterAction(action.second.sourceAction)» }'''
     }
     
     def dispatch CharSequence generateFilterAction(ValueSpecificationAction action) {
@@ -201,8 +206,16 @@ class ModelGenerator extends JSGenerator {
     }
     
     def dispatch CharSequence generateFilterAction(CallOperationAction action) {
-        val CharSequence argument = if (action.arguments.empty) 'true' else generateFilterAction(action.arguments.head.sourceAction)
-        '''«generateFilterAction(action.target.sourceAction)».«action.operation.toQueryOperator»(«argument»)'''
+        //val CharSequence argument = if (action.arguments.empty) 'true' else generateFilterAction(action.arguments.head.sourceAction)
+        //'''«generateFilterAction(action.target.sourceAction)».«action.operation.toQueryOperator»(«argument»)'''
+        //'''{ «generateFilterAction(action.target.sourceAction)» : {'«action.operation.toQueryOperator»': «generateFilterAction(action.arguments.head.sourceAction)»} }'''
+        '''
+        {
+            «action.operation.toQueryOperator» : [ 
+                «generateFilterAction(action.target.sourceAction)»,
+                «if (action.arguments.empty) 'true' else generateFilterAction(action.arguments.head.sourceAction)»
+            ]
+        }'''        
     }
     
     def generatePrivateOperations(Iterable<Operation> operations) {
@@ -226,9 +239,13 @@ class ModelGenerator extends JSGenerator {
         val prefix = if (derivedAttribute.type.name == 'Boolean') 'is' else 'get'
         '''
         «IF derivedAttribute.static»
-        «derivedAttribute.generateComment»«schemaVar».statics.«prefix»«derivedAttribute.name.toFirstUpper» = function () «derivation.generateActivity»;
+        «derivedAttribute.generateComment»«schemaVar».statics.«prefix»«derivedAttribute.name.toFirstUpper» = function () {
+            «derivation.generateActivity»
+        };
         «ELSE»
-        «derivedAttribute.generateComment»«schemaVar».virtual('«derivedAttribute.name»').get(function () «derivation.generateActivity»);
+        «derivedAttribute.generateComment»«schemaVar».virtual('«derivedAttribute.name»').get(function () {
+            «derivation.generateActivity»
+        });
         «ENDIF»
         '''
     }
@@ -241,7 +258,9 @@ class ModelGenerator extends JSGenerator {
         val derivation = defaultValue.resolveBehaviorReference as Activity
         val namespace = if (derivedRelationship.static) 'statics' else 'methods' 
         '''
-        «derivedRelationship.generateComment»«schemaVar».«namespace».get«derivedRelationship.name.toFirstUpper» = function () «derivation.generateActivity»;
+        «derivedRelationship.generateComment»«schemaVar».«namespace».get«derivedRelationship.name.toFirstUpper» = function () {
+            «derivation.generateActivity»
+        };
         '''
     }
     
@@ -275,31 +294,71 @@ class ModelGenerator extends JSGenerator {
     
     def generateActionOperationBehavior(Operation action) {
         val firstMethod = action.methods?.head
-        if(firstMethod == null) 
+        if(firstMethod == null) {
+            // a method-less operation, generate default action implementation (check preconditions and SSM animation)
+            application.newActivityContext(null)
+            try {
+                // call generatePipeline directly as there is no activity to generate stuff from
+                addActionPrologue(action)
+                addActionEpilogue(action)
+                '''
+                {
+                    «generatePipeline()»
+                }'''
+            } finally {
+                application.dropActivityContext
+            } 
+        } else 
             '''
             {
-                «action.preconditions.map[generatePrecondition(action, it)].join()»
-                «IF(!action.class_.findStateProperties.empty)»
-                this.handleEvent('«action.name»');    
-                «ENDIF»
-            }''' 
-        else 
-            generateActivity(firstMethod as Activity)
+                «generateActivity(firstMethod as Activity)»
+            }'''
     }
     
-    override generateActivityRootAction(Activity activity) {
-        val isInstanceAction = activity.specification instanceof Operation && !activity.specification.static && (activity.specification as Operation).action
-        val hasState = isInstanceAction && !(activity.specification as Operation).class_.findStateProperties.empty
+    override generateActivityPrefix(Activity activity) {
         '''
-        «super.generateActivityRootAction(activity)»
-        «IF isInstanceAction»
-        «IF hasState && !(activity.specification as Operation).query»
-        this.handleEvent('«activity.specification.name»');
-        «ENDIF»
-        return this.save();
-        «ENDIF»
+        «super.generateActivityPrefix(activity)»
         '''
     }
+    
+    override addActionPrologue(Operation action) {
+//        val stages = context.stages
+//        action.preconditions.map[
+//            generatePredicate(it)
+//            stages += '''
+//            function (outcome) {
+//                if (!outcome) {
+//                    throw "«StringUtils.trimToNull(it.comments) ?: '''Precondition violated: «it.name ?: '?'»'''»";
+//                }
+//            }
+//            '''
+//        ]
+    }
+    
+    override addActionEpilogue(Operation action) {
+//        val hasState = !action.class_.findStateProperties.empty
+//        if (hasState) {
+//            context.stages += generateActionCallEventTrigger(action)
+//        }
+//        context.stages += generateObjectSaving
+    }
+    
+        
+    def generateActionCallEventTrigger(Operation action) {
+        '''
+        function () {
+            this.handleEvent('«action.name»')
+        }'''
+    }
+    
+    def generateObjectSaving() {
+        '''
+        function () {
+            console.log('Saving...');
+            return this.save(); 
+        }'''
+    }
+    
 
     def generateQueryOperations(Iterable<Operation> queries) {
         queries.map[generateQueryOperation(it)].join('\n')
@@ -319,7 +378,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
-        '''«action.classifier.name».find()'''
+        '''this.model('«action.classifier.name»').find()'''
     }
     
     override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
@@ -328,7 +387,7 @@ class ModelGenerator extends JSGenerator {
             val asOperation = actionActivity.specification as Operation
             if (asOperation.query)
                 super.generateAddVariableValueAction(action) + '.exec()'
-            else if (false && action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
+            else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
                 super.generateAddVariableValueAction(action) + '.save()'
             else super.generateAddVariableValueAction(action)
         } else
@@ -386,7 +445,7 @@ class ModelGenerator extends JSGenerator {
     }
     
     private def generateSelect(CallOperationAction action) {
-        '''«generateAction(action.target.sourceAction)»«generateFilter(action.arguments.head.sourceClosure)»'''
+        '''«generateAction(action.target.sourceAction)».where(«generateFilter(action.arguments.head.sourceClosure)»)'''
     }
     
     private def generateCollect(CallOperationAction action) {
@@ -451,17 +510,17 @@ class ModelGenerator extends JSGenerator {
     
     private def toQueryOperator(Operation operation) {
         switch (operation.name) {
-            case 'and': 'and'
-            case 'or': 'or'
+            case 'and': '$and'
+            case 'or': '$or'
             // workaround - not is mapped to ne(true)
-            case 'not': 'ne'
-            case 'notEquals': 'ne'
-            case 'lowerThan': 'lt'
-            case 'greaterThan': 'gt'
-            case 'lowerOrEquals': 'lte'
-            case 'greaterOrEquals': 'gte'
-            case 'equals': 'equals'
-            case 'same': 'equals'
+            case 'not': '$ne'
+            case 'notEquals': '$ne'
+            case 'lowerThan': '$lt'
+            case 'greaterThan': '$gt'
+            case 'lowerOrEquals': '$lte'
+            case 'greaterOrEquals': '$gte'
+            case 'equals': '$eq'
+            case 'same': '$eq'
             default: '''/*unknown:«operation.name»*/«operation.name»'''
         }
     }
@@ -547,7 +606,7 @@ class ModelGenerator extends JSGenerator {
         '''
         
     }
-    
+
     def generateEventHandler(Class entity, Property stateAttribute, Event event, List<Trigger> triggers) {
         '''
         case '«event.generateName»' :
@@ -578,14 +637,18 @@ class ModelGenerator extends JSGenerator {
         «IF (originalState instanceof State)»
             «IF (originalState.exit != null)»
             // on exiting «originalState.name»
-            (function() «generateActivity(originalState.exit as Activity)»)();
+            (function() {
+                «generateActivity(originalState.exit as Activity)»
+            })();
             «ENDIF»
         «ENDIF»
         this.«stateAttribute.name» = '«newState.name»';
         «IF (newState instanceof State)»
             «IF (newState.entry != null)»
             // on entering «newState.name»
-            (function() «generateActivity(newState.entry as Activity)»)();
+            (function() {
+                «generateActivity(newState.entry as Activity)»
+            })();
             «ENDIF»
         «ENDIF»
         return;
@@ -601,4 +664,5 @@ class ModelGenerator extends JSGenerator {
             default : unsupportedElement(e)
         }
     }
+    
 }

@@ -8,6 +8,7 @@ public class AllTests {
         val suite = new TestSuite(AllTests.getName())
         suite.addTest(ModelGeneratorTests.suite())
         suite.addTest(JSGeneratorTests.suite())
+        suite.addTest(PipelineTests.suite())
         return suite
     } 
 }

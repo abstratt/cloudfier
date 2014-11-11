@@ -35,13 +35,6 @@ public abstract class RuntimeObjectNode {
         this.outgoing.add(edge);
     }
 
-    /**
-     * <strong>12.3.38 ObjectNode (from BasicActivities,
-     * CompleteActivities)</strong> - &quot;An object node may not contain more
-     * tokens than its upper bound.&quot;
-     * 
-     * @param newValue
-     */
     public void addValue(BasicType newValue) {
         basicAddValue(newValue);
     }
@@ -153,6 +146,13 @@ public abstract class RuntimeObjectNode {
     }
 
     protected void basicAddValue(BasicType newValue) {
+        /*
+         * <strong>12.3.38 ObjectNode (from BasicActivities,
+         * CompleteActivities)</strong> - &quot;An object node may not contain more
+         * tokens than its upper bound.&quot;
+         * 
+         * @param newValue
+         */
         if (isFull())
             throw new ObjectNodeIsFullException(this.toString());
         values.add(newValue);

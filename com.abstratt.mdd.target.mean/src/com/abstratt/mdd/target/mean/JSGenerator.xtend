@@ -54,10 +54,15 @@ import static extension org.apache.commons.lang3.text.WordUtils.*
  */
 class JSGenerator {
     
-    
     def generateStatement(Action statementAction) {
-        val optionalComma = if (statementAction instanceof StructuredActivityNode) '' else ';'
-        '''«generateAction(statementAction)»«optionalComma»'''
+        val isBlock = statementAction instanceof StructuredActivityNode
+        val generated = generateAction(statementAction)
+        if (isBlock)
+            // actually a block
+            return generated 
+        // else generate as a statement
+        //console.log("«generated.toString.replaceAll('"', '\'').replaceAll('\n', '\\n')»");
+        '''«generated»;'''
     }
     
     def generateComment(Element element) {
@@ -81,6 +86,10 @@ class JSGenerator {
     }
     
     def dispatch CharSequence generateAction(Action toGenerate) {
+        generateActionProper(toGenerate)
+    }
+    
+    def CharSequence generateActionProper(Action toGenerate) {
         doGenerateAction(toGenerate)
     }
     
@@ -105,8 +114,13 @@ class JSGenerator {
             if (container.clauses.exists[tests.contains(node)])
                 return '''«node.findStatements.head.generateAction»'''
         // default path, generate as a statement
+        generateStructuredActivityNodeAsBlock(node)
+    }
+    
+    def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
         '''«generateVariables(node)»«node.findTerminals.map[generateStatement].join('\n')»'''
     }
+    
     
     def generateVariables(StructuredActivityNode node) {
         if(node.variables.empty) '' else node.variables.map['''var «name»;'''].join('\n') + '\n'
@@ -124,7 +138,7 @@ class JSGenerator {
     def dispatch CharSequence doGenerateAction(SendSignalAction action) {
         val target = action.target
         val methodName = action.signal.name.toFirstLower
-        '''/*«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)*/'''
+        '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)'''
     }
     
     def dispatch CharSequence doGenerateAction(CreateObjectAction action) {
@@ -255,7 +269,7 @@ class JSGenerator {
     }
     
     def dispatch CharSequence generateAction(InputPin input) {
-        generateAction(input.sourceAction)
+        generateActionProper(input.sourceAction)
     }
     
     def dispatch CharSequence doGenerateAction(AddStructuralFeatureValueAction action) {
@@ -263,7 +277,7 @@ class JSGenerator {
         val value = action.value
         val featureName = action.structuralFeature.name
 
-        '''«generateAction(target)».«featureName» = «generateAction(value)»'''
+        '''«generateAction(target)»['«featureName»'] = «generateAction(value)»'''
     }
     
     def CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
@@ -285,9 +299,9 @@ class JSGenerator {
         val feature = action.structuralFeature
         if (action.object == null) {
             val clazz = (action.structuralFeature as Property).class_
-            '''«clazz.name».«feature.name»'''
+            '''«clazz.name»['«feature.name»']'''
         } else {
-            '''«generateAction(action.object)».«feature.name»'''
+            '''«generateAction(action.object)»['«feature.name»']'''
         }
     }
 
@@ -314,7 +328,10 @@ class JSGenerator {
                 case value.isVertexLiteral : '''"«value.resolveVertexLiteral.name»"'''
                 default : 'null'
             }
-            OpaqueExpression case value.behaviorReference : '''(function() «(value.resolveBehaviorReference as Activity).generateActivity»)()'''
+            OpaqueExpression case value.behaviorReference : '''
+            (function() {
+                «(value.resolveBehaviorReference as Activity).generateActivity»
+            })()'''
             InstanceValue case value.instance instanceof EnumerationLiteral: '''"«value.instance.name»"'''
             default : Utils.unsupportedElement(value)
         }
@@ -377,29 +394,44 @@ class JSGenerator {
         
     def CharSequence generateActivity(Activity activity) {
         '''
-        {
-            «IF activity.specification instanceof Operation»«(activity.specification as Operation).preconditions.map[generatePrecondition((activity.specification as Operation), it)].join()»«ENDIF»
-            «generateActivityRootAction(activity)»
-        }'''
+        «generateActivityPrefix(activity)»
+        «generateActivityRootAction(activity)»
+        '''
+    }
+    
+    def generatePreconditions(Operation operation) {
+        operation.preconditions.map[generatePrecondition(operation, it)].join()
+    }
+    
+    def generateActivityPrefix(Activity activity) {
+//        val specification = activity.specification
+//        if (specification instanceof Operation) {
+//            generatePreconditions(specification)
+//        }
+        ''
     }
     
     def generateActivityRootAction(Activity activity) {
-        val rootAction = activity.rootAction
         '''
-        «generateAction(rootAction)»
+        «generateAction(activity.rootAction)»
         '''
     }
     
         
     def generatePredicate(Constraint predicate) {
         val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
-        '''function() «generateActivity(predicateActivity)»'''        
+        '''
+        function() {
+            «generateActivity(predicateActivity)»
+        }
+        '''        
     }
     
     def generatePrecondition(Operation operation, Constraint constraint) {
         '''
         var precondition = «generatePredicate(constraint)»;
         if (!precondition.call(this)) {
+            console.log("Violated: «generatePredicate(constraint).toString.replaceAll('"', '\'').split('\n').join('\\n')»");
             throw "Precondition on «operation.name» was violated"
         }
         '''

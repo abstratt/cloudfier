@@ -47,7 +47,10 @@ class FunctionalTestGenerator extends ModelGenerator {
         var «helperClass.name» = {
             «helperClass.operations.map[ op |
                 val method = op.methods.get(0) as Activity
-                '''«op.name» : function(«op.ownedParameters.inputParameters.map[name].join(', ')») «method.generateActivity»'''
+                '''
+                «op.name» : function(«op.ownedParameters.inputParameters.map[name].join(', ')») {
+                    «method.generateActivity»
+                }'''
             ].join(',\n')»
         };
         
@@ -114,25 +117,31 @@ class FunctionalTestGenerator extends ModelGenerator {
         // extracted as a block as we generate from different places depending on whether
         // a failure is expected
         val generateCoreBehavior = [|
-            // collect local variables and declare them so they can be shared by the different async functions
-            val variables = newArrayList
-            val mineVariables = newArrayList([StructuredActivityNode a | return])
-            mineVariables.set(0, [ StructuredActivityNode san | 
-                variables.addAll(san.variables)
-                san.nodes.filter[it instanceof StructuredActivityNode].map[it as StructuredActivityNode].forEach[
-                    mineVariables.get(0).apply(it)
-                ]
-            ])
-            mineVariables.get(0).apply(actualRootAction)
-            
-            '''
-                «IF !variables.empty»var «variables.map[name].join(', ')»;«ENDIF»
-                q().«actualRootAction.findTerminals.map[
-                '''
-                then(function () {
-                    «generateAction(it)»
-                })'''
-            ].join('.')».then(done, done);'''
+//            // collect local variables and declare them so they can be shared by the different async functions
+//            val variables = newArrayList
+//            val mineVariables = newArrayList([StructuredActivityNode a | return])
+//            mineVariables.set(0, [ StructuredActivityNode san | 
+//                variables.addAll(san.variables)
+//                san.nodes.filter[it instanceof StructuredActivityNode].map[it as StructuredActivityNode].forEach[
+//                    mineVariables.head.apply(it)
+//                ]
+//            ])
+//            mineVariables.get(0).apply(actualRootAction)
+//            newContext(testBehavior)
+//            try {
+//                '''
+//                    «IF !variables.empty»var «variables.map[name].join(', ')»;«ENDIF»
+//                    return q().«actualRootAction.findTerminals.map[
+//                    '''
+//                    then(function () {
+//                        «generateAction(it)»
+//                    })'''
+//                ].join('.')».then(done, done);
+//                '''
+//            } finally {
+//                dropContext
+//            }
+            generateActivityRootAction(testBehavior)
         ]
         
         /*
@@ -161,15 +170,19 @@ class FunctionalTestGenerator extends ModelGenerator {
         if (classifier != null)
             return switch (classifier.qualifiedName) {
                 case 'mdd_types::Assert' : switch (operation.name) {
-                    case 'isNull' : '''assert.ok(«generateAction(action.arguments.head)» == null, '«generateAction(action.arguments.head)» == null')'''
-                    case 'isNotNull' : '''assert.ok(«generateAction(action.arguments.head)» != null, '«generateAction(action.arguments.head)» != null')'''
-                    case 'isTrue' : '''assert.strictEqual(«generateAction(action.arguments.head)», true, '«generateAction(action.arguments.head)» === true')'''
-                    case 'areEqual' : '''assert.equal(«generateAction(action.arguments.head)», «generateAction(action.arguments.tail.head)», '«generateAction(action.arguments.head)» == «generateAction(action.arguments.tail.head)»')'''
+                    case 'isNull' : '''assert.ok(«generateAction(action.arguments.head)» == null)'''
+                    case 'isNotNull' : '''assert.ok(«generateAction(action.arguments.head)» != null)'''
+                    case 'isTrue' : '''assert.strictEqual(«generateAction(action.arguments.head)», true)'''
+                    case 'areEqual' : '''assert.equal(«generateAction(action.arguments.head)», «generateAction(action.arguments.tail.head)»)'''
                     default : '''Unsupported Assert operation: «operation.name»'''
                 }
                 default: super.generateBasicTypeOperationCall(classifier, action)
             }
         super.generateBasicTypeOperationCall(classifier, action)         
+    }
+    
+    def render(CharSequence cs, String quote) {
+        '''«quote»«cs.toString.replaceAll(quote, '\\\'' + quote).replaceAll('\n', '\\\'')»«quote»'''
     }
     
     
@@ -181,5 +194,7 @@ class FunctionalTestGenerator extends ModelGenerator {
         '''
     }
     
-    
+    override generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
+        super.generateStructuredActivityNodeAsBlock(node)
+    }
 }
