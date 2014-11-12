@@ -65,9 +65,10 @@ class ApplicationContext {
                 false
             ReadExtentAction:
                 {
-                    // only async if used as a return value 
-                    val targetAction = action.result.targetAction
-                    targetAction instanceof AddVariableValueAction && (targetAction as AddVariableValueAction).variable.name.empty
+                    false
+//                    // only async if used as a return value 
+//                    val targetAction = action.result.targetAction
+//                    targetAction instanceof AddVariableValueAction && (targetAction as AddVariableValueAction).variable.name.empty
                 }  
             SendSignalAction:
                 false

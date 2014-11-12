@@ -42,6 +42,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import org.eclipse.uml2.uml.InputPin
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -277,7 +278,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val schemaVar = '''«property.class_.name.toFirstLower»Schema'''
         '''
         «schemaVar».path('«property.name»').validate(
-            «invariant.generatePredicate»,
+            «invariant.generatePredicate.toString.trim»,
             'validation of `{PATH}` failed with value `{VALUE}`'
         );
         '''
@@ -407,6 +408,24 @@ class ModelGenerator extends AsyncJSGenerator {
         else
             // default, read as slot
             generateReadStructuralFeatureAction(action)
+    }
+    
+    override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+        val asProperty = action.structuralFeature as Property
+        if (action.object != null && asProperty.linkRelationship)
+            return generateTraverseRelationshipAction(action.object, asProperty)
+        super.generateReadStructuralFeatureAction(action)
+    }
+
+    override generateTraverseRelationshipAction(InputPin target, Property property) {
+        if (property.childRelationship)
+            // nested objects can be read as normal JS slots
+            return generateTraverseRelationshipAction(target, property)
+
+        if (property.otherEnd.multivalued)            
+            '''«property.type.name».find({ _id : «target.sourceAction.generateAction».«property.name» }).exec()'''
+        else
+            '''«property.type.name».findOne({ _id : «target.sourceAction.generateAction».«property.name» }).exec()'''
     }
     
     override CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
@@ -592,6 +611,7 @@ class ModelGenerator extends AsyncJSGenerator {
             return ''
         }
         val triggersPerEvent = stateMachine.findTriggersPerEvent
+        val events = triggersPerEvent.keySet
         val schemaVar = getSchemaVar(entity)
         val needsGuard = stateMachine.vertices.exists[it.outgoings.exists[it.guard != null]]
         '''
@@ -603,6 +623,12 @@ class ModelGenerator extends AsyncJSGenerator {
                     «triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')»
                 }
             };
+            
+            «events.map[event | '''
+            «schemaVar».methods.«event.generateName.toString.toFirstLower» = function () {
+                this.handleEvent('«event.generateName»');
+            };
+            '''].join('')»
         '''
         
     }

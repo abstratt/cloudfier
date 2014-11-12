@@ -178,9 +178,27 @@ class JSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
+        generateReadLinkAction(action)
+    }
+    
+    def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+        val feature = action.structuralFeature as Property
+        if (action.object == null) {
+            val clazz = (action.structuralFeature as Property).class_
+            '''«clazz.name»['«feature.name»']'''
+        } else {
+            '''«generateAction(action.object)»['«feature.name»']'''
+        }
+    }
+    
+    def generateReadLinkAction(ReadLinkAction action) {
         val fedEndData = action.endData.get(0)
         val target = fedEndData.value
-        val featureName = fedEndData.end.otherEnd.name
+        '''«generateTraverseRelationshipAction(target, fedEndData.end.otherEnd)»'''
+    }
+    
+    def generateTraverseRelationshipAction(InputPin target, Property property) {
+        val featureName = property.name
         '''«generateAction(target)».«featureName»'''
     }
     
@@ -295,16 +313,6 @@ class JSGenerator {
         generateReadStructuralFeatureAction(action)
     }
     
-    def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
-        val feature = action.structuralFeature
-        if (action.object == null) {
-            val clazz = (action.structuralFeature as Property).class_
-            '''«clazz.name»['«feature.name»']'''
-        } else {
-            '''«generateAction(action.object)»['«feature.name»']'''
-        }
-    }
-
     def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
         '''«action.variable.name»'''
     }
