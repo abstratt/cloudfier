@@ -48,6 +48,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import org.eclipse.uml2.uml.Variable
 
 /** 
  * A UML-to-Javascript code generator.
@@ -123,7 +124,11 @@ class JSGenerator {
     
     
     def generateVariables(StructuredActivityNode node) {
-        if(node.variables.empty) '' else node.variables.map['''var «name»;'''].join('\n') + '\n'
+        generateVariableBlock(node.variables)
+    }
+    
+    def generateVariableBlock(Iterable<Variable> variables) {
+        if(variables.empty) '' else variables.map['''var «name»;'''].join('\n') + '\n'
     }
 
     def dispatch CharSequence doGenerateAction(Action action) {

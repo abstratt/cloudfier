@@ -389,6 +389,7 @@ class ModelGenerator extends AsyncJSGenerator {
             if (asOperation.query)
                 super.generateAddVariableValueAction(action) + '.exec()'
             else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
+                // returning an entity instance from an action - save the current object first
                 super.generateAddVariableValueAction(action) + '.save()'
             else super.generateAddVariableValueAction(action)
         } else

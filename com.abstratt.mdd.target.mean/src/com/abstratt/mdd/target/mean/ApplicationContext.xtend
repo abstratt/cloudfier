@@ -91,12 +91,17 @@ class ApplicationContext {
     def boolean isAsynchronous(Activity activity) {
         if (synchronism.containsKey(activity)) {
             val cached = synchronism.get(activity)
-            return if(cached == null) true else cached
+            return if(cached == null)
+                // yet TBD - assume the worse 
+                true 
+            else
+                cached
         }
         synchronism.put(activity, null)
         val specification = activity.specification
         if (specification instanceof Operation) {
-            if (specification.action) {
+            // if an action or returns an entity instance
+            if (specification.action || specification.getReturnResult?.type?.entity) {
                 synchronism.put(activity, true)
                 return true
             }
@@ -110,8 +115,7 @@ class ApplicationContext {
                 synchronism.put(activity, true)
                 return true
             }
-
-        // all preconditions are sync, go on to check the activity itself
+            // all preconditions are sync, go on to check the activity itself
         }
         val result = activity.allOwnedElements.filter[it instanceof Action].exists [
             isAsynchronous(it as Action)

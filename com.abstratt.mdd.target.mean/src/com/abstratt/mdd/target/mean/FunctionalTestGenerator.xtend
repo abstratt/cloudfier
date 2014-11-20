@@ -104,7 +104,7 @@ class FunctionalTestGenerator extends ModelGenerator {
     }
     
     override generateVariables(StructuredActivityNode node) {
-        ''
+        super.generateVariables(node)
     }
     
     def CharSequence generateTestCase(Operation testCase) {
@@ -141,7 +141,12 @@ class FunctionalTestGenerator extends ModelGenerator {
 //            } finally {
 //                dropContext
 //            }
-            generateActivityRootAction(testBehavior)
+            '''
+               var behavior = function() {
+                   «generateActivityRootAction(testBehavior)»
+               };
+               behavior().then(done, done);
+            '''
         ]
         
         /*

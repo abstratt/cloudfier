@@ -4,9 +4,9 @@ import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Operation
 
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import com.abstratt.mdd.target.mean.ActivityContext.Stage
+import com.abstratt.mdd.core.util.ActivityUtils
 import org.eclipse.uml2.uml.StructuredActivityNode
 
 class AsyncJSGenerator extends JSGenerator {
@@ -15,26 +15,13 @@ class AsyncJSGenerator extends JSGenerator {
 
 
     override generateActivityRootAction(Activity activity) {
-        val action = if(activity.specification instanceof Operation && !activity.specification.static &&
-                (activity.specification as Operation).action) (activity.specification as Operation) else null
-        val isInstanceActionOperation = action != null
         application.newActivityContext(activity)
         try {
             if (!application.isAsynchronous(activity)) {
                 return super.generateActivityRootAction(activity)
             }
             application.activityContext.buildPipeline(activity.rootAction)
-
-            //            if (isInstanceActionOperation) 
-            //                addActionPrologue(action)
-            //            context.stages += '''
-            //            function () {
-            //                «super.generateActivityRootAction(activity)»
-            //            }
-            //            '''
-            //            if (isInstanceActionOperation) 
-            //                addActionEpilogue(action)
-            generatePipeline()
+            '''«generatePipeline()»'''
         } finally {
             application.dropActivityContext
         }
@@ -59,8 +46,10 @@ class AsyncJSGenerator extends JSGenerator {
     
     def generateReturn(Action rootAction) {
         val kernel = rootAction.generateAction
-        if (rootAction.outputs.empty)
-            return kernel
+        if (rootAction.outputs.empty) {
+            val optionalSemicolon = if (kernel.toString.trim.endsWith(';')) '' else ';'
+            return '''«kernel»«optionalSemicolon»'''
+        }
         '''return «kernel»;'''
     }
     
@@ -73,7 +62,9 @@ class AsyncJSGenerator extends JSGenerator {
     
     def generateStageMultipleChildren(Stage stage) {
         '''
-        q().all([«stage.substages.map[generateStage(true)].join(', ')»]).spread(function(«stage.substages.map[alias].join(', ')») {
+        q().all([
+            «stage.substages.map[generateStage(true)].join(', ')»
+        ]).spread(function(«stage.substages.map[alias].join(', ')») {
             «stage.rootAction.generateReturn»
         })'''
     }
@@ -86,11 +77,25 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     def generatePipelineFrom(Stage rootStage) {
+        val rootStageVariables = context.findVariables
         // always generate a return, caller may be interested in promise
-        '''return «context.rootStage.generateStage(false)»'''
+        '''
+        «IF !rootStageVariables.empty»
+        «generateVariableBlock(rootStageVariables)»
+        «ENDIF» 
+        return «context.rootStage.generateStage(false)»
+        '''
+    }
+    
+    override generateVariables(StructuredActivityNode node) {
+        // do not declare variables in async blocks/actions, as those need to be in the 
+        // shared closure for all blocks
+        if (application.isAsynchronous(node.actionActivity)) '' else super.generateVariables(node)
     }
 
     def generatePipeline() {
+        if (context.activity != null && !application.isAsynchronous(context.activity))
+            throw new IllegalStateException
         if (context.stagedActions.empty)
             return ''
         if (context.rootStage.substages.size == 1)
@@ -105,17 +110,13 @@ class AsyncJSGenerator extends JSGenerator {
     }
 
     override generateActionProper(Action toGenerate) {
-
-        //        if (context.isStaged(toGenerate)) {
-        //            return context.findStage(toGenerate).alias  
-        //        }
-        //        val asyncProducers = action.inputs.map[ it.sourceAction ].filter[it.asynchronous]
-        //        asyncProducers.forEach [ this.context.stage(it, it.eClass.name.toFirstLower) ]
         val stage = context.findStage(toGenerate)
         if (application.isAsynchronous(context.activity)) {
             if (stage.rootAction == toGenerate) {
-                if (stage.generated)
-                    return context.findStage(toGenerate).alias
+                if (stage.generated) {
+                    val previouslyGeneratedStage = context.findStage(toGenerate)
+                    return if (previouslyGeneratedStage.producer) previouslyGeneratedStage.alias else '/*sink*/'
+                }
                 stage.markGenerated
             }
         }

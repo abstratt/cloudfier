@@ -12,6 +12,10 @@ import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.AddVariableValueAction
+import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
+import java.util.Collection
+import org.eclipse.uml2.uml.Variable
 
 /**
  * Some actions are better performed asynchronously, others synchronously.
@@ -66,6 +70,10 @@ class ActivityContext {
             if (parentStage != null)
                 parentStage.substages.add(this)
         }
+
+        def isProducer() { 
+            !this.rootAction.outputs.empty
+        }
         
         def isGenerated() { 
             this.generated
@@ -77,7 +85,7 @@ class ActivityContext {
         
         override toString() {
             '''
-            «rootAction.eClass.name»(«alias»)«IF !substages.empty» [
+            «alias»«IF !substages.empty» [
                 «substages.map[toString].join('\n')»
             ]«ENDIF»
             '''
@@ -90,6 +98,10 @@ class ActivityContext {
     public Stage rootStage
     public Stage currentStage
 
+    /** 
+     * @param application the application for this activity context
+     * @param activity possibly null (if context has no behavior in the input model)
+     */
     new(ApplicationContext application, Activity activity) {
         this.activity = activity
         this.application = application
@@ -100,9 +112,9 @@ class ActivityContext {
             // do not execute the stage-sensitive behavior
             return
         }
-        val isNewStage = application.isAsynchronous(toStage) || currentStage == null
+        // start a stage if there are no staged actions or if the action is asynchronous or if the current stage has substages
+        val isNewStage = application.isAsynchronous(toStage) || currentStage == null || !currentStage.substages.empty
         if (isNewStage)
-            // start a stage if there are no staged actions or if the action is asynchronous
             currentStage = newStage(toStage)
         // remember we already visited this action    
         stagedActions.put(toStage, currentStage)        
@@ -122,11 +134,14 @@ class ActivityContext {
         return newStage
     }
     
-    def computeAlias(Action action) {
+    def String computeAlias(Action action) {
         switch (action) {
-            ReadStructuralFeatureAction : action.structuralFeature.name
-            ReadVariableAction : action.variable.name   
-            CallOperationAction : action.operation.name            
+            ReadStructuralFeatureAction : '''read_«action.structuralFeature.name»'''
+            AddStructuralFeatureValueAction : '''add_«action.structuralFeature.name»'''            
+            ReadVariableAction : 'read_'+ action.variable.name.toFirstUpper
+            AddVariableValueAction : 'add_'+ action.variable.name   
+            CallOperationAction : '''call_«action.operation.name»'''
+            StructuredActivityNode : '''block'''            
             default : action.eClass.name.toFirstLower     
         }
     }
@@ -154,9 +169,17 @@ class ActivityContext {
                 action.containedNodes.filter[it instanceof Action].forEach [
                     buildPipeline(it as Action)
                 ]
-                
-            null
+            /* No return value */ 
+            return null
         ])
+    }
+    
+    def findVariables() {
+        val Collection<Variable> found = newLinkedList()
+        this.stagedActions.keySet.filter[it instanceof StructuredActivityNode].forEach[
+            found.addAll((it as StructuredActivityNode).variables)
+        ]
+        return found
     }
     
 

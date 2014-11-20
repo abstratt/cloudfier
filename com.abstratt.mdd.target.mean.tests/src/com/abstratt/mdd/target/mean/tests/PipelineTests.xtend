@@ -13,6 +13,7 @@ import static org.eclipse.uml2.uml.UMLPackage.Literals.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import com.abstratt.mdd.target.mean.ModelGenerator
+import org.eclipse.uml2.uml.AddVariableValueAction
 
 class PipelineTests extends AbstractGeneratorTest {
 
@@ -38,10 +39,11 @@ class PipelineTests extends AbstractGeneratorTest {
                   self.balance := self.balance - amount;
               end;
               
-              operation transfer(destination : Account, amount : Double);
+              operation transfer(destination : Account, amount : Double) : Double;
               begin
                   self.withdraw(amount);
                   destination.deposit(amount);
+                  return self.balance;
               end;
           end;
         end.
@@ -56,10 +58,13 @@ class PipelineTests extends AbstractGeneratorTest {
         application.activityContext.buildPipeline(activity.rootAction)
         val rootStage = application.activityContext.rootStage
         assertNotNull(rootStage)
-        assertEquals(2, rootStage.substages.size)
+        assertEquals(3, rootStage.substages.size)
         assertEquals(CALL_OPERATION_ACTION, rootStage.substages.get(0).rootAction.eClass)
         assertEquals("withdraw", (rootStage.substages.get(0).rootAction as CallOperationAction).operation.name)
+        assertEquals(CALL_OPERATION_ACTION, rootStage.substages.get(1).rootAction.eClass)
         assertEquals("deposit", (rootStage.substages.get(1).rootAction as CallOperationAction).operation.name)
+        assertEquals(ADD_VARIABLE_VALUE_ACTION, rootStage.substages.get(2).rootAction.eClass)
+        assertEquals("", (rootStage.substages.get(2).rootAction as AddVariableValueAction).variable.name)
         rootStage.substages.forEach[assertTrue(it.substages.empty)]
     }
     
