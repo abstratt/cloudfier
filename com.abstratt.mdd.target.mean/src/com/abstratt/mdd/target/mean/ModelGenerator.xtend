@@ -390,7 +390,10 @@ class ModelGenerator extends AsyncJSGenerator {
                 super.generateAddVariableValueAction(action) + '.exec()'
             else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
                 // returning an entity instance from an action - save the current object first
-                super.generateAddVariableValueAction(action) + '.save()'
+                '''
+                «generateAction(action.value)».save();
+                return q(«generateAction(action.value)»);
+                '''
             else super.generateAddVariableValueAction(action)
         } else
             super.generateAddVariableValueAction(action)
@@ -469,23 +472,23 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     private def generateCollect(CallOperationAction action) {
-        'collect'
+        '/*TBD*/collect'
     }
     
     private def generateReduce(CallOperationAction action) {
-        'reduce'
+        '/*TBD*/reduce'
     }
     
     private def generateCount(CallOperationAction action) {
-        'count'
+        '/*TBD*/count'
     }
     
     private def generateForEach(CallOperationAction action) {
-        'forEach'
+        '/*TBD*/forEach'
     }
     
     private def generateIsEmpty(CallOperationAction action) {
-        'isEmpty'
+        '/*TBD*/isEmpty'
     }
     
     private def generateExists(CallOperationAction action) {
@@ -493,7 +496,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     private def generateIncludes(CallOperationAction action) {
-        'includes'
+        '/*TBD*/includes'
     }
     
     private def generateAggregation(CallOperationAction action, String operator) {

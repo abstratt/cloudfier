@@ -1,13 +1,13 @@
 package com.abstratt.mdd.target.mean
 
+import com.abstratt.mdd.core.util.ActivityUtils
+import com.abstratt.mdd.target.mean.ActivityContext.Stage
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import com.abstratt.mdd.target.mean.ActivityContext.Stage
-import com.abstratt.mdd.core.util.ActivityUtils
-import org.eclipse.uml2.uml.StructuredActivityNode
 
 class AsyncJSGenerator extends JSGenerator {
     
@@ -37,10 +37,8 @@ class AsyncJSGenerator extends JSGenerator {
             case 1 : generateStageSingleChild(stage)
             default : generateStageMultipleChildren(stage)
         }
-        if (expression)
-            return kernel
-        val optionalReturn = if (stage.rootAction.outputs.empty) '' else 'return '
-        val optionalSemicolon = if (kernel.toString.trim.endsWith(';')) '' else ';'
+        val optionalReturn = if (expression) '' else 'return '
+        val optionalSemicolon = if (expression || kernel.toString.trim.endsWith(';')) '' else ';'
         '''«optionalReturn»«kernel»«optionalSemicolon»'''
     }
     
@@ -61,6 +59,22 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     def generateStageMultipleChildren(Stage stage) {
+        val rootAction = stage.rootAction
+        if (rootAction instanceof StructuredActivityNode)
+            // ignore mustIsolate (which TextUML should be generating but may not)
+            return generateStageMultipleChildrenSequential(stage)
+        return generateStageMultipleChildrenParallel(stage)
+    }
+    
+    def generateStageMultipleChildrenSequential(Stage stage) {
+        '''q()«stage.substages.map[generateStage(false)].map[
+        '''
+        .then(function() {
+            «it»
+        })'''].join('')»''' 
+    }
+    
+    def generateStageMultipleChildrenParallel(Stage stage) {
         '''
         q().all([
             «stage.substages.map[generateStage(true)].join(', ')»
@@ -70,10 +84,12 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     def generateStageSingleChild(Stage stage) {
+        val singleChild = stage.substages.head
+        val isBlock = stage.rootAction instanceof StructuredActivityNode
         '''
-        «stage.substages.head.generateStage(true)».then(function(«stage.substages.head.alias») {
+        «singleChild.generateStage(true)»«IF !isBlock».then(function(«singleChild.alias») {
             «stage.rootAction.generateReturn()»
-        })'''
+        })«ENDIF»'''
     }
     
     def generatePipelineFrom(Stage rootStage) {
@@ -83,7 +99,7 @@ class AsyncJSGenerator extends JSGenerator {
         «IF !rootStageVariables.empty»
         «generateVariableBlock(rootStageVariables)»
         «ENDIF» 
-        return «context.rootStage.generateStage(false)»
+        «context.rootStage.generateStage(false)»
         '''
     }
     

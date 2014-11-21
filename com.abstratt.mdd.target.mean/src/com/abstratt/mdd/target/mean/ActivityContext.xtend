@@ -112,8 +112,8 @@ class ActivityContext {
             // do not execute the stage-sensitive behavior
             return
         }
-        // start a stage if there are no staged actions or if the action is asynchronous or if the current stage has substages
-        val isNewStage = application.isAsynchronous(toStage) || currentStage == null || !currentStage.substages.empty
+        // start a stage if there are no staged actions or if the action is asynchronous or if it is a data sink or if the current stage has other substages
+        val isNewStage = application.isAsynchronous(toStage) || isDataSink(toStage) || currentStage == null || !currentStage.substages.empty
         if (isNewStage)
             currentStage = newStage(toStage)
         // remember we already visited this action    
