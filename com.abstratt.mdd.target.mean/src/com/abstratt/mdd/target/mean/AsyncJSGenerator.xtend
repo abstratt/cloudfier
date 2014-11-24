@@ -9,6 +9,7 @@ import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import org.eclipse.uml2.uml.ReadSelfAction
+import org.eclipse.uml2.uml.SendSignalAction
 
 class AsyncJSGenerator extends JSGenerator {
     
@@ -57,7 +58,7 @@ class AsyncJSGenerator extends JSGenerator {
     def generateLeafStage(Stage stage) {
         val kernel = stage.rootAction.generateReturn
         '''
-        q().then(function() {
+        Q.when(function() {
             console.log("«kernel.toString.replaceAll('\\n', '<NL>').replaceAll("\"", "<Q>")»".replace(/<Q>/g, '"').replace(/<NL>/g, '\n'))  ;
             «kernel»
         })'''
@@ -72,7 +73,7 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     def generateStageMultipleChildrenSequential(Stage stage) {
-        '''q()«stage.substages.map[generateStage(false)].map[
+        '''Q.when(null)«stage.substages.map[generateStage(false)].map[
         '''
         .then(function() {
             «it»
@@ -81,7 +82,7 @@ class AsyncJSGenerator extends JSGenerator {
     
     def generateStageMultipleChildrenParallel(Stage stage) {
         '''
-        q().all([
+        Q.all([
             «stage.substages.map[generateStage(true).toString.trim].join(',\n')»
         ]).spread(function(«stage.substages.map[alias].join(', ')») {
             «stage.rootAction.generateReturn»
@@ -136,6 +137,16 @@ class AsyncJSGenerator extends JSGenerator {
             super.generateReadSelfAction(action)
         else
             'me'
+    }
+    
+    override generateSendSignalAction(SendSignalAction action) {
+        if (!this.application.isAsynchronous(action.actionActivity))
+            super.generateSendSignalAction(action)
+        else
+            '''
+            «super.generateSendSignalAction(action)»
+            return Q.when(null);
+            '''
     }
 
     override generateActionProper(Action toGenerate) {

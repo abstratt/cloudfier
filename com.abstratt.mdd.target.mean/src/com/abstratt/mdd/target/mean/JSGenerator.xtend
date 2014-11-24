@@ -42,13 +42,13 @@ import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
+import org.eclipse.uml2.uml.Variable
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import org.eclipse.uml2.uml.Variable
 
 /** 
  * A UML-to-Javascript code generator.
@@ -141,6 +141,10 @@ class JSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(SendSignalAction action) {
+        generateSendSignalAction(action)
+    }
+    
+    def generateSendSignalAction(SendSignalAction action) {
         val target = action.target
         val methodName = action.signal.name.toFirstLower
         '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)'''

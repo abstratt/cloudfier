@@ -72,7 +72,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val otherEntities = entities.toList.topologicalSort.filter[it != entity]
         val modelName = entity.name
         '''
-            var q = require("q");
+            var Q = require("q");
             var mongoose = require('mongoose');    
             var Schema = mongoose.Schema;
             var cls = require('continuation-local-storage');
@@ -622,12 +622,15 @@ class ModelGenerator extends AsyncJSGenerator {
         val needsGuard = stateMachine.vertices.exists[it.outgoings.exists[it.guard != null]]
         '''
             «schemaVar».methods.handleEvent = function (event) {
+                console.log("started handleEvent("+ event+"): "+ this);
                 «IF (needsGuard)»
                 var guard;
                 «ENDIF»
                 switch (event) {
                     «triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')»
                 }
+                console.log("completed handleEvent("+ event+"): "+ this);
+                
             };
             
             «events.map[event | '''
