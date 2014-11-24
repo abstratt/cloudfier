@@ -426,9 +426,11 @@ class ModelGenerator extends AsyncJSGenerator {
             // nested objects can be read as normal JS slots
             return generateTraverseRelationshipAction(target, property)
 
-        if (property.otherEnd.multivalued)            
-            '''«property.type.name».find({ _id : «target.sourceAction.generateAction».«property.name» }).exec()'''
+        if (property.multivalued)
+            // one to many, search from the other (many) side
+            '''«property.type.name».find({ «property.otherEnd.name» : «target.sourceAction.generateAction»._id }).exec()'''
         else
+            // one to one or many to one, search from this side
             '''«property.type.name».findOne({ _id : «target.sourceAction.generateAction».«property.name» }).exec()'''
     }
     
