@@ -8,6 +8,7 @@ import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import org.eclipse.uml2.uml.ReadSelfAction
 
 class AsyncJSGenerator extends JSGenerator {
     
@@ -39,7 +40,9 @@ class AsyncJSGenerator extends JSGenerator {
         }
         val optionalReturn = if (expression) '' else 'return '
         val optionalSemicolon = if (expression || kernel.toString.trim.endsWith(';')) '' else ';'
-        '''«optionalReturn»«kernel»«optionalSemicolon»'''
+        '''
+        «optionalReturn»«kernel»«optionalSemicolon»
+        '''
     }
     
     def generateReturn(Action rootAction) {
@@ -52,9 +55,11 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     def generateLeafStage(Stage stage) {
+        val kernel = stage.rootAction.generateReturn
         '''
         q().then(function() {
-            «stage.rootAction.generateReturn»
+            console.log("«kernel.toString.replaceAll('\\n', '<NL>').replaceAll("\"", "<Q>")»".replace(/<Q>/g, '"').replace(/<NL>/g, '\n'))  ;
+            «kernel»
         })'''
     }
     
@@ -71,13 +76,13 @@ class AsyncJSGenerator extends JSGenerator {
         '''
         .then(function() {
             «it»
-        })'''].join('')»''' 
+        })'''.toString.trim].join('')»''' 
     }
     
     def generateStageMultipleChildrenParallel(Stage stage) {
         '''
         q().all([
-            «stage.substages.map[generateStage(true)].join(', ')»
+            «stage.substages.map[generateStage(true).toString.trim].join(',\n')»
         ]).spread(function(«stage.substages.map[alias].join(', ')») {
             «stage.rootAction.generateReturn»
         })'''
@@ -87,7 +92,7 @@ class AsyncJSGenerator extends JSGenerator {
         val singleChild = stage.substages.head
         val isBlock = stage.rootAction instanceof StructuredActivityNode
         '''
-        «singleChild.generateStage(true)»«IF !isBlock».then(function(«singleChild.alias») {
+        «singleChild.generateStage(true).toString.trim()»«IF !isBlock».then(function(«singleChild.alias») {
             «stage.rootAction.generateReturn()»
         })«ENDIF»'''
     }
@@ -99,6 +104,7 @@ class AsyncJSGenerator extends JSGenerator {
         «IF !rootStageVariables.empty»
         «generateVariableBlock(rootStageVariables)»
         «ENDIF» 
+        var me = this;
         «context.rootStage.generateStage(false)»
         '''
     }
@@ -123,6 +129,13 @@ class AsyncJSGenerator extends JSGenerator {
     }
 
     def void addActionEpilogue(Operation action) {
+    }
+    
+    override generateReadSelfAction(ReadSelfAction action) {
+        if (!this.application.isAsynchronous(action.actionActivity))
+            super.generateReadSelfAction(action)
+        else
+            'me'
     }
 
     override generateActionProper(Action toGenerate) {

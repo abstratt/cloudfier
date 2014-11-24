@@ -402,6 +402,10 @@ class JSGenerator {
     }
 
     def dispatch CharSequence doGenerateAction(ReadSelfAction action) {
+        generateReadSelfAction(action)
+    }
+    
+    def CharSequence generateReadSelfAction(ReadSelfAction action) {
         'this'
     }
         
