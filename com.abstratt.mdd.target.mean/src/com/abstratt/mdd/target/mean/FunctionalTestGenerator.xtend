@@ -41,7 +41,7 @@ class FunctionalTestGenerator extends ModelGenerator {
     def CharSequence generateSuiteHelper(Class helperClass) {
         '''
         var mongoose = require('mongoose');
-        var q = require("q");
+        var Q = require("q");
         «entities.map['''var «name» = require('../models/«name».js');'''].join('\n')»
         
         var «helperClass.name» = {
@@ -71,7 +71,7 @@ class FunctionalTestGenerator extends ModelGenerator {
         
         var mongoose = require('mongoose');
         var assert = require("assert");
-        var q = require("q");
+        var Q = require("q");
         «entities.map['''var «name» = require('../models/«name».js');'''].join('\n')»
 
         «helperClasses.map['''var «it.name» = require('./«it.name».js');'''].join('\n')»
