@@ -41,7 +41,7 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "  class Person implements Named\n";
         RuntimeObjectTests.model += "    attribute name : String[0,1];\n";
         RuntimeObjectTests.model += "    attribute active : Boolean := true;\n";
-        RuntimeObjectTests.model += "    attribute personRole : Role := EMPLOYEE;\n";
+        RuntimeObjectTests.model += "    attribute personRole : Role[0,1] := EMPLOYEE;\n";
         RuntimeObjectTests.model += "    static operation newPerson(name : String) : Person;\n";
         RuntimeObjectTests.model += "    begin\n";
         RuntimeObjectTests.model += "      var newPerson : Person;\n";
@@ -91,6 +91,8 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
                 .primitiveValue());
         TestCase.assertTrue(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
         writeAttribute(person, "personRole", null);
+        // only because personRole is optional
+        assertNull(readAttribute(person,  "personRole"));
         TestCase.assertFalse(((BooleanType) runOperation(person, "hasAnyRole")).primitiveValue());
     }
 
