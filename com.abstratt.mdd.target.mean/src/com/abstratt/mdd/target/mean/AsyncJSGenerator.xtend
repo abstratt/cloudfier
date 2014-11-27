@@ -11,6 +11,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.SendSignalAction
+import org.eclipse.uml2.uml.CallOperationAction
 
 class AsyncJSGenerator extends JSGenerator {
     
@@ -42,20 +43,19 @@ class AsyncJSGenerator extends JSGenerator {
         }
         val optionalReturn = if (expression) '' else 'return '
         val optionalSemicolon = if (expression || kernel.toString.trim.endsWith(';')) '' else ';'
-        val optionalSave = if (stage.parentStage == null &&  context.activity.operation?.action) 
-            '''
-            .then(function() {
-                return «generateSelfReference».save();
-            })''' 
         '''
-        «optionalReturn»«kernel»«optionalSave»«optionalSemicolon»
+        «optionalReturn»«kernel»«generateStageSuffix(stage)»«optionalSemicolon»
         '''
+    }
+    
+    def CharSequence generateStageSuffix(Stage stage) {
+        ''
     }
     
     
     def generateReturn(Action rootAction) {
         val kernel = rootAction.generateAction
-        if (rootAction.outputs.empty) {
+        if (rootAction.outputs.empty && !application.isAsynchronous(rootAction)) {
             val optionalSemicolon = if (kernel.toString.trim.endsWith(';')) '' else ';'
             return '''
             «kernel»«optionalSemicolon»
@@ -163,7 +163,6 @@ class AsyncJSGenerator extends JSGenerator {
         else
             '''
             «super.generateSendSignalAction(action)»
-            return Q();
             '''
     }
 

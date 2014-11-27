@@ -62,7 +62,6 @@ class JSGenerator {
             // actually a block
             return generated 
         // else generate as a statement
-        //console.log("«generated.toString.replaceAll('"', '\'').replaceAll('\n', '\\n')»");
         '''«generated»;'''
     }
     
@@ -182,10 +181,6 @@ class JSGenerator {
     def CharSequence generateLinkCreation(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
         if (!thisEnd.navigable) return ''
         '''
-        console.log("This: ");
-        console.log(«generateAction(thisEndAction)»);
-        console.log("That: ");
-        console.log(«generateAction(otherEndAction)»);
         «generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»._id«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }    
     

@@ -3,7 +3,6 @@ package com.abstratt.mdd.target.mean
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.IRepository
-import java.util.ArrayList
 import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
@@ -45,6 +44,8 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import com.abstratt.mdd.target.mean.ActivityContext.Stage
+import org.eclipse.uml2.uml.Action
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -75,13 +76,27 @@ class ModelGenerator extends AsyncJSGenerator {
         var mongoose = require('mongoose');
         var dbURI = 'mongodb://localhost/test';
         mongoose.set('debug', function (coll, method, query, doc) {
-            console.log("Coll " + coll);
+            console.log(">>>>>>>>>>");
+            console.log("Collection: " + coll);
+            console.log("Method: " + method);
+            console.log("Query: " + JSON.stringify(query));
+            console.log("Doc: " + JSON.stringify(doc));
+            console.log("<<<<<<<<<");
         });
         mongoose.connect(dbURI);
         mongoose.connection.on('error', function (err) { console.log(err); } );
         mongoose.connection.on('connected', function () {
             console.log('Mongoose default connection open to ' + dbURI);
         });
+        var exports = module.exports = mongoose;
+        '''
+    }
+    
+    override generateActivityRootAction(Activity activity) {
+        '''
+        /* root action */
+        «super.generateActivityRootAction(activity)»
+        /* end of root action */
         '''
     }
     
@@ -91,7 +106,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val modelName = entity.name
         '''
             var Q = require("q");
-            var mongoose = require('mongoose');    
+            var mongoose = require('./db.js');    
             var Schema = mongoose.Schema;
             var cls = require('continuation-local-storage');
             
@@ -351,6 +366,24 @@ class ModelGenerator extends AsyncJSGenerator {
         super.generateActivitySuffix(activity)
     }
     
+    override generateStageSuffix(Stage stage) {
+        if (stage.parentStage == null && context.activity.operation?.action) {
+            val workingSet = newLinkedHashSet(generateSelfReference)
+            workingSet.addAll(context.findVariables.map[it.name])
+            '''
+            .then(function() { 
+                return Q.all([
+                    «workingSet.map[
+                '''
+                    Q().then(function() {
+                        «generateSave(it, false)»
+                    })'''].join(',\n')»
+                ]);
+            })'''
+        } else
+            '' 
+    }
+    
     
     override addActionPrologue(Operation action) {
 //        val stages = context.stages
@@ -409,7 +442,19 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
-        '''this.model('«action.classifier.name»').find()'''
+        '''«generateSelfReference».model('«action.classifier.name»').find()'''
+    }
+    
+    def generateSave(CharSequence target, boolean returnSaved) {
+        // Note that save returns an array, where the the first element is the created/updated object.
+        val optionalValueCollector = if (returnSaved) '''
+        .then(function(saveResult) {
+            return saveResult[0];
+        })''' else ''
+        
+        '''
+        return «generateMongoosePromise(target, 'save', #[])»«optionalValueCollector»;
+        '''
     }
     
     override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
@@ -422,12 +467,7 @@ class ModelGenerator extends AsyncJSGenerator {
                 '''
             else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
                 // Returning an entity instance from an action - save the current object first.
-                // Note that save returns an array, where the the first element is the created/updated object.
-                '''
-                return «generateMongoosePromise(generateAction(action.value), 'save', #[])».then(function(saveResult) {
-                    return saveResult[0];
-                });
-                '''
+                generateSave(generateAction(action.value), true)
             else super.generateAddVariableValueAction(action)
         } else
             super.generateAddVariableValueAction(action)
@@ -545,7 +585,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     private def generateCount(CallOperationAction action) {
-        '/*TBD*/count'
+        '''«action.target.generateAction».length'''
     }
     
     private def generateForEach(CallOperationAction action) {
