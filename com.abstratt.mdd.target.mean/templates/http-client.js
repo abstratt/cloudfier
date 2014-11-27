@@ -2,7 +2,7 @@ var http = require("http");
 var url = require("url");
 var q = require('q');
 require('array.prototype.find');
-var helpers = require("./helpers.js");
+var helpers = require("./helpers.js"); 
 var assert = helpers.assert;
 var merge = helpers.merge;
 var util = require('util');

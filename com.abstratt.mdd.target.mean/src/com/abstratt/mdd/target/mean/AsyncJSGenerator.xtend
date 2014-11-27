@@ -8,6 +8,7 @@ import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.SendSignalAction
 
@@ -41,25 +42,38 @@ class AsyncJSGenerator extends JSGenerator {
         }
         val optionalReturn = if (expression) '' else 'return '
         val optionalSemicolon = if (expression || kernel.toString.trim.endsWith(';')) '' else ';'
+        val optionalSave = if (stage.parentStage == null &&  context.activity.operation?.action) 
+            '''
+            .then(function() {
+                return «generateSelfReference».save();
+            })''' 
         '''
-        «optionalReturn»«kernel»«optionalSemicolon»
+        «optionalReturn»«kernel»«optionalSave»«optionalSemicolon»
         '''
     }
+    
     
     def generateReturn(Action rootAction) {
         val kernel = rootAction.generateAction
         if (rootAction.outputs.empty) {
             val optionalSemicolon = if (kernel.toString.trim.endsWith(';')) '' else ';'
-            return '''«kernel»«optionalSemicolon»'''
+            return '''
+            «kernel»«optionalSemicolon»
+            '''
         }
         '''return «kernel»;'''
+    }
+    
+    def dump(CharSequence generated) {
+        var asString = generated.toString
+        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
     }
     
     def generateLeafStage(Stage stage) {
         val kernel = stage.rootAction.generateReturn
         '''
-        Q.when(function() {
-            console.log("«kernel.toString.replaceAll('\\n', '<NL>').replaceAll("\"", "<Q>")»".replace(/<Q>/g, '"').replace(/<NL>/g, '\n'))  ;
+        Q().then(function() {
+            «dump(kernel)»
             «kernel»
         })'''
     }
@@ -73,7 +87,7 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     def generateStageMultipleChildrenSequential(Stage stage) {
-        '''Q.when(null)«stage.substages.map[generateStage(false)].map[
+        '''Q()«stage.substages.map[generateStage(false)].map[
         '''
         .then(function() {
             «it»
@@ -92,9 +106,13 @@ class AsyncJSGenerator extends JSGenerator {
     def generateStageSingleChild(Stage stage) {
         val singleChild = stage.substages.head
         val isBlock = stage.rootAction instanceof StructuredActivityNode
+        val childKernel = singleChild.generateStage(true)
+        val thisKernel = stage.rootAction.generateReturn()
         '''
-        «singleChild.generateStage(true).toString.trim()»«IF !isBlock».then(function(«singleChild.alias») {
-            «stage.rootAction.generateReturn()»
+        «childKernel.toString.trim()»«IF !isBlock».then(function(«singleChild.alias») {
+            console.log(«singleChild.alias»);
+            «dump(thisKernel)»
+            «thisKernel»
         })«ENDIF»'''
     }
     
@@ -132,20 +150,20 @@ class AsyncJSGenerator extends JSGenerator {
     def void addActionEpilogue(Operation action) {
     }
     
-    override generateReadSelfAction(ReadSelfAction action) {
-        if (!this.application.isAsynchronous(action.actionActivity))
-            super.generateReadSelfAction(action)
+    override generateSelfReference() {
+        if (context == null || !this.application.isAsynchronous(context.activity))
+            super.generateSelfReference
         else
             'me'
     }
-    
+        
     override generateSendSignalAction(SendSignalAction action) {
         if (!this.application.isAsynchronous(action.actionActivity))
             super.generateSendSignalAction(action)
         else
             '''
             «super.generateSendSignalAction(action)»
-            return Q.when(null);
+            return Q();
             '''
     }
 

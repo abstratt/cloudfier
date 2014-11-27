@@ -11,6 +11,10 @@ var session = cls.createNamespace('session');
 
 var mongoose = require('mongoose');
 mongoose.connect('mongodb://localhost/test');
+mongoose.set('debug', function (coll, method, query, doc) {
+    console.log("Coll " + coll);
+});
+mongoose.connection.on('error', function (err) { console.log(err); } );
 
 var routes = require('./routes.js');
 
@@ -123,3 +127,4 @@ var App = function() {
 var app = exports = module.exports = new App();
 app.initialize();
 app.start();
+console.log("App started!");

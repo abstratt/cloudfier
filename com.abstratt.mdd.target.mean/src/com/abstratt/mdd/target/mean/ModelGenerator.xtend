@@ -3,8 +3,10 @@ package com.abstratt.mdd.target.mean
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.IRepository
+import java.util.ArrayList
 import java.util.List
 import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.AnyReceiveEvent
 import org.eclipse.uml2.uml.CallEvent
@@ -14,6 +16,7 @@ import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.Event
+import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.Operation
@@ -42,7 +45,6 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.InputPin
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -61,12 +63,28 @@ class ModelGenerator extends AsyncJSGenerator {
     
     def generateIndex() {
         '''
-        var mongoose = require('mongoose');
+        require('./db.js');
         «entities.toList.topologicalSort.map[ 
             '''require('./«name».js');''' 
         ].join('\n')» 
         '''
     }
+    
+    def generateDb() {
+        '''
+        var mongoose = require('mongoose');
+        var dbURI = 'mongodb://localhost/test';
+        mongoose.set('debug', function (coll, method, query, doc) {
+            console.log("Coll " + coll);
+        });
+        mongoose.connect(dbURI);
+        mongoose.connection.on('error', function (err) { console.log(err); } );
+        mongoose.connection.on('connected', function () {
+            console.log('Mongoose default connection open to ' + dbURI);
+        });
+        '''
+    }
+    
 
     def generateEntity(Class entity) {
         val otherEntities = entities.toList.topologicalSort.filter[it != entity]
@@ -274,14 +292,16 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def generateAttributeInvariant(Constraint invariant) {
-        val property = invariant.constrainedElements.head as Property
-        val schemaVar = '''«property.class_.name.toFirstLower»Schema'''
-        '''
-        «schemaVar».path('«property.name»').validate(
-            «invariant.generatePredicate.toString.trim»,
-            'validation of `{PATH}` failed with value `{VALUE}`'
-        );
-        '''
+        ''
+// TODO        
+//        val property = invariant.constrainedElements.head as Property
+//        val schemaVar = '''«property.class_.name.toFirstLower»Schema'''
+//        '''
+//        «schemaVar».path('«property.name»').validate(
+//            «invariant.generatePredicate.toString.trim»,
+//            'validation of `{PATH}` failed with value `{VALUE}`'
+//        );
+//        '''
     }
 
     def generateActionOperation(Operation actionOperation) {
@@ -321,6 +341,16 @@ class ModelGenerator extends AsyncJSGenerator {
         «super.generateActivityPrefix(activity)»
         '''
     }
+    
+    override generateActivitySuffix(Activity activity) {
+//        val specification = activity.specification
+//        if (specification instanceof Operation) {
+//            if (specification.action)
+//                return '''«generateSelfReference».save();'''
+//        }
+        super.generateActivitySuffix(activity)
+    }
+    
     
     override addActionPrologue(Operation action) {
 //        val stages = context.stages
@@ -387,12 +417,16 @@ class ModelGenerator extends AsyncJSGenerator {
         if (actionActivity.specification instanceof Operation) {
             val asOperation = actionActivity.specification as Operation
             if (asOperation.query)
-                super.generateAddVariableValueAction(action) + '.exec()'
-            else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
-                // returning an entity instance from an action - save the current object first
                 '''
-                «generateAction(action.value)».save();
-                return q(«generateAction(action.value)»);
+                return «generateMongoosePromise(super.generateAction(action.value), 'exec', #[])»
+                '''
+            else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
+                // Returning an entity instance from an action - save the current object first.
+                // Note that save returns an array, where the the first element is the created/updated object.
+                '''
+                return «generateMongoosePromise(generateAction(action.value), 'save', #[])».then(function(saveResult) {
+                    return saveResult[0];
+                });
                 '''
             else super.generateAddVariableValueAction(action)
         } else
@@ -400,6 +434,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     override def generateCreateObjectAction(CreateObjectAction action) {
+        //generateMongoosePromise('''new «generateClassReference(action.classifier)»()''', 'save', #[]).toString
         '''new «generateClassReference(action.classifier)»()'''
     }
     
@@ -420,6 +455,20 @@ class ModelGenerator extends AsyncJSGenerator {
             return generateTraverseRelationshipAction(action.object, asProperty)
         super.generateReadStructuralFeatureAction(action)
     }
+    
+    override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
+        val asProperty = action.structuralFeature as Property
+        if (action.object != null && asProperty.linkRelationship) {
+            val thisEnd = asProperty
+            val otherEnd = asProperty.otherEnd
+            val thisEndAction = action.value
+            val otherEndAction = action.object
+            '''
+            «generateLinkCreation(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
+            «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
+        } else
+            super.generateAddStructuralFeatureValueAction(action)        
+    }
 
     override generateTraverseRelationshipAction(InputPin target, Property property) {
         if (property.childRelationship)
@@ -428,11 +477,25 @@ class ModelGenerator extends AsyncJSGenerator {
 
         if (property.multivalued)
             // one to many, search from the other (many) side
-            '''«property.type.name».find({ «property.otherEnd.name» : «target.sourceAction.generateAction»._id }).exec()'''
+            '''«generateTraverseToMany(property, target)»'''
         else
             // one to one or many to one, search from this side
-            '''«property.type.name».findOne({ _id : «target.sourceAction.generateAction».«property.name» }).exec()'''
+            '''«generateTraverseToOne(property, target)»'''
     }
+    
+    def generateMongoosePromise(CharSequence target, String operation, List<CharSequence> parameters) {
+        '''Q.npost(«target», '«operation»', [ «parameters.join(', ')» ])'''
+    }
+    
+    def generateTraverseToOne(Property property, InputPin target) {
+        generateMongoosePromise(property.type.name, 'findOne', #['''({ _id : «target.sourceAction.generateAction».«property.name» })'''])
+    }
+    
+    
+    def generateTraverseToMany(Property property, InputPin target) {
+        generateMongoosePromise(property.type.name, 'find', #['''({ «property.otherEnd.name» : «target.sourceAction.generateAction»._id })'''])
+    }
+    
     
     override CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
         val operation = action.operation
@@ -565,11 +628,12 @@ class ModelGenerator extends AsyncJSGenerator {
         val attributeDef = newLinkedHashMap()
         val typeDef = generateTypeDef(attribute, KirraMDDSchemaBuilder.convertType(attribute.type))
         attributeDef.put('type', typeDef)
-        if (attribute.required)
-            attributeDef.put('required', true)
+// TODO        
+//        if (attribute.required)
+//            attributeDef.put('required', true)
         if (attribute.type.enumeration)
             attributeDef.put('enum', attribute.type.enumerationLiterals.map['''"«it»"'''])
-        attributeDef.put('default', 
+        attributeDef.put('"default"', 
             if (attribute.defaultValue != null) 
                 attribute.defaultValue.generateValue
             else
@@ -581,6 +645,8 @@ class ModelGenerator extends AsyncJSGenerator {
         val relationshipDef = newLinkedHashMap()
         relationshipDef.put('type', 'Schema.Types.ObjectId')
         relationshipDef.put('ref', '''"«relationship.type.name»"''')
+        if (relationship.multivalued)
+            relationshipDef.put('"default"', '[]')
         if (relationship.required)
             relationshipDef.put('required', true)
         '''«relationship.name» : «if (relationship.multivalued) #[generatePrimitiveValue(relationshipDef)] else generatePrimitiveValue(relationshipDef)»'''
@@ -634,8 +700,8 @@ class ModelGenerator extends AsyncJSGenerator {
             };
             
             «events.map[event | '''
-            «schemaVar».methods.«event.generateName.toString.toFirstLower» = function () {
-                this.handleEvent('«event.generateName»');
+            «schemaVar».methods.«event.generateEventName.toString.toFirstLower» = function () {
+                this.handleEvent('«event.generateEventName»');
             };
             '''].join('')»
         '''
@@ -644,7 +710,7 @@ class ModelGenerator extends AsyncJSGenerator {
 
     def generateEventHandler(Class entity, Property stateAttribute, Event event, List<Trigger> triggers) {
         '''
-        case '«event.generateName»' :
+        case '«event.generateEventName»' :
             «triggers.map[generateHandlerForTrigger(entity, stateAttribute, it)].join('\n')»
             break;
         '''
@@ -690,7 +756,7 @@ class ModelGenerator extends AsyncJSGenerator {
         '''
     }
     
-    def generateName(Event e) {
+    def generateEventName(Event e) {
         switch (e) {
             CallEvent : e.operation.name
             SignalEvent : e.signal.name
@@ -699,5 +765,6 @@ class ModelGenerator extends AsyncJSGenerator {
             default : unsupportedElement(e)
         }
     }
+    
     
 }

@@ -1,4 +1,4 @@
-package com.abstratt.mdd.target.mean
+    package com.abstratt.mdd.target.mean
 
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Activity
@@ -33,6 +33,7 @@ class FunctionalTestGenerator extends ModelGenerator {
     
     def override generateIndex() {
         '''
+        require('../models/index.js');
         require('./CRUD.js');
         «testRelatedClasses.map['''require('./«it.name».js');'''].join('\n')»
         '''
@@ -40,7 +41,8 @@ class FunctionalTestGenerator extends ModelGenerator {
     
     def CharSequence generateSuiteHelper(Class helperClass) {
         '''
-        var mongoose = require('mongoose');
+        require('../models/index.js');
+        
         var Q = require("q");
         «entities.map['''var «name» = require('../models/«name».js');'''].join('\n')»
         
@@ -69,9 +71,11 @@ class FunctionalTestGenerator extends ModelGenerator {
         
         '''
         
-        var mongoose = require('mongoose');
         var assert = require("assert");
         var Q = require("q");
+        require('../models/index.js');        
+        
+        
         «entities.map['''var «name» = require('../models/«name».js');'''].join('\n')»
 
         «helperClasses.map['''var «it.name» = require('./«it.name».js');'''].join('\n')»
@@ -83,7 +87,7 @@ class FunctionalTestGenerator extends ModelGenerator {
         «ENDIF»
         
         suite('«applicationName» functional tests - «testClass.name»', function() {
-            this.timeout(10000);
+            this.timeout(1000);
 
             «testCases.map[generateTestCase].join()»
         });
@@ -112,35 +116,10 @@ class FunctionalTestGenerator extends ModelGenerator {
         var rootAction = testBehavior.rootAction
         while (rootAction.findTerminals.size() == 1 && rootAction.findTerminals.get(0).eClass == UMLPackage.Literals.STRUCTURED_ACTIVITY_NODE)
             rootAction = rootAction.findTerminals.get(0) as StructuredActivityNode
-        val actualRootAction = rootAction    
         val failureExpected = testCase.hasStereotype('Failure')
         // extracted as a block as we generate from different places depending on whether
         // a failure is expected
         val generateCoreBehavior = [|
-//            // collect local variables and declare them so they can be shared by the different async functions
-//            val variables = newArrayList
-//            val mineVariables = newArrayList([StructuredActivityNode a | return])
-//            mineVariables.set(0, [ StructuredActivityNode san | 
-//                variables.addAll(san.variables)
-//                san.nodes.filter[it instanceof StructuredActivityNode].map[it as StructuredActivityNode].forEach[
-//                    mineVariables.head.apply(it)
-//                ]
-//            ])
-//            mineVariables.get(0).apply(actualRootAction)
-//            newContext(testBehavior)
-//            try {
-//                '''
-//                    «IF !variables.empty»var «variables.map[name].join(', ')»;«ENDIF»
-//                    return q().«actualRootAction.findTerminals.map[
-//                    '''
-//                    then(function () {
-//                        «generateAction(it)»
-//                    })'''
-//                ].join('.')».then(done, done);
-//                '''
-//            } finally {
-//                dropContext
-//            }
             '''
                var behavior = function() {
                    «generateActivityRootAction(testBehavior)»

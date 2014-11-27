@@ -25,6 +25,12 @@ class RouteGenerator {
     def CharSequence generateRoutes() {
         '''
             var mongoose = require('mongoose');
+            mongoose.set('debug', function (coll, method, query, doc) {
+                console.log("Coll " + coll);
+            });
+            mongoose.connection.on('error', function (err) { console.log(err); } );
+
+            
             var cls = require('continuation-local-storage');
             
             «entities.map[entity | 

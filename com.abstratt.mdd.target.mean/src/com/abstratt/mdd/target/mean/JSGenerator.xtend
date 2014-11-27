@@ -147,7 +147,7 @@ class JSGenerator {
     def generateSendSignalAction(SendSignalAction action) {
         val target = action.target
         val methodName = action.signal.name.toFirstLower
-        '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)'''
+        '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»);'''
     }
     
     def dispatch CharSequence doGenerateAction(CreateObjectAction action) {
@@ -169,21 +169,32 @@ class JSGenerator {
         «endData.value.generateAction» = null'''
     }
     
-    def generateSetLinkEnd(List<LinkEndData> sides, boolean addSemiColon) {
+    def generateSetLinkEnd(List<LinkEndData> sides) {
         val thisEnd = sides.get(0).end
         val otherEnd = sides.get(1).end
         val thisEndAction = sides.get(0).value
         val otherEndAction = sides.get(1).value
-        if (!thisEnd.navigable) return ''
-        '''«generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+        '''
+        «generateLinkCreation(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
+        «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
     }
     
-    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
-        val endData = new ArrayList(action.endData)
+    def CharSequence generateLinkCreation(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
+        if (!thisEnd.navigable) return ''
         '''
-        // link «endData.map[it.end.name].join(' and ')»
-        «generateSetLinkEnd(endData, true)»
-        «generateSetLinkEnd(endData.reverse, false)»''' 
+        console.log("This: ");
+        console.log(«generateAction(thisEndAction)»);
+        console.log("That: ");
+        console.log(«generateAction(otherEndAction)»);
+        «generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»._id«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+    }    
+    
+    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
+        generateCreateLinkAction(action) 
+    }
+    
+    def generateCreateLinkAction(CreateLinkAction action) {
+        generateSetLinkEnd(action.endData)
     }
     
     def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
@@ -300,10 +311,14 @@ class JSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(AddStructuralFeatureValueAction action) {
+        generateAddStructuralFeatureValueAction(action)
+    }
+    
+    def generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
         val target = action.object
         val value = action.value
         val featureName = action.structuralFeature.name
-
+        
         '''«generateAction(target)»['«featureName»'] = «generateAction(value)»'''
     }
     
@@ -410,6 +425,10 @@ class JSGenerator {
     }
     
     def CharSequence generateReadSelfAction(ReadSelfAction action) {
+        generateSelfReference()
+    }
+    
+    def generateSelfReference() {
         'this'
     }
         
@@ -417,6 +436,7 @@ class JSGenerator {
         '''
         «generateActivityPrefix(activity)»
         «generateActivityRootAction(activity)»
+        «generateActivitySuffix(activity)»
         '''
     }
     
@@ -425,6 +445,14 @@ class JSGenerator {
     }
     
     def generateActivityPrefix(Activity activity) {
+//        val specification = activity.specification
+//        if (specification instanceof Operation) {
+//            generatePreconditions(specification)
+//        }
+        ''
+    }
+    
+    def generateActivitySuffix(Activity activity) {
 //        val specification = activity.specification
 //        if (specification instanceof Operation) {
 //            generatePreconditions(specification)

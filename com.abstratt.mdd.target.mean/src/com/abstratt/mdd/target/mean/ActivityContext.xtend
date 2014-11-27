@@ -16,6 +16,7 @@ import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import java.util.Collection
 import org.eclipse.uml2.uml.Variable
+import org.eclipse.uml2.uml.CreateObjectAction
 
 /**
  * Some actions are better performed asynchronously, others synchronously.
@@ -136,11 +137,12 @@ class ActivityContext {
     
     def String computeAlias(Action action) {
         switch (action) {
-            ReadStructuralFeatureAction : '''read_«action.structuralFeature.name»'''
-            AddStructuralFeatureValueAction : '''add_«action.structuralFeature.name»'''            
-            ReadVariableAction : 'read_'+ action.variable.name.toFirstUpper
-            AddVariableValueAction : 'add_'+ action.variable.name   
-            CallOperationAction : '''call_«action.operation.name»'''
+            ReadStructuralFeatureAction : '''«action.structuralFeature.name»'''
+            AddStructuralFeatureValueAction : '''«action.structuralFeature.name»'''            
+            ReadVariableAction : action.variable.name.toFirstUpper
+            AddVariableValueAction : action.variable.name   
+            CallOperationAction : '''«action.operation.name»'''
+            CreateObjectAction : '''new«action.classifier.name»'''
             StructuredActivityNode : '''block'''            
             default : action.eClass.name.toFirstLower     
         }
