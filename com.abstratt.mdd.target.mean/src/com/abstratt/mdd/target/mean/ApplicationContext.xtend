@@ -101,7 +101,7 @@ class ApplicationContext {
         val specification = activity.specification
         if (specification instanceof Operation) {
             // if an action or returns an entity instance
-            if (specification.action || specification.getReturnResult?.type?.entity) {
+            if (!specification.query || specification.getReturnResult?.type?.entity) {
                 synchronism.put(activity, true)
                 return true
             }

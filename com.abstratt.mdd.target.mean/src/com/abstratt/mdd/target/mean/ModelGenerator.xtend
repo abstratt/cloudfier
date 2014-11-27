@@ -130,6 +130,8 @@ class ModelGenerator extends AsyncJSGenerator {
             «entity.generateComment»
             // declare schema
             var «schemaVar» = new Schema(«generateSchemaCore(entity, attributes).toString.trim»);
+            «schemaVar».set('toObject', { getters: true });
+            
             «IF !attributeInvariants.empty»
             /*************************** INVARIANTS ***************************/
             
@@ -372,22 +374,22 @@ class ModelGenerator extends AsyncJSGenerator {
         super.generateActivitySuffix(activity)
     }
     
-    override generateStageSuffix(Stage stage) {
-        if (stage.parentStage == null && context.activity.operation?.action) {
-            val workingSet = newLinkedHashSet(generateSelfReference)
+    override decorateStage(Stage stage, CharSequence output) {
+        if (stage.isLastInPipeline(true) && context.activity.operation != null && !context.activity.operation.query) {
+            val workingSet = if (context.activity.operation.static) newLinkedHashSet() else newLinkedHashSet(generateSelfReference)
             workingSet.addAll(context.findVariables.map[it.name])
-            '''
-            .then(function() { 
-                return Q.all([
-                    «workingSet.map[
+            if (workingSet.empty) '' else {
                 '''
-                    Q().then(function() {
-                        «generateSave(it, false)»
-                    })'''].join(',\n')»
-                ]);
-            })'''
+                Q.all([
+                    «workingSet.map[
+                    '''
+                        Q().then(function() {
+                            «generateSave(it, false)»
+                        })'''].join(',\n')»
+                ]).then(«output»)'''
+            }
         } else
-            '' 
+            output 
     }
     
     
@@ -454,9 +456,9 @@ class ModelGenerator extends AsyncJSGenerator {
     def generateSave(CharSequence target, boolean returnSaved) {
         // If the saved object is to be returned, need to extract the saved object from
         // the array returned by save, where the the first element is the created/updated object.
-        val optionalValueCollector = if (returnSaved) '''
+        val optionalValueCollector = if (true || returnSaved) '''
         .then(function(saveResult) {
-            return saveResult[0];
+            «target» = saveResult[0];
         })''' else ''
         // generate the saving statement
         '''
@@ -472,9 +474,6 @@ class ModelGenerator extends AsyncJSGenerator {
                 '''
                 return «generateMongoosePromise(super.generateAction(action.value), 'exec', #[])»
                 '''
-            else if (action.variable.name == '' && asOperation.getReturnResult?.type?.entity)
-                // Returning an entity instance from an action - save the current object first.
-                generateSave(generateAction(action.value), true)
             else super.generateAddVariableValueAction(action)
         } else
             super.generateAddVariableValueAction(action)
@@ -484,23 +483,17 @@ class ModelGenerator extends AsyncJSGenerator {
         //generateMongoosePromise('''new «generateClassReference(action.classifier)»()''', 'save', #[]).toString
         '''new «generateClassReference(action.classifier)»()'''
     }
-    
-    override dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
+
+    override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
         val asProperty = action.structuralFeature as Property
         if (asProperty.derivedRelationship && action.object != null)
             // derived relationships are actually getter functions
             // no need to worry about statics - relationships are never static
             '''«action.object.generateAction».get«asProperty.name.toFirstUpper»()'''
+        else if (action.object != null && asProperty.linkRelationship)
+            generateTraverseRelationshipAction(action.object, asProperty)
         else
-            // default, read as slot
-            generateReadStructuralFeatureAction(action)
-    }
-    
-    override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
-        val asProperty = action.structuralFeature as Property
-        if (action.object != null && asProperty.linkRelationship)
-            return generateTraverseRelationshipAction(action.object, asProperty)
-        super.generateReadStructuralFeatureAction(action)
+            super.generateReadStructuralFeatureAction(action)
     }
     
     override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {

@@ -44,12 +44,12 @@ class AsyncJSGenerator extends JSGenerator {
         val optionalReturn = if (expression) '' else 'return '
         val optionalSemicolon = if (expression || kernel.toString.trim.endsWith(';')) '' else ';'
         '''
-        «optionalReturn»«kernel»«generateStageSuffix(stage)»«optionalSemicolon»
+        «optionalReturn»«decorateStage(stage, kernel)»«optionalSemicolon»
         '''
     }
     
-    def CharSequence generateStageSuffix(Stage stage) {
-        ''
+    def CharSequence decorateStage(Stage stage, CharSequence output) {
+        output
     }
     
     
@@ -58,7 +58,7 @@ class AsyncJSGenerator extends JSGenerator {
         if (rootAction.outputs.empty && !application.isAsynchronous(rootAction)) {
             val optionalSemicolon = if (kernel.toString.trim.endsWith(';')) '' else ';'
             return '''
-            «kernel»«optionalSemicolon»
+            /*sync*/«kernel»«optionalSemicolon»
             '''
         }
         '''return «kernel»;'''
@@ -123,7 +123,9 @@ class AsyncJSGenerator extends JSGenerator {
         «IF !rootStageVariables.empty»
         «generateVariableBlock(rootStageVariables)»
         «ENDIF» 
+        «IF context.activity.specification != null && !context.activity.specification.static»
         var me = this;
+        «ENDIF»
         «context.rootStage.generateStage(false)»
         '''
     }

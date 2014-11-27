@@ -71,12 +71,32 @@ class ActivityContext {
             if (parentStage != null)
                 parentStage.substages.add(this)
         }
+        
+        def boolean isLastInParent() {
+            root || parentStage.substages.last == this 
+        }
+        
+        def boolean isLeaf() {
+            substages.empty
+        }
+        
+        def boolean isRoot() {
+            parentStage == null
+        }
+        
+        def Iterable<Stage> getAncestors() {
+            if (root) #[] else #[parentStage] + parentStage.ancestors
+        }
+        
+        def boolean isLastInPipeline(boolean mustBeLeaf) {
+            (!mustBeLeaf || isLeaf) && (root || (lastInParent && parentStage.isLastInPipeline(false)))
+        }
 
-        def isProducer() { 
+        def boolean isProducer() { 
             !this.rootAction.outputs.empty
         }
         
-        def isGenerated() { 
+        def boolean isGenerated() { 
             this.generated
         }
         
@@ -84,7 +104,7 @@ class ActivityContext {
             this.generated = true
         }
         
-        override toString() {
+        override String toString() {
             '''
             «alias»«IF !substages.empty» [
                 «substages.map[toString].join('\n')»

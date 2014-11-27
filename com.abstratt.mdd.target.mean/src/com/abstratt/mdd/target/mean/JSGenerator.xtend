@@ -200,9 +200,9 @@ class JSGenerator {
         val feature = action.structuralFeature as Property
         if (action.object == null) {
             val clazz = (action.structuralFeature as Property).class_
-            '''«clazz.name»['«feature.name»']'''
+            '''«clazz.name».«feature.name»'''
         } else {
-            '''«generateAction(action.object)»['«feature.name»']'''
+            '''«generateAction(action.object)».«feature.name»'''
         }
     }
     
