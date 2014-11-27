@@ -93,11 +93,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     override generateActivityRootAction(Activity activity) {
-        '''
-        /* root action */
-        «super.generateActivityRootAction(activity)»
-        /* end of root action */
-        '''
+        super.generateActivityRootAction(activity)
     }
     
 
@@ -200,9 +196,14 @@ class ModelGenerator extends AsyncJSGenerator {
     def dispatch CharSequence generateFilterAction(ReadStructuralFeatureAction action) {
         /* TODO: in the case the predicate is just this action (no operator), generated code is incorrect */
         val isCondition = action.result.type.name == 'Boolean'
-        //'''.where('«action.structuralFeature.name»')'''
-        
-        if (isCondition) '''{ '«action.structuralFeature.name»' : true }''' else '''«action.structuralFeature.name»'''
+        val property = action.structuralFeature as Property
+        if (isCondition) {
+            if (property.derived) {
+                val derivation = property.defaultValue.resolveBehaviorReference as Activity
+                derivation.generateFilter
+            } else 
+                '''{ '«property.name»' : true }'''
+        } else '''«property.name»'''
     }
     
     def dispatch CharSequence generateFilterAction(ReadLinkAction action) {
@@ -220,8 +221,13 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def dispatch CharSequence generateFilterAction(TestIdentityAction action) {
-        //'''«generateFilterAction(action.first.sourceAction)».eq(«generateFilterAction(action.second.sourceAction)»)'''
-        '''{ «generateFilterAction(action.first.sourceAction)» : «generateFilterAction(action.second.sourceAction)» }'''
+        val isEntity = action.second.type.entity
+        val left = generateFilterAction(action.first.sourceAction)
+        val right = generateFilterAction(action.second.sourceAction) 
+        if (true)
+            '''{ «left» : «right» }'''
+        else
+            '''{ «left» : mongoose.Types.ObjectId(«right») }'''
     }
     
     def dispatch CharSequence generateFilterAction(ValueSpecificationAction action) {
@@ -446,12 +452,13 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def generateSave(CharSequence target, boolean returnSaved) {
-        // Note that save returns an array, where the the first element is the created/updated object.
+        // If the saved object is to be returned, need to extract the saved object from
+        // the array returned by save, where the the first element is the created/updated object.
         val optionalValueCollector = if (returnSaved) '''
         .then(function(saveResult) {
             return saveResult[0];
         })''' else ''
-        
+        // generate the saving statement
         '''
         return «generateMongoosePromise(target, 'save', #[])»«optionalValueCollector»;
         '''
@@ -676,8 +683,12 @@ class ModelGenerator extends AsyncJSGenerator {
         attributeDef.put('"default"', 
             if (attribute.defaultValue != null) 
                 attribute.defaultValue.generateValue
+            else if (attribute.required || attribute.type.enumeration)
+                // enumeration covers state machines as well
+                attribute.type.generateDefaultValue
             else
-                attribute.type.generateDefaultValue)
+                null
+            )
         '''«attribute.name» : «generatePrimitiveValue(attributeDef)»'''
     }
 
