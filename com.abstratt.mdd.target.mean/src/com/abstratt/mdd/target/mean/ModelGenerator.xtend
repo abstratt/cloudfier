@@ -421,7 +421,7 @@ class ModelGenerator extends AsyncJSGenerator {
                 workingSet.addAll(creationVars.map[name] + modificationVars.map[name])
                 if (!workingSet.empty) 
                     return '''
-                    /* Working set: [«workingSet.join(', ')»] */«generateWorkingSetSave(context.activity.operation.type?.entity, workingSet, output)»
+                    «generateWorkingSetSave(context.activity.operation.type?.entity, workingSet, output)»
                     '''
             }
         }
@@ -462,7 +462,7 @@ class ModelGenerator extends AsyncJSGenerator {
     def generateActionCallEventTrigger(Operation action) {
         '''
         function () {
-            this.handleEvent('«action.name»')
+            return this.handleEvent('«action.name»');
         }'''
     }
     
@@ -783,13 +783,13 @@ class ModelGenerator extends AsyncJSGenerator {
                 switch (event) {
                     «triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')»
                 }
-                console.log("completed handleEvent("+ event+"): "+ this);
-                
+                console.log("completed handleEvent("+ event+")");
+                «generateSave(generateSelfReference, false)»
             };
             
             «events.map[event | '''
             «schemaVar».methods.«event.generateEventName.toString.toFirstLower» = function () {
-                this.handleEvent('«event.generateEventName»');
+                return this.handleEvent('«event.generateEventName»');
             };
             '''].join('')»
         '''
@@ -840,7 +840,7 @@ class ModelGenerator extends AsyncJSGenerator {
             })();
             «ENDIF»
         «ENDIF»
-        return;
+        break;
         '''
     }
     

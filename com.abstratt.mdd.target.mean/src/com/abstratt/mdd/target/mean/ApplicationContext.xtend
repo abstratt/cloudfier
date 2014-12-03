@@ -71,7 +71,8 @@ class ApplicationContext {
 //                    targetAction instanceof AddVariableValueAction && (targetAction as AddVariableValueAction).variable.name.empty
                 }  
             SendSignalAction:
-                false
+                // should be async at least for self-directed messages
+                true
             StructuredActivityNode:
                 // TODO: revisit me - blocks are important delineating stages
                 false

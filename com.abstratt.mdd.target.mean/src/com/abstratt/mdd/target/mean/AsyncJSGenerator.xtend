@@ -154,12 +154,7 @@ class AsyncJSGenerator extends JSGenerator {
     }
         
     override generateSendSignalAction(SendSignalAction action) {
-        if (!this.application.isAsynchronous(action.actionActivity))
-            super.generateSendSignalAction(action)
-        else
-            '''
-            «super.generateSendSignalAction(action)»
-            '''
+        super.generateSendSignalAction(action)
     }
 
     override generateActionProper(Action toGenerate) {
