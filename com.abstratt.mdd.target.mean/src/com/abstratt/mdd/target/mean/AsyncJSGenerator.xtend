@@ -58,22 +58,17 @@ class AsyncJSGenerator extends JSGenerator {
         if (rootAction.outputs.empty && !application.isAsynchronous(rootAction)) {
             val optionalSemicolon = if (kernel.toString.trim.endsWith(';')) '' else ';'
             return '''
-            /*sync*/«kernel»«optionalSemicolon»
+            «kernel»«optionalSemicolon»
             '''
         }
         '''return «kernel»;'''
-    }
-    
-    def dump(CharSequence generated) {
-        var asString = generated.toString
-        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
     }
     
     def generateLeafStage(Stage stage) {
         val kernel = stage.rootAction.generateReturn
         '''
         Q().then(function() {
-            «dump(kernel)»
+            «kernel.dump»
             «kernel»
         })'''
     }
@@ -110,7 +105,6 @@ class AsyncJSGenerator extends JSGenerator {
         val thisKernel = stage.rootAction.generateReturn()
         '''
         «childKernel.toString.trim()»«IF !isBlock».then(function(«singleChild.alias») {
-            console.log(«singleChild.alias»);
             «dump(thisKernel)»
             «thisKernel»
         })«ENDIF»'''
@@ -123,7 +117,7 @@ class AsyncJSGenerator extends JSGenerator {
         «IF !rootStageVariables.empty»
         «generateVariableBlock(rootStageVariables)»
         «ENDIF» 
-        «IF context.activity.specification != null && !context.activity.specification.static»
+        «IF context.activity.specification == null || !context.activity.specification.static»
         var me = this;
         «ENDIF»
         «context.rootStage.generateStage(false)»

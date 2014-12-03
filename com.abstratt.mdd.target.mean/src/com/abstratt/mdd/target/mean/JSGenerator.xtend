@@ -481,5 +481,8 @@ class JSGenerator {
         '''
     }
     
-    
+    protected def dump(CharSequence generated) {
+        var asString = generated.toString
+        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
+    }
 }

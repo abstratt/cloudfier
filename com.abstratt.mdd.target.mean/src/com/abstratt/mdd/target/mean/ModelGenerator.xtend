@@ -3,7 +3,9 @@ package com.abstratt.mdd.target.mean
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.mean.ActivityContext.Stage
 import java.util.List
+import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
@@ -33,6 +35,7 @@ import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.TimeEvent
 import org.eclipse.uml2.uml.Transition
 import org.eclipse.uml2.uml.Trigger
+import org.eclipse.uml2.uml.UMLPackage
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Vertex
@@ -44,8 +47,6 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import com.abstratt.mdd.target.mean.ActivityContext.Stage
-import org.eclipse.uml2.uml.Action
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -130,7 +131,7 @@ class ModelGenerator extends AsyncJSGenerator {
             «entity.generateComment»
             // declare schema
             var «schemaVar» = new Schema(«generateSchemaCore(entity, attributes).toString.trim»);
-            «schemaVar».set('toObject', { getters: true });
+//            «schemaVar».set('toObject', { getters: true });
             
             «IF !attributeInvariants.empty»
             /*************************** INVARIANTS ***************************/
@@ -374,22 +375,64 @@ class ModelGenerator extends AsyncJSGenerator {
         super.generateActivitySuffix(activity)
     }
     
-    override decorateStage(Stage stage, CharSequence output) {
-        if (stage.isLastInPipeline(true) && context.activity.operation != null && !context.activity.operation.query) {
-            val workingSet = if (context.activity.operation.static) newLinkedHashSet() else newLinkedHashSet(generateSelfReference)
-            workingSet.addAll(context.findVariables.map[it.name])
-            if (workingSet.empty) '' else {
+    private def generateWorkingSetSave(boolean returnsValue, Iterable<String> workingSet, CharSequence output) {
+        /* If the stage has actual outputs, we save before returning. Otherwise, we save last. */
+        
+        '''
+        «output».then(function(«if (returnsValue) '__result__' else '/*no-arg*/'») {
+            return Q.all([
+                «workingSet.map[
                 '''
-                Q.all([
-                    «workingSet.map[
+                    Q().then(function() {
+                        «generateSave(it, false)»
+                    })'''].join(',\n')»
+            ]).spread(function() {
+                «if (returnsValue) 'return __result__;' else '/* no-result */'»    
+            });
+        })'''
+    }
+    
+    override decorateStage(Stage stage, CharSequence output) {
+        val rootAction = stage.rootAction
+        if (rootAction instanceof StructuredActivityNode) {
+            val operation = rootAction.actionActivity.operation
+            if (operation != null && !context.activity.operation.query) {
+                val creationVars = rootAction.findMatchingActions(UMLPackage.Literals.CREATE_OBJECT_ACTION).map[
+                    it as CreateObjectAction
+                ].filter[
+                    it.classifier.entity && 
+                    it.result.targetAction instanceof AddVariableValueAction && 
+                    !it.result.targetAction.returnAction
+                ].map[
+                    (it.result.targetAction as AddVariableValueAction).variable
+                ]
+                val modificationVars = rootAction.findMatchingActions(UMLPackage.Literals.ADD_STRUCTURAL_FEATURE_VALUE_ACTION).map[
+                    it as AddStructuralFeatureValueAction
+                ].filter[
+                    it.structuralFeature instanceof Property && 
+                    (it.structuralFeature as Property).class_.entity && 
+                    it.object.sourceAction instanceof ReadVariableAction
+                ].map[
+                    (it.object.sourceAction as ReadVariableAction).variable
+                ]
+                
+                val isInstanceOperation = !context.activity.operation.static && context.activity.operation.class_.entity
+                val workingSet = if (!isInstanceOperation) <String>newLinkedHashSet() else newLinkedHashSet(generateSelfReference)
+                workingSet.addAll(creationVars.map[name] + modificationVars.map[name])
+                if (!workingSet.empty) 
+                    return '''
+                    /* Working set: [«workingSet.join(', ')»] */«generateWorkingSetSave(context.activity.operation.type?.entity, workingSet, output)»
                     '''
-                        Q().then(function() {
-                            «generateSave(it, false)»
-                        })'''].join(',\n')»
-                ]).then(«output»)'''
             }
-        } else
-            output 
+        }
+//        if (stage.isLastInPipeline(true) && context.activity.operation != null && !context.activity.operation.query) {
+//            val isInstanceOperation = !context.activity.operation.static && context.activity.operation.class_.entity
+//            val workingSet = if (!isInstanceOperation) newLinkedHashSet() else newLinkedHashSet(generateSelfReference)
+//            
+//            workingSet.addAll(context.findVariables.filter[it.type.entity].map[it.name])
+//            if (!workingSet.empty) return generateSave(rootAction.returnAction, workingSet, output)
+//        }
+        output 
     }
     
     
@@ -450,14 +493,15 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
-        '''«generateSelfReference».model('«action.classifier.name»').find()'''
+        '''mongoose.model('«action.classifier.name»').find()'''
     }
     
-    def generateSave(CharSequence target, boolean returnSaved) {
+    private def generateSave(CharSequence target, boolean returnSaved) {
         // If the saved object is to be returned, need to extract the saved object from
         // the array returned by save, where the the first element is the created/updated object.
-        val optionalValueCollector = if (true || returnSaved) '''
+        val optionalValueCollector = if (returnSaved) '''
         .then(function(saveResult) {
+            «dump('''«target» = saveResult[0]''')»
             «target» = saveResult[0];
         })''' else ''
         // generate the saving statement
@@ -732,7 +776,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val needsGuard = stateMachine.vertices.exists[it.outgoings.exists[it.guard != null]]
         '''
             «schemaVar».methods.handleEvent = function (event) {
-                console.log("started handleEvent("+ event+"): "+ this);
+                console.log("started handleEvent("+ event+")");
                 «IF (needsGuard)»
                 var guard;
                 «ENDIF»
