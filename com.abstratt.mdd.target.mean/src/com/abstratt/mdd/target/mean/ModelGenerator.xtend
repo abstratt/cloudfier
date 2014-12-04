@@ -203,13 +203,13 @@ class ModelGenerator extends AsyncJSGenerator {
                 derivation.generateFilter
             } else 
                 '''{ '«property.name»' : true }'''
-        } else '''«property.name»'''
+        } else '''/*read-structural-feature*/«property.name»'''
     }
     
     def dispatch CharSequence generateFilterAction(ReadLinkAction action) {
         val fedEndData = action.endData?.head
         //'''.where('«fedEndData.end.otherEnd.name»')'''
-        '''{ '«fedEndData.end.otherEnd.name»' : «generateFilterAction(fedEndData.value.sourceAction)»  }'''
+        '''/*read-link*/{ '«fedEndData.end.otherEnd.name»' : «generateFilterAction(fedEndData.value.sourceAction)»  }'''
     }
     
     def dispatch CharSequence generateFilterAction(ReadVariableAction action) {
@@ -532,6 +532,13 @@ class ModelGenerator extends AsyncJSGenerator {
             generateTraverseRelationshipAction(action.object, asProperty)
         else
             super.generateReadStructuralFeatureAction(action)
+    }
+    
+    override generateReadVariableValueAction(ReadVariableAction action) {
+        if (application.isAsynchronous(action))
+            generateMongoosePromise(action.variable.type.name, 'findOne', #['''({ _id : «action.variable.name»._id })'''])
+        else 
+            super.generateReadVariableValueAction(action)
     }
     
     override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {

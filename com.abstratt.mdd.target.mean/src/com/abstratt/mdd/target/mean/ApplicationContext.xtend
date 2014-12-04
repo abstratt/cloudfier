@@ -21,6 +21,8 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.AddVariableValueAction
+import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.VariableAction
 
 class ApplicationContext {
     private Map<Activity, Boolean> synchronism = new LinkedHashMap()
@@ -76,6 +78,10 @@ class ApplicationContext {
             StructuredActivityNode:
                 // TODO: revisit me - blocks are important delineating stages
                 false
+            ReadVariableAction:
+                // if we did not write to it yet in this block, it is async (needs refetching)
+                // TODO: ideally we would determine whether the write is guaranteed to happen, here we just look for any write, even if path may not be executed 
+                !(action.owningBlock.findFirstAccess(action.variable) instanceof AddVariableValueAction)
             default:
                 false
         }

@@ -333,11 +333,15 @@ class JSGenerator {
     }
     
     def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
-        '''«action.variable.name»'''
+        generateReadVariableValueAction(action)
     }
     
     def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
         '''«action.value.generateValue»'''
+    }
+    
+    def generateReadVariableValueAction(ReadVariableAction action) {
+        '''«action.variable.name»'''
     }
     
     def generateValue(ValueSpecification value) {

@@ -159,7 +159,7 @@ class ActivityContext {
         switch (action) {
             ReadStructuralFeatureAction : '''«action.structuralFeature.name»'''
             AddStructuralFeatureValueAction : '''«action.structuralFeature.name»'''            
-            ReadVariableAction : action.variable.name.toFirstUpper
+            ReadVariableAction : action.variable.name
             AddVariableValueAction : action.variable.name   
             CallOperationAction : '''«action.operation.name»'''
             CreateObjectAction : '''new«action.classifier.name»'''

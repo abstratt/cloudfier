@@ -142,7 +142,7 @@ class AsyncJSGenerator extends JSGenerator {
                     error.context = '«specification.qualifiedName»';
                     error.constraint = '«constraint.name»';
                     «IF !constraint.description.nullOrEmpty»
-                    error.description = «constraint.description»';
+                    error.description = '«constraint.description»';
                     «ENDIF»
                     throw error;
                 }    
