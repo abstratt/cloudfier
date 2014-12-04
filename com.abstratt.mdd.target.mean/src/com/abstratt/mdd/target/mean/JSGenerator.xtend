@@ -255,7 +255,7 @@ class JSGenerator {
         if (operator != null)
             switch (action.arguments.size()) {
                 // unary operator
-                case 0: '''«operator»«generateAction(action.target)»'''
+                case 0: '''«operator»(«generateAction(action.target)»)'''
                 case 1: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
@@ -456,8 +456,10 @@ class JSGenerator {
     }
     
     def generateActivityRootAction(Activity activity) {
+        val rootActionGenerated = generateAction(activity.rootAction)
         '''
-        «generateAction(activity.rootAction)»
+        «dump(rootActionGenerated)»
+        «rootActionGenerated»
         '''
     }
     
@@ -474,15 +476,15 @@ class JSGenerator {
     def generatePrecondition(Operation operation, Constraint constraint) {
         '''
         var precondition = «generatePredicate(constraint)»;
-        if (!precondition.call(this)) {
+        if (!precondition.call(«generateSelfReference»)) {
             console.log("Violated: «generatePredicate(constraint).toString.replaceAll('"', '\'').split('\n').join('\\n')»");
-            throw "Precondition on «operation.name» was violated"
+            throw new Error("Precondition on «operation.name» was violated");
         }
         '''
     }
     
     protected def dump(CharSequence generated) {
-        var asString = generated.toString
+            var asString = generated.toString
         '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
     }
 }

@@ -119,12 +119,12 @@ class FunctionalTestGenerator extends ModelGenerator {
         val failureExpected = testCase.hasStereotype('Failure')
         // extracted as a block as we generate from different places depending on whether
         // a failure is expected
-        val generateCoreBehavior = [|
+        val generateCoreBehavior = [CharSequence success, CharSequence error |
             '''
                var behavior = function() {
                    «generateActivityRootAction(testBehavior)»
                };
-               behavior().then(done, done);
+               behavior().then(«success», «error»);
             '''
         ]
         
@@ -135,14 +135,16 @@ class FunctionalTestGenerator extends ModelGenerator {
         '''
         test('«testCase.name»', function(done) {
             «IF failureExpected»
-            try {
-                «generateCoreBehavior.apply»
-            } catch (e) {
-                return;
+            «generateCoreBehavior.apply('''
+            function() {
+                done(new Error("Error expected"));
+            }''', '''
+            function() {
+                done();
             }
-            throw "Failure expected, but no failure occurred"
+            '''.toString.trim)»
             «ELSE»
-            «generateCoreBehavior.apply»
+            «generateCoreBehavior.apply('done', 'done')»
             «ENDIF»
         });
         '''

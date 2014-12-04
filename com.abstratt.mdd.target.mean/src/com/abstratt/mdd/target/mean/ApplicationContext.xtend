@@ -88,6 +88,10 @@ class ApplicationContext {
         else
             property.relationship && !property.childRelationship
     }
+    
+    def boolean isAsynchronousContext() {
+        activityContexts.exists[it.activity.asynchronous]
+    }
 
     def boolean isAsynchronous(Activity activity) {
         if (synchronism.containsKey(activity)) {

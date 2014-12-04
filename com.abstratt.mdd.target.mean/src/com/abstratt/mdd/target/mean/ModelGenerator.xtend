@@ -47,6 +47,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import org.apache.commons.lang3.StringUtils
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -91,10 +92,6 @@ class ModelGenerator extends AsyncJSGenerator {
         });
         var exports = module.exports = mongoose;
         '''
-    }
-    
-    override generateActivityRootAction(Activity activity) {
-        super.generateActivityRootAction(activity)
     }
     
 
@@ -286,9 +283,10 @@ class ModelGenerator extends AsyncJSGenerator {
             «derivation.generateActivity»
         };
         «ELSE»
-        «derivedAttribute.generateComment»«schemaVar».virtual('«derivedAttribute.name»').get(function () {
+        «derivedAttribute.generateComment»«schemaVar».methods.«prefix»«derivedAttribute.name.toFirstUpper» = function () {
+            console.log("this.«derivedAttribute.name»: " + JSON.stringify(this));
             «derivation.generateActivity»
-        });
+        };
         «ENDIF»
         '''
     }
@@ -337,15 +335,13 @@ class ModelGenerator extends AsyncJSGenerator {
         '''
     }
     
-    def generateActionOperationBehavior(Operation action) {
-        val firstMethod = action.methods?.head
+    def generateActionOperationBehavior(Operation actionOperation) {
+        val firstMethod = actionOperation.methods?.head
         if(firstMethod == null) {
             // a method-less operation, generate default action implementation (check preconditions and SSM animation)
             application.newActivityContext(null)
             try {
                 // call generatePipeline directly as there is no activity to generate stuff from
-                addActionPrologue(action)
-                addActionEpilogue(action)
                 '''
                 {
                     «generatePipeline()»
@@ -437,9 +433,8 @@ class ModelGenerator extends AsyncJSGenerator {
     
     
     override addActionPrologue(Operation action) {
-//        val stages = context.stages
-//        action.preconditions.map[
-//            generatePredicate(it)
+        action.preconditions.map[
+            generatePredicate(it)
 //            stages += '''
 //            function (outcome) {
 //                if (!outcome) {
@@ -447,7 +442,7 @@ class ModelGenerator extends AsyncJSGenerator {
 //                }
 //            }
 //            '''
-//        ]
+        ].join(';')
     }
     
     override addActionEpilogue(Operation action) {
@@ -530,11 +525,12 @@ class ModelGenerator extends AsyncJSGenerator {
 
     override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
         val asProperty = action.structuralFeature as Property
-        if (asProperty.derivedRelationship && action.object != null)
-            // derived relationships are actually getter functions
+        if (asProperty.derived && action.object != null) {
+            // derived properties and relationships are actually getter functions
             // no need to worry about statics - relationships are never static
-            '''«action.object.generateAction».get«asProperty.name.toFirstUpper»()'''
-        else if (action.object != null && asProperty.linkRelationship)
+            val prefix = if (asProperty.type.name == 'Boolean') 'is' else 'get'
+            '''«action.object.generateAction».«prefix»«asProperty.name.toFirstUpper»()'''
+        } else if (action.object != null && asProperty.linkRelationship)
             generateTraverseRelationshipAction(action.object, asProperty)
         else
             super.generateReadStructuralFeatureAction(action)
@@ -607,7 +603,8 @@ class ModelGenerator extends AsyncJSGenerator {
                 case 'size' : generateCount(action)
                 case 'forEach' : generateForEach(action)
                 case 'isEmpty' : generateIsEmpty(action)
-                case 'any' : generateExists(action)
+                case 'any' : generateAny(action)
+                case 'one' : generateOne(action)
                 case 'includes' : generateIncludes(action)
                 case 'sum' : generateAggregation(action, "sum")
                 case 'max' : generateAggregation(action, "max")
@@ -640,8 +637,12 @@ class ModelGenerator extends AsyncJSGenerator {
         '/*TBD*/isEmpty'
     }
     
-    private def generateExists(CallOperationAction action) {
+    private def generateAny(CallOperationAction action) {
         '''«action.generateSelect».findOne()'''
+    }
+    
+    private def generateOne(CallOperationAction action) {
+        '''«generateAction(action.target.sourceAction)»[0]'''
     }
     
     private def generateIncludes(CallOperationAction action) {

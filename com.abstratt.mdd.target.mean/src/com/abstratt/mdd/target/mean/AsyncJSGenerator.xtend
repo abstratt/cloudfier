@@ -8,27 +8,37 @@ import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.CallOperationAction
+import com.google.common.base.Function
 
 class AsyncJSGenerator extends JSGenerator {
     
     final protected ApplicationContext application = new ApplicationContext
 
 
-    override generateActivityRootAction(Activity activity) {
+    def generateInNewContext(Activity activity, Function<?,CharSequence> toRun) {
         application.newActivityContext(activity)
         try {
-            if (!application.isAsynchronous(activity)) {
-                return super.generateActivityRootAction(activity)
-            }
-            application.activityContext.buildPipeline(activity.rootAction)
-            '''«generatePipeline()»'''
+            return toRun.apply(null)
         } finally {
             application.dropActivityContext
         }
+    }
+
+    override generateActivityRootAction(Activity activity) {
+        generateInNewContext(activity, [generateActivityRootActionInCurrentContext])
+    }
+    
+    def generateActivityRootActionInCurrentContext() {
+        val activity = application.activityContext.activity 
+        if (!application.isAsynchronous(activity))
+            return '''/*sync*/«super.generateActivityRootAction(activity)»'''
+        application.activityContext.buildPipeline(activity.rootAction)
+        '''«generatePipeline()»'''
     }
     
     def ActivityContext getContext() {
@@ -94,6 +104,7 @@ class AsyncJSGenerator extends JSGenerator {
         Q.all([
             «stage.substages.map[generateStage(true).toString.trim].join(',\n')»
         ]).spread(function(«stage.substages.map[alias].join(', ')») {
+            «stage.substages.map['''console.log("«alias»:" + «alias»);'''].join('')»
             «stage.rootAction.generateReturn»
         })'''
     }
@@ -112,15 +123,30 @@ class AsyncJSGenerator extends JSGenerator {
     
     def generatePipelineFrom(Stage rootStage) {
         val rootStageVariables = context.findVariables
-        // always generate a return, caller may be interested in promise
+        val specification = context.activity.specification
+        val generated = context.rootStage.generateStage(false)
+        val preconditions = if (specification instanceof Operation) specification.preconditions else #[]
         '''
         «IF !rootStageVariables.empty»
         «generateVariableBlock(rootStageVariables)»
         «ENDIF» 
-        «IF context.activity.specification == null || !context.activity.specification.static»
+        «IF !context.activity.activityStatic && !context.activity.isConstraintBehavior»
         var me = this;
         «ENDIF»
-        «context.rootStage.generateStage(false)»
+        «IF !preconditions.empty»
+        return Q()«(context.activity.specification as Operation).preconditions.map[ constraint |
+            '''
+            .then(«generatePredicate(constraint).toString.trim»).then(function(pass) {
+                if (!pass) {
+                    throw new Error("«if (!constraint.description.nullOrEmpty) constraint.description else constraint.name»");
+                }    
+            })'''.toString.trim
+        ].join()».then(function() {
+            «generated»
+        });
+        «ELSE»
+        «generated»
+        «ENDIF»
         '''
     }
     
@@ -147,8 +173,8 @@ class AsyncJSGenerator extends JSGenerator {
     }
     
     override generateSelfReference() {
-        if (context == null || !this.application.isAsynchronous(context.activity))
-            super.generateSelfReference
+        if (!this.application.asynchronousContext)
+            ''' «super.generateSelfReference»'''
         else
             'me'
     }

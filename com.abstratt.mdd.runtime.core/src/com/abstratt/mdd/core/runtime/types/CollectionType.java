@@ -71,6 +71,10 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     public BasicType any(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
         return internalAny(context, reference, true);
     }
+    
+    public BasicType one(@SuppressWarnings("unused") ExecutionContext context) {
+        return backEnd.isEmpty() ? null : backEnd.iterator().next(); 
+    }
 
     public BagType asBag(@SuppressWarnings("unused") ExecutionContext context) {
         return new BagType(baseType, backEnd);
