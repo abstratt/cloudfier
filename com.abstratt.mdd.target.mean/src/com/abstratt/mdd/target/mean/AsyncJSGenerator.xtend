@@ -138,7 +138,13 @@ class AsyncJSGenerator extends JSGenerator {
             '''
             .then(«generatePredicate(constraint).toString.trim»).then(function(pass) {
                 if (!pass) {
-                    throw new Error("«if (!constraint.description.nullOrEmpty) constraint.description else constraint.name»");
+                    var error = new Error("Precondition violated: «if (!constraint.description.nullOrEmpty) constraint.description else constraint.name» (on '«specification.qualifiedName»')");
+                    error.context = '«specification.qualifiedName»';
+                    error.constraint = '«constraint.name»';
+                    «IF !constraint.description.nullOrEmpty»
+                    error.description = «constraint.description»';
+                    «ENDIF»
+                    throw error;
                 }    
             })'''.toString.trim
         ].join()».then(function() {

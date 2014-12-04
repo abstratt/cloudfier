@@ -15,6 +15,7 @@ import static extension com.abstratt.mdd.core.util.TemplateUtils.*
 import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.UMLPackage
+import com.abstratt.mdd.core.util.StereotypeUtils
 
 class FunctionalTestGenerator extends ModelGenerator {
     
@@ -117,6 +118,9 @@ class FunctionalTestGenerator extends ModelGenerator {
         while (rootAction.findTerminals.size() == 1 && rootAction.findTerminals.get(0).eClass == UMLPackage.Literals.STRUCTURED_ACTIVITY_NODE)
             rootAction = rootAction.findTerminals.get(0) as StructuredActivityNode
         val failureExpected = testCase.hasStereotype('Failure')
+        val expectedFailureContext = StereotypeUtils.getValue(testCase, 'Failure', "context")
+        val expectedFailureConstraint = StereotypeUtils.getValue(testCase, 'Failure', "constraint")
+        
         // extracted as a block as we generate from different places depending on whether
         // a failure is expected
         val generateCoreBehavior = [CharSequence success, CharSequence error |
@@ -137,10 +141,23 @@ class FunctionalTestGenerator extends ModelGenerator {
             «IF failureExpected»
             «generateCoreBehavior.apply('''
             function() {
-                done(new Error("Error expected"));
+                done(new Error("Error expected («expectedFailureConstraint»), none occurred"));
             }''', '''
-            function() {
-                done();
+            function(error) {
+                try {
+                    console.log(error);
+                    «IF expectedFailureContext != null»
+                    assert.equal(error.name, 'ValidationError');
+                    assert.ok(error.errors.«expectedFailureContext»);
+                    «ELSE»
+                    assert.equal(error.name, 'Error');
+                    assert.ok(error.context);
+                    assert.equal(error.constraint, '«expectedFailureConstraint»');
+                    «ENDIF»
+                    done();
+                } catch (e) {
+                    done(e);
+                }                
             }
             '''.toString.trim)»
             «ELSE»

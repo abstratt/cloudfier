@@ -314,16 +314,14 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def generateAttributeInvariant(Constraint invariant) {
-        ''
-// TODO        
-//        val property = invariant.constrainedElements.head as Property
-//        val schemaVar = '''«property.class_.name.toFirstLower»Schema'''
-//        '''
-//        «schemaVar».path('«property.name»').validate(
-//            «invariant.generatePredicate.toString.trim»,
-//            'validation of `{PATH}` failed with value `{VALUE}`'
-//        );
-//        '''
+        val property = invariant.constrainedElements.head as Property
+        val schemaVar = '''«property.class_.name.toFirstLower»Schema'''
+        '''
+        «schemaVar».path('«property.name»').validate(
+            «invariant.generatePredicate.toString.trim»,
+            'validation of `{PATH}` failed with value `{VALUE}`'
+        );
+        '''
     }
 
     def generateActionOperation(Operation actionOperation) {
