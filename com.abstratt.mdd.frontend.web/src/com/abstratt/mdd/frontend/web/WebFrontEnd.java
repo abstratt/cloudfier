@@ -11,6 +11,8 @@ public interface WebFrontEnd {
     String DIAGRAM_SEGMENT = "/diagram/";
     String PUBLISHER_SEGMENT = "/publisher/";
     String GENERATOR_SEGMENT = "/generator/";
+    String PLATFORM_SEGMENT = "platform";
+    String MAPPER_SEGMENT = "mapper";
     String FORMATTER_SEGMENT = "/formatter/";
     String ANALYZER_SEGMENT = "/analyzer/";
     String DEPLOYER_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.BASE_PATH + WebFrontEnd.DEPLOYER_SEGMENT;

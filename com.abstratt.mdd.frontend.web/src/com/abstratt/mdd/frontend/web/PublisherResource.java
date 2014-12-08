@@ -3,6 +3,7 @@ package com.abstratt.mdd.frontend.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -181,10 +182,14 @@ public class PublisherResource extends AbstractWorkspaceResource {
             workspaceMarkup.append("\t").append(element).append('\n');
         Properties repoProperties = MDDUtil.loadRepositoryProperties(MDDUtil.fromJavaToEMF(getWorkspaceDir(false).toURI()));
         for (String platformId : TargetCore.getPlatformIds(repoProperties)) {
-            ITargetPlatform platform = TargetCore.getPlatform(repoProperties, platformId);
-            String generatorURI = baseReference.clone().addSegment(platformId).toString()
+            String generatorURI = baseReference.clone().addSegment(WebFrontEnd.PLATFORM_SEGMENT).addSegment(platformId).toString()
                     .replace(WebFrontEnd.PUBLISHER_SEGMENT, WebFrontEnd.GENERATOR_SEGMENT);
             workspaceMarkup.append("\t<generator platform=\"" + platformId + "\" uri=\"" + generatorURI + "\"/>\n");
+            ITargetPlatform platform = TargetCore.getPlatform(repoProperties, platformId);
+            for (String artifactType : platform.getArtifactTypes()) {
+                String artifactTypeGeneratorURI = generatorURI + "/" + WebFrontEnd.MAPPER_SEGMENT + "/" + artifactType;
+                workspaceMarkup.append("\t<generator mapper=\"" + artifactType + "\" platform=\"" + platformId + "\" uri=\"" + artifactTypeGeneratorURI + "\"/>\n");
+            }
         }
         String archiveURI = baseReference.getParentRef().addSegment(getWorkspaceDir(false).getName() + ".zip").toString();
         workspaceMarkup.append("<archive uri=\"" + archiveURI + "\"/>");

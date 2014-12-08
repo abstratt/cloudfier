@@ -76,8 +76,12 @@ public class GeneratorResource extends AbstractWorkspaceResource {
 						expectedContentType)
 				|| (expectedContentType == null && result.size() > 1);
 
-		if (zipFormat)
-			return ResourceUtils.createZip(result, "generated-" +platformId);
+		if (zipFormat) {
+			String fileName = "generated-" +platformId;
+			if (artifactType != null)
+			    fileName += "-" + artifactType;
+            return ResourceUtils.createZip(result, fileName);
+		}
 		StringBuffer resultString = new StringBuffer();
 		for (byte[] each : result.values()) {
 			resultString.append("\n");
