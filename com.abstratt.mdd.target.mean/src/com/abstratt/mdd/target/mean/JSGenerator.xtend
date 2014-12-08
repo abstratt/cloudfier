@@ -481,14 +481,14 @@ class JSGenerator {
         '''
         var precondition = «generatePredicate(constraint)»;
         if (!precondition.call(«generateSelfReference»)) {
-            console.log("Violated: «generatePredicate(constraint).toString.replaceAll('"', '\'').split('\n').join('\\n')»");
             throw new Error("Precondition on «operation.name» was violated");
         }
         '''
     }
     
     protected def dump(CharSequence generated) {
-            var asString = generated.toString
-        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
+//            var asString = generated.toString
+//        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
+        ''
     }
 }

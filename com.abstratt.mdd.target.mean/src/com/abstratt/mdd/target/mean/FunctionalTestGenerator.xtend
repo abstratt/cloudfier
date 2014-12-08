@@ -145,7 +145,6 @@ class FunctionalTestGenerator extends ModelGenerator {
             }''', '''
             function(error) {
                 try {
-                    console.log(error);
                     «IF expectedFailureContext != null»
                     assert.equal(error.name, 'ValidationError');
                     assert.ok(error.errors.«expectedFailureContext»);

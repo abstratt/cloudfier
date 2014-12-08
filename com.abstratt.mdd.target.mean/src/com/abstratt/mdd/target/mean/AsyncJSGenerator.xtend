@@ -104,7 +104,6 @@ class AsyncJSGenerator extends JSGenerator {
         Q.all([
             «stage.substages.map[generateStage(true).toString.trim].join(',\n')»
         ]).spread(function(«stage.substages.map[alias].join(', ')») {
-            «stage.substages.map['''console.log("«alias»:" + «alias»);'''].join('')»
             «stage.rootAction.generateReturn»
         })'''
     }

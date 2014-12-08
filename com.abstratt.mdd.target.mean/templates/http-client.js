@@ -14,7 +14,7 @@ var HttpClient = function (baseUrl, runAs) {
     
     self.baseUrl = baseUrl;
     
-    console.log(baseUrl);
+//    console.log(baseUrl);
 
     self.performRequestOnURL = function(requestUrl, method, expectedStatus, body) {
         var parsedUrl = url.parse(requestUrl);
@@ -29,23 +29,23 @@ var HttpClient = function (baseUrl, runAs) {
             options.headers['X-Kirra-RunAs'] = runAs;
         }
         var deferred = q.defer();
-        console.error(options.method + " " + options.path + " " + options.headers['X-Kirra-RunAs'] + " " + JSON.stringify(body || {}));
+        //console.error(options.method + " " + options.path + " " + options.headers['X-Kirra-RunAs'] + " " + JSON.stringify(body || {}));
         var start = new Date().getTime()
         var req = http.request(options, function(res) {
             var data = "";
             res.on('data', function(chunk) {
                 data += chunk.toString();
             }).on('end', function() {
-                console.error("Raw response: ", data);
+                //console.error("Raw response: ", data);
                 var parsed = JSON.parse(data);
                 if ((typeof expectedStatus === 'number' && expectedStatus !== res.statusCode) || 
                     (typeof expectedStatus === 'object' && expectedStatus.indexOf(res.statusCode) === -1)) {
-                    console.error("Error response: ", util.inspect(parsed));
+                    //console.error("Error response: ", util.inspect(parsed));
                     deferred.reject(parsed);
                 } else {
                     var end = new Date().getTime()
-                    console.error("Time: ", (end - start) + "ms");                    
-                    console.error("Success response: ", util.inspect(parsed));
+                    //console.error("Time: ", (end - start) + "ms");                    
+                    //console.error("Success response: ", util.inspect(parsed));
                     deferred.resolve(parsed);
                 }
             });

@@ -77,14 +77,14 @@ class ModelGenerator extends AsyncJSGenerator {
         '''
         var mongoose = require('mongoose');
         var dbURI = 'mongodb://localhost/test';
-        mongoose.set('debug', function (coll, method, query, doc) {
+        mongoose.set('debug', false /*function (coll, method, query, doc) {
             console.log(">>>>>>>>>>");
             console.log("Collection: " + coll);
             console.log("Method: " + method);
             console.log("Query: " + JSON.stringify(query));
             console.log("Doc: " + JSON.stringify(doc));
             console.log("<<<<<<<<<");
-        });
+        }*/);
         mongoose.connect(dbURI);
         mongoose.connection.on('error', function (err) { console.log(err); } );
         mongoose.connection.on('connected', function () {
@@ -284,7 +284,6 @@ class ModelGenerator extends AsyncJSGenerator {
         };
         «ELSE»
         «derivedAttribute.generateComment»«schemaVar».methods.«prefix»«derivedAttribute.name.toFirstUpper» = function () {
-            console.log("this.«derivedAttribute.name»: " + JSON.stringify(this));
             «derivation.generateActivity»
         };
         «ENDIF»
@@ -458,15 +457,6 @@ class ModelGenerator extends AsyncJSGenerator {
             return this.handleEvent('«action.name»');
         }'''
     }
-    
-    def generateObjectSaving() {
-        '''
-        function () {
-            console.log('Saving...');
-            return this.save(); 
-        }'''
-    }
-    
 
     def generateQueryOperations(Iterable<Operation> queries) {
         queries.map[generateQueryOperation(it)].join('\n')
@@ -782,14 +772,12 @@ class ModelGenerator extends AsyncJSGenerator {
         val needsGuard = stateMachine.vertices.exists[it.outgoings.exists[it.guard != null]]
         '''
             «schemaVar».methods.handleEvent = function (event) {
-                console.log("started handleEvent("+ event+")");
                 «IF (needsGuard)»
                 var guard;
                 «ENDIF»
                 switch (event) {
                     «triggersPerEvent.entrySet.map[generateEventHandler(entity, stateAttribute, it.key, it.value)].join('\n')»
                 }
-                console.log("completed handleEvent("+ event+")");
                 «generateSave(generateSelfReference, false)»
             };
             
