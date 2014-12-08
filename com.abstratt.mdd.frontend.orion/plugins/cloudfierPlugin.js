@@ -11,6 +11,14 @@
  *******************************************************************************/
 window.onload = function() {
 
+var xhr;
+
+require(["dojo/request/xhr"], function(ref) {
+    console.log("Loaded");
+    console.log(ref);
+    xhr = ref;
+});
+
 var buildProjectPath = function (args, context) {
     var path = args.application.file ? args.application.file.path : args.application.path;
     var current = context.cwd;
@@ -277,25 +285,33 @@ var shellAppUndeploy = function(args, context) {
 };
 
 var shellGenerate = function(args, context) {
+    var relativeCwd = context.cwd.substring(context.cwd.indexOf("OrionContent/") + "OrionContent/".length);
     var projectPath = buildProjectPath(args, context);
     var appName = locationToWorkspace(projectPath);
     var platform = args.platform;
     var url = "/services/generator/" + appName + "/platform/" + platform;
-    return dojo.xhrGet({
-         url: url,
-         failOk: true,
-         handleAs: 'text',
+    return xhr.get(url, {
+         handleAs: 'arraybuffer',
          headers: { "Accept" : "application/zip" }, 
-         load: function(result) {
-            var result = {path: "generated.zip", isDirectory: false, blob: new Blob(result, {type : 'application/zip'})};
-            return result;             
-         },
-         error: function(error) {
+    }).then(function(result) {
+            var zip = new JSZip(result);
+            var files = zip.files;
+            var newFiles = [];
+            for (var name in files) {
+                if (name.lastIndexOf("/") === (name.length - 1)) {
+                    /* represents a directory */
+                    newFiles.push({path: "gen/" + name.substring(0, name.length - 1), isDirectory: true});
+                } else {
+                    var file = zip.file(name);
+                    newFiles.push({path: "gen/" + name, blob: file.asArrayBuffer()});
+                }
+            };
+            return newFiles;
+    }, function(error) {
              if (error.status == 404) {
                  return "No application is deployed yet at \"" + projectPath + "\". Use 'cloudfier full-deploy <application-dir>' to deploy it first";
              }
              return "Unexpected error: " + JSON.parse(error.responseText).message + " (" + error.status + ")";
-         }
     });
 };
 
@@ -538,7 +554,7 @@ provider.registerServiceProvider("orion.shell.command", { callback: shellGenerat
             type: "file",
             description: "Application to generate"
         }],
-        returnType: "file"
+        returnType: "[file]"
     }
 );
 

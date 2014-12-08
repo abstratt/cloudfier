@@ -176,7 +176,7 @@ public class ResourceUtils {
             if (!success)
                 FileUtils.deleteQuietly(workingFile);
         }
-        FileRepresentation representation = new FileRepresentation(workingFile, MediaType.APPLICATION_ZIP);
+        FileRepresentation representation = new FileRepresentation(workingFile, MediaType.APPLICATION_OCTET_STREAM);
         representation.setAutoDeleting(true);
         Series<Parameter> parameters = new Series<Parameter>(Parameter.class, Arrays.asList(new Parameter("filename", fileName + ".zip")));
         representation.setDisposition(new Disposition(Disposition.TYPE_INLINE, parameters));
