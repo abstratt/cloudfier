@@ -59,7 +59,7 @@ public class BuildDirectoryUtils {
         if (originalPath.segmentCount() < 2)
             return null;
         IPath workspaceRelativePath = originalPath.removeFirstSegments(1).makeRelative(); 
-        String userName = originalPath.segments()[0].replace("-OrionContent", "");
+        String userName = originalPath.segments()[0];
         String userBucket = userName.substring(0, 2);
         URI result = rootInstanceDir.getChild(userBucket).getChild(userName).getChild("OrionContent").getChild(workspaceRelativePath.toString()).toURI();
         return EFS.getLocalFileSystem().getStore(result);

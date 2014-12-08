@@ -15,9 +15,8 @@ var buildProjectPath = function (args, context) {
     var path = args.application.file ? args.application.file.path : args.application.path;
     var current = context.cwd;
 
-    current = current.replace('.', '/');
-    path = path.replace('.', '/');
-    
+    current = current.replace('.', '/').replace('-OrionContent', '');
+    path = path.replace('.', '/').replace('-OrionContent', '');
     if (current.indexOf('/workspace/') == 0)
         // workaround for Orion bug #420829
         return path;
@@ -97,7 +96,7 @@ var computeProposals = function(prefix, buffer, selection) {
 };
 
 var locationToWorkspace = function(location, file) {
-    return location.replace('/file/','').replace('/' + file,'').replace(/\/$/g, '').replace(/\//g, '-');
+    return location.replace('/file/','').replace('-OrionContent','').replace('/' + file,'').replace(/\/$/g, '').replace(/\//g, '-');
 };
 
 /*** SHELL commands */
