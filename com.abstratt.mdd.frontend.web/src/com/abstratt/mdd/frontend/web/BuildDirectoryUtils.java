@@ -29,7 +29,7 @@ public class BuildDirectoryUtils {
     public static File getBaseDeployDirectory() {
         IFileStore instancePath = BuildDirectoryUtils.getInstancePath();
         String deployBase = System.getProperty("kirra.deploy.base");
-        File parentDir = deployBase == null ? new File(instancePath.toString()) : new File(deployBase);
+        File parentDir = deployBase == null ? new File(instancePath.toString()).getParentFile() : new File(deployBase);
         return new File(new File(parentDir, ".kirra"), "deploy");
     }
 
@@ -58,39 +58,41 @@ public class BuildDirectoryUtils {
         IFileStore rootInstanceDir = BuildDirectoryUtils.getInstancePath();
         if (originalPath.segmentCount() < 2)
             return null;
-        String userName = originalPath.segments()[0];
-        String projectName = originalPath.segments()[1];
-        IPath projectPath = originalPath.removeFirstSegments(2).makeAbsolute();
-        IFileStore serverSettings = rootInstanceDir.getChild(".metadata/.plugins/org.eclipse.orion.server.core/.settings/");
-        Properties workspaceProperties = BuildDirectoryUtils.readProperties(serverSettings.getChild("Workspaces.prefs"));
-        Properties projectProperties = BuildDirectoryUtils.readProperties(serverSettings.getChild("Projects.prefs"));
-        if (workspaceProperties != null && projectProperties != null)
-            try {
-                for (JsonNode jsonNode : ((ArrayNode) JsonHelper.parse(new StringReader((String) workspaceProperties.get(userName
-                        + "/Projects"))))) {
-                    ObjectNode entry = (ObjectNode) jsonNode;
-                    String projectKey = entry.get("Id").getTextValue();
-                    if (projectName.equals(projectProperties.getProperty(projectKey + "/Name"))) {
-                        String workspaceLocation = projectProperties.getProperty(projectKey + "/ContentLocation");
-                        URI result = URI.create(workspaceLocation + projectPath);
-                        if (!result.isAbsolute()) {
-                            // it is unclear why, but Orion may use absolute or
-                            // workspace relative project URLs
-                            result = URIUtil.append(rootInstanceDir.toURI(), result.getPath());
-                        }
-                        StringBuffer buffer = new StringBuffer();
-                        buffer.append("\n\tOriginal path: " + originalPath);
-                        buffer.append("\n\tWorkspace location: " + workspaceLocation);
-                        buffer.append("\n\tProject path: " + projectPath);
-                        buffer.append("\n\tSource URI: " + result);
-                        LogUtils.logInfo(WebFrontEnd.ID, buffer.toString(), null);
-                        return EFS.getLocalFileSystem().getStore(result);
-                    }
-                }
-            } catch (IOException e) {
-                //
-            }
-        return null;
+        IPath workspaceRelativePath = originalPath.removeFirstSegments(1).makeRelative(); 
+        String userName = originalPath.segments()[0].replace("-OrionContent", "");
+        String userBucket = userName.substring(0, 2);
+        URI result = rootInstanceDir.getChild(userBucket).getChild(userName).getChild("OrionContent").getChild(workspaceRelativePath.toString()).toURI();
+        return EFS.getLocalFileSystem().getStore(result);
+//        IFileStore serverSettings = rootInstanceDir.getChild(".metadata/.plugins/org.eclipse.orion.server.core/.settings/");
+//        Properties workspaceProperties = BuildDirectoryUtils.readProperties(serverSettings.getChild("Workspaces.prefs"));
+//        Properties projectProperties = BuildDirectoryUtils.readProperties(serverSettings.getChild("Projects.prefs"));
+//        if (workspaceProperties != null && projectProperties != null)
+//            try {
+//                for (JsonNode jsonNode : ((ArrayNode) JsonHelper.parse(new StringReader((String) workspaceProperties.get(userName
+//                        + "/Projects"))))) {
+//                    ObjectNode entry = (ObjectNode) jsonNode;
+//                    String projectKey = entry.get("Id").getTextValue();
+//                    if (projectName.equals(projectProperties.getProperty(projectKey + "/Name"))) {
+//                        String workspaceLocation = projectProperties.getProperty(projectKey + "/ContentLocation");
+//                        URI result = URI.create(workspaceLocation + projectPath);
+//                        if (!result.isAbsolute()) {
+//                            // it is unclear why, but Orion may use absolute or
+//                            // workspace relative project URLs
+//                            result = URIUtil.append(rootInstanceDir.toURI(), result.getPath());
+//                        }
+//                        StringBuffer buffer = new StringBuffer();
+//                        buffer.append("\n\tOriginal path: " + originalPath);
+//                        buffer.append("\n\tWorkspace location: " + workspaceLocation);
+//                        buffer.append("\n\tProject path: " + projectPath);
+//                        buffer.append("\n\tSource URI: " + result);
+//                        LogUtils.logInfo(WebFrontEnd.ID, buffer.toString(), null);
+//                        return EFS.getLocalFileSystem().getStore(result);
+//                    }
+//                }
+//            } catch (IOException e) {
+//                //
+//            }
+//        return null;
     }
 
     public static String getWorkspaceNameFromPath(IPath projectPath) {
