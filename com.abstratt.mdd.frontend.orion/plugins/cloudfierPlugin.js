@@ -276,6 +276,29 @@ var shellAppUndeploy = function(args, context) {
     });
 };
 
+var shellGenerate = function(args, context) {
+    var projectPath = buildProjectPath(args, context);
+    var appName = locationToWorkspace(projectPath);
+    var platform = args.platform;
+    var url = "/services/generator/" + appName + "/platform/" + platform;
+    return dojo.xhrGet({
+         url: url,
+         failOk: true,
+         handleAs: 'text',
+         headers: { "Accept" : "application/zip" }, 
+         load: function(result) {
+            var result = {path: "generated.zip", isDirectory: false, blob: new Blob(result, {type : 'application/zip'})};
+            return result;             
+         },
+         error: function(error) {
+             if (error.status == 404) {
+                 return "No application is deployed yet at \"" + projectPath + "\". Use 'cloudfier full-deploy <application-dir>' to deploy it first";
+             }
+             return "Unexpected error: " + JSON.parse(error.responseText).message + " (" + error.status + ")";
+         }
+    });
+};
+
 var insertNewLines = function(lines) {
     var contents = [];
     for(var i = 0;i < lines.length;i++) {
@@ -283,6 +306,8 @@ var insertNewLines = function(lines) {
     }
     return contents;    
 };
+
+
 
 
 var shellCreateProject = function(args, context) {
@@ -499,6 +524,24 @@ provider.registerServiceProvider("orion.shell.command", { callback: shellAppUnde
         returnType: "string"
     }
 );
+
+provider.registerServiceProvider("orion.shell.command", { callback: shellGenerate }, 
+    {   
+        name: "cloudfier generate",
+        description: "Generates code for the given application and platform",
+        parameters: [{
+            name: "platform",
+            type: "string",
+            description: "Platform to generate for"
+        },{
+            name: "application",
+            type: "file",
+            description: "Application to generate"
+        }],
+        returnType: "file"
+    }
+);
+
 
 provider.registerServiceProvider("orion.shell.command", { callback: shellCreateProject }, {   
     name: "cloudfier init-project",

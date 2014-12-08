@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -164,7 +165,8 @@ public class ResourceUtils {
         try {
             out = new ZipOutputStream(new FileOutputStream(workingFile));
             for (Entry<String, byte[]> entry : files.entrySet()) {
-                out.putNextEntry(new ZipEntry(entry.getKey()));
+                ZipEntry zipEntry = new ZipEntry(entry.getKey());
+                out.putNextEntry(zipEntry);
                 out.write(entry.getValue());
                 out.closeEntry();
             }

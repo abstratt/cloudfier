@@ -69,9 +69,10 @@ public class GeneratorResource extends AbstractWorkspaceResource {
 		
 		String expectedContentType = ((HttpRequest) getRequest()).getHttpCall()
 		.getRequestHeaders().getValues(
-				HeaderConstants.HEADER_CONTENT_TYPE);
-		boolean zipFormat = MediaType.APPLICATION_OCTET_STREAM.getName()
-				.equals(expectedContentType)
+				HeaderConstants.HEADER_ACCEPT);
+		boolean zipFormat = (MediaType.ALL.getName().equals(expectedContentType) && result.size() > 1) 
+		        || MediaType.APPLICATION_OCTET_STREAM.getName()
+				    .equals(expectedContentType)
 				|| MediaType.APPLICATION_ZIP.getName().equals(
 						expectedContentType)
 				|| (expectedContentType == null && result.size() > 1);
