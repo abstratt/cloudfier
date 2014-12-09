@@ -35,7 +35,7 @@ var buildProjectPath = function (args, context) {
 var checkSyntax = function(title, contents) {
     return dojo.xhrGet({
          handleAs: 'json',
-         url: "/services/builder" + title,
+         url: "/services/builder" + title.replace('-OrionContent', ''),
          load: function(result) {
              return result
          },
@@ -71,7 +71,7 @@ var autoFormat = function(selectedText, text, selection, resource) {
     return dojo.xhrPost({
          postData: text,
          handleAs: 'text',
-         url: "/services/formatter/?fileName=" + resource,
+         url: "/services/formatter/?fileName=" + resource.replace('-OrionContent', ''),
          load: function(result) {
              return { text: result, selection: null };
          }
@@ -684,16 +684,16 @@ provider.registerServiceProvider("orion.edit.outliner", { computeOutline: comput
 provider.registerServiceProvider("orion.edit.command", {
     run : autoFormat
 }, {
-    name : "Format (^M)",
-    key : [ "m", true ],
+    name : "Format (^Y)",
+    key : [ "y", true ],
     contentType: ["text/uml"]
 });
 
 provider.registerServiceProvider("orion.edit.command", {
     run : takeDatabaseSnapshot
 }, {
-    name : "Load database (^L)",
-    key : [ "l", true ],
+    name : "Load database (^B)",
+    key : [ "b", true ],
     contentType: ["application/vnd-json-data"]
 });
 
