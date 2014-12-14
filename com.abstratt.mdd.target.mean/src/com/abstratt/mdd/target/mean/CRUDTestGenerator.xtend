@@ -24,6 +24,7 @@ class CRUDTestGenerator {
     def CharSequence generateTests() {
         
         '''
+        require('../server.js');
         var HttpClient = require("../http-client.js");
         var helpers = require('../helpers.js');
         var util = require('util');

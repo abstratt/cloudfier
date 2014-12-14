@@ -300,6 +300,10 @@ class JSGenerator {
                 default: '''Unsupported classifier «classifier.name» for operation «operation.name»'''         
             }
     }
+
+    def dispatch CharSequence generateAction(Void input) {
+        throw new NullPointerException;
+    }
     
     def dispatch CharSequence generateAction(InputPin input) {
         generateActionProper(input.sourceAction)
@@ -487,7 +491,7 @@ class JSGenerator {
     }
     
     protected def dump(CharSequence generated) {
-//            var asString = generated.toString
+//        var asString = generated.toString
 //        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
         ''
     }

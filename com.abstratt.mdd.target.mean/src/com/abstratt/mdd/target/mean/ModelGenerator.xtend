@@ -203,13 +203,13 @@ class ModelGenerator extends AsyncJSGenerator {
                 derivation.generateFilter
             } else 
                 '''{ '«property.name»' : true }'''
-        } else '''/*read-structural-feature*/«property.name»'''
+        } else property.name
     }
     
     def dispatch CharSequence generateFilterAction(ReadLinkAction action) {
         val fedEndData = action.endData?.head
         //'''.where('«fedEndData.end.otherEnd.name»')'''
-        '''/*read-link*/{ '«fedEndData.end.otherEnd.name»' : «generateFilterAction(fedEndData.value.sourceAction)»  }'''
+        '''{ '«fedEndData.end.otherEnd.name»' : «generateFilterAction(fedEndData.value.sourceAction)»  }'''
     }
     
     def dispatch CharSequence generateFilterAction(ReadVariableAction action) {
@@ -246,9 +246,18 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def dispatch CharSequence generateFilterAction(CallOperationAction action) {
-        //val CharSequence argument = if (action.arguments.empty) 'true' else generateFilterAction(action.arguments.head.sourceAction)
+        //val CharSequence argument = if (action.arguments.emptygenerateFilterAction) 'true' else generateFilterAction(action.arguments.head.sourceAction)
         //'''«generateFilterAction(action.target.sourceAction)».«action.operation.toQueryOperator»(«argument»)'''
         //'''{ «generateFilterAction(action.target.sourceAction)» : {'«action.operation.toQueryOperator»': «generateFilterAction(action.arguments.head.sourceAction)»} }'''
+        if (action.operation.static) {
+            return switch (action.operation.class_.name) {
+                case 'Date' : switch (action.operation.name) {
+                    case 'today' : 'new Date()'
+                    default : unsupportedElement(action, action.operation.name)    
+                }
+                default : unsupportedElement(action, action.operation.name)
+            }
+        }
         '''
         {
             «action.operation.toQueryOperator» : [ 
@@ -471,6 +480,13 @@ class ModelGenerator extends AsyncJSGenerator {
         '''
     }
     
+    override generateClassReference(Classifier classifier) {
+        if (classifier.entity)
+            '''require('./«super.generateClassReference(classifier)».js')'''
+        else
+            super.generateClassReference(classifier)
+    }
+    
     def generateQueryOperationBody(Operation queryOperation) {
         generateActionOperationBehavior(queryOperation)
     }
@@ -526,7 +542,7 @@ class ModelGenerator extends AsyncJSGenerator {
     
     override generateReadVariableValueAction(ReadVariableAction action) {
         if (application.isAsynchronous(action))
-            generateMongoosePromise(action.variable.type.name, 'findOne', #['''({ _id : «action.variable.name»._id })'''])
+            generateMongoosePromise(generateClassReference(action.variable.type as Class), 'findOne', #['''({ _id : «action.variable.name»._id })'''])
         else 
             super.generateReadVariableValueAction(action)
     }
@@ -563,12 +579,12 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def generateTraverseToOne(Property property, InputPin target) {
-        generateMongoosePromise(property.type.name, 'findOne', #['''({ _id : «target.sourceAction.generateAction».«property.name» })'''])
+        generateMongoosePromise(generateClassReference(property.type as Class), 'findOne', #['''({ _id : «target.sourceAction.generateAction».«property.name» })'''])
     }
     
     
     def generateTraverseToMany(Property property, InputPin target) {
-        generateMongoosePromise(property.type.name, 'find', #['''({ «property.otherEnd.name» : «target.sourceAction.generateAction»._id })'''])
+        generateMongoosePromise(generateClassReference(property.type as Class), 'find', #['''({ «property.otherEnd.name» : «target.sourceAction.generateAction»._id })'''])
     }
     
     
@@ -649,7 +665,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val rootAction = transformer.rootAction.findStatements.head.sourceAction 
         if (rootAction instanceof ReadStructuralFeatureAction) {
             val property = rootAction.structuralFeature 
-            '''«action.target.type.name».aggregate()
+            '''«generateClassReference(action.target.type as Class)».aggregate()
               .group({ _id: null, result: { $«operator»: '$«property.name»' } })
               .select('-id result')'''
         } else

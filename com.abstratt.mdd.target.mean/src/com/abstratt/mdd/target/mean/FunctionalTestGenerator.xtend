@@ -40,6 +40,13 @@ class FunctionalTestGenerator extends ModelGenerator {
         '''
     }
     
+    override generateClassReference(Classifier classifier) {
+        if (classifier.entity)
+            '''require('../models/«classifier.name».js')'''
+        else
+            super.generateClassReference(classifier)
+    }
+    
     def CharSequence generateSuiteHelper(Class helperClass) {
         '''
         require('../models/index.js');

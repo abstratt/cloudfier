@@ -36,7 +36,7 @@ class AsyncJSGenerator extends JSGenerator {
     def generateActivityRootActionInCurrentContext() {
         val activity = application.activityContext.activity 
         if (!application.isAsynchronous(activity))
-            return '''/*sync*/«super.generateActivityRootAction(activity)»'''
+            return '''«super.generateActivityRootAction(activity)»'''
         application.activityContext.buildPipeline(activity.rootAction)
         '''«generatePipeline()»'''
     }
