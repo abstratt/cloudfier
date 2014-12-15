@@ -9,12 +9,7 @@ var cls = require('continuation-local-storage');
 var clsify= require('cls-middleware');
 var session = cls.createNamespace('session');
 
-var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/test');
-mongoose.set('debug', function (coll, method, query, doc) {
-    console.log("Coll " + coll);
-});
-mongoose.connection.on('error', function (err) { console.log(err); } );
+var mongoose = require('./models/db.js');
 
 var routes = require('./routes.js');
 
@@ -49,11 +44,10 @@ var App = function() {
      */
     self.terminator = function(sig) {
         if (typeof sig === "string") {
-            console.log('%s: Received %s - terminating the app ...',
-                Date(Date.now()), sig);
+            //console.log('%s: Received %s - terminating the app ...', Date(Date.now()), sig);
             process.exit(1);
         }
-        console.log('%s: Node server stopped.', Date(Date.now()));
+        //console.log('%s: Node server stopped.', Date(Date.now()));
     };
 
 
@@ -117,8 +111,7 @@ var App = function() {
     self.start = function() {
         //  Start the app on the specific interface (and port).
         self.app.listen(self.port, self.ipaddress, function() {
-            console.log('%s: Node server started on %s:%d ...',
-                Date(Date.now()), self.ipaddress, self.port);
+            //console.log('%s: Node server started on %s:%d ...', Date(Date.now()), self.ipaddress, self.port);
         });
     };
 };
@@ -127,4 +120,4 @@ var App = function() {
 var app = exports = module.exports = new App();
 app.initialize();
 app.start();
-console.log("App started!");
+//console.log("App started!");
