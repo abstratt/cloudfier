@@ -52,8 +52,7 @@ class FunctionalTestGenerator extends ModelGenerator {
         require('../models/index.js');
         
         var Q = require("q");
-        «entities.map['''var «name» = require('../models/«name».js');'''].join('\n')»
-        
+        var mongoose = require('../models/db.js');
         var «helperClass.name» = {
             «helperClass.operations.map[ op |
                 val method = op.methods.get(0) as Activity
@@ -81,6 +80,7 @@ class FunctionalTestGenerator extends ModelGenerator {
         
         var assert = require("assert");
         var Q = require("q");
+        var mongoose = require('../models/db.js');
         require('../models/index.js');        
         
         

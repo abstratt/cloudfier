@@ -161,7 +161,7 @@ class ActivityContext {
             AddStructuralFeatureValueAction : '''«action.structuralFeature.name»'''            
             ReadVariableAction : action.variable.name
             AddVariableValueAction : action.variable.name   
-            CallOperationAction : '''«action.operation.name»'''
+            CallOperationAction : '''«action.operation.name»Result'''
             CreateObjectAction : '''new«action.classifier.name»'''
             StructuredActivityNode : '''block'''            
             default : action.eClass.name.toFirstLower     

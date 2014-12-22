@@ -209,9 +209,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     def dispatch CharSequence generateFilterAction(ReadLinkAction action) {
-        val fedEndData = action.endData?.head
-        //'''.where('«fedEndData.end.otherEnd.name»')'''
-        '''{ '«fedEndData.end.otherEnd.name»' : «generateFilterAction(fedEndData.value.sourceAction)»  }'''
+        action.endData.head.end.otherEnd.name
     }
     
     def dispatch CharSequence generateFilterAction(ReadVariableAction action) {
@@ -608,7 +606,7 @@ class ModelGenerator extends AsyncJSGenerator {
             super.generateCallOperationAction(action)
         else 
             switch action.operation.name {
-                case 'head' : action.target.generateAction
+                case 'head' : generateMongoosePromise('''«action.target.generateAction».findOne()''', 'exec', #[])
                 case 'asSequence' : action.target.generateAction
                 case 'select' : generateSelect(action)
                 case 'collect' : generateCollect(action)

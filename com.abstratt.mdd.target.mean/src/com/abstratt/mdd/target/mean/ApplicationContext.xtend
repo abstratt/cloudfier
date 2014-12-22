@@ -53,7 +53,8 @@ class ApplicationContext {
             ReadStructuralFeatureAction:
                 (action.structuralFeature as Property).propertyAsynchronous
             CallOperationAction:
-                action.operation.methods.exists[(it as Activity).asynchronous]
+                (action.operation.methods.empty && action.target != null && action.target.multivalued) || 
+                    action.operation.methods.exists[(it as Activity).asynchronous]
             CreateObjectAction:
                 false
             AddStructuralFeatureValueAction:
@@ -79,9 +80,9 @@ class ApplicationContext {
                 // TODO: revisit me - blocks are important delineating stages
                 false
             ReadVariableAction:
-                // if we did not write to it yet in this block, it is async (needs refetching)
+                // if we did not write to it yet in this block, and it is an entity instance, it is async (needs refetching)
                 // TODO: ideally we would determine whether the write is guaranteed to happen, here we just look for any write, even if path may not be executed 
-                !(action.owningBlock.findFirstAccess(action.variable) instanceof AddVariableValueAction)
+                action.variable.type.entity && !(action.owningBlock.findFirstAccess(action.variable) instanceof AddVariableValueAction)
             default:
                 false
         }
