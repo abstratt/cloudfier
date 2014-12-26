@@ -494,9 +494,9 @@ class ModelGenerator extends AsyncJSGenerator {
         generateActionOperationBehavior(queryOperation)
     }
     
-    def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
+    override generateReadExtentAction(ReadExtentAction action) {
         '''mongoose.model('«action.classifier.name»').find()'''
-    }
+    }   
     
     private def generateSave(CharSequence target, boolean returnSaved) {
         // If the saved object is to be returned, need to extract the saved object from

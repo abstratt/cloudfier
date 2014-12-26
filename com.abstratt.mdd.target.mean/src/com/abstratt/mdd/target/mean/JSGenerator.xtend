@@ -49,6 +49,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import org.eclipse.uml2.uml.ReadExtentAction
 
 /** 
  * A UML-to-Javascript code generator.
@@ -337,6 +338,14 @@ class JSGenerator {
 
     def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
         generateReadStructuralFeatureAction(action)
+    }
+    
+    def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
+        generateReadExtentAction(action)
+    }
+    
+    def CharSequence generateReadExtentAction(ReadExtentAction action) {
+        throw new UnsupportedOperationException("ReadExtent not supported")
     }
     
     def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
