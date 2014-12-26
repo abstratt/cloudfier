@@ -111,10 +111,6 @@ class FunctionalTestGenerator extends ModelGenerator {
         '''
     }
     
-    override generateAddVariableValueAction(AddVariableValueAction action) {
-        super.generateAddVariableValueAction(action)
-    }
-    
     override generateVariables(StructuredActivityNode node) {
         super.generateVariables(node)
     }
@@ -201,9 +197,5 @@ class FunctionalTestGenerator extends ModelGenerator {
             '''require('./«name».js');'''
         ].join('\n')»
         '''
-    }
-    
-    override generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
-        super.generateStructuredActivityNodeAsBlock(node)
     }
 }

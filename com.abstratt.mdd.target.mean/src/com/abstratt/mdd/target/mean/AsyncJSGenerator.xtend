@@ -91,8 +91,16 @@ class AsyncJSGenerator extends JSGenerator {
         return generateStageMultipleChildrenParallel(stage)
     }
     
+    def boolean isNoOpStage(Stage toCheck) {
+        // only no-op case so far involves casting (JS does not need casting)
+        if (!toCheck.rootAction.cast)
+            return false
+        val sourceActionStage = context.findStage(toCheck.rootAction.sourceAction)
+        return sourceActionStage != null && sourceActionStage != toCheck
+    }
+    
     def generateStageMultipleChildrenSequential(Stage stage) {
-        '''Q()«stage.substages.map[generateStage(false)].map[
+        '''Q()«stage.substages.filter[!isNoOpStage(it)].map[generateStage(false)].map[
         '''
         .then(function() {
             «it»
@@ -146,7 +154,7 @@ class AsyncJSGenerator extends JSGenerator {
                     throw error;
                 }    
             })'''.toString.trim
-        ].join()».then(function() {
+        ].join()».then(function(/*noargs*/) {
             «generated»
         });
         «ELSE»

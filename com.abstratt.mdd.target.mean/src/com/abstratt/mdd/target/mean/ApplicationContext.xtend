@@ -77,8 +77,11 @@ class ApplicationContext {
                 // should be async at least for self-directed messages
                 true
             StructuredActivityNode:
+                if (action.cast)
+                    false
+                else
                 // TODO: revisit me - blocks are important delineating stages
-                false
+                    false
             ReadVariableAction:
                 // if we did not write to it yet in this block, and it is an entity instance, it is async (needs refetching)
                 // TODO: ideally we would determine whether the write is guaranteed to happen, here we just look for any write, even if path may not be executed 
@@ -93,7 +96,7 @@ class ApplicationContext {
             property.defaultValue?.isBehaviorReference &&
                 (property.defaultValue.resolveBehaviorReference as Activity).isAsynchronous
         else
-            property.relationship && !property.childRelationship
+            property.relationship && property.likeLinkRelationship
     }
     
     def boolean isAsynchronousContext() {

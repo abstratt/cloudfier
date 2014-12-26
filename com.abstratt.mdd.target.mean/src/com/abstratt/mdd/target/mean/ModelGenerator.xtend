@@ -48,6 +48,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import org.apache.commons.lang3.StringUtils
+import com.abstratt.mdd.core.util.MDDUtil
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -77,14 +78,16 @@ class ModelGenerator extends AsyncJSGenerator {
         '''
         var mongoose = require('mongoose');
         var dbURI = 'mongodb://localhost/test';
-        mongoose.set('debug', false /*function (coll, method, query, doc) {
+        /*
+        mongoose.set('debug', function (coll, method, query, doc) {
             console.log(">>>>>>>>>>");
             console.log("Collection: " + coll);
             console.log("Method: " + method);
             console.log("Query: " + JSON.stringify(query));
             console.log("Doc: " + JSON.stringify(doc));
             console.log("<<<<<<<<<");
-        }*/);
+        });
+        */
         mongoose.connect(dbURI);
         mongoose.connection.on('error', function (err) { console.log(err); } );
         /*
@@ -534,22 +537,26 @@ class ModelGenerator extends AsyncJSGenerator {
             // no need to worry about statics - relationships are never static
             val prefix = if (asProperty.type.name == 'Boolean') 'is' else 'get'
             '''«action.object.generateAction».«prefix»«asProperty.name.toFirstUpper»()'''
-        } else if (action.object != null && asProperty.linkRelationship)
+        } else if (action.object != null && (asProperty.likeLinkRelationship))
             generateTraverseRelationshipAction(action.object, asProperty)
         else
             super.generateReadStructuralFeatureAction(action)
     }
     
     override generateReadVariableValueAction(ReadVariableAction action) {
-        if (application.isAsynchronous(action))
+        if (application.isAsynchronous(action) && action.variable.type.entity && !action.variable.multivalued)
             generateMongoosePromise(generateClassReference(action.variable.type as Class), 'findOne', #['''({ _id : «action.variable.name»._id })'''])
         else 
             super.generateReadVariableValueAction(action)
     }
     
+    def isNestedRelationship(Property end) {
+        return end.childRelationship && !end.isLikeLinkRelationship
+    }
+    
     override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
         val asProperty = action.structuralFeature as Property
-        if (action.object != null && asProperty.linkRelationship) {
+        if (action.object != null && asProperty.likeLinkRelationship) {
             val thisEnd = asProperty
             val otherEnd = asProperty.otherEnd
             val thisEndAction = action.value
@@ -562,9 +569,9 @@ class ModelGenerator extends AsyncJSGenerator {
     }
 
     override generateTraverseRelationshipAction(InputPin target, Property property) {
-        if (property.childRelationship)
+        if (property.nestedRelationship)
             // nested objects can be read as normal JS slots
-            return generateTraverseRelationshipAction(target, property)
+            return super.generateTraverseRelationshipAction(target, property)
 
         if (property.multivalued)
             // one to many, search from the other (many) side
@@ -591,37 +598,33 @@ class ModelGenerator extends AsyncJSGenerator {
     override CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
         val operation = action.operation
         
-        if (classifier != null)
+        if (classifier != null) {
+            
             return switch (classifier.qualifiedName) {
+                case classifier.namespace.name == 'mdd_collections' : switch action.operation.name {
+                    case 'head' : generateMongoosePromise('''«action.target.generateAction».findOne()''', 'exec', #[])
+                    case 'asSequence' : action.target.generateAction
+                    case 'select' : generateSelect(action)
+                    case 'collect' : generateCollect(action)
+                    case 'reduce' : generateReduce(action)
+                    case 'size' : generateCount(action)
+                    case 'forEach' : generateForEach(action)
+                    case 'isEmpty' : generateIsEmpty(action)
+                    case 'any' : generateAny(action)
+                    case 'one' : generateOne(action)
+                    case 'includes' : generateIncludes(action)
+                    case 'sum' : generateAggregation(action, "sum")
+                    case 'max' : generateAggregation(action, "max")
+                    case 'min' : generateAggregation(action, "min")
+                    default : unsupportedElement(action, action.operation.name)
+                }
                 case 'mdd_types::System' : switch (operation.name) {
                     case 'user' : '''cls.getNamespace('currentUser')'''
                 }
                 default: super.generateBasicTypeOperationCall(classifier, action)
             }
+        }
         super.generateBasicTypeOperationCall(classifier, action)         
-    }
-    
-    protected override CharSequence generateCallOperationAction(CallOperationAction action) {
-        if (action.target == null || !action.target.multivalued)
-            super.generateCallOperationAction(action)
-        else 
-            switch action.operation.name {
-                case 'head' : generateMongoosePromise('''«action.target.generateAction».findOne()''', 'exec', #[])
-                case 'asSequence' : action.target.generateAction
-                case 'select' : generateSelect(action)
-                case 'collect' : generateCollect(action)
-                case 'reduce' : generateReduce(action)
-                case 'size' : generateCount(action)
-                case 'forEach' : generateForEach(action)
-                case 'isEmpty' : generateIsEmpty(action)
-                case 'any' : generateAny(action)
-                case 'one' : generateOne(action)
-                case 'includes' : generateIncludes(action)
-                case 'sum' : generateAggregation(action, "sum")
-                case 'max' : generateAggregation(action, "max")
-                case 'min' : generateAggregation(action, "min")
-                default : unsupportedElement(action, action.operation.name)
-            }
     }
     
     private def generateSelect(CallOperationAction action) {
@@ -637,7 +640,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     private def generateCount(CallOperationAction action) {
-        '''«action.target.generateAction».length'''
+        '''«generateAction(action.target.sourceAction)».length'''
     }
     
     private def generateForEach(CallOperationAction action) {
@@ -665,9 +668,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val rootAction = transformer.rootAction.findStatements.head.sourceAction 
         if (rootAction instanceof ReadStructuralFeatureAction) {
             val property = rootAction.structuralFeature 
-            '''«generateClassReference(action.target.type as Class)».aggregate()
-              .group({ _id: null, result: { $«operator»: '$«property.name»' } })
-              .select('-id result')'''
+            '''«action.target.sourceAction.generateAction».aggregate().group({ _id: null, result: { $«operator»: '$«property.name»' } })'''
         } else
             unsupportedElement(transformer)
     }
@@ -712,8 +713,8 @@ class ModelGenerator extends AsyncJSGenerator {
 
     def CharSequence generateSchemaCore(Class clazz, Iterable<Property> properties) {
         val generatedAttributes = properties.map[generateSchemaAttribute(it)]
-        val generatedRelationships = clazz.entityRelationships.filter[!derived && !it.parentRelationship && !it.childRelationship].map[generateSchemaRelationship(it)]
-        val generatedSubschemas = clazz.entityRelationships.filter[!derived && it.childRelationship].map[generateSubSchema(it)]
+        val generatedRelationships = clazz.entityRelationships.filter[!derived && it.likeLinkRelationship].map[generateSchemaRelationship(it)]
+        val generatedSubschemas = clazz.entityRelationships.filter[!derived && it.nestedRelationship].map[generateSubSchema(it)]
         '''
         {
             «(generatedAttributes + generatedRelationships + generatedSubschemas).join(',\n')»

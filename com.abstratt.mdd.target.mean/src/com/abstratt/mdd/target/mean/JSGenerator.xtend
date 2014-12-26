@@ -86,7 +86,10 @@ class JSGenerator {
     }
     
     def dispatch CharSequence generateAction(Action toGenerate) {
-        generateActionProper(toGenerate)
+        if (toGenerate.cast)
+            toGenerate.sourceAction.generateAction
+        else
+            generateActionProper(toGenerate)
     }
     
     def CharSequence generateActionProper(Action toGenerate) {
