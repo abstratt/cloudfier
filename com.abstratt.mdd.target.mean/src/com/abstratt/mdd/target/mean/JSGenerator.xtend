@@ -1,6 +1,5 @@
 package com.abstratt.mdd.target.mean
 
-import java.util.ArrayList
 import java.util.Collection
 import java.util.List
 import java.util.Map
@@ -31,6 +30,7 @@ import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
@@ -49,7 +49,6 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import org.eclipse.uml2.uml.ReadExtentAction
 
 /** 
  * A UML-to-Javascript code generator.
@@ -506,5 +505,21 @@ class JSGenerator {
 //        var asString = generated.toString
 //        '''console.log("«asString.replaceAll('\\n', '\\\\n').replaceAll('"', '\\\\"')»");'''
         ''
+    }
+    
+    def escapeString(String content, String toEscape) {
+        content.replaceAll(toEscape, '''\\«toEscape»''')
+    }
+    
+    def generateString(String content, String delimiter) {
+        '''«delimiter»«content.escapeString(delimiter)»«delimiter»'''
+    }
+    
+    def generateSingleQuoteString(String content) {
+        content.generateString("'")
+    }
+    
+    def generateDoubleQuoteString(String content) {
+        content.generateString('"')
     }
 }
