@@ -26,7 +26,7 @@ public abstract class BasicType {
      * runtime exception wrapping the original issue. Otherwise, if it succeeds,
      * returns the result of the invocation.
      */
-    public static Object runNativeOperation(ExecutionContext context, Class javaClass, Object target, Operation operation,
+    public static Object runNativeOperation(ExecutionContext context, Class<?> javaClass, Object target, Operation operation,
             Object... arguments) {
         try {
             return MethodInvoker.tryToInvoke(context, javaClass, target, operation, arguments);
