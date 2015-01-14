@@ -133,7 +133,6 @@ class ModelGenerator extends AsyncJSGenerator {
             «entity.generateComment»
             // declare schema
             var «schemaVar» = new Schema(«generateSchemaCore(entity, attributes).toString.trim»);
-//            «schemaVar».set('toObject', { getters: true });
             
             «IF !attributeInvariants.empty»
             /*************************** INVARIANTS ***************************/
@@ -365,21 +364,6 @@ class ModelGenerator extends AsyncJSGenerator {
             }'''
     }
     
-    override generateActivityPrefix(Activity activity) {
-        '''
-        «super.generateActivityPrefix(activity)»
-        '''
-    }
-    
-    override generateActivitySuffix(Activity activity) {
-//        val specification = activity.specification
-//        if (specification instanceof Operation) {
-//            if (specification.action)
-//                return '''«generateSelfReference».save();'''
-//        }
-        super.generateActivitySuffix(activity)
-    }
-    
     private def generateWorkingSetSave(boolean returnsValue, Iterable<String> workingSet, CharSequence output) {
         /* If the stage has actual outputs, we save before returning. Otherwise, we save last. */
         
@@ -430,13 +414,6 @@ class ModelGenerator extends AsyncJSGenerator {
                     '''
             }
         }
-//        if (stage.isLastInPipeline(true) && context.activity.operation != null && !context.activity.operation.query) {
-//            val isInstanceOperation = !context.activity.operation.static && context.activity.operation.class_.entity
-//            val workingSet = if (!isInstanceOperation) newLinkedHashSet() else newLinkedHashSet(generateSelfReference)
-//            
-//            workingSet.addAll(context.findVariables.filter[it.type.entity].map[it.name])
-//            if (!workingSet.empty) return generateSave(rootAction.returnAction, workingSet, output)
-//        }
         output 
     }
     
@@ -495,7 +472,7 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     override generateReadExtentAction(ReadExtentAction action) {
-        '''mongoose.model('«action.classifier.name»').find()'''
+        '''mongoose.model('«action.classifier.name»')'''
     }   
     
     private def generateSave(CharSequence target, boolean returnSaved) {
@@ -602,7 +579,7 @@ class ModelGenerator extends AsyncJSGenerator {
             
             return switch (classifier.qualifiedName) {
                 case classifier.namespace.name == 'mdd_collections' : switch action.operation.name {
-                    case 'head' : generateMongoosePromise('''«action.target.generateAction».findOne()''', 'exec', #[])
+                    case 'head' : generateOne(action)
                     case 'asSequence' : action.target.generateAction
                     case 'select' : generateSelect(action)
                     case 'collect' : generateCollect(action)
@@ -656,41 +633,24 @@ class ModelGenerator extends AsyncJSGenerator {
     }
     
     private def generateOne(CallOperationAction action) {
-        '''«generateAction(action.target.sourceAction)»[0]'''
+        generateMongoosePromise('''«action.target.generateAction».findOne()''', 'exec', #[])
     }
     
     private def generateIncludes(CallOperationAction action) {
         '/*TBD*/includes'
     }
     
+    
+    
     private def generateAggregation(CallOperationAction action, String operator) {
         val transformer = action.arguments.head.sourceClosure
         val rootAction = transformer.rootAction.findStatements.head.sourceAction 
         if (rootAction instanceof ReadStructuralFeatureAction) {
-            val property = rootAction.structuralFeature 
-            '''«action.target.sourceAction.generateAction».aggregate().group({ _id: null, result: { $«operator»: '$«property.name»' } })'''
-        } else
-            unsupportedElement(transformer)
-    }
-    
-    def generateAggregation(Activity reductor) {
-        //TODO taking only first statement into account
-        val statementAction = reductor.rootAction.findStatements.head
-        if (statementAction instanceof CallOperationAction) generateAggregation(statementAction) else unsupportedElement(statementAction)
-    }
-    
-    def generateAggregation(CallOperationAction action) {
-        val aggregateOp = toAggregateOperator(action.operation)
-        '''
-        .group({ _id: null, result: { $«aggregateOp»: '$balance' } }).select('-id maxBalance')
-        '''
-    }
-    
-    private def toAggregateOperator(Operation operation) {
-        switch (operation.name) {
-            case 'sum': 'sum'
-            default : unsupportedElement(operation)
+            val property = rootAction.structuralFeature as Property
+            if (property.nestedRelationship)
+                return '''«action.target.sourceAction.generateAction».aggregate().group({ _id: null, result: { $«operator»: '$«property.name»' } })'''
         }
+        unsupportedElement(transformer)
     }
     
     private def toQueryOperator(Operation operation) {
