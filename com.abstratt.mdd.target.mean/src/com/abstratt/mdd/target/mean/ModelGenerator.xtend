@@ -47,8 +47,6 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.apache.commons.lang3.StringUtils
-import com.abstratt.mdd.core.util.MDDUtil
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -339,11 +337,11 @@ class ModelGenerator extends AsyncJSGenerator {
         val parameters = actionOperation.parameters
         val namespace = if (actionOperation.static) "statics" else "methods"
         '''
-        «actionOperation.generateComment»«schemaVar».«namespace».«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionOperationBehavior(actionOperation)»;
+        «actionOperation.generateComment»«schemaVar».«namespace».«actionOperation.name» = function («parameters.map[name].join(', ')») «generateActionOperationBody(actionOperation)»;
         '''
     }
     
-    def generateActionOperationBehavior(Operation actionOperation) {
+    def generateActionOperationBody(Operation actionOperation) {
         val firstMethod = actionOperation.methods?.head
         if(firstMethod == null) {
             // a method-less operation, generate default action implementation (check preconditions and SSM animation)
@@ -363,7 +361,21 @@ class ModelGenerator extends AsyncJSGenerator {
                 «generateActivity(firstMethod as Activity)»
             }'''
     }
-    
+
+    def generateQueryOperationBody(Operation queryOperation) {
+        val firstMethod = queryOperation.methods?.head
+        if(firstMethod == null) {
+            '''
+            {
+                throw new Error("Query not implemented yet: «queryOperation.name»")
+            }'''
+        } else 
+            '''
+            {
+                «generateActivity(firstMethod as Activity)»
+            }'''
+    }
+
     private def generateWorkingSetSave(boolean returnsValue, Iterable<String> workingSet, CharSequence output) {
         /* If the stage has actual outputs, we save before returning. Otherwise, we save last. */
         
@@ -465,10 +477,6 @@ class ModelGenerator extends AsyncJSGenerator {
             '''require('./«super.generateClassReference(classifier)».js')'''
         else
             super.generateClassReference(classifier)
-    }
-    
-    def generateQueryOperationBody(Operation queryOperation) {
-        generateActionOperationBehavior(queryOperation)
     }
     
     override generateReadExtentAction(ReadExtentAction action) {
