@@ -15,13 +15,20 @@ public class GroupingType extends BuiltInClass {
         this.valueType = valueType;
     }
 
-    public CollectionType collect(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public CollectionType groupCollect(ExecutionContext context, ElementReferenceType reference) {
         CollectionType result = CollectionType.createCollection(valueType, true, false);
-        for (CollectionType current : groups.values()) {
-            BasicType mapped = (BasicType) CollectionType.runClosureBehavior(context, reference, current);
-            result.add(mapped);
+        for (CollectionType currentGroup : groups.values()) {
+            BasicType mappedGroup = (BasicType) CollectionType.runClosureBehavior(context, reference, currentGroup);
+            result.add(mappedGroup);
         }
         return result;
+    }
+    
+    public BasicType groupReduce(ExecutionContext context, ElementReferenceType reference, BasicType initial) {
+        BasicType partial = initial;
+        for (CollectionType currentGroup : groups.values())
+            partial = (BasicType) CollectionType.runClosureBehavior(context, reference, currentGroup, partial);
+        return partial;
     }
 
     public Map<BasicType, CollectionType> getBackEnd() {

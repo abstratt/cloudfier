@@ -14,6 +14,7 @@ import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.TypedElement;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
+import com.abstratt.mdd.core.runtime.MethodInvoker;
 import com.abstratt.mdd.core.util.ActivityUtils;
 
 public abstract class CollectionType extends BuiltInClass implements Serializable {
@@ -61,38 +62,64 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         backEnd.add(value);
     }
 
-    public CollectionType add(@SuppressWarnings("unused") ExecutionContext context, BasicType toAdd) {
+    public CollectionType add(ExecutionContext context, BasicType toAdd) {
         CollectionType result = CollectionType.createCollection(baseType, isUnique(), isOrdered());
         result.backEnd.addAll(this.backEnd);
         result.backEnd.add(toAdd);
         return result;
     }
 
-    public BasicType any(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public BasicType any(ExecutionContext context, ElementReferenceType reference) {
         return internalAny(context, reference, true);
     }
     
-    public BasicType one(@SuppressWarnings("unused") ExecutionContext context) {
+    public BasicType one(ExecutionContext context) {
         return backEnd.isEmpty() ? null : backEnd.iterator().next(); 
     }
 
-    public BagType asBag(@SuppressWarnings("unused") ExecutionContext context) {
+    public BagType asBag(ExecutionContext context) {
         return new BagType(baseType, backEnd);
     }
 
-    public OrderedSetType asOrderedSet(@SuppressWarnings("unused") ExecutionContext context) {
+    public OrderedSetType asOrderedSet(ExecutionContext context) {
         return new OrderedSetType(baseType, backEnd);
     }
 
-    public SequenceType asSequence(@SuppressWarnings("unused") ExecutionContext context) {
+    public SequenceType asSequence(ExecutionContext context) {
         return new SequenceType(baseType, backEnd);
     }
 
-    public SetType asSet(@SuppressWarnings("unused") ExecutionContext context) {
+    public SetType asSet(ExecutionContext context) {
         return new SetType(baseType, backEnd);
     }
+    
+    public BasicType max(ExecutionContext context, ElementReferenceType reference) {
+        BasicType max = null;
+        NumberType<?> maxValue = null;
+        for (BasicType current : backEnd) {
+            NumberType<?> currentValue = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
+            if (max == null || maxValue.lowerThan(context, currentValue).isTrue()) {
+                max = current;
+                maxValue = currentValue;
+            }
+        }
+        return max;
+    }
+    
+    public BasicType min(ExecutionContext context, ElementReferenceType reference) {
+        BasicType min = null;
+        NumberType<?> minValue = null;
+        for (BasicType current : backEnd) {
+            NumberType<?> currentValue = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
+            if (min == null || minValue.greaterThan(context, currentValue).isTrue()) {
+                min = current;
+                minValue = currentValue;
+            }
+        }
+        return min;
+    }
 
-    public CollectionType collect(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public CollectionType collect(ExecutionContext context, ElementReferenceType reference) {
         Parameter closureReturnParameter = ActivityUtils.getClosureReturnParameter((Activity) reference.getElement());
         CollectionType result = CollectionType.createCollection(closureReturnParameter.getType(), isUnique(), isOrdered());
         for (BasicType current : backEnd) {
@@ -102,7 +129,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return result;
     }
 
-    public CollectionType collectMany(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public CollectionType collectMany(ExecutionContext context, ElementReferenceType reference) {
         Parameter closureReturnParameter = ActivityUtils.getClosureReturnParameter((Activity) reference.getElement());
         CollectionType result = CollectionType.createCollection(closureReturnParameter.getType(), isUnique(), isOrdered());
         for (BasicType current : backEnd) {
@@ -116,15 +143,15 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return backEnd.contains(value);
     }
 
-    public BasicType exists(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public BasicType exists(ExecutionContext context, ElementReferenceType reference) {
         return BooleanType.fromValue(internalAny(context, reference, true) != null);
     }
 
-    public BooleanType forAll(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public BooleanType forAll(ExecutionContext context, ElementReferenceType reference) {
         return BooleanType.fromValue(internalAny(context, reference, false) == null);
     }
 
-    public void forEach(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public void forEach(ExecutionContext context, ElementReferenceType reference) {
         for (BasicType current : backEnd)
             CollectionType.runClosureBehavior(context, reference, current);
     }
@@ -137,7 +164,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return baseType;
     }
 
-    public GroupingType groupBy(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public GroupingType groupBy(ExecutionContext context, ElementReferenceType reference) {
         Map<BasicType, CollectionType> groups = new HashMap<BasicType, CollectionType>();
         Parameter closureReturnParameter = ActivityUtils.getClosureReturnParameter((Activity) reference.getElement());
         for (BasicType current : backEnd) {
@@ -150,7 +177,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return new GroupingType(baseType, groups);
     }
 
-    public BooleanType includes(@SuppressWarnings("unused") ExecutionContext context, BasicType toTest) {
+    public BooleanType includes(ExecutionContext context, BasicType toTest) {
         return BooleanType.fromValue(contains(toTest));
     }
 
@@ -164,7 +191,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return this.backEnd.isEmpty();
     }
 
-    public BooleanType isEmpty(@SuppressWarnings("unused") ExecutionContext context) {
+    public BooleanType isEmpty(ExecutionContext context) {
         return BooleanType.fromValue(backEnd.isEmpty());
     }
 
@@ -178,7 +205,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
 
     public abstract boolean isUnique();
 
-    public BasicType reduce(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference, BasicType initial) {
+    public BasicType reduce(ExecutionContext context, ElementReferenceType reference, BasicType initial) {
         BasicType partial = initial;
         for (BasicType current : backEnd)
             partial = (BasicType) CollectionType.runClosureBehavior(context, reference, current, partial);
@@ -189,7 +216,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         backEnd.remove(value);
     }
 
-    public CollectionType select(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+    public CollectionType select(ExecutionContext context, ElementReferenceType reference) {
         CollectionType result = CollectionType.createCollection(baseType, isUnique(), isOrdered());
         for (BasicType current : backEnd) {
             BooleanType predicateOutcome = (BooleanType) CollectionType.runClosureBehavior(context, reference, current);
@@ -199,17 +226,25 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return result;
     }
 
-    public IntegerType size(@SuppressWarnings("unused") ExecutionContext context) {
+    public IntegerType size(ExecutionContext context) {
         return IntegerType.fromValue(backEnd.size());
     }
 
-    public NumberType sum(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
-        NumberType sum = null;
+    private NumberType<?> sum(ExecutionContext context, ElementReferenceType reference) {
+        NumberType<?> sum = null;
         for (BasicType current : backEnd) {
-            NumberType mapped = (NumberType) CollectionType.runClosureBehavior(context, reference, current);
+            NumberType<?> mapped = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
             sum = sum == null ? mapped : sum.add(context, mapped);
         }
         return sum;
+    }
+    
+    public NumberType<?> sumDouble(ExecutionContext context, ElementReferenceType reference) {
+        return sum(context, reference);
+    }
+    
+    public NumberType<?> sumInteger(ExecutionContext context, ElementReferenceType reference) {
+        return sum(context, reference);
     }
 
     @Override
@@ -217,7 +252,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return getBackEnd().toString();
     }
 
-    public CollectionType union(@SuppressWarnings("unused") ExecutionContext context, CollectionType another) {
+    public CollectionType union(ExecutionContext context, CollectionType another) {
         CollectionType result = CollectionType.createCollection(getBaseType(), isUnique(), isOrdered(), this.getBackEnd());
         result.getBackEnd().addAll(another.backEnd);
         return result;
