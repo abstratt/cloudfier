@@ -774,6 +774,9 @@ public class RuntimeObject extends BasicType {
 
     private BasicType getSlotValue(Property attribute, Map<String, Object> properties) {
         Object value = properties.get(nodeProperty(attribute));
+        if (value instanceof RuntimeObject)
+            // seen this when dealing with anonymously typed objects (object literals) with a slot that is a full Class instance 
+            return (RuntimeObject) value;
         if (attribute.getType() instanceof StateMachine)
             return getStateMachineValue((StateMachine) attribute.getType(), value);
         if (value == null)
