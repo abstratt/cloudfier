@@ -230,7 +230,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return IntegerType.fromValue(backEnd.size());
     }
 
-    private NumberType<?> sum(ExecutionContext context, ElementReferenceType reference) {
+    public NumberType<?> sum(ExecutionContext context, ElementReferenceType reference) {
         NumberType<?> sum = null;
         for (BasicType current : backEnd) {
             NumberType<?> mapped = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
@@ -239,14 +239,6 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return sum;
     }
     
-    public NumberType<?> sumDouble(ExecutionContext context, ElementReferenceType reference) {
-        return sum(context, reference);
-    }
-    
-    public NumberType<?> sumInteger(ExecutionContext context, ElementReferenceType reference) {
-        return sum(context, reference);
-    }
-
     @Override
     public String toString() {
         return getBackEnd().toString();
