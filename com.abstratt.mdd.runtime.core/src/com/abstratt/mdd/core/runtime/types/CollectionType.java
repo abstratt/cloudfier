@@ -14,7 +14,6 @@ import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.TypedElement;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
-import com.abstratt.mdd.core.runtime.MethodInvoker;
 import com.abstratt.mdd.core.util.ActivityUtils;
 
 public abstract class CollectionType extends BuiltInClass implements Serializable {

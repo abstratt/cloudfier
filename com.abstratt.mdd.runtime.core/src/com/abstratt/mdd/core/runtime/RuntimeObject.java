@@ -365,10 +365,10 @@ public class RuntimeObject extends BasicType {
     public int hashCode() {
         if (key == null)
             return isActive() ? this.getNode().getProperties(true).hashCode() : super.hashCode();
-            final int prime = 31;
-            int result = 1;
-            result = prime * result + key.hashCode();
-            return result;
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + key.hashCode();
+        return result;
     }
 
     public void initDefaults() {
@@ -881,5 +881,7 @@ public class RuntimeObject extends BasicType {
             return ((PrimitiveType<?>) value).primitiveValue();
         return value;
     }
+    
+    
 
 }
