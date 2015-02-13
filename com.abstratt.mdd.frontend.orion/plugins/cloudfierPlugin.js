@@ -19,6 +19,12 @@ require(["dojo/request/xhr"], function(ref) {
     xhr = ref;
 });
 
+var buildOrionContentLocation = function(original) {
+    var components = original.match(/^\/file\/([^\/]*)\/(.*)$/);
+    var user = components[1];
+    return "/file/"+ user + "-OrionContent/" + components[2];
+}
+
 var buildProjectPath = function (args, context) {
     var path = args.application.file ? args.application.file.path : args.application.path;
     var current = context.cwd;
@@ -128,7 +134,7 @@ var standardApplicationError = function(projectPath) {
 };
 
 var formatProblem = function(problem, projectPath) {
-    return problem.severity.toUpperCase() + ": " + problem.reason + " - [" + problem.file + " : " + problem.line + "](http:/edit/edit.html#" + projectPath + problem.file + ",line=" + problem.line + ")"
+    return problem.severity.toUpperCase() + ": " + problem.reason + " - [" + problem.file + " : " + problem.line + "](http:/edit/edit.html#" + buildOrionContentLocation(projectPath) + problem.file + ",line=" + problem.line + ")"
 };
 
 var formatTestResult = function(testResult, projectPath) {
@@ -137,7 +143,7 @@ var formatTestResult = function(testResult, projectPath) {
      var symbol = passed ? "\u2714": "\u2718";
      var linkToOperation
      if (testResult.testSourceLocation !== undefined) {     
-         linkToOperation = "http:/edit/edit.html#" + projectPath + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
+         linkToOperation = "http:/edit/edit.html#" + buildOrionContentLocation(projectPath) + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
          string += "[" + symbol + "](" + linkToOperation + ")";
      } else {
          string += symbol;
@@ -150,7 +156,7 @@ var formatTestResult = function(testResult, projectPath) {
          if (testResult.errorLocation) {
 	         for (j in testResult.errorLocation) {
 	             location = testResult.errorLocation[j];
- 	             string += "\t[" + location.frameName + " (" + location.filename + ":" + location.lineNumber + ")](http:/edit/edit.html#" + projectPath + location.filename + ",line=" + location.lineNumber + ")" + "\n"    
+ 	             string += "\t[" + location.frameName + " (" + location.filename + ":" + location.lineNumber + ")](http:/edit/edit.html#" + buildOrionContentLocation(projectPath) + location.filename + ",line=" + location.lineNumber + ")" + "\n"    
 	         }  
          }
      }
