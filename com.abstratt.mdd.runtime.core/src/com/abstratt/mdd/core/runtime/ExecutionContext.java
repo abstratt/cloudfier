@@ -162,9 +162,9 @@ public class ExecutionContext {
 
         private void newScope(StructuredActivityNode block, Scope parentScope) {
             // for closures, the parent scope will be in a different frame
-            if (MDDExtensionUtils.isClosure(block.getActivity())) {
+            if (MDDExtensionUtils.isClosure(ActivityUtils.getActionActivity(block))) {
                 assert parentScope == null;
-                parentScope = findScope(MDDExtensionUtils.getClosureContext(block.getActivity()));
+                parentScope = findScope(MDDExtensionUtils.getClosureContext(ActivityUtils.getActionActivity(block)));
             }
             currentScope = new Scope(block, parentScope);
         }
