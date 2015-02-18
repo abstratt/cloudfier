@@ -30,6 +30,10 @@ public abstract class AbstractWorkspaceResource extends ServerResource {
                 Status.CLIENT_ERROR_NOT_FOUND);
         return workspaceDir;
     }
+    
+    public File getWorkspaceDir() {
+        return getWorkspaceDir(true);
+    }
 
     protected void checkSecret() {
         File secretFile = new File(getWorkspaceDir(false), AbstractWorkspaceResource.SECRET_FILE);
