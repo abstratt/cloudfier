@@ -291,7 +291,6 @@ var shellAppUndeploy = function(args, context) {
 };
 
 var shellGenerate = function(args, context) {
-    var relativeCwd = context.cwd.substring(context.cwd.indexOf("OrionContent/") + "OrionContent/".length);
     var projectPath = buildProjectPath(args, context);
     var appName = locationToWorkspace(projectPath);
     var platform = args.platform;
