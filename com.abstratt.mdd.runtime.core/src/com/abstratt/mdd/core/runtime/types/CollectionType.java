@@ -15,6 +15,7 @@ import org.eclipse.uml2.uml.TypedElement;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.MDDExtensionUtils;
 
 public abstract class CollectionType extends BuiltInClass implements Serializable {
     public static CollectionType createCollection(Type baseType, boolean unique, boolean ordered) {
@@ -41,8 +42,10 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     }
 
     protected static Object runClosureBehavior(ExecutionContext context, ElementReferenceType reference, Object... arguments) {
+        Activity closure = (Activity) reference.getElement();
+        Assert.isTrue(MDDExtensionUtils.isClosure(closure));
         return context.getRuntime()
-                .runBehavior(context.currentFrame().getSelf(), "[closure]", (Activity) reference.getElement(), arguments);
+                .runBehavior(context.currentFrame().getSelf(), "[closure]", closure, arguments);
     }
 
     private static final long serialVersionUID = 1L;
