@@ -359,7 +359,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         source += "    begin\n";
         source += "    return Account extent.reduce((account : Account, partial : Double) : Double {\n";
         source += "        account.balance + partial\n";
-        source += "      }, 0.0);\n";
+        source += "      }, 0.0).one();\n";
         source += "    end;\n";
         source += "  end;\n";
         source += "end.";
