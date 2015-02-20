@@ -10,6 +10,6 @@ class Utils {
     }
     
     def static CharSequence unsupportedElement(Element e, String message) {
-        '''<UNSUPPORTED: «e.eClass.name»> «if (message != null) '''(«message»)''' else ''»'''
+        '''<UNSUPPORTED: «e.eClass.name»> «if (message != null) '''(«message»)''' else ''»>'''
     }
 }

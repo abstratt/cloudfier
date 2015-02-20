@@ -56,7 +56,7 @@ import org.eclipse.uml2.uml.CreateObjectAction
  * Stages form acyclic directed graphs (trees).
  */
 class ActivityContext {
-
+ 
     static class Stage {
         public final Action rootAction
         public final String alias

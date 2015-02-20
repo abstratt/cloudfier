@@ -5,7 +5,6 @@ import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.mean.ActivityContext.Stage
 import java.util.List
-import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
@@ -376,6 +375,7 @@ class ModelGenerator extends AsyncJSGenerator {
             }'''
     }
 
+    
     private def generateWorkingSetSave(boolean returnsValue, Iterable<String> workingSet, CharSequence output) {
         /* If the stage has actual outputs, we save before returning. Otherwise, we save last. */
         
@@ -598,6 +598,7 @@ class ModelGenerator extends AsyncJSGenerator {
                     case 'any' : generateAny(action)
                     case 'one' : generateOne(action)
                     case 'includes' : generateIncludes(action)
+                    case 'groupBy' : generateAggregation(action, "groupBy")
                     case 'sum' : generateAggregation(action, "sum")
                     case 'max' : generateAggregation(action, "max")
                     case 'min' : generateAggregation(action, "min")

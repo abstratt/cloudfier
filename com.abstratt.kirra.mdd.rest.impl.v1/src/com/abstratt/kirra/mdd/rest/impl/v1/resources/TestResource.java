@@ -38,9 +38,7 @@ public class TestResource extends AbstractKirraRepositoryResource {
     }
 
     static boolean isTestCase(Operation op) {
-        if (!op.isStatic() && StereotypeUtils.hasStereotype(op.getClass_(), "Test"))
-            return true;
-        return false;
+        return !op.isStatic() && op.getClass_() != null && StereotypeUtils.hasStereotype(op.getClass_(), "Test");
     }
 
     static boolean shouldFail(Operation op) {

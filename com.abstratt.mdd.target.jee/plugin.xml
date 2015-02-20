@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+   <extension
+         point="com.abstratt.mdd.target.core.targetPlatform" id="jee" name="JavaEE Platform">
+         <mapper artifactType="entity"
+               class="com.abstratt.mdd.target.jee.EntityMapper"/>
+         <mapper artifactType="repository"
+               class="com.abstratt.mdd.target.jee.RepositoryMapper"/>
+         <mapper artifactType="functionalTest"
+               class="com.abstratt.mdd.target.jee.FunctionalTestMapper"/>
+         <mapper artifactType="application"
+               class="com.abstratt.mdd.target.jee.ApplicationMapper"/>               
+   </extension>
+</plugin>

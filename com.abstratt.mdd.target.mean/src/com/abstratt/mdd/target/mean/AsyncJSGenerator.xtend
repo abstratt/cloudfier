@@ -1,6 +1,5 @@
 package com.abstratt.mdd.target.mean
 
-import com.abstratt.mdd.core.util.ActivityUtils
 import com.abstratt.mdd.target.mean.ActivityContext.Stage
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
@@ -10,9 +9,7 @@ import org.eclipse.uml2.uml.StructuredActivityNode
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.SendSignalAction
-import org.eclipse.uml2.uml.CallOperationAction
 import com.google.common.base.Function
 
 class AsyncJSGenerator extends JSGenerator {

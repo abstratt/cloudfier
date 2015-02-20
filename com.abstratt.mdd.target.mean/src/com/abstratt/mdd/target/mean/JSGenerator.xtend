@@ -262,6 +262,8 @@ class JSGenerator {
                 case 1: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
+        else if (classifier == null)
+            '''Unsupported null target operation "«operation.name»"'''
         else
             switch (classifier.name) {
                 case 'Date' : switch (operation.name) {
@@ -508,7 +510,7 @@ class JSGenerator {
     }
     
     def escapeString(String content, String toEscape) {
-        content.replaceAll(toEscape, '''\\«toEscape»''')
+        content?.replaceAll(toEscape, '''\\«toEscape»''')
     }
     
     def generateString(String content, String delimiter) {
