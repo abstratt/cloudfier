@@ -1,22 +1,13 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
-import org.eclipse.uml2.uml.Activity
-import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
-import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.TemplateUtils.*
-import org.eclipse.uml2.uml.AddVariableValueAction
-import org.eclipse.uml2.uml.StructuredActivityNode
-import org.eclipse.uml2.uml.UMLPackage
-import com.abstratt.mdd.core.util.StereotypeUtils
-import org.eclipse.uml2.uml.Package
 
 class FunctionalTestGenerator extends AbstractGenerator {
     
@@ -57,9 +48,9 @@ class FunctionalTestGenerator extends AbstractGenerator {
         package «testClass.packageSuffix»;
 
         import org.junit.*;        
-        «testedPackages.generateMany['''
-        import entity.«it.toJavaPackage».*;
-        import repository.«it.toJavaPackage».*;
+        «testedPackages.generateMany[p | '''
+        import entity.«p.toJavaPackage».*;
+        import repository.«p.toJavaPackage».*;
         ''']»
 
         public class «testClass.name» {

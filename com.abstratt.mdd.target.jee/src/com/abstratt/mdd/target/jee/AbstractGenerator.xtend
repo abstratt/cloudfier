@@ -1,7 +1,6 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
-import com.google.common.base.Function
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.NamedElement
 
@@ -30,7 +29,7 @@ class AbstractGenerator {
     }
     
         
-    def static <I> CharSequence generateMany(Iterable<I> items, Function<I, CharSequence> mapper) {
+    def static <I> CharSequence generateMany(Iterable<I> items, (I) => CharSequence mapper) {
         return items.map[mapper.apply(it)].join('\n')
     }
 }
