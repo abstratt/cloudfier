@@ -7,19 +7,19 @@ import java.util.List
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Element
-import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import static extension org.apache.commons.lang3.text.WordUtils.*
-import com.google.common.base.Function
 
-class EntityGenerator extends AbstractGenerator {
+
+class EntityGenerator extends AbstractJavaGenerator {
 
     protected IRepository repository
 
@@ -31,20 +31,7 @@ class EntityGenerator extends AbstractGenerator {
         super(repository)
     }
 
-    def generateComment(Element element) {
-        if (!element.ownedComments.empty) {
-            val reformattedParagraphs = element.ownedComments.head.body.replaceAll('\\s+', ' ').wrap(120, '<br>', false).
-                split('<br>').map['''* «it»'''].join('\n')
-            '''
-                /**
-                 «reformattedParagraphs»
-                 */
-            '''
-        }
-    }
-
     def generateEntity(Class entity) {
-        val queryOperations = entity.queries
         val actionOperations = entity.actions
         val attributes = entity.properties.filter[!derived]
         val relationships = entity.entityRelationships.filter[!derived && it.likeLinkRelationship]
@@ -68,27 +55,28 @@ class EntityGenerator extends AbstractGenerator {
                 «IF !attributes.empty»
                     /*************************** ATTRIBUTES ***************************/
                     
-                    «generateAttributes(attributes)»
+                    «generateMany(attributes, [generateAttribute])»
                 «ENDIF»
                 
                 «IF !relationships.empty»
                     /*************************** RELATIONSHIPS ***************************/
                     
-                    «generateRelationships(relationships)»
+                    «generateMany(relationships, [generateRelationship])»
                 «ENDIF»
-«««                
-«««                
+                
+                
 «««                «IF !attributeInvariants.empty»
 «««                    /*************************** INVARIANTS ***************************/
 «««                    
 «««                    «generateAttributeInvariants(attributeInvariants)»
 «««                «ENDIF»
 «««                
-«««                «IF !actionOperations.empty»
-«««                    /*************************** ACTIONS ***************************/
-«««                    
-«««                    «generateActionOperations(entity.actions)»
-«««                «ENDIF»
+
+                «IF !actionOperations.empty»
+                    /*************************** ACTIONS ***************************/
+
+                    «generateMany(actionOperations, [generateActionOperation])»
+                «ENDIF»
 «««                «IF !queryOperations.empty»
 «««                    /*************************** QUERIES ***************************/
 «««                    
@@ -137,20 +125,9 @@ class EntityGenerator extends AbstractGenerator {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
 
-    def generateActionOperations(List<Operation> operations) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
-    }
 
     def generateAttributeInvariants(Iterable<Constraint> constraints) {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
-    }
-
-    def generateRelationships(Iterable<Property> relationships) {
-        generateMany(relationships, [generateRelationship])
-    }
-
-    def generateAttributes(Iterable<Property> properties) {
-        generateMany(properties, [generateAttribute])
     }
 
     def generateAttribute(Property attribute) {
@@ -164,9 +141,22 @@ class EntityGenerator extends AbstractGenerator {
         else
         '''public «relationship.type.name» «relationship.name»;'''
     }
+    
+    def generateActionOperation(Operation action) {
+        val javaType = if (action.type == null) "void" else action.type.convertType.toJavaType
+        val parameters = action.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN_LITERAL]
+        val methodName = action.name
+        '''
+        «action.generateComment»
+        public «javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.convertType.toJavaType» «p.name»''' ], ', ')») {
+        }
+        '''
+    }
 
     def toJavaType(TypeRef type) {
         switch (type.kind) {
+            case Entity:
+                type.typeName
             case Enumeration:
                 'String'
             case Primitive:
@@ -180,7 +170,7 @@ class EntityGenerator extends AbstractGenerator {
                     default: 'UNEXPECTED TYPE: «type.typeName»'
                 }
             default:
-                'UNEXPECTED KIND: «type.kind»'
+                '''UNEXPECTED KIND: «type.kind»'''
         }
     }
 }

@@ -9,7 +9,7 @@ import org.eclipse.uml2.uml.Type
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.TemplateUtils.*
 
-class FunctionalTestGenerator extends AbstractGenerator {
+class FunctionalTestGenerator extends AbstractJavaGenerator {
     
     protected Iterable<Package> testedPackages
     

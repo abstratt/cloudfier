@@ -7,7 +7,7 @@ import org.eclipse.uml2.uml.NamedElement
 
 import static extension org.apache.commons.lang3.text.WordUtils.*
 
-class RepositoryGenerator extends AbstractGenerator {
+class RepositoryGenerator extends AbstractJavaGenerator {
 
     protected IRepository repository
 
