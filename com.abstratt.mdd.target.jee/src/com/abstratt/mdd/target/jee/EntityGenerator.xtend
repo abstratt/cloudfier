@@ -1,12 +1,11 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.IRepository
 import java.util.List
+import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Constraint
-import org.eclipse.uml2.uml.Element
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
@@ -17,7 +16,6 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-
 
 class EntityGenerator extends AbstractJavaGenerator {
 
@@ -148,29 +146,23 @@ class EntityGenerator extends AbstractJavaGenerator {
         val methodName = action.name
         '''
         «action.generateComment»
-        public «javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.convertType.toJavaType» «p.name»''' ], ', ')») {
-        }
+        public «javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.convertType.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
         '''
     }
-
-    def toJavaType(TypeRef type) {
-        switch (type.kind) {
-            case Entity:
-                type.typeName
-            case Enumeration:
-                'String'
-            case Primitive:
-                switch (type.typeName) {
-                    case 'Integer': 'Long'
-                    case 'Double': 'Double'
-                    case 'Date': 'Date'
-                    case 'String': 'String'
-                    case 'Memo': 'String'
-                    case 'Boolean': 'Boolean'
-                    default: 'UNEXPECTED TYPE: «type.typeName»'
-                }
-            default:
-                '''UNEXPECTED KIND: «type.kind»'''
-        }
+    
+    def generateActionOperationBody(Operation actionOperation) {
+        val firstMethod = actionOperation.methods?.head
+        if(firstMethod == null) {
+            // a method-less operation, generate default action implementation (check preconditions and SSM animation)
+            '''
+            {
+                // no behavior - 
+            }'''
+        } else 
+            '''
+            {
+                «generateActivity(firstMethod as Activity)»
+            }'''
     }
+    
 }
