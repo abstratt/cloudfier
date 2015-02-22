@@ -87,7 +87,7 @@ public class BasicTargetTests extends AbstractRepositoryBuildingTests {
         source += "      reference attr1 : Class2;\n";
         source += "      static operation query1() : Integer;\n";
         source += "      begin\n";
-        source += "          return ((Class1 extent.select((a : Class1) : Boolean { true }).select((b : Class1) : Boolean { true }).collect((c : Class1) : Class2 { c->attr1 }) as Class2).select((d : Class2) : Boolean { true }).select((e : Class2) : Boolean { true }).reduce((f : Class2, count : Integer) : Integer { 1 }, 0) as Integer);\n";
+        source += "          return Class1 extent.select((a : Class1) : Boolean { true }).select((b : Class1) : Boolean { true }).collect((c : Class1) : Class2 { c->attr1 }).select((d : Class2) : Boolean { true }).select((e : Class2) : Boolean { true }).reduce((f : Class2, count : Integer) : Integer { 1 }, 0);\n";
         source += "      end;\n";
         source += "  end;\n";
         source += "  class Class2\n";
