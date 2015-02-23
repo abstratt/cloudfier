@@ -5,7 +5,6 @@ import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Constraint
-import org.eclipse.uml2.uml.Feature
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property

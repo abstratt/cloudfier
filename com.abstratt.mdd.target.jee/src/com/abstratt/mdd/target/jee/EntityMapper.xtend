@@ -40,9 +40,9 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val result = newLinkedHashMap()
         
-        val topLevelEntities = appPackages.entities.filter[topLevel]
+        val entities = appPackages.entities
         val entityGenerator = new EntityGenerator(repository)
-        result.putAll(topLevelEntities.toMap[mapFileName].mapValues[entityGenerator.generateEntity(it)])
+        result.putAll(entities.toMap[mapFileName].mapValues[entityGenerator.generateEntity(it)])
 
         val enums = appPackages.map[ownedTypes.filter(typeof (Enumeration))].flatten
         val enumerationGenerator = new EnumerationGenerator(repository)
