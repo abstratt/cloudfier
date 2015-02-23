@@ -45,7 +45,7 @@ class FunctionalTestGenerator extends AbstractJavaGenerator {
     def CharSequence generateTestClass(Class testClass) {
         val testCases = testClass.operations.filter[isTestCase]
         '''
-        package «testClass.packageSuffix»;
+        package «testClass.packagePrefix».test;
 
         import org.junit.*;        
         «testedPackages.generateMany[p | '''

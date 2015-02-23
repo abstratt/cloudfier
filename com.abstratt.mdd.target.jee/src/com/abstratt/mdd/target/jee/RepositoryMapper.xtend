@@ -11,7 +11,7 @@ import org.eclipse.uml2.uml.NamedElement
 class RepositoryMapper implements ITopLevelMapper<Class> {
     
     override mapFileName(Class element) {
-        '''src/main/java/repository/«element.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«element.name»Repository.java'''
+        '''src/main/java/«element.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/repository/«element.name»Repository.java'''
     }
     
     override map(Class toMap) {

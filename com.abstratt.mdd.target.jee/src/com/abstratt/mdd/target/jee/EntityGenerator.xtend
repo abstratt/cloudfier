@@ -9,11 +9,15 @@ import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.SendSignalAction
+import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.uml2.uml.UMLPackage
 import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
@@ -38,18 +42,37 @@ class EntityGenerator extends AbstractJavaGenerator {
         val derivedRelationships = entity.entityRelationships.filter[derived]
         val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
         val hasState = !entity.findStateProperties.empty
+        val signals = entity.allOperations.filter[op | op.activity != null].map[op | 
+            op.activity.bodyNode
+                .findMatchingActions(UMLPackage.Literals.SEND_SIGNAL_ACTION)
+                .map[sendSignal | 
+                    (sendSignal as SendSignalAction).signal
+                ]
+        ].flatten
+        val signalPackages = signals.map[ nearestPackage ].toSet
 
         '''
-            package entity.«entity.packageSuffix»;
+            package «entity.packagePrefix».entity;
             
             import java.util.*;
             import javax.persistence.*;
+            import javax.inject.*;
             import javax.ejb.*;
+            import javax.enterprise.event.*;
+            
+            «signalPackages.generateMany['''import «it.toJavaPackage».event.*;''']»
+            
                 
             «entity.generateComment»
             @Entity
             public class «entity.name» {
             
+                «IF !signals.empty»
+                    /*************************** SIGNALS ***************************/
+                    
+                    «generateMany(signals, [generateSignal])»
+                «ENDIF»
+
                 «IF !attributes.empty»
                     /*************************** ATTRIBUTES ***************************/
                     
@@ -80,42 +103,40 @@ class EntityGenerator extends AbstractJavaGenerator {
 «««                    
 «««                    «generateQueryOperations(entity.queries)»
 «««                «ENDIF»
-«««                «IF !derivedAttributes.empty»
-«««                    /*************************** DERIVED PROPERTIES ****************/
-«««                    
-«««                    «generateDerivedAttributes(derivedAttributes)»
-«««                «ENDIF»
+
+                «IF !derivedAttributes.empty»
+                    /*************************** DERIVED PROPERTIES (TBD) ****************/
+                    
+                    «generateMany(derivedAttributes, [generateDerivedAttribute])»
+                «ENDIF»
+
 «««                «IF !derivedRelationships.empty»
 «««                    /*************************** DERIVED RELATIONSHIPS ****************/
 «««                    
 «««                    «generateDerivedRelationships(derivedRelationships)»
 «««                «ENDIF»
-«««                «IF !privateOperations.empty»
-«««                    /*************************** PRIVATE OPS ***********************/
-«««                    
-«««                    «generatePrivateOperations(privateOperations)»
-«««                «ENDIF»
-«««                «IF hasState»
-«««                    /*************************** STATE MACHINE ********************/
-«««                    «entity.findStateProperties.map[it.type as StateMachine].head?.generateStateMachine(entity)»
-«««                    
-«««                «ENDIF»
+
+                «IF !privateOperations.empty»
+                    /*************************** PRIVATE OPS ***********************/
+                    
+                    «generateMany(privateOperations, [generatePrivateOperation])»
+                «ENDIF»
+
+                «IF hasState»
+                    /*************************** STATE MACHINE ********************/
+                    «entity.findStateProperties.map[it.type as StateMachine].head?.generateStateMachine(entity)»
+                    
+                «ENDIF»
             }
         '''
     }
 
-    def void generateStateMachine(StateMachine machine, Class class1) {
-    }
-
-    def generatePrivateOperations(Iterable<Operation> operations) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+    def generatePrivateOperation(Operation operation) {
+        // for now...
+        operation.generateActionOperation
     }
 
     def generateDerivedRelationships(Iterable<Property> properties) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
-    }
-
-    def generateDerivedAttributes(Iterable<Property> properties) {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
 
@@ -128,10 +149,35 @@ class EntityGenerator extends AbstractJavaGenerator {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
 
+    def generateSignal(Signal signal) {
+        '''
+        @Inject
+        Event<«signal.name»Event> «signal.name.toFirstLower»Event;
+        '''
+    }
+    
+    override def generateSendSignalAction(SendSignalAction action) {
+        val eventName = '''«action.signal.name.toFirstLower»Event'''
+        val signalName = action.signal.name
+        '''this.«eventName».fire(new «signalName»Event(«action.arguments.generateMany([arg | arg.generateAction], ', ')»))'''
+    }
+
+    def generateDerivedAttribute(Property attribute) {
+        val type = KirraMDDSchemaBuilder.convertType(attribute.type)
+        '''public «type.toJavaType» «attribute.name»; /*TBD*/'''
+    }
+    
     def generateAttribute(Property attribute) {
         val type = KirraMDDSchemaBuilder.convertType(attribute.type)
-        '''public «type.toJavaType» «attribute.name»;'''
+        val defaultValue = if (attribute.defaultValue != null) 
+                attribute.defaultValue.generateValue
+            else if (attribute.required || attribute.type.enumeration)
+                // enumeration covers state machines as well
+                attribute.type.generateDefaultValue
+        
+        '''public «type.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
     }
+    
     
     def generateRelationship(Property relationship) {
         if (relationship.multivalued)
@@ -146,23 +192,24 @@ class EntityGenerator extends AbstractJavaGenerator {
         val methodName = action.name
         '''
         «action.generateComment»
-        public «javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.convertType.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
+        «action.visibility.getName()» «if (action.static) 'static ' else ''»«javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.convertType.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
         '''
     }
     
     def generateActionOperationBody(Operation actionOperation) {
         val firstMethod = actionOperation.methods?.head
-        if(firstMethod == null) {
-            // a method-less operation, generate default action implementation (check preconditions and SSM animation)
-            '''
-            {
-                // no behavior - 
-            }'''
-        } else 
-            '''
-            {
-                «generateActivity(firstMethod as Activity)»
-            }'''
+        val stateProperty = actionOperation.class_.findStateProperties.head
+        val stateMachine = stateProperty?.type
+        '''
+        {
+            «IF(firstMethod != null)»
+            «generateActivity(firstMethod as Activity)»
+            «ENDIF»
+            «IF (stateProperty != null && !actionOperation.static && actionOperation.action)»
+            this.«stateProperty.name».handleEvent(this, «stateMachine.name»Event.«actionOperation.name.toFirstUpper»);
+            «ENDIF»
+        }
+        '''
     }
     
 }

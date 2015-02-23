@@ -17,9 +17,9 @@ class RepositoryGenerator extends AbstractJavaGenerator {
     def generateRepository(Class entity) {
         val packageSuffix = entity.namespace.qualifiedName.replace(NamedElement.SEPARATOR, ".")
         '''
-            package repository.«entity.packageSuffix»;
+            package «entity.packagePrefix».repository;
             
-            import entity.«packageSuffix».*;
+            import «packageSuffix».entity.*;
             
             import java.util.*;
             import javax.persistence.*;

@@ -2,25 +2,58 @@ package com.abstratt.mdd.target.jee
 
 import com.abstratt.kirra.TypeRef
 import com.abstratt.mdd.core.IRepository
+import java.util.Arrays
+import java.util.Deque
+import java.util.LinkedList
+import java.util.List
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
+import org.eclipse.uml2.uml.AnyReceiveEvent
+import org.eclipse.uml2.uml.CallEvent
+import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.ConditionalNode
+import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.Element
+import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.EnumerationLiteral
+import org.eclipse.uml2.uml.Event
 import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.InstanceValue
+import org.eclipse.uml2.uml.LiteralBoolean
+import org.eclipse.uml2.uml.LiteralNull
+import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.NamedElement
+import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Package
+import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.Pseudostate
 import org.eclipse.uml2.uml.ReadSelfAction
+import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.SendSignalAction
+import org.eclipse.uml2.uml.SignalEvent
+import org.eclipse.uml2.uml.State
+import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.StructuredActivityNode
+import org.eclipse.uml2.uml.TimeEvent
+import org.eclipse.uml2.uml.Transition
+import org.eclipse.uml2.uml.Trigger
+import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.ValueSpecification
+import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
+import org.eclipse.uml2.uml.Vertex
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 
 abstract class AbstractJavaGenerator {
@@ -29,6 +62,8 @@ abstract class AbstractJavaGenerator {
     protected String applicationName
 
     protected Iterable<Class> entities
+    
+    private Deque<String> selfReference = new LinkedList(Arrays.asList("this"));
 
     new(IRepository repository) {
         this.repository = repository
@@ -49,7 +84,7 @@ abstract class AbstractJavaGenerator {
         }
     }
 
-    def String packageSuffix(Class contextual) {
+    def String packagePrefix(Classifier contextual) {
         contextual.nearestPackage.toJavaPackage
     }
 
@@ -123,6 +158,99 @@ abstract class AbstractJavaGenerator {
             action.value)»'''
     }
 
+    def dispatch CharSequence doGenerateAction(CallOperationAction action) {
+        generateCallOperationAction(action)
+    }
+
+    protected def CharSequence generateCallOperationAction(CallOperationAction action) {
+        val operation = action.operation
+        val classifier = action.operation.class_
+
+        // some operations have no class
+        if (classifier == null || classifier.package.hasStereotype("ModelLibrary"))
+            generateBasicTypeOperationCall(classifier, action)
+        else {
+            val target = if(operation.static) generateClassReference(classifier) else generateAction(action.target)
+            '''«target».«operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
+        }
+    }
+
+    def CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
+        val operation = action.operation
+        val operator = switch (operation.name) {
+            case 'add': '+'
+            case 'subtract': '-'
+            case 'multiply': '*'
+            case 'divide': '/'
+            case 'minus': '-'
+            case 'and': '&&'
+            case 'or': '||'
+            case 'not': '!'
+            case 'lowerThan': '<'
+            case 'greaterThan': '>'
+            case 'lowerOrEquals': '<='
+            case 'greaterOrEquals': '>='
+            case 'notEquals': '!=='
+            case 'equals': '=='
+            case 'same': '=='
+        }
+        if (operator != null)
+            switch (action.arguments.size()) {
+                // unary operator
+                case 0: '''«operator»(«generateAction(action.target)»)'''
+                case 1: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
+                default: '''Unsupported operation «action.operation.name»'''
+            }
+        else if (classifier == null) '''Unsupported null target operation "«operation.name»"''' else
+            switch (classifier.name) {
+                case 'Date':
+                    switch (operation.name) {
+                        case 'year': '''(«generateAction(action.target)».getYear() + 1900)'''
+                        case 'month': '''«generateAction(action.target)».getMonth()'''
+                        case 'day': '''«generateAction(action.target)».getDate()'''
+                        case 'today':
+                            'new Date()'
+                        case 'now':
+                            'new Date()'
+                        case 'transpose': '''new Date(«generateAction(action.target)» + «generateAction(
+                            action.arguments.head)»)'''
+                        case 'differenceInDays': '''(«generateAction(action.arguments.head)» - «generateAction(
+                            action.target)») / (1000*60*60*24)'''
+                        default: '''Unsupported Date operation «operation.name»'''
+                    }
+                case 'Duration': {
+                    val period = switch (operation.name) {
+                        case 'days': '* 1000 * 60 * 60 * 24'
+                        case 'hours': '* 1000 * 60 * 60'
+                        case 'minutes': '* 1000 * 60'
+                        case 'seconds': '* 1000'
+                        case 'milliseconds': ''
+                        default: '''Unsupported Duration operation: «operation.name»'''
+                    }
+                    '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
+                }
+                case 'Memo': {
+                    switch (operation.name) {
+                        case 'fromString': generateAction(action.arguments.head)
+                        default: '''Unsupported Memo operation: «operation.name»'''
+                    }
+                }
+                case 'Collection': {
+                    switch (operation.name) {
+                        case 'size': '''«generateAction(action.target)».length'''
+                        default: '''null /*Unsupported Collection operation: «operation.name»*/'''
+                    }
+                }
+                case 'System': {
+                    switch (operation.name) {
+                        case 'user': '''null /* TBD */'''
+                        default: '''Unsupported System operation: «operation.name»'''
+                    }
+                }
+                default: '''Unsupported classifier «classifier.name» for operation «operation.name»'''
+            }
+    }
+
     def dispatch CharSequence doGenerateAction(StructuredActivityNode node) {
         val container = node.eContainer
 
@@ -133,6 +261,30 @@ abstract class AbstractJavaGenerator {
 
         // default path, generate as a statement
         generateStructuredActivityNodeAsBlock(node)
+    }
+    
+    def dispatch CharSequence doGenerateAction(SendSignalAction action) {
+        generateSendSignalAction(action)
+    }
+    
+    def generateSendSignalAction(SendSignalAction action) {
+        val target = action.target
+        val methodName = action.signal.name.toFirstLower
+        '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)'''
+    }
+    
+    def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
+        generateReadStructuralFeatureAction(action)
+    }
+    
+    def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+        val feature = action.structuralFeature as Property
+        if (action.object == null) {
+            val clazz = (action.structuralFeature as Property).class_
+            '''«clazz.name».«feature.name»'''
+        } else {
+            '''«generateAction(action.object)».«feature.name»'''
+        }
     }
 
     def dispatch CharSequence doGenerateAction(AddStructuralFeatureValueAction action) {
@@ -146,6 +298,11 @@ abstract class AbstractJavaGenerator {
 
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
     }
+    
+    def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
+        '''«action.value.generateValue»'''
+    }
+    
 
     def dispatch CharSequence doGenerateAction(CreateObjectAction action) {
         generateCreateObjectAction(action)
@@ -184,7 +341,7 @@ abstract class AbstractJavaGenerator {
     }
 
     def generateSelfReference() {
-        'this'
+        selfReference.peek()
     }
 
     def toJavaType(TypeRef type) {
@@ -192,7 +349,7 @@ abstract class AbstractJavaGenerator {
             case Entity:
                 type.typeName
             case Enumeration:
-                'String'
+                type.typeName
             case Primitive:
                 switch (type.typeName) {
                     case 'Integer': 'Long'
@@ -206,5 +363,193 @@ abstract class AbstractJavaGenerator {
             default: '''UNEXPECTED KIND: «type.kind»'''
         }
     }
+
+    def generateClassReference(Classifier classifier) {
+        classifier.name
+    }
+    
+    def dispatch generateState(State state, StateMachine stateMachine, Class entity) {
+        '''
+        «state.name» {
+            «IF (state.entry != null)»
+            @Override void onEntry(«entity.name» instance) {
+                «(state.entry as Activity).generateActivity»
+            }«
+            ENDIF»
+            «IF (state.exit != null)»
+            @Override void onExit(«entity.name» instance) {
+                «(state.exit as Activity).generateActivity»
+            }
+            «ENDIF»
+            «state.generateStateEventHandler(stateMachine, entity)»
+        }
+        '''.toString.trim
+    }
+    
+    def dispatch generateState(Pseudostate state, StateMachine stateMachine, Class entity) {
+        '''
+        «state.name» {
+            «state.generateStateEventHandler(stateMachine, entity)»
+        }
+        '''.toString.trim 
+    }
+    
+    def generateStateEventHandler(Vertex state, StateMachine stateMachine, Class entity) {
+        '''
+        @Override void handleEvent(«entity.name» instance, «stateMachine.name»Event event) {
+            «IF (!state.outgoings.empty)»
+            switch (event) {
+                «state.findTriggersPerEvent.entrySet.generateMany[pair |
+                    val event = pair.key
+                    val triggers = pair.value
+                    '''
+                    case «event.generateEventName» :
+                        «triggers.generateMany
+                            [ trigger |
+                            val transition = trigger.eContainer as Transition
+                            '''
+                            «IF (transition.guard != null)»
+                            if («transition.guard.generatePredicate») {
+                                «transition.generateTransition»
+                                break;
+                            }
+                            «ELSE»
+                            «transition.generateTransition»
+                            «ENDIF»
+                            '''
+                        ]»
+                        break;
+                    ''' 
+                ]»
+            }
+            «ELSE»
+            // this is a final state
+            «ENDIF»     
+        }                       
+        '''
+    }
+    
+    def generateTransition(Transition transition) {
+        '''
+        «IF (transition.effect != null)»
+        «(transition.effect as Activity).generateActivity»
+        «ENDIF»
+        doTransitionTo(instance, «transition.target.name»);
+        '''
+    }
+    
+    def generateStateMachine(StateMachine stateMachine, Class entity) {
+        val stateAttribute = entity.findStateProperties.head
+        if (stateAttribute == null)
+            return ''
+        val triggersPerEvent = stateMachine.findTriggersPerEvent
+        selfReference.push("instance")
+        val generated = '''
+        enum «stateMachine.name» {
+            «stateMachine.vertices.generateMany([generateState(it, stateMachine, entity)],',\n')»;
+            void onEntry(«entity.name» instance) {
+                // no entry behavior by default
+            }
+            void onExit(«entity.name» instance) {
+                // no exit behavior by default
+            }
+            /** Each state implements handling of events. */
+            abstract void handleEvent(«entity.name» instance, «stateMachine.name»Event event);
+            /** 
+                Performs a transition.
+                @param instance the instance to update
+                @param newState the new state to transition to 
+            */
+            final void doTransitionTo(«entity.name» instance, «stateMachine.name» newState) {
+                instance.«stateAttribute.name».onExit(instance);
+                instance.«stateAttribute.name» = newState;
+                instance.«stateAttribute.name».onEntry(instance);
+            }
+        }
+        
+        enum «stateMachine.name»Event {
+            «triggersPerEvent.entrySet.generateMany([generateEvent(entity, stateAttribute, it.key, it.value)], ',\n')»
+        }
+        
+        '''
+        selfReference.pop()
+        return generated
+    }
+
+    def generateEvent(Class entity, Property stateAttribute, Event event, List<Trigger> triggers) {
+        '''«event.generateEventName»'''
+    }
+
+    def generateEventName(Event e) {
+        switch (e) {
+            CallEvent : e.operation.name.toFirstUpper
+            SignalEvent : e.signal.name
+            TimeEvent : '_time'
+            AnyReceiveEvent : '_any'
+            default : unsupportedElement(e)
+        }
+    }
+    
+    def generatePredicate(Constraint predicate) {
+        val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
+        predicateActivity.generateActivityAsExpression        
+    }
+    
+    def generateActivityAsExpression(Activity toGenerate) {
+        val statements = toGenerate.rootAction.findStatements
+        if (statements.size != 1)
+            throw new IllegalArgumentException("Single statement activity expected")
+        val singleStatement = statements.head
+        if (!(singleStatement instanceof AddVariableValueAction))
+            return '''
+            () -> {
+                «singleStatement.generateAction»
+            }'''
+        singleStatement.sourceAction.generateAction
+    }
+
+    def static CharSequence unsupportedElement(Element e) {
+        unsupportedElement(e, if (e instanceof NamedElement) e.qualifiedName else null)
+    }
+    
+    def static CharSequence unsupportedElement(Element e, String message) {
+        '''<UNSUPPORTED: «e.eClass.name»> «if (message != null) '''(«message»)''' else ''»>'''
+    }
+
+    def generateValue(ValueSpecification value) {
+        switch (value) {
+            // the TextUML compiler maps all primitive values to LiteralString
+            LiteralString : switch (value.type.name) {
+                case 'String' : '''"«value.stringValue»"'''
+                case 'Integer' : '''«value.stringValue»'''
+                case 'Double' : '''«value.stringValue»'''
+                case 'Boolean' : '''«value.stringValue»'''
+                default : '''UNKNOWN: «value.stringValue»'''
+            }
+            LiteralBoolean : '''«value.booleanValue»'''
+            LiteralNull : switch (value) {
+                case value.isVertexLiteral : '''"«value.resolveVertexLiteral.name»"'''
+                default : 'null'
+            }
+            OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression
+            InstanceValue case value.instance instanceof EnumerationLiteral: '''"«value.instance.name»"'''
+            default : unsupportedElement(value)
+        }
+    }
+    
+    def generateDefaultValue(Type type) {
+        switch (type) {
+            StateMachine : '''«type.name».«type.initialVertex.name»'''
+            Enumeration : '''"«type.ownedLiterals.head.name»"'''
+            Class : switch (type.name) {
+                case 'Boolean' : 'false'
+                case 'Integer' : '0'
+                case 'Double' : '0'
+                case 'Date' : 'new Date()'
+            }
+            default : null
+        }
+    }
+    
 
 }

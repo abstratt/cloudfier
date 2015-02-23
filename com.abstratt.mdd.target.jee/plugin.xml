@@ -3,6 +3,8 @@
 <plugin>
    <extension
          point="com.abstratt.mdd.target.core.targetPlatform" id="jee" name="JavaEE Platform">
+         <mapper artifactType="systemClass"
+               class="com.abstratt.mdd.target.jee.SystemMapper"/>
          <mapper artifactType="entity"
                class="com.abstratt.mdd.target.jee.EntityMapper"/>
          <mapper artifactType="repository"
