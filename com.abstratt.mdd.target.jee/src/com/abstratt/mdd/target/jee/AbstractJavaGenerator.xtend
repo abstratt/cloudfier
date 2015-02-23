@@ -321,7 +321,7 @@ abstract class AbstractJavaGenerator {
     }
 
     def generateVariableBlock(Iterable<Variable> variables) {
-        if(variables.empty) '' else variables.map['''«type.convertType.toJavaType» «name»;'''].join('\n') + '\n'
+        if(variables.empty) '' else variables.map['''«type.toJavaType» «name»;'''].join('\n') + '\n'
     }
 
     def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
@@ -344,14 +344,14 @@ abstract class AbstractJavaGenerator {
         selfReference.peek()
     }
 
-    def toJavaType(TypeRef type) {
+    def toJavaType(Type type) {
         switch (type.kind) {
             case Entity:
-                type.typeName
+                type.name
             case Enumeration:
-                type.typeName
+                if (type.namespace instanceof Package) type.name else type.namespace.name + '.' + type.name
             case Primitive:
-                switch (type.typeName) {
+                switch (type.name) {
                     case 'Integer': 'Long'
                     case 'Double': 'Double'
                     case 'Date': 'Date'

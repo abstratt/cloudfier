@@ -163,19 +163,17 @@ class EntityGenerator extends AbstractJavaGenerator {
     }
 
     def generateDerivedAttribute(Property attribute) {
-        val type = KirraMDDSchemaBuilder.convertType(attribute.type)
-        '''public «type.toJavaType» «attribute.name»; /*TBD*/'''
+        '''public «attribute.type.toJavaType» «attribute.name»; /*TBD*/'''
     }
     
     def generateAttribute(Property attribute) {
-        val type = KirraMDDSchemaBuilder.convertType(attribute.type)
         val defaultValue = if (attribute.defaultValue != null) 
                 attribute.defaultValue.generateValue
             else if (attribute.required || attribute.type.enumeration)
                 // enumeration covers state machines as well
                 attribute.type.generateDefaultValue
         
-        '''public «type.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
+        '''public «attribute.type.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
     }
     
     
@@ -187,12 +185,12 @@ class EntityGenerator extends AbstractJavaGenerator {
     }
     
     def generateActionOperation(Operation action) {
-        val javaType = if (action.type == null) "void" else action.type.convertType.toJavaType
+        val javaType = if (action.type == null) "void" else action.type.toJavaType
         val parameters = action.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN_LITERAL]
         val methodName = action.name
         '''
         «action.generateComment»
-        «action.visibility.getName()» «if (action.static) 'static ' else ''»«javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.convertType.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
+        «action.visibility.getName()» «if (action.static) 'static ' else ''»«javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
         '''
     }
     
