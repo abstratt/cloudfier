@@ -1,6 +1,5 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder
 import com.abstratt.mdd.core.IRepository
 import java.util.List
 import org.eclipse.uml2.uml.Activity
@@ -13,10 +12,8 @@ import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.UMLPackage
-import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
@@ -40,7 +37,7 @@ class EntityGenerator extends AbstractJavaGenerator {
         val attributeInvariants = attributes.map[findInvariantConstraints].flatten
         val derivedAttributes = entity.properties.filter[derived]
         val derivedRelationships = entity.entityRelationships.filter[derived]
-        val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
+        val privateOperations = entity.operations.filter[!action && !finder]
         val hasState = !entity.findStateProperties.empty
         val signals = entity.allOperations.filter[op | op.activity != null].map[op | 
             op.activity.bodyNode
@@ -110,11 +107,11 @@ class EntityGenerator extends AbstractJavaGenerator {
                     «generateMany(derivedAttributes, [generateDerivedAttribute])»
                 «ENDIF»
 
-«««                «IF !derivedRelationships.empty»
-«««                    /*************************** DERIVED RELATIONSHIPS ****************/
-«««                    
-«««                    «generateDerivedRelationships(derivedRelationships)»
-«««                «ENDIF»
+                «IF !derivedRelationships.empty»
+                    /*************************** DERIVED RELATIONSHIPS (TBD) ****************/
+                    
+                    «generateMany(derivedRelationships, [generateDerivedRelationship])»
+                «ENDIF»
 
                 «IF !privateOperations.empty»
                     /*************************** PRIVATE OPS ***********************/
@@ -179,9 +176,13 @@ class EntityGenerator extends AbstractJavaGenerator {
     
     def generateRelationship(Property relationship) {
         if (relationship.multivalued)
-        '''private Collection<«relationship.type.name»> «relationship.name»;'''
+        '''public Collection<«relationship.type.name»> «relationship.name» = new LinkedHashSet<«relationship.type.name»>();'''
         else
         '''public «relationship.type.name» «relationship.name»;'''
+    }
+    
+    def generateDerivedRelationship(Property attribute) {
+        generateRelationship(attribute)
     }
     
     def generateActionOperation(Operation action) {
@@ -197,13 +198,14 @@ class EntityGenerator extends AbstractJavaGenerator {
     def generateActionOperationBody(Operation actionOperation) {
         val firstMethod = actionOperation.methods?.head
         val stateProperty = actionOperation.class_.findStateProperties.head
-        val stateMachine = stateProperty?.type
+        val stateMachine = stateProperty?.type as StateMachine
+        val isEventTriggering = stateMachine != null && !stateMachine.findTriggersForCalling(actionOperation).empty
         '''
         {
             «IF(firstMethod != null)»
             «generateActivity(firstMethod as Activity)»
             «ENDIF»
-            «IF (stateProperty != null && !actionOperation.static && actionOperation.action)»
+            «IF (isEventTriggering)»
             this.«stateProperty.name».handleEvent(this, «stateMachine.name»Event.«actionOperation.name.toFirstUpper»);
             «ENDIF»
         }

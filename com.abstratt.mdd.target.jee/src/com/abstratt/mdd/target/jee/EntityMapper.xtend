@@ -4,6 +4,8 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
 import java.util.List
 import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Signal
 
@@ -13,10 +15,11 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
     
     override mapFileName(Classifier classifier) {
         switch (classifier) {
-            case classifier.entity:
-                '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/entity/«classifier.name».java'''
             case classifier instanceof Signal:
-                '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/event/«classifier.name»Event.java'''                
+                '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/event/«classifier.name»Event.java'''
+            case classifier instanceof Enumeration || classifier instanceof Class:
+                '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/entity/«classifier.name».java'''
+                                
         }
         
     }
@@ -40,10 +43,14 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         val topLevelEntities = appPackages.entities.filter[topLevel]
         val entityGenerator = new EntityGenerator(repository)
         result.putAll(topLevelEntities.toMap[mapFileName].mapValues[entityGenerator.generateEntity(it)])
-        
-        val signals = appPackages.tupleTypes.filter[it instanceof Signal]
+
+        val enums = appPackages.map[ownedTypes.filter(typeof (Enumeration))].flatten
+        val enumerationGenerator = new EnumerationGenerator(repository)
+        result.putAll(enums.toMap[mapFileName].mapValues[enumerationGenerator.generateEnumeration(it)])
+
+        val signals = appPackages.tupleTypes.filter(typeof (Signal))
         val signalGenerator = new SignalGenerator(repository)
-        result.putAll(signals.toMap[mapFileName].mapValues[signalGenerator.generateSignal(it as Signal)])
+        result.putAll(signals.toMap[mapFileName].mapValues[signalGenerator.generateSignal(it)])
         return result
     }    
 }

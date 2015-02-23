@@ -1,6 +1,5 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.kirra.TypeRef
 import com.abstratt.mdd.core.IRepository
 import java.util.Arrays
 import java.util.Deque
@@ -17,6 +16,7 @@ import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.ConditionalNode
 import org.eclipse.uml2.uml.Constraint
+import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.Element
 import org.eclipse.uml2.uml.Enumeration
@@ -24,6 +24,7 @@ import org.eclipse.uml2.uml.EnumerationLiteral
 import org.eclipse.uml2.uml.Event
 import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.InstanceValue
+import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
@@ -157,6 +158,31 @@ abstract class AbstractJavaGenerator {
         if (action.variable.name == '') '''return «generateAction(action.value)»''' else '''«action.variable.name» = «generateAction(
             action.value)»'''
     }
+    
+    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
+        generateCreateLinkAction(action) 
+    }
+    
+    def generateCreateLinkAction(CreateLinkAction action) {
+        generateSetLinkEnd(action.endData)
+    }
+    
+    def generateSetLinkEnd(List<LinkEndData> sides) {
+        val thisEnd = sides.get(0).end
+        val otherEnd = sides.get(1).end
+        val thisEndAction = sides.get(0).value
+        val otherEndAction = sides.get(1).value
+        '''
+        «generateLinkCreation(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
+        «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
+    }
+    
+    def CharSequence generateLinkCreation(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
+        if (!thisEnd.navigable) return ''
+        '''
+        «generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».add(«ELSE» = «ENDIF»«generateAction(thisEndAction)»«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+    }    
+    
 
     def dispatch CharSequence doGenerateAction(CallOperationAction action) {
         generateCallOperationAction(action)
@@ -205,16 +231,16 @@ abstract class AbstractJavaGenerator {
             switch (classifier.name) {
                 case 'Date':
                     switch (operation.name) {
-                        case 'year': '''(«generateAction(action.target)».getYear() + 1900)'''
+                        case 'year': '''(«generateAction(action.target)».getYear() + 1900L)'''
                         case 'month': '''«generateAction(action.target)».getMonth()'''
                         case 'day': '''«generateAction(action.target)».getDate()'''
                         case 'today':
                             'new Date()'
                         case 'now':
                             'new Date()'
-                        case 'transpose': '''new Date(«generateAction(action.target)» + «generateAction(
+                        case 'transpose': '''new Date(«generateAction(action.target)».getTime() + «generateAction(
                             action.arguments.head)»)'''
-                        case 'differenceInDays': '''(«generateAction(action.arguments.head)» - «generateAction(
+                        case 'differenceInDays': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(
                             action.target)») / (1000*60*60*24)'''
                         default: '''Unsupported Date operation «operation.name»'''
                     }
@@ -238,7 +264,7 @@ abstract class AbstractJavaGenerator {
                 case 'Collection': {
                     switch (operation.name) {
                         case 'size': '''«generateAction(action.target)».length'''
-                        default: '''null /*Unsupported Collection operation: «operation.name»*/'''
+                        default: '''«if (operation.getReturnResult != null) 'null' else ''» /*Unsupported Collection operation: «operation.name»*/'''
                     }
                 }
                 case 'System': {
@@ -443,6 +469,8 @@ abstract class AbstractJavaGenerator {
         if (stateAttribute == null)
             return ''
         val triggersPerEvent = stateMachine.findTriggersPerEvent
+        val eventNames = triggersPerEvent.keySet.map[it.generateEventName]
+        
         selfReference.push("instance")
         val generated = '''
         enum «stateMachine.name» {
@@ -468,9 +496,8 @@ abstract class AbstractJavaGenerator {
         }
         
         enum «stateMachine.name»Event {
-            «triggersPerEvent.entrySet.generateMany([generateEvent(entity, stateAttribute, it.key, it.value)], ',\n')»
+            «eventNames.join(',\n')»
         }
-        
         '''
         selfReference.pop()
         return generated
@@ -521,7 +548,7 @@ abstract class AbstractJavaGenerator {
             // the TextUML compiler maps all primitive values to LiteralString
             LiteralString : switch (value.type.name) {
                 case 'String' : '''"«value.stringValue»"'''
-                case 'Integer' : '''«value.stringValue»'''
+                case 'Integer' : '''«value.stringValue»L'''
                 case 'Double' : '''«value.stringValue»'''
                 case 'Boolean' : '''«value.stringValue»'''
                 default : '''UNKNOWN: «value.stringValue»'''
@@ -540,11 +567,11 @@ abstract class AbstractJavaGenerator {
     def generateDefaultValue(Type type) {
         switch (type) {
             StateMachine : '''«type.name».«type.initialVertex.name»'''
-            Enumeration : '''"«type.ownedLiterals.head.name»"'''
+            Enumeration : '''«type.name».«type.ownedLiterals.head.name»'''
             Class : switch (type.name) {
                 case 'Boolean' : 'false'
-                case 'Integer' : '0'
-                case 'Double' : '0'
+                case 'Integer' : '0L'
+                case 'Double' : '0.0'
                 case 'Date' : 'new Date()'
             }
             default : null
