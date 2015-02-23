@@ -167,6 +167,14 @@ class JSGenerator {
         «endData.value.generateAction» = null'''
     }
     
+    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
+        generateCreateLinkAction(action) 
+    }
+    
+    def generateCreateLinkAction(CreateLinkAction action) {
+        generateSetLinkEnd(action.endData)
+    }
+    
     def generateSetLinkEnd(List<LinkEndData> sides) {
         val thisEnd = sides.get(0).end
         val otherEnd = sides.get(1).end
@@ -182,14 +190,6 @@ class JSGenerator {
         '''
         «generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».push(«ELSE» = «ENDIF»«generateAction(thisEndAction)»._id«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }    
-    
-    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
-        generateCreateLinkAction(action) 
-    }
-    
-    def generateCreateLinkAction(CreateLinkAction action) {
-        generateSetLinkEnd(action.endData)
-    }
     
     def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
         generateReadStructuralFeatureAction(action)

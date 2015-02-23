@@ -123,7 +123,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val attributeInvariants = attributes.map[findInvariantConstraints].flatten
         val derivedAttributes = entity.properties.filter[derived]
         val derivedRelationships = entity.entityRelationships.filter[derived]
-        val privateOperations = entity.allOperations.filter[visibility == VisibilityKind.PRIVATE_LITERAL]
+        val privateOperations = entity.allOperations.filter[visibility != VisibilityKind.PUBLIC_LITERAL]
         val hasState = !entity.findStateProperties.empty
         
         '''
