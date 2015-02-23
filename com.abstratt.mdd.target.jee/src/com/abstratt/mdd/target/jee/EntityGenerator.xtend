@@ -5,6 +5,7 @@ import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Constraint
+import org.eclipse.uml2.uml.Feature
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
@@ -121,7 +122,7 @@ class EntityGenerator extends AbstractJavaGenerator {
 
                 «IF hasState»
                     /*************************** STATE MACHINE ********************/
-                    «entity.findStateProperties.map[it.type as StateMachine].head?.generateStateMachine(entity)»
+                    «entity.findStateProperties.map[it.type as StateMachine].head.generateStateMachine(entity)»
                     
                 «ENDIF»
             }
@@ -160,7 +161,7 @@ class EntityGenerator extends AbstractJavaGenerator {
     }
 
     def generateDerivedAttribute(Property attribute) {
-        '''public «attribute.type.toJavaType» «attribute.name»; /*TBD*/'''
+        '''public «if (attribute.static) 'static ' else ''»«attribute.type.toJavaType» «attribute.name»; /*TBD*/'''
     }
     
     def generateAttribute(Property attribute) {
@@ -170,7 +171,7 @@ class EntityGenerator extends AbstractJavaGenerator {
                 // enumeration covers state machines as well
                 attribute.type.generateDefaultValue
         
-        '''public «attribute.type.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
+        '''public «if (attribute.static) 'static ' else ''»«attribute.type.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
     }
     
     
@@ -178,11 +179,11 @@ class EntityGenerator extends AbstractJavaGenerator {
         if (relationship.multivalued)
         '''public Collection<«relationship.type.name»> «relationship.name» = new LinkedHashSet<«relationship.type.name»>();'''
         else
-        '''public «relationship.type.name» «relationship.name»;'''
+        '''public «if (relationship.static) 'static ' else ''»«relationship.type.name» «relationship.name»;'''
     }
     
     def generateDerivedRelationship(Property attribute) {
-        generateRelationship(attribute)
+        '''«generateRelationship(attribute)» /*TBD*/'''
     }
     
     def generateActionOperation(Operation action) {

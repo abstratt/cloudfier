@@ -18,6 +18,7 @@ import org.eclipse.uml2.uml.ConditionalNode
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
+import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.Element
 import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.EnumerationLiteral
@@ -41,6 +42,7 @@ import org.eclipse.uml2.uml.SignalEvent
 import org.eclipse.uml2.uml.State
 import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.StructuredActivityNode
+import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.TimeEvent
 import org.eclipse.uml2.uml.Transition
 import org.eclipse.uml2.uml.Trigger
@@ -159,6 +161,47 @@ abstract class AbstractJavaGenerator {
             action.value)»'''
     }
     
+    def dispatch CharSequence doGenerateAction(TestIdentityAction action) {
+        '''«generateTestidentityAction(action)»'''
+    }
+    
+    def generateTestidentityAction(TestIdentityAction action) {
+        '''«generateAction(action.first)» == «generateAction(action.second)»'''
+    }
+        
+    def dispatch CharSequence doGenerateAction(DestroyLinkAction action) {
+        generateDestroyLinkAction(action)
+    }
+    
+    def generateDestroyLinkAction(DestroyLinkAction action) {
+        val endData = action.endData.head
+        '''
+        «endData.value.generateAction».«endData.end.otherEnd.name» = null;
+        «endData.value.generateAction» = null'''
+    }
+    
+    def generateUnsetLinkEnd(List<LinkEndData> sides) {
+        val thisEnd = sides.get(0).end
+        val otherEnd = sides.get(1).end
+        val thisEndAction = sides.get(0).value
+        val otherEndAction = sides.get(1).value
+        '''
+        «generateLinkDestruction(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
+        «generateLinkDestruction(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
+    }
+    
+    def CharSequence generateLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
+        if (!thisEnd.navigable) return ''
+        '''
+        «generateAction(otherEndAction)».«thisEnd.name»
+        «IF thisEnd.multivalued»
+        .remove(«generateAction(thisEndAction)»)
+        «ELSE»
+        = null
+        «ENDIF»
+        «IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+    }
+    
     def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
         generateCreateLinkAction(action) 
     }
@@ -263,7 +306,8 @@ abstract class AbstractJavaGenerator {
                 }
                 case 'Collection': {
                     switch (operation.name) {
-                        case 'size': '''«generateAction(action.target)».length'''
+                        case 'size': '''«generateAction(action.target)».size()'''
+                        case 'forEach': generateCollectionForEach(action)
                         default: '''«if (operation.getReturnResult != null) 'null' else ''» /*Unsupported Collection operation: «operation.name»*/'''
                     }
                 }
@@ -275,6 +319,11 @@ abstract class AbstractJavaGenerator {
                 }
                 default: '''Unsupported classifier «classifier.name» for operation «operation.name»'''
             }
+    }
+    
+    def CharSequence generateCollectionForEach(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».forEach(«closure.generateActivityAsExpression»)'''
     }
 
     def dispatch CharSequence doGenerateAction(StructuredActivityNode node) {
@@ -527,11 +576,14 @@ abstract class AbstractJavaGenerator {
         if (statements.size != 1)
             throw new IllegalArgumentException("Single statement activity expected")
         val singleStatement = statements.head
-        if (!(singleStatement instanceof AddVariableValueAction))
+        if (!(singleStatement instanceof AddVariableValueAction)) {
+            val returnsValue = toGenerate.closureReturnParameter != null
+            val optionalSemicolon = if (returnsValue) '' else ';'  
             return '''
-            () -> {
-                «singleStatement.generateAction»
-            }'''
+                («toGenerate.closureInputParameters.generateMany([name], ', ')») -> {
+                    «singleStatement.generateAction»«optionalSemicolon»
+                }'''
+        }
         singleStatement.sourceAction.generateAction
     }
 
