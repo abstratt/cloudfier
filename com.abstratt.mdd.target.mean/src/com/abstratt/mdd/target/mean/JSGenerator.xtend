@@ -138,10 +138,6 @@ class JSGenerator {
         '''Unsupported «action.eClass.name»'''
     }
 
-    def dispatch CharSequence doGenerateAction(CallOperationAction action) {
-        generateCallOperationAction(action)
-    }
-    
     def dispatch CharSequence doGenerateAction(SendSignalAction action) {
         generateSendSignalAction(action)
     }
@@ -195,8 +191,8 @@ class JSGenerator {
         generateSetLinkEnd(action.endData)
     }
     
-    def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
-        generateReadLinkAction(action)
+    def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
+        generateReadStructuralFeatureAction(action)
     }
     
     def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
@@ -208,6 +204,10 @@ class JSGenerator {
             '''«generateAction(action.object)».«feature.name»'''
         }
     }
+
+    def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
+        generateReadLinkAction(action)
+    }
     
     def generateReadLinkAction(ReadLinkAction action) {
         val fedEndData = action.endData.get(0)
@@ -218,6 +218,10 @@ class JSGenerator {
     def generateTraverseRelationshipAction(InputPin target, Property property) {
         val featureName = property.name
         '''«generateAction(target)».«featureName»'''
+    }
+    
+    def dispatch CharSequence doGenerateAction(CallOperationAction action) {
+        generateCallOperationAction(action)
     }
     
     protected def CharSequence generateCallOperationAction(CallOperationAction action) {
@@ -337,10 +341,6 @@ class JSGenerator {
         generateAddVariableValueAction(action)
     }
 
-    def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
-        generateReadStructuralFeatureAction(action)
-    }
-    
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
         generateReadExtentAction(action)
     }
