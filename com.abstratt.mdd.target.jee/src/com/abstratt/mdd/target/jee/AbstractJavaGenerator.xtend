@@ -297,7 +297,7 @@ abstract class AbstractJavaGenerator {
                         case 'transpose': '''new Date(«generateAction(action.target)».getTime() + «generateAction(
                             action.arguments.head)»)'''
                         case 'differenceInDays': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(
-                            action.target)») / (1000*60*60*24)'''
+                            action.target)».getTime()) / (1000*60*60*24)'''
                         default: '''Unsupported Date operation «operation.name»'''
                     }
                 case 'Duration': {
@@ -695,7 +695,7 @@ abstract class AbstractJavaGenerator {
             }
             LiteralBoolean : '''«value.booleanValue»'''
             LiteralNull : switch (value) {
-                case value.isVertexLiteral : '''"«value.resolveVertexLiteral.name»"'''
+                case value.isVertexLiteral : '''«value.toJavaType».«value.resolveVertexLiteral.name»'''
                 default : 'null'
             }
             OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression

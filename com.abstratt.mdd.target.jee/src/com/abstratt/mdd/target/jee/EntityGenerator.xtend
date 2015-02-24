@@ -20,6 +20,9 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.ConnectorUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import com.abstratt.mdd.core.util.MDDUtil
+import org.eclipse.emf.query.conditions.eobjects.EObjectCondition
+import org.eclipse.emf.ecore.EObject
 
 class EntityGenerator extends AbstractJavaGenerator {
 
@@ -50,17 +53,17 @@ class EntityGenerator extends AbstractJavaGenerator {
                 .map[callOperation | (callOperation  as CallOperationAction).operation ]
         ]
         
-        val providers = entity.allOperations
-            .filter[op | op.activity != null]
-            .map[op | 
-                findOperationCalls.apply(op.activity)
-                    .filter[isProviderOperation]
-                    .map[class_]
-        ].flatten.toSet
+        val allActivities = MDDUtil.findAllFrom(new EObjectCondition() {
+            override isSatisfied(EObject eObject) {
+                return UMLPackage.Literals.ACTIVITY.isInstance(eObject)
+            }
+        }, #{entity})
         
-        
-        
-        
+        val providers = allActivities.map[findOperationCalls.apply(it as Activity)]
+            .flatten
+            .filter[isProviderOperation]
+            .map[class_]
+            .toSet
         
         val ports = entity.allAttributes.filter(typeof(Port))
         
