@@ -287,7 +287,9 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
             return TypeKind.Entity;
         if (KirraHelper.isTupleType(umlType))
             return TypeKind.Tuple;
-        return TypeKind.Primitive;
+        if (KirraHelper.isPrimitive(umlType))
+            return TypeKind.Primitive;
+        return null;
     }
 
     private void setName(org.eclipse.uml2.uml.NamedElement sourceElement, NamedElement<?> targetElement) {
