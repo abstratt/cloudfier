@@ -5,6 +5,7 @@ import java.util.Arrays
 import java.util.Deque
 import java.util.LinkedList
 import java.util.List
+import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
@@ -14,6 +15,7 @@ import org.eclipse.uml2.uml.CallEvent
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Clause
 import org.eclipse.uml2.uml.ConditionalNode
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateLinkAction
@@ -29,11 +31,13 @@ import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
+import org.eclipse.uml2.uml.MultiplicityElement
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Pseudostate
+import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
@@ -47,9 +51,11 @@ import org.eclipse.uml2.uml.TimeEvent
 import org.eclipse.uml2.uml.Transition
 import org.eclipse.uml2.uml.Trigger
 import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.TypedElement
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
+import org.eclipse.uml2.uml.VariableAction
 import org.eclipse.uml2.uml.Vertex
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
@@ -58,6 +64,8 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.Namespace
 
 abstract class AbstractJavaGenerator {
     protected IRepository repository
@@ -73,6 +81,10 @@ abstract class AbstractJavaGenerator {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         this.applicationName = repository.getApplicationName(appPackages)
         this.entities = appPackages.entities.filter[topLevel]
+    }
+    
+    def generateImports(Namespace namespaceContext) {
+        namespaceContext.nearestPackage.packageImports.filter[importedPackage?.kirraPackage].generateMany(['''import «importedPackage.toJavaPackage».*;'''])
     }
 
     def generateComment(Element element) {
@@ -174,10 +186,7 @@ abstract class AbstractJavaGenerator {
     }
     
     def generateDestroyLinkAction(DestroyLinkAction action) {
-        val endData = action.endData.head
-        '''
-        «endData.value.generateAction».«endData.end.otherEnd.name» = null;
-        «endData.value.generateAction» = null'''
+        generateUnsetLinkEnd(action.endData)
     }
     
     def generateUnsetLinkEnd(List<LinkEndData> sides) {
@@ -192,14 +201,7 @@ abstract class AbstractJavaGenerator {
     
     def CharSequence generateLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
         if (!thisEnd.navigable) return ''
-        '''
-        «generateAction(otherEndAction)».«thisEnd.name»
-        «IF thisEnd.multivalued»
-        .remove(«generateAction(thisEndAction)»)
-        «ELSE»
-        = null
-        «ENDIF»
-        «IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+        '''«generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».remove(«generateAction(thisEndAction)»)«ELSE» = null«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }
     
     def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
@@ -239,9 +241,13 @@ abstract class AbstractJavaGenerator {
         if (classifier == null || classifier.package.hasStereotype("ModelLibrary"))
             generateBasicTypeOperationCall(classifier, action)
         else {
-            val target = if(operation.static) generateClassReference(classifier) else generateAction(action.target)
-            '''«target».«operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
+            val target = if (operation.static) generateClassReference(classifier) else generateAction(action.target)
+            generateOperationCall(target,action)            
         }
+    }
+    
+    def generateOperationCall(CharSequence target, CallOperationAction action) {
+        '''«target».«action.operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
     }
 
     def CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
@@ -259,8 +265,6 @@ abstract class AbstractJavaGenerator {
             case 'greaterThan': '>'
             case 'lowerOrEquals': '<='
             case 'greaterOrEquals': '>='
-            case 'notEquals': '!=='
-            case 'equals': '=='
             case 'same': '=='
         }
         if (operator != null)
@@ -270,8 +274,17 @@ abstract class AbstractJavaGenerator {
                 case 1: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
-        else if (classifier == null) '''Unsupported null target operation "«operation.name»"''' else
+        else if (classifier == null) '''Unsupported null target operation "«operation.name»"'''
+        else if (classifier.name.equals()) '''Unsupported null target operation "«operation.name»"'''
+        else
             switch (classifier.name) {
+                case 'Primitive':
+                    switch (operation.name) {
+                        case 'equals': '''«action.target.generateAction».equals(«action.arguments.head.generateAction»)'''
+                        case 'notEquals': '''!«action.target.generateAction».equals(«action.arguments.head.generateAction»)'''
+                        default: '''Unsupported Primitive operation «operation.name»'''
+                    }
+                
                 case 'Date':
                     switch (operation.name) {
                         case 'year': '''(«generateAction(action.target)».getYear() + 1900L)'''
@@ -308,6 +321,8 @@ abstract class AbstractJavaGenerator {
                     switch (operation.name) {
                         case 'size': '''«generateAction(action.target)».size()'''
                         case 'forEach': generateCollectionForEach(action)
+                        case 'select': generateCollectionSelect(action)
+                        case 'reduce': generateCollectionReduce(action)
                         default: '''«if (operation.getReturnResult != null) 'null' else ''» /*Unsupported Collection operation: «operation.name»*/'''
                     }
                 }
@@ -320,12 +335,47 @@ abstract class AbstractJavaGenerator {
                 default: '''Unsupported classifier «classifier.name» for operation «operation.name»'''
             }
     }
-    
-    def CharSequence generateCollectionForEach(CallOperationAction action) {
-        val closure = action.arguments.get(0).sourceClosure 
-        '''«action.target.generateAction».forEach(«closure.generateActivityAsExpression»)'''
+
+    def CharSequence generateCollectionReduce(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure
+        val initialValue = action.arguments.get(1)
+        '''«action.target.generateAction».stream().reduce(«initialValue.generateAction», «closure.generateActivityAsExpression(true, closure.closureInputParameters.reverseView).toString.trim», null)'''
     }
 
+
+    def CharSequence generateCollectionForEach(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».forEach(«closure.generateActivityAsExpression(true)»)'''
+    }
+    
+    def CharSequence generateCollectionSelect(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
+    }
+    
+    def dispatch CharSequence doGenerateAction(ConditionalNode node) {
+        val clauses = node.clauses
+        val clauseCount = clauses.size()
+        val current = new AtomicInteger(0)
+        val generateClause = [ Clause clause |
+            val lastClause = current.incrementAndGet() == clauseCount 
+            '''
+            «generateClauseTest(clause.tests.head as Action, lastClause)» {
+                «(clause.bodies.head as Action).generateAction»
+            }'''
+        ]
+        '''«clauses.map[generateClause.apply(it)].join(' else ')»'''
+    }
+    
+    def generateClauseTest(Action test, boolean lastTest) {
+        if (lastTest)
+            if (test instanceof ValueSpecificationAction)
+                if (test.value instanceof LiteralBoolean)
+                    if (test.value.booleanValue)
+                        return ''
+        '''if («test.generateAction»)'''
+    }
+    
     def dispatch CharSequence doGenerateAction(StructuredActivityNode node) {
         val container = node.eContainer
 
@@ -346,6 +396,21 @@ abstract class AbstractJavaGenerator {
         val target = action.target
         val methodName = action.signal.name.toFirstLower
         '''«generateAction(target)».«methodName»(«action.arguments.map[generateAction].join(', ')»)'''
+    }
+    
+    def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
+        generateReadLinkAction(action)
+    }
+    
+    def generateReadLinkAction(ReadLinkAction action) {
+        val fedEndData = action.endData.get(0)
+        val target = fedEndData.value
+        '''«generateTraverseRelationshipAction(target, fedEndData.end.otherEnd)»'''
+    }
+    
+    def generateTraverseRelationshipAction(InputPin target, Property property) {
+        val featureName = property.name
+        '''«generateAction(target)».«featureName»'''
     }
     
     def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
@@ -396,7 +461,7 @@ abstract class AbstractJavaGenerator {
     }
 
     def generateVariableBlock(Iterable<Variable> variables) {
-        if(variables.empty) '' else variables.map['''«type.toJavaType» «name»;'''].join('\n') + '\n'
+        if(variables.empty) '' else variables.map['''«toJavaType» «name»;'''].join('\n') + '\n'
     }
 
     def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
@@ -418,6 +483,18 @@ abstract class AbstractJavaGenerator {
     def generateSelfReference() {
         selfReference.peek()
     }
+    
+    def toJavaType(TypedElement element) {
+        if (element instanceof MultiplicityElement)
+            if (element.multivalued)
+                return '''Collection<«element.type.toJavaType»>'''
+        element.type.toJavaType
+    }
+    
+    def toJavaName(String qualifiedName) {
+        return qualifiedName.replace(NamedElement.SEPARATOR, '.')
+    }
+    
 
     def toJavaType(Type type) {
         switch (type.kind) {
@@ -425,6 +502,8 @@ abstract class AbstractJavaGenerator {
                 type.name
             case Enumeration:
                 if (type.namespace instanceof Package) type.name else type.namespace.name + '.' + type.name
+            case Tuple:
+                type.name
             case Primitive:
                 switch (type.name) {
                     case 'Integer': 'Long'
@@ -433,8 +512,9 @@ abstract class AbstractJavaGenerator {
                     case 'String': 'String'
                     case 'Memo': 'String'
                     case 'Boolean': 'Boolean'
-                    default: 'UNEXPECTED TYPE: «type.typeName»'
+                    default: '''UNEXPECTED PRIMITIVE TYPE: «type.name»'''
                 }
+            case null: type.qualifiedName.toJavaName
             default: '''UNEXPECTED KIND: «type.kind»'''
         }
     }
@@ -570,21 +650,29 @@ abstract class AbstractJavaGenerator {
         val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
         predicateActivity.generateActivityAsExpression        
     }
-    
+
     def generateActivityAsExpression(Activity toGenerate) {
+        generateActivityAsExpression(toGenerate, false)
+    }
+
+
+    def generateActivityAsExpression(Activity toGenerate, boolean asClosure) {
+        generateActivityAsExpression(toGenerate, asClosure, toGenerate.closureInputParameters)
+    }
+    def generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
         val statements = toGenerate.rootAction.findStatements
         if (statements.size != 1)
             throw new IllegalArgumentException("Single statement activity expected")
         val singleStatement = statements.head
-        if (!(singleStatement instanceof AddVariableValueAction)) {
-            val returnsValue = toGenerate.closureReturnParameter != null
-            val optionalSemicolon = if (returnsValue) '' else ';'  
+        val isReturnValue = singleStatement instanceof AddVariableValueAction && (singleStatement as VariableAction).variable.isReturnVariable
+        val expressionRoot = if (isReturnValue) singleStatement.sourceAction else singleStatement
+        if (asClosure || !isReturnValue) {
             return '''
-                («toGenerate.closureInputParameters.generateMany([name], ', ')») -> {
-                    «singleStatement.generateAction»«optionalSemicolon»
-                }'''
+                («parameters.generateMany([name], ', ')») -> «IF !isReturnValue»{«ENDIF»
+                    «expressionRoot.generateAction»«IF !isReturnValue»;«ENDIF»
+                «IF !isReturnValue»}«ENDIF»'''
         }
-        singleStatement.sourceAction.generateAction
+        expressionRoot.generateAction
     }
 
     def static CharSequence unsupportedElement(Element e) {
@@ -611,7 +699,7 @@ abstract class AbstractJavaGenerator {
                 default : 'null'
             }
             OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression
-            InstanceValue case value.instance instanceof EnumerationLiteral: '''"«value.instance.name»"'''
+            InstanceValue case value.instance instanceof EnumerationLiteral: '''«value.instance.namespace.name».«value.instance.name»'''
             default : unsupportedElement(value)
         }
     }

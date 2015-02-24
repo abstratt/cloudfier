@@ -8,8 +8,6 @@
          <mapper artifactType="entity"
                class="com.abstratt.mdd.target.jee.EntityMapper"/>
          <mapper artifactType="repository"
-               class="com.abstratt.mdd.target.jee.RepositoryMapper"/>
-         <mapper artifactType="functionalTest"
                class="com.abstratt.mdd.target.jee.FunctionalTestMapper"/>
          <mapper artifactType="application"
                class="com.abstratt.mdd.target.jee.ApplicationMapper"/>               

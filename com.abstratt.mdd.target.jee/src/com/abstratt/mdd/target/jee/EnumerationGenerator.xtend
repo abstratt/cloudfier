@@ -11,7 +11,7 @@ class EnumerationGenerator extends AbstractJavaGenerator {
     
     def generateEnumeration(Enumeration enumeration) {
         '''
-        package «enumeration.packagePrefix».entity;
+        package «enumeration.packagePrefix»;
         
         public enum «enumeration.name» {
             «enumeration.ownedLiterals.generateMany([name], ',\n')»

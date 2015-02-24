@@ -49,8 +49,7 @@ class FunctionalTestGenerator extends AbstractJavaGenerator {
 
         import org.junit.*;        
         «testedPackages.generateMany[p | '''
-        import «p.toJavaPackage».entity.*;
-        import «p.toJavaPackage».repository.*;
+        import «p.toJavaPackage».*;
         ''']»
 
         public class «testClass.name» {

@@ -11,9 +11,10 @@ class SignalGenerator extends AbstractJavaGenerator {
     
     def generateSignal(Signal signal) {
         '''
-        package «signal.packagePrefix».event;
+        package «signal.packagePrefix»;
         
         import java.io.Serializable;
+        import java.util.*;
         
         public class «signal.name»Event implements Serializable {
             «signal.allAttributes.generateMany['''

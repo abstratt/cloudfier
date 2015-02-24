@@ -3,10 +3,12 @@ package com.abstratt.mdd.target.jee
 import com.abstratt.mdd.core.IRepository
 import java.util.List
 import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ParameterDirectionKind
+import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
@@ -15,6 +17,7 @@ import org.eclipse.uml2.uml.UMLPackage
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.ConnectorUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
@@ -31,38 +34,64 @@ class EntityGenerator extends AbstractJavaGenerator {
     }
 
     def generateEntity(Class entity) {
-        val actionOperations = entity.actions
+        val actionOperations = entity.actions.filter[!static]
         val attributes = entity.properties.filter[!derived]
-        val relationships = entity.entityRelationships.filter[!derived && it.likeLinkRelationship]
+        val relationships = entity.entityRelationships.filter[!derived]
         val attributeInvariants = attributes.map[findInvariantConstraints].flatten
         val derivedAttributes = entity.properties.filter[derived]
         val derivedRelationships = entity.entityRelationships.filter[derived]
         val privateOperations = entity.operations.filter[!action && !finder]
         val hasState = !entity.findStateProperties.empty
-        val signals = entity.allOperations.filter[op | op.activity != null].map[op | 
-            op.activity.bodyNode
-                .findMatchingActions(UMLPackage.Literals.SEND_SIGNAL_ACTION)
-                .map[sendSignal | 
-                    (sendSignal as SendSignalAction).signal
-                ]
-        ].flatten
-        val signalPackages = signals.map[ nearestPackage ].toSet
-
+        val signals = findTriggerableSignals(actionOperations + privateOperations)
+        
+        val findOperationCalls = [ Activity activity | 
+            activity.bodyNode
+                .findMatchingActions(UMLPackage.Literals.CALL_OPERATION_ACTION)
+                .map[callOperation | (callOperation  as CallOperationAction).operation ]
+        ]
+        
+        val providers = entity.allOperations
+            .filter[op | op.activity != null]
+            .map[op | 
+                findOperationCalls.apply(op.activity)
+                    .filter[isProviderOperation]
+                    .map[class_]
+        ].flatten.toSet
+        
+        
+        
+        
+        
+        val ports = entity.allAttributes.filter(typeof(Port))
+        
         '''
-            package «entity.packagePrefix».entity;
+            package «entity.packagePrefix»;
             
             import java.util.*;
+            import java.util.stream.*;
             import javax.persistence.*;
             import javax.inject.*;
             import javax.ejb.*;
             import javax.enterprise.event.*;
             
-            «signalPackages.generateMany['''import «it.toJavaPackage».event.*;''']»
+            «entity.generateImports»
             
-                
             «entity.generateComment»
             @Entity
             public class «entity.name» {
+                
+                «IF !providers.empty»
+                    /*************************** PROVIDERS ***************************/
+                    
+                    «generateMany(providers, [generateProvider])»
+                «ENDIF»
+                
+                «IF !ports.empty»
+                    /*************************** PORTS ***************************/
+                    
+                    «generateMany(ports, [generatePort])»
+                «ENDIF»
+                
             
                 «IF !signals.empty»
                     /*************************** SIGNALS ***************************/
@@ -127,6 +156,42 @@ class EntityGenerator extends AbstractJavaGenerator {
             }
         '''
     }
+    
+    def findTriggerableSignals(Iterable<Operation> operations) {
+        operations.filter[op | op.activity != null].map[op | 
+            op.activity.bodyNode
+                .findMatchingActions(UMLPackage.Literals.SEND_SIGNAL_ACTION)
+                .map[sendSignal | 
+                    (sendSignal as SendSignalAction).signal
+                ]
+        ].flatten
+    }
+
+    def generateProvider(Class provider) {
+        '''
+        @Inject private «provider.toJavaType»Service «provider.name.toFirstLower»Service;
+        '''
+    }
+    
+    def generatePort(Port port) {
+        '''
+        @Inject «port.requireds.head.toJavaType» «port.name.toFirstLower»;
+        '''
+    }
+    
+    def isProviderOperation(Operation toCheck) {
+        toCheck.static && toCheck.class_.entity  
+    }
+    
+    
+    
+    override protected generateCallOperationAction(CallOperationAction action) {
+        if (!action.operation.providerOperation)
+            return super.generateCallOperationAction(action)
+        val provider = action.operation.class_    
+        generateOperationCall('''«provider.name.toFirstLower»Service«»''', action)
+    }
+
 
     def generatePrivateOperation(Operation operation) {
         // for now...
@@ -160,7 +225,7 @@ class EntityGenerator extends AbstractJavaGenerator {
     }
 
     def generateDerivedAttribute(Property attribute) {
-        '''public «if (attribute.static) 'static ' else ''»«attribute.type.toJavaType» «attribute.name»; /*TBD*/'''
+        '''public «if (attribute.static) 'static ' else ''»«attribute.toJavaType» «attribute.name»; /*TBD*/'''
     }
     
     def generateAttribute(Property attribute) {
@@ -170,15 +235,12 @@ class EntityGenerator extends AbstractJavaGenerator {
                 // enumeration covers state machines as well
                 attribute.type.generateDefaultValue
         
-        '''public «if (attribute.static) 'static ' else ''»«attribute.type.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
+        '''public «if (attribute.static) 'static ' else ''»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
     }
     
     
     def generateRelationship(Property relationship) {
-        if (relationship.multivalued)
-        '''public Collection<«relationship.type.name»> «relationship.name» = new LinkedHashSet<«relationship.type.name»>();'''
-        else
-        '''public «if (relationship.static) 'static ' else ''»«relationship.type.name» «relationship.name»;'''
+        '''public «if (relationship.static) 'static ' else ''»«relationship.toJavaType» «relationship.name»;'''
     }
     
     def generateDerivedRelationship(Property attribute) {
@@ -186,12 +248,12 @@ class EntityGenerator extends AbstractJavaGenerator {
     }
     
     def generateActionOperation(Operation action) {
-        val javaType = if (action.type == null) "void" else action.type.toJavaType
+        val javaType = if (action.getReturnResult == null) "void" else action.getReturnResult.toJavaType
         val parameters = action.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN_LITERAL]
         val methodName = action.name
         '''
         «action.generateComment»
-        «action.visibility.getName()» «if (action.static) 'static ' else ''»«javaType» «methodName»(«parameters.generateMany([ p | '''«p.type.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
+        «action.visibility.getName()» «if (action.static) 'static ' else ''»«javaType» «methodName»(«parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
         '''
     }
     
