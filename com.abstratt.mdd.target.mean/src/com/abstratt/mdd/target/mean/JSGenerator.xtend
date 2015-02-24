@@ -132,7 +132,7 @@ class JSGenerator {
     def generateVariableBlock(Iterable<Variable> variables) {
         if(variables.empty) '' else variables.map['''var «name»;'''].join('\n') + '\n'
     }
-
+    
     def dispatch CharSequence doGenerateAction(Action action) {
         // should never pick this version - a more specific variant should exist for all supported actions
         '''Unsupported «action.eClass.name»'''
