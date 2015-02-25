@@ -121,7 +121,7 @@ public class KirraRESTExternalService implements ExternalService {
                         "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(), null);
             // no use for response, not expected
         } catch (IOException e) {
-            throw new KirraException("", e, KirraException.Kind.EXTERNAL);
+            throw new KirraException("Error publishing event: " + argumentMap, e, KirraException.Kind.EXTERNAL);
         } finally {
             method.releaseConnection();
         }
