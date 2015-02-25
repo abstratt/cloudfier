@@ -38,13 +38,7 @@ class InterfaceGenerator extends AbstractJavaGenerator {
     }
     
     def generateInterfaceOperation(Operation interfaceOperation) {
-        val javaType = if (interfaceOperation.getReturnResult == null) "void" else interfaceOperation.getReturnResult.toJavaType
-        val parameters = interfaceOperation.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN_LITERAL]
-        val methodName = interfaceOperation.name
-        '''
-        «interfaceOperation.generateComment»
-        «interfaceOperation.visibility.getName()» «javaType» «methodName»(«parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')»);
-        '''
+        '''«interfaceOperation.generateJavaMethodSignature(interfaceOperation.visibility)»;'''
     }
     
 }

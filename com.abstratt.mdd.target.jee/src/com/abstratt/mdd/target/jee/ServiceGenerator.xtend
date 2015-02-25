@@ -19,7 +19,7 @@ class ServiceGenerator extends EntityGenerator {
     }
     
     def generateService(Class entity) {
-        val serviceOperations = entity.allOperations.filter[static && !query]
+        val serviceOperations = entity.allOperations.filter[static]
         '''
         package «entity.packagePrefix»;
         
@@ -41,15 +41,6 @@ class ServiceGenerator extends EntityGenerator {
     }
     
     def generateServiceOperation(Operation serviceOperation) {
-        val javaType = if (serviceOperation.getReturnResult == null) "void" else serviceOperation.getReturnResult.toJavaType
-        val parameters = serviceOperation.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN_LITERAL]
-        val methodName = serviceOperation.name
-        val firstMethod = serviceOperation.methods?.head
-        '''
-        «serviceOperation.generateComment»
-        «serviceOperation.visibility.getName()» «javaType» «methodName»(«parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')») {
-            «generateActivity(firstMethod as Activity)»
-        }
-        '''
+        serviceOperation.generateJavaMethod(serviceOperation.visibility)
     }
 }

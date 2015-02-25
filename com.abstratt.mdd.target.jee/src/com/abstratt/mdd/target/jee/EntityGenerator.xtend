@@ -1,28 +1,34 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.core.util.MDDUtil
 import java.util.List
+import org.eclipse.emf.ecore.EObject
+import org.eclipse.emf.query.conditions.eobjects.EObjectCondition
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Constraint
+import org.eclipse.uml2.uml.CreateObjectAction
+import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.UMLPackage
+
+import static com.abstratt.mdd.target.jee.AbstractJavaGenerator.*
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.ConnectorUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import com.abstratt.mdd.core.util.MDDUtil
-import org.eclipse.emf.query.conditions.eobjects.EObjectCondition
-import org.eclipse.emf.ecore.EObject
+import org.eclipse.uml2.uml.Classifier
 
 class EntityGenerator extends AbstractJavaGenerator {
 
@@ -82,6 +88,22 @@ class EntityGenerator extends AbstractJavaGenerator {
             «entity.generateComment»
             @Entity
             public class «entity.name» {
+                
+                private final static Collection<«entity.name»> allInstances = new LinkedList<«entity.name»>();
+                
+                public static Collection<«entity.name»> extent() {
+                    return Collections.unmodifiableCollection(allInstances);
+                }
+                
+                public static «entity.name» objectCreated(«entity.name» created) {
+                    allInstances.add(created);
+                    return created;
+                }
+                
+                public static «entity.name» objectDestroyed(«entity.name» destroyed) {
+                    allInstances.remove(destroyed);
+                    return destroyed;
+                }
                 
                 «IF !providers.empty»
                     /*************************** PROVIDERS ***************************/
@@ -172,7 +194,7 @@ class EntityGenerator extends AbstractJavaGenerator {
 
     def generateProvider(Class provider) {
         '''
-        @Inject private «provider.toJavaType»Service «provider.name.toFirstLower»Service;
+        @Inject private «provider.toJavaType»Service «provider.name.toFirstLower»Service = new «provider.toJavaType»Service();
         '''
     }
     
@@ -186,6 +208,25 @@ class EntityGenerator extends AbstractJavaGenerator {
         toCheck.static && toCheck.class_.entity  
     }
     
+    override generateCreateObjectAction(CreateObjectAction action) {
+        if (!action.classifier.entity)
+            return super.generateCreateObjectAction(action)
+        val javaClass = action.classifier.toJavaType
+        '''«javaClass».objectCreated(«super.generateCreateObjectAction(action)»)'''
+    }
+    
+    override generateDestroyObjectAction(DestroyObjectAction action) {
+        if (!action.target.type.entity)
+            return super.generateDestroyObjectAction(action)
+        val javaClass = action.target.type.toJavaType
+        '''«javaClass».objectDestroyed(«action.target»)'''
+    }
+    
+    override generateReadExtentAction(ReadExtentAction action) {
+        if (!action.classifier.entity)
+            return '''Collections.<«action.classifier.toJavaType».emptyList()'''
+        '''«action.classifier.toJavaType».extent()'''
+    }
     
     
     override protected generateCallOperationAction(CallOperationAction action) {
@@ -224,11 +265,32 @@ class EntityGenerator extends AbstractJavaGenerator {
     override def generateSendSignalAction(SendSignalAction action) {
         val eventName = '''«action.signal.name.toFirstLower»Event'''
         val signalName = action.signal.name
-        '''this.«eventName».fire(new «signalName»Event(«action.arguments.generateMany([arg | arg.generateAction], ', ')»))'''
+        //'''/* TBD */ //this.«eventName».fire(new «signalName»Event(«action.arguments.generateMany([arg | arg.generateAction], ', ')»))'''
+        
+        // TODO - this is a temporary implementation
+        val targetClassifier = action.target.type as Classifier
+        if (targetClassifier.entity && !targetClassifier.findStateProperties.empty) {
+            val stateMachine = targetClassifier.findStateProperties.head 
+            '''«action.target.generateAction».handleEvent(«action.target.toJavaType».«stateMachine.name.toFirstUpper»Event.«signalName»)'''
+        }
     }
-
+    
     def generateDerivedAttribute(Property attribute) {
-        '''public «if (attribute.static) 'static ' else ''»«attribute.toJavaType» «attribute.name»; /*TBD*/'''
+        '''
+        public «if (attribute.static) 'static ' else ''»«attribute.toJavaType» «attribute.generateAccessorName»() {
+            «generateDerivedAttributeComputation(attribute)»
+        }
+        '''
+    }
+    
+    def generateDerivedAttributeComputation(Property attribute) {
+        if (attribute.defaultValue != null) 
+            if (attribute.defaultValue.behaviorReference)
+                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivity
+            else 
+            '''return «attribute.defaultValue.generateValue»;'''
+        else
+            '''return «attribute.type.generateDefaultValue»;'''
     }
     
     def generateAttribute(Property attribute) {
@@ -243,20 +305,22 @@ class EntityGenerator extends AbstractJavaGenerator {
     
     
     def generateRelationship(Property relationship) {
-        '''public «if (relationship.static) 'static ' else ''»«relationship.toJavaType» «relationship.name»;'''
+        '''public «if (relationship.static) 'static ' else ''»«relationship.toJavaType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;'''
     }
     
-    def generateDerivedRelationship(Property attribute) {
-        '''«generateRelationship(attribute)» /*TBD*/'''
+    def generateDerivedRelationship(Property relationship) {
+        '''
+        public «relationship.toJavaType» «relationship.generateAccessorName»() {
+            return «relationship.defaultValue.generateValue»;
+        }'''
     }
     
     def generateActionOperation(Operation action) {
-        val javaType = if (action.getReturnResult == null) "void" else action.getReturnResult.toJavaType
         val parameters = action.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN_LITERAL]
         val methodName = action.name
         '''
         «action.generateComment»
-        «action.visibility.getName()» «if (action.static) 'static ' else ''»«javaType» «methodName»(«parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
+        «action.visibility.toJavaVisibility» «if (action.static) 'static ' else ''»«action.javaReturnType» «methodName»(«parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')») «action.generateActionOperationBody»
         '''
     }
     
@@ -271,7 +335,7 @@ class EntityGenerator extends AbstractJavaGenerator {
             «generateActivity(firstMethod as Activity)»
             «ENDIF»
             «IF (isEventTriggering)»
-            this.«stateProperty.name».handleEvent(this, «stateMachine.name»Event.«actionOperation.name.toFirstUpper»);
+            this.handleEvent(«stateMachine.name»Event.«actionOperation.name.toFirstUpper»);
             «ENDIF»
         }
         '''

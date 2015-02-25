@@ -8,15 +8,19 @@ import org.eclipse.uml2.uml.Class
 class FunctionalTestMapper implements ITopLevelMapper<Class> {
 
     override mapFileName(Class element) {
-        '''src/test/java/test/«element.namespace.name»/«element.name».java'''
+        '''src/test/java/«element.namespace.name»/test/«element.name».java'''
     }
     
     override mapAll(IRepository repository) {
         val generator = new FunctionalTestGenerator(repository)
-        return generator.testClasses.toMap[mapFileName(it)].mapValues[
+        val result = newLinkedHashMap()
+        result.putAll(generator.testClasses.toMap[mapFileName(it)].mapValues[
             generator.generateTestClass(it)
-//          else      generator.generateSuiteHelper(it)
-        ]
+        ])
+        result.putAll(generator.testRelatedClasses.toMap[mapFileName(it)].mapValues[
+            generator.generateTestHelperClass(it)
+        ])
+        return result
         
     }
     
