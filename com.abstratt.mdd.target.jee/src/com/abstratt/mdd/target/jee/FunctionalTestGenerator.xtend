@@ -73,12 +73,15 @@ class FunctionalTestGenerator extends EntityGenerator {
             ]»
             
             public class «testClass.name» {
-                «generateProviders(testClass)»
                 «generateTearDown»
                 «testCases.generateMany[generateTestCase]»
                 «helperMethods.generateMany[generateHelperMethod]»
             } 
         '''
+    }
+    
+    override generateProviderReference(Class context, Class provider) {
+        '''new «provider.toJavaType»Service()'''
     }
     
     def generateTearDown() {
@@ -157,7 +160,6 @@ class FunctionalTestGenerator extends EntityGenerator {
             ]»
             
             public class «testHelperClass.name» {
-                «generateProviders(testHelperClass)»
                 «operations.generateMany[generateHelperMethod]»
             } 
         '''
