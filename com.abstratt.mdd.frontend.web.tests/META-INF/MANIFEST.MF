@@ -4,7 +4,7 @@ Bundle-Name: MDD Web-based Front-end Tests
 Bundle-SymbolicName: com.abstratt.mdd.frontend.web.tests
 Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: Abstratt Technologies
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit,
  com.abstratt.mdd.core.tests.harness,
  org.apache.commons.httpclient,

@@ -4,7 +4,7 @@ Bundle-Name: JPA
 Bundle-SymbolicName: com.abstratt.mdd.target.jpa;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Abstratt Technologies
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: com.abstratt.mdd.target.core,
  com.abstratt.mdd.target.pojo,
  com.abstratt.mdd.target.query;bundle-version="1.0.0",

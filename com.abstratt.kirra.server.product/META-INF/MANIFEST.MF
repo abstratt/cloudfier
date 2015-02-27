@@ -4,5 +4,5 @@ Bundle-Name: Kirra Server Product
 Bundle-SymbolicName: com.abstratt.kirra.server.product;singleton:=true
 Bundle-Version: 1.120.1.latest
 Bundle-Vendor: ABSTRATT
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

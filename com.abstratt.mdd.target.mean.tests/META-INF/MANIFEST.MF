@@ -4,7 +4,7 @@ Bundle-Name: MDD Target Tests Plug-in
 Bundle-SymbolicName: com.abstratt.mdd.target.mean.tests
 Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: Abstratt Technologies
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: com.abstratt.mdd.core.tests.harness,
  org.eclipse.xtext.xbase.lib;bundle-version="2.7",
  com.abstratt.mdd.frontend.textuml.core,

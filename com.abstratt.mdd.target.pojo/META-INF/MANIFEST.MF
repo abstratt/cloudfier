@@ -14,4 +14,4 @@ Require-Bundle: com.abstratt.mdd.core,
 Eclipse-LazyStart: true
 Export-Package: com.abstratt.mdd.internal.target.pojo,
  com.abstratt.mdd.target.pojo
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8

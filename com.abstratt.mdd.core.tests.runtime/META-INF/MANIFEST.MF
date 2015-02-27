@@ -11,5 +11,5 @@ Require-Bundle: com.abstratt.mdd.runtime.core;visibility:=reexport,
  com.abstratt.kirra.api,
  com.abstratt.kirra.mdd.runtime,
  com.abstratt.kirra.mdd.rest
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.abstratt.mdd.core.tests.runtime

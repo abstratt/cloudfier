@@ -4,7 +4,7 @@ Bundle-Name: Kirra MDD Runtime tests
 Bundle-SymbolicName: com.abstratt.kirra.tests.mdd.runtime
 Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: ABSTRATT
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: com.abstratt.kirra.tests.mdd.runtime.Activator
 Import-Package: com.abstratt.kirra.auth,
  com.abstratt.mdd.frontend.web.tests,

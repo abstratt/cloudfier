@@ -4,7 +4,7 @@ Bundle-Name: JDBC-based NodeStore implementation
 Bundle-SymbolicName: com.abstratt.nodestore.jdbc;singleton:=true
 Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: ABSTRATT
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: org.apache.commons.logging,
  org.apache.commons.lang,
  org.postgresql.ds,

@@ -13,4 +13,4 @@ Export-Package: com.abstratt.mdd.core.runtime,
  com.abstratt.mdd.core.runtime.action,
  com.abstratt.mdd.core.runtime.external,
  com.abstratt.mdd.core.runtime.types
-Bundle-RequiredExecutionEnvironment: JavaSE-1.6
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
