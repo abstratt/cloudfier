@@ -58,7 +58,7 @@ public abstract class RuntimeObjectNode {
 
     public BasicType consumeValue() {
         if (values.isEmpty())
-            throw new NoDataAvailableException();
+            throw new NoDataAvailableException(this.getAction());
         return values.remove(0);
     }
 
@@ -112,7 +112,7 @@ public abstract class RuntimeObjectNode {
 
     public BasicType peekValue() {
         if (values.isEmpty())
-            throw new NoDataAvailableException();
+            throw new NoDataAvailableException(this.getAction());
         return values.get(0);
     }
 

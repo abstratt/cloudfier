@@ -6,10 +6,12 @@ import java.util.Set;
 
 import org.eclipse.uml2.uml.Action;
 import org.eclipse.uml2.uml.ActivityNode;
+import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.ExceptionHandler;
 import org.eclipse.uml2.uml.ExecutableNode;
 import org.eclipse.uml2.uml.InputPin;
 import org.eclipse.uml2.uml.OutputPin;
+import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.StructuredActivityNode;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.Variable;
@@ -17,9 +19,11 @@ import org.eclipse.uml2.uml.Variable;
 import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
+import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.RuntimeObjectNode;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 
 public class RuntimeStructuredActivityNode extends CompositeRuntimeAction {
@@ -30,17 +34,26 @@ public class RuntimeStructuredActivityNode extends CompositeRuntimeAction {
     @Override
     public void executeBehavior(ExecutionContext context) {
         StructuredActivityNode instance = (StructuredActivityNode) this.getInstance();
-        if (instance.getNodes().size() == 2) {
-            List<InputPin> inputs = MDDUtil.filterByClass(instance.getNodes(), Literals.INPUT_PIN);
-            List<OutputPin> outputs = MDDUtil.filterByClass(instance.getNodes(), Literals.OUTPUT_PIN);
-            if (inputs.size() == 1 && outputs.size() == 1) {
-                // fUML Beta A.4.13 - A type cast is mapped to a structured
-                // activity node that simply copies its input to its output
-                RuntimeObjectNode source = this.getRuntimeObjectNode(inputs.get(0));
-                RuntimeObjectNode destination = this.getRuntimeObjectNode(outputs.get(0));
-                destination.setValue(source.getValue());
-                return;
+        if (MDDExtensionUtils.isCast(instance)) {
+            // fUML Beta A.4.13 - A type cast is mapped to a structured
+            // activity node that simply copies its input to its output
+            RuntimeObjectNode source = this.getRuntimeObjectNode(instance.getStructuredNodeInputs().get(0));
+            addResultValue(instance.getStructuredNodeOutputs().get(0), source.getValue());
+            return;
+        }
+        // support for tuple literals
+        if (MDDExtensionUtils.isObjectInitialization(instance)) {
+            OutputPin result = instance.getStructuredNodeOutputs().get(0);
+            Classifier toInstantiate = (Classifier) result.getType();
+            RuntimeObject created = context.getRuntime().newInstance(toInstantiate, false, false);
+
+            for (Property property : toInstantiate.getAllAttributes()) {
+                InputPin inputValuePin = instance.getStructuredNodeInput(property.getName(), property.getType());
+                if (inputValuePin != null)
+                    created.setValue(property, getRuntimeObjectNode(inputValuePin).getValue());
             }
+            addResultValue(result, created);
+            return;
         }
         Set<ExecutableNode> handlerBodies = new HashSet<ExecutableNode>();
         for (ExceptionHandler exceptionHandler : instance.getHandlers())

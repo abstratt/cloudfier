@@ -17,7 +17,7 @@ public class ModelExecutionException extends RuntimeException {
     private List<CallSite> callSites;
 
     public ModelExecutionException(String message, NamedElement context, RuntimeAction executing) {
-        this(message, context, executing, null);
+        this(message, context, executing, Runtime.get().getCurrentContext().getCallSites());
     }
     
     public ModelExecutionException(String message, NamedElement context, RuntimeAction executing, List<CallSite> callSites) {
