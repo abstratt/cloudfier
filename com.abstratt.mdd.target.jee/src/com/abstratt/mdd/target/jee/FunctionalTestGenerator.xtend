@@ -11,7 +11,9 @@ import org.eclipse.uml2.uml.Type
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.TemplateUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import org.eclipse.uml2.uml.VisibilityKind
+import org.eclipse.uml2.uml.Action
 
 class FunctionalTestGenerator extends EntityGenerator {
 
@@ -58,6 +60,7 @@ class FunctionalTestGenerator extends EntityGenerator {
             package «testClass.packagePrefix».test;
             
             import org.junit.*;  
+            import static org.junit.Assert.*;  
             import java.util.*;
             import java.util.stream.*;
             import java.util.function.*;
@@ -73,9 +76,9 @@ class FunctionalTestGenerator extends EntityGenerator {
             ]»
             
             public class «testClass.name» {
-                «generateTearDown»
                 «testCases.generateMany[generateTestCase]»
                 «helperMethods.generateMany[generateHelperMethod]»
+                «generateTearDown»
             } 
         '''
     }
@@ -100,10 +103,10 @@ class FunctionalTestGenerator extends EntityGenerator {
             return switch (classifier.qualifiedName) {
                 case 'mdd_types::Assert':
                     switch (operation.name) {
-                        case 'isNull': '''Assert.assertNull(«generateAction(action.arguments.head)»)'''
-                        case 'isNotNull': '''Assert.assertNotNull(«generateAction(action.arguments.head)»)'''
-                        case 'isTrue': '''Assert.assertTrue(«generateAction(action.arguments.head)»)'''
-                        case 'areEqual': '''Assert.assertEquals(«generateAction(action.arguments.head)», «generateAction(
+                        case 'isNull': '''assertNull(«generateAction(action.arguments.head)»)'''
+                        case 'isNotNull': '''assertNotNull(«generateAction(action.arguments.head)»)'''
+                        case 'isTrue': '''assertTrue(«generateAction(action.arguments.head)»)'''
+                        case 'areEqual': '''assertEquals(«generateAction(action.arguments.head)», «generateAction(
                             action.arguments.tail.head)»)'''
                         default: '''Unsupported Assert operation: «operation.name»'''
                     }
@@ -112,7 +115,27 @@ class FunctionalTestGenerator extends EntityGenerator {
             }
         super.generateBasicTypeOperationCall(classifier, action)
     }
-
+    
+    def boolean isAssertion(Action action) {
+        if (!(action instanceof CallOperationAction))
+            return false
+        val asCall = action as CallOperationAction    
+        return "mdd_types::Assert" == asCall.operation.owningClassifier.qualifiedName
+    }
+    
+    override generateStatement(Action statementAction) {
+        if (statementAction.assertion) {
+            val siblings = statementAction.owningBlock.findTerminals
+            val index = siblings.indexOf(statementAction)
+            val firstInBlock = index > 0 && !siblings.get(index-1).assertion || index == 0
+            val lastInBlock = index < siblings.size - 1 && !siblings.get(index+1).assertion || index == siblings.size - 1
+            val prefix = if (firstInBlock) '\n' else ''
+            val suffix = if (lastInBlock) '\n' else ''
+            '''«prefix»«super.generateStatement(statementAction)»«suffix»'''
+        } else
+            super.generateStatement(statementAction)
+    }
+    
     def CharSequence generateHelperMethod(Operation helperOperation) {
         helperOperation.generateJavaMethod(VisibilityKind.PACKAGE_LITERAL, helperOperation.static)
     }
