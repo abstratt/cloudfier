@@ -6,6 +6,7 @@ import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.StructuredActivityNode
 
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*

@@ -48,7 +48,10 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
+import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
 
 /** 
  * A UML-to-Javascript code generator.
@@ -86,7 +89,7 @@ class JSGenerator {
     }
     
     def dispatch CharSequence generateAction(Action toGenerate) {
-        if (toGenerate.cast)
+        if (isCast(toGenerate))
             toGenerate.sourceAction.generateAction
         else
             generateActionProper(toGenerate)
@@ -226,9 +229,8 @@ class JSGenerator {
     
     protected def CharSequence generateCallOperationAction(CallOperationAction action) {
         val operation = action.operation
-        val classifier = action.operation.class_
-        // some operations have no class
-        if (classifier == null || classifier.package.hasStereotype("ModelLibrary"))
+        val classifier = action.operation.owningClassifier
+        if (classifier.package.hasStereotype("ModelLibrary"))
             generateBasicTypeOperationCall(classifier, action)
         else {
             val target = if (operation.static) generateClassReference(classifier) else generateAction(action.target)
