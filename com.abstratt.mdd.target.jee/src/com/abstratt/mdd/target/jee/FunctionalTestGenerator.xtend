@@ -60,6 +60,7 @@ class FunctionalTestGenerator extends EntityGenerator {
             import org.junit.*;  
             import java.util.*;
             import java.util.stream.*;
+            import java.util.function.*;
             import javax.persistence.*;
             import javax.inject.*;
             import javax.ejb.*;
@@ -72,9 +73,20 @@ class FunctionalTestGenerator extends EntityGenerator {
             ]»
             
             public class «testClass.name» {
+                «generateProviders(testClass)»
+                «generateTearDown»
                 «testCases.generateMany[generateTestCase]»
                 «helperMethods.generateMany[generateHelperMethod]»
             } 
+        '''
+    }
+    
+    def generateTearDown() {
+        '''
+        @After
+        public void tearDown() {
+            «entities.generateMany['''«name».zap();''']»
+        }
         '''
     }
 
@@ -99,7 +111,7 @@ class FunctionalTestGenerator extends EntityGenerator {
     }
 
     def CharSequence generateHelperMethod(Operation helperOperation) {
-        helperOperation.generateJavaMethod(VisibilityKind.PACKAGE_LITERAL)
+        helperOperation.generateJavaMethod(VisibilityKind.PACKAGE_LITERAL, helperOperation.static)
     }
 
     def CharSequence generateTestCase(Operation testCase) {
@@ -132,6 +144,7 @@ class FunctionalTestGenerator extends EntityGenerator {
             import org.junit.*;  
             import java.util.*;
             import java.util.stream.*;
+            import java.util.function.*;
             import javax.persistence.*;
             import javax.inject.*;
             import javax.ejb.*;
@@ -144,6 +157,7 @@ class FunctionalTestGenerator extends EntityGenerator {
             ]»
             
             public class «testHelperClass.name» {
+                «generateProviders(testHelperClass)»
                 «operations.generateMany[generateHelperMethod]»
             } 
         '''

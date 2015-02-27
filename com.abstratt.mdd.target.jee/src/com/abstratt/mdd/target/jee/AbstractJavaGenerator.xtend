@@ -1,6 +1,7 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.core.util.MDDExtensionUtils
 import java.util.Arrays
 import java.util.Deque
 import java.util.LinkedList
@@ -20,6 +21,7 @@ import org.eclipse.uml2.uml.ConditionalNode
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
+import org.eclipse.uml2.uml.DataType
 import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.Element
@@ -28,6 +30,7 @@ import org.eclipse.uml2.uml.EnumerationLiteral
 import org.eclipse.uml2.uml.Event
 import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.InstanceValue
+import org.eclipse.uml2.uml.Interface
 import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
@@ -39,6 +42,7 @@ import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Pseudostate
 import org.eclipse.uml2.uml.ReadExtentAction
@@ -57,19 +61,23 @@ import org.eclipse.uml2.uml.Transition
 import org.eclipse.uml2.uml.Trigger
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.TypedElement
+import org.eclipse.uml2.uml.UMLPackage
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
 import org.eclipse.uml2.uml.VariableAction
 import org.eclipse.uml2.uml.Vertex
+import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import org.eclipse.uml2.uml.VisibilityKind
 
 abstract class AbstractJavaGenerator {
     protected IRepository repository
@@ -126,10 +134,7 @@ abstract class AbstractJavaGenerator {
     }
 
     def dispatch CharSequence generateAction(Action toGenerate) {
-        if (toGenerate.cast)
-            toGenerate.sourceAction.generateAction
-        else
-            generateActionProper(toGenerate)
+        generateActionProper(toGenerate)
     }
 
     def generateActivityRootAction(Activity activity) {
@@ -144,7 +149,7 @@ abstract class AbstractJavaGenerator {
     }
 
     def dispatch CharSequence generateAction(InputPin input) {
-        generateActionProper(input.sourceAction)
+        generateAction(input.sourceAction)
     }
 
     def CharSequence generateActionProper(Action toGenerate) {
@@ -152,7 +157,8 @@ abstract class AbstractJavaGenerator {
     }
 
     def generateStatement(Action statementAction) {
-        val isBlock = statementAction instanceof StructuredActivityNode
+        val isBlock = if (statementAction instanceof StructuredActivityNode)
+            !MDDExtensionUtils.isCast(statementAction) && !statementAction.objectInitialization
         val generated = generateAction(statementAction)
         if (isBlock)
             // actually a block
@@ -231,6 +237,7 @@ abstract class AbstractJavaGenerator {
         val thisEndAction = sides.get(0).value
         val otherEndAction = sides.get(1).value
         '''
+
         «generateLinkCreation(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
         «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
     }
@@ -345,15 +352,18 @@ abstract class AbstractJavaGenerator {
                 }
                 case 'Collection': {
                     switch (operation.name) {
-                        case 'size': '''«generateAction(action.target)».size()'''
+                        case 'size': '''((long) «generateAction(action.target)».size())'''
                         case 'includes': '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
                         case 'isEmpty': '''«generateAction(action.target)».isEmpty()'''
                         case 'sum': generateCollectionSum(action)
-                        case 'any': '''«generateAction(action.target)».stream().findFirst().«IF action.operation.getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
+                        case 'one': generateCollectionOne(action)
+                        case 'any': generateCollectionAny(action)
                         case 'asSequence' : '''«IF !action.target.ordered»new ArrayList<«action.target.type.toJavaType»>(«ENDIF»«action.target.generateAction»«IF !action.target.ordered»)«ENDIF»''' 
                         case 'forEach': generateCollectionForEach(action)
                         case 'select': generateCollectionSelect(action)
+                        case 'collect': generateCollectionCollect(action)
                         case 'reduce': generateCollectionReduce(action)
+                        case 'groupBy': generateCollectionGroupBy(action)
                         default: '''«if (operation.getReturnResult != null) 'null' else ''» /*Unsupported Collection operation: «operation.name»*/'''
                     }
                 }
@@ -363,7 +373,12 @@ abstract class AbstractJavaGenerator {
                         default: '''«if (operation.getReturnResult != null) 'null' else ''» /*Unsupported Sequence operation: «operation.name»*/'''
                     }
                 }
-                
+                case 'Grouping': {
+                    switch (operation.name) {
+                        case 'groupCollect': generateGroupingGroupCollect(action)
+                        default: '''«if (operation.getReturnResult != null) 'null' else ''» /*Unsupported Sequence operation: «operation.name»*/'''
+                    }
+                }
                 case 'System': {
                     switch (operation.name) {
                         case 'user': '''null /* TBD */'''
@@ -391,9 +406,33 @@ abstract class AbstractJavaGenerator {
         '''«action.target.generateAction».forEach(«closure.generateActivityAsExpression(true)»)'''
     }
     
+    def CharSequence generateCollectionCollect(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
+    }
+    
     def CharSequence generateCollectionSelect(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure 
         '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
+    }
+    
+    def CharSequence generateCollectionGroupBy(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».stream().collect(Collectors.groupingBy(«closure.generateActivityAsExpression(true)»))'''
+    }
+    
+    def CharSequence generateCollectionAny(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).findFirst().«IF action.operation.getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
+    }
+    
+    def CharSequence generateCollectionOne(CallOperationAction action) {
+        '''«action.target.generateAction».stream().findFirst().«IF action.operation.getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
+    }
+    
+    def CharSequence generateGroupingGroupCollect(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure 
+        '''«action.target.generateAction».values().stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
     
     def dispatch CharSequence doGenerateAction(ConditionalNode node) {
@@ -428,7 +467,48 @@ abstract class AbstractJavaGenerator {
                 return '''«node.findStatements.head.generateAction»'''
 
         // default path, generate as a statement
-        generateStructuredActivityNodeAsBlock(node)
+        if (MDDExtensionUtils.isCast(node))
+            generateStructuredActivityNodeAsCast(node)
+        else if (node.objectInitialization)
+            generateStructuredActivityNodeObjectInitialization(node)    
+        else        
+            generateStructuredActivityNodeAsBlock(node)
+    }
+    
+    def generateStructuredActivityNodeAsCast(StructuredActivityNode node) {
+        if (!(node.inputs.head.sourceAction.objectInitialization))
+            '''((«node.outputs.head.toJavaType») «node.sourceAction.generateAction»)'''
+        else {
+            val classifier = node.outputs.head.type
+            val tupleType = classifier.toJavaType
+            generateConstructorInvocation(tupleType, node.sourceAction.inputs)
+        }
+    }
+
+    def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
+        '''«generateVariables(node)»«node.findTerminals.map[generateStatement].join('\n')»'''
+    }
+
+    def generateVariables(StructuredActivityNode node) {
+        generateVariableBlock(node.variables)
+    }
+
+    def generateVariableBlock(Iterable<Variable> variables) {
+        if(variables.empty) '' else variables.map['''«toJavaType» «name»;'''].join('\n') + '\n'
+    }
+
+    def CharSequence generateStructuredActivityNodeObjectInitialization(StructuredActivityNode node) {
+        val classifier = node.outputs.head.type
+        val tupleType = classifier.toJavaType
+        generateConstructorInvocation(tupleType, node.inputs)
+    }
+    
+    def CharSequence generateConstructorInvocation(String classname, List<InputPin> sources) {
+        '''
+        new «classname»(
+            «sources.generateMany(['''«it.generateAction»'''], ',\n')»
+        )
+        '''
     }
     
     def dispatch CharSequence doGenerateAction(SendSignalAction action) {
@@ -475,9 +555,21 @@ abstract class AbstractJavaGenerator {
     def generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
         val target = action.object
         val value = action.value
+        val asProperty = action.structuralFeature as Property
         val featureName = action.structuralFeature.name
-
+        if (action.object != null && asProperty.likeLinkRelationship)
+            return action.generateAddStructuralFeatureValueActionAsRelationship
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
+    }
+    def generateAddStructuralFeatureValueActionAsRelationship(AddStructuralFeatureValueAction action) {
+        val asProperty = action.structuralFeature as Property
+        val thisEnd = asProperty
+        val otherEnd = asProperty.otherEnd
+        val thisEndAction = action.value
+        val otherEndAction = action.object
+        '''
+        «generateLinkCreation(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
+        «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
     }
     
     def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
@@ -499,18 +591,6 @@ abstract class AbstractJavaGenerator {
 
     def generateDestroyObjectAction(DestroyObjectAction action) {
         '''«action.target.generateAction» = null /* destroy */'''
-    }
-
-    def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
-        '''«generateVariables(node)»«node.findTerminals.map[generateStatement].join('\n')»'''
-    }
-
-    def generateVariables(StructuredActivityNode node) {
-        generateVariableBlock(node.variables)
-    }
-
-    def generateVariableBlock(Iterable<Variable> variables) {
-        if(variables.empty) '' else variables.map['''«toJavaType» «name»;'''].join('\n') + '\n'
     }
 
     def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
@@ -536,20 +616,34 @@ abstract class AbstractJavaGenerator {
             visibility.getName
     }
     
-    def CharSequence generateJavaMethodSignature(Operation operation, VisibilityKind visibility) {
+    def CharSequence toJavaVisibility(NamedElement element) {
+        element.visibility.toJavaVisibility
+    }
+    
+    def CharSequence generateJavaMethodSignature(Operation operation, VisibilityKind visibility, boolean staticOperation) {
         val methodName = operation.name
         '''
         «operation.generateComment»
-        «visibility.toJavaVisibility» «if (operation.static) 'static ' else ''»«operation.javaReturnType» «methodName»(«operation.parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')»)'''
+        «visibility.toJavaVisibility» «if (staticOperation) 'static ' else ''»«operation.javaReturnType» «methodName»(«operation.parameters.generateMany([ p | '''«p.toJavaType» «p.name»''' ], ', ')»)'''
     }    
     
-    def CharSequence generateJavaMethod(Operation operation, VisibilityKind visibility) {
+    def CharSequence generateJavaMethod(Operation operation, VisibilityKind visibility, boolean staticOperation) {
         '''
-        «operation.generateJavaMethodSignature(visibility)» {
+        «operation.generateJavaMethodSignature(visibility, staticOperation)» {
             «operation.activity.generateActivity»
         }
         '''
     }    
+    
+    def Iterable<DataType> getAnonymousDataTypes(Activity activity) {
+        val allActions = activity.bodyNode.findMatchingActions(UMLPackage.Literals.ACTION)
+        return allActions.map[ action |
+            val outputTypes = action.outputs.map[type]
+            val dataTypes = outputTypes.filter(typeof(DataType))
+            val anonymousDataTypes = (dataTypes).filter[anonymousDataType]
+            return anonymousDataTypes
+        ].flatten.toSet
+    }
     
 
     def generateSelfReference() {
@@ -557,13 +651,10 @@ abstract class AbstractJavaGenerator {
     }
     
     def toJavaType(TypedElement element) {
-        var nullable = true
         if (element instanceof MultiplicityElement)
             if (element.multivalued)
                 return '''Collection<«element.type.toJavaType»>'''
-            else if (element.lowerBound > 0)
-                nullable = false
-        element.type.toJavaType(nullable)
+        element.type.toJavaType
     }
     
         
@@ -583,11 +674,11 @@ abstract class AbstractJavaGenerator {
             'ArrayList'
     }
 
-    def toJavaType(Type type) {
+    def String toJavaType(Type type) {
         toJavaType(type, true)
     }
     
-    def toJavaType(Type type, boolean nullable) {
+    def String toJavaType(Type type, boolean nullable) {
         switch (type.kind) {
             case Entity:
                 type.name
@@ -605,13 +696,81 @@ abstract class AbstractJavaGenerator {
                     case 'Boolean': if (nullable) 'Boolean' else 'boolean'
                     default: '''UNEXPECTED PRIMITIVE TYPE: «type.name»'''
                 }
-            case null: type.qualifiedName.toJavaName
+            case null: switch (type) {
+                case type instanceof Interface && type.isSignature : (type as Interface).toJavaClosureType
+                case type instanceof Activity : (type as Activity).generateActivityAsExpression(true).toString
+                case type instanceof DataType && type.visibility == VisibilityKind.PRIVATE_LITERAL : (type as DataType).generateAnonymousDataTypeName                 
+                default : type.qualifiedName.toJavaName
+            }
             default: '''UNEXPECTED KIND: «type.kind»'''
         }
     }
+    
+    def generateAnonymousDataTypeName(DataType type) {
+        '''«type.allAttributes.map[
+            generateAttributeName.toFirstUpper
+        ].join()»Tuple'''.toString    
+    }
+    
+    def generateAttributeName(Property property) {
+        if (property.name != null) property.name else '''«property.type?.name?.toFirstLower»'''.toString;
+    }
+    
+    def toJavaClosureType(Activity activity) {
+        val inputs = activity.closureInputParameters
+        val result = activity.closureReturnParameter
+        if (inputs.size() == 1) {
+            if (result == null)
+                return '''Consumer<«inputs.head.toJavaType»>'''
+            return '''Function<«inputs.head.toJavaType», «result.toJavaType»>'''
+        } else if (inputs.size() == 0) {
+            if (result != null)
+                return '''Supplier<«result.toJavaType»>'''
+        }
+        return '''/*Unsupported closure*/'''
+    }
+    
+    def toJavaClosureType(Interface signature) {
+        val signatureParameters = signature.signatureParameters
+        val inputs = signatureParameters.filterParameters(ParameterDirectionKind.IN_LITERAL)
+        val result = signatureParameters.filterParameters(ParameterDirectionKind.RETURN_LITERAL).head 
+        if (inputs.size() == 1) {
+            if (result == null)
+                return '''Consumer<«inputs.head.toJavaType»>'''
+            return '''Function<«inputs.head.toJavaType», «result.toJavaType»>'''
+        } else if (inputs.size() == 0) {
+            if (result != null)
+                return '''Supplier<«result.toJavaType»>'''
+        }
+        return '''/*Unsupported closure*/'''
+    }
+    
 
     def generateClassReference(Classifier classifier) {
         classifier.name
+    }
+    
+        
+    def generateDataType(DataType dataType) {
+        val visibility = dataType.toJavaVisibility
+        val dataTypeName = if (dataType.anonymousDataType) dataType.generateAnonymousDataTypeName else dataType.name
+        '''
+        «visibility» class «dataTypeName» implements Serializable {
+            «dataType.allAttributes.generateMany['''
+                public final «type.toJavaType» «generateAttributeName»;
+            ''']»
+            
+            public «dataTypeName»(«dataType.allAttributes.generateMany([
+                '''«type.toJavaType» «generateAttributeName»'''
+            ], ', ')») {
+                «dataType.allAttributes.generateMany([
+                  '''this.«generateAttributeName» = «generateAttributeName»;'''  
+                ])»
+            }
+             
+        }
+        
+        '''
     }
     
     def dispatch generateState(State state, StateMachine stateMachine, Class entity) {
@@ -793,7 +952,7 @@ abstract class AbstractJavaGenerator {
                 case value.isVertexLiteral : '''«value.toJavaType».«value.resolveVertexLiteral.name»'''
                 default : 'null'
             }
-            OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression(false)
+            OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression(true)
             InstanceValue case value.instance instanceof EnumerationLiteral: '''«value.instance.namespace.name».«value.instance.name»'''
             default : unsupportedElement(value)
         }

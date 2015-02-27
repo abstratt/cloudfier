@@ -38,7 +38,7 @@ class InterfaceGenerator extends AbstractJavaGenerator {
     }
     
     def generateInterfaceOperation(Operation interfaceOperation) {
-        '''«interfaceOperation.generateJavaMethodSignature(interfaceOperation.visibility)»;'''
+        '''«interfaceOperation.generateJavaMethodSignature(interfaceOperation.visibility, interfaceOperation.static)»;'''
     }
     
 }

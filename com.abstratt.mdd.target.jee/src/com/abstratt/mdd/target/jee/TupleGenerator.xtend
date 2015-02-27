@@ -16,20 +16,7 @@ class TupleGenerator extends AbstractJavaGenerator {
         import java.io.Serializable;
         import java.util.*;
         
-        public class «dataType.name» implements Serializable {
-            «dataType.allAttributes.generateMany['''
-                public final «it.type.toJavaType» «it.name»;
-            ''']»
-            
-            public «dataType.name»(«dataType.allAttributes.generateMany([
-                '''«type.toJavaType» «name»'''
-            ], ', ')») {
-                «dataType.allAttributes.generateMany([
-                  '''this.«name» = «name»;'''  
-                ])»
-            }
-             
-        }
+        «dataType.generateDataType»        
         '''
     }
     
