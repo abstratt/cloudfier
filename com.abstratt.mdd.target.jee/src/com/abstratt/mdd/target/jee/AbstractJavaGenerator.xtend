@@ -76,6 +76,7 @@ import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 
@@ -218,9 +219,14 @@ abstract class AbstractJavaGenerator {
         «generateLinkDestruction(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
     }
     
-    def CharSequence generateLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
+    def generateLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
         if (!thisEnd.navigable) return ''
-        '''«generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».remove(«generateAction(thisEndAction)»)«ELSE» = null«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+        generateLinkDestruction(otherEndAction.generateAction, thisEnd, generateAction(thisEndAction), otherEnd, addSemiColon)
+    }
+    
+    def generateLinkDestruction(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd, boolean addSemiColon) {
+        if (!thisEnd.navigable) return ''
+        '''«targetObject».«thisEnd.name»«IF thisEnd.multivalued».remove(«otherObject»)«ELSE» = null«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
     }
     
     def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
@@ -243,22 +249,27 @@ abstract class AbstractJavaGenerator {
     }
     
     def CharSequence generateLinkCreation(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd, boolean addSemiColon) {
-        if (!thisEnd.navigable) return ''
-        '''
-        «generateAction(otherEndAction)».«thisEnd.name»«IF thisEnd.multivalued».add(«ELSE» = «ENDIF»«generateAction(thisEndAction)»«IF thisEnd.multivalued»)«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
-    }    
+        if (!thisEnd.navigable) 
+            return ''
+        val targetObject = generateAction(otherEndAction)
+        val otherObject = generateAction(thisEndAction)
+        generateLinkCreation(targetObject, thisEnd, otherObject, otherEnd, addSemiColon)
+    }
     
-
+    def generateLinkCreation(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd, boolean addSemiColon) {
+        if (!thisEnd.navigable) return ''
+        '''«targetObject».«thisEnd.name»«IF thisEnd.multivalued».add(«otherObject»)«ELSE» = «otherObject»«ENDIF»«IF addSemiColon && otherEnd.navigable»;«ENDIF»'''
+    }
+    
     def dispatch CharSequence doGenerateAction(CallOperationAction action) {
         generateCallOperationAction(action)
     }
 
     protected def CharSequence generateCallOperationAction(CallOperationAction action) {
         val operation = action.operation
-        val classifier = action.operation.class_
+        val classifier = action.operation.owningClassifier
 
-        // some operations have no class
-        if (classifier == null || classifier.package.hasStereotype("ModelLibrary"))
+        if (classifier.package.hasStereotype("ModelLibrary"))
             generateBasicTypeOperationCall(classifier, action)
         else {
             val target = if (operation.static) generateClassReference(classifier) else generateAction(action.target)
@@ -295,6 +306,10 @@ abstract class AbstractJavaGenerator {
             case 'lowerOrEquals':  if (action.target.type.javaPrimitive) '<='
             case 'greaterOrEquals':  if (action.target.type.javaPrimitive) '>='
             case 'same': '=='
+            default : if (classifier instanceof DataType) 
+                switch (operation.name) {
+                    case 'equals': '=='
+                }
         }
         if (operator != null)
             switch (action.arguments.size()) {
@@ -303,8 +318,6 @@ abstract class AbstractJavaGenerator {
                 case 1: '''(«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»)'''
                 default: '''Unsupported operation «action.operation.name»'''
             }
-        else if (classifier == null) '''Unsupported null target operation "«operation.name»"'''
-        else if (classifier.name.equals()) '''Unsupported null target operation "«operation.name»"'''
         else
             switch (classifier.name) {
                 case 'Primitive':
@@ -317,7 +330,6 @@ abstract class AbstractJavaGenerator {
                         case 'greaterOrEquals': '''«action.target.generateAction».compareTo(«action.arguments.head.generateAction») > 0'''
                         default: '''Unsupported Primitive operation «operation.name»'''
                     }
-                
                 case 'Date':
                     switch (operation.name) {
                         case 'year': '''(«generateAction(action.target)».getYear() + 1900L)'''
@@ -558,10 +570,15 @@ abstract class AbstractJavaGenerator {
         val asProperty = action.structuralFeature as Property
         val featureName = action.structuralFeature.name
         if (action.object != null && asProperty.likeLinkRelationship)
-            return action.generateAddStructuralFeatureValueActionAsRelationship
+            return 
+                if (value.nullValue)
+                    action.generateAddStructuralFeatureValueActionAsUnlinking
+                else
+                    action.generateAddStructuralFeatureValueActionAsLinking
+                    
         '''«generateAction(target)».«featureName» = «generateAction(value)»'''
     }
-    def generateAddStructuralFeatureValueActionAsRelationship(AddStructuralFeatureValueAction action) {
+    def generateAddStructuralFeatureValueActionAsLinking(AddStructuralFeatureValueAction action) {
         val asProperty = action.structuralFeature as Property
         val thisEnd = asProperty
         val otherEnd = asProperty.otherEnd
@@ -569,8 +586,22 @@ abstract class AbstractJavaGenerator {
         val otherEndAction = action.object
         '''
         «generateLinkCreation(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
-        «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
+        «generateLinkCreation(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»
+        '''.toString.trim
     }
+    
+    def generateAddStructuralFeatureValueActionAsUnlinking(AddStructuralFeatureValueAction action) {
+        val asProperty = action.structuralFeature as Property
+        val thisEnd = asProperty
+        val otherEnd = asProperty.otherEnd
+        val thisEndAction = action.value
+        val otherEndAction = action.object
+        '''
+        «generateLinkDestruction('''«otherEndAction.generateAction».«thisEnd.name»''', otherEnd, otherEndAction.generateAction, thisEnd, true)»
+        «generateLinkDestruction(otherEndAction.generateAction, thisEnd, thisEndAction.generateAction, otherEnd, false)»
+        '''.toString.trim
+    }
+    
     
     def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
         '''«action.value.generateValue»'''
