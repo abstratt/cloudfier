@@ -37,7 +37,7 @@ public class BasicTargetTests extends AbstractRepositoryBuildingTests {
         source += "  class Class1\n";
         source += "      static operation query1() : Class2[*];\n";
         source += "      begin\n";
-        source += "          return (((Class1 extent.collect((a : Class1) : Class2 { null }) as Class2).collect((a : Class2) : Class1 { null }) as Class1).collect((a : Class1) : Class2 { null }) as Class2);\n";
+        source += "          return Class1 extent.collect((a : Class1) : Class2 { null }).collect((a : Class2) : Class1 { null }).collect((a : Class1) : Class2 { null });\n";
         source += "      end;\n";
         source += "  end;\n";
         source += "  class Class2\n";
