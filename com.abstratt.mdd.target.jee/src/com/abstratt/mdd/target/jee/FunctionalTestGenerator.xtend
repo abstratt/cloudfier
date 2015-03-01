@@ -1,19 +1,19 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.TemplateUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import org.eclipse.uml2.uml.VisibilityKind
-import org.eclipse.uml2.uml.Action
+import static extension com.abstratt.mdd.core.util.TemplateUtils.*
 
 class FunctionalTestGenerator extends EntityGenerator {
 
@@ -96,9 +96,9 @@ class FunctionalTestGenerator extends EntityGenerator {
         '''
     }
 
-    override CharSequence generateBasicTypeOperationCall(Classifier classifier, CallOperationAction action) {
+    override CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
         val operation = action.operation
-
+        val classifier = action.operationTarget 
         if (classifier != null)
             return switch (classifier.qualifiedName) {
                 case 'mdd_types::Assert':
@@ -106,14 +106,14 @@ class FunctionalTestGenerator extends EntityGenerator {
                         case 'isNull': '''assertNull(«generateAction(action.arguments.head)»)'''
                         case 'isNotNull': '''assertNotNull(«generateAction(action.arguments.head)»)'''
                         case 'isTrue': '''assertTrue(«generateAction(action.arguments.head)»)'''
-                        case 'areEqual': '''assertEquals(«generateAction(action.arguments.head)», «generateAction(
-                            action.arguments.tail.head)»)'''
+                        case 'areEqual':
+                            '''assertEquals(«generateAction(action.arguments.head)», «generateAction(action.arguments.last)»)'''
                         default: '''Unsupported Assert operation: «operation.name»'''
                     }
                 default:
-                    super.generateBasicTypeOperationCall(classifier, action)
+                    super.generateBasicTypeOperationCall(action)
             }
-        super.generateBasicTypeOperationCall(classifier, action)
+        super.generateBasicTypeOperationCall(action)
     }
     
     def boolean isAssertion(Action action) {
