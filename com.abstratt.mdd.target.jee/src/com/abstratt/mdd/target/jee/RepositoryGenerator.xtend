@@ -25,6 +25,7 @@ class RepositoryGenerator extends EntityGenerator {
             
             «entity.generateCreate»
             «entity.generateFind»
+            «entity.generateDelete»
         }
         '''
     }
@@ -40,8 +41,18 @@ class RepositoryGenerator extends EntityGenerator {
     
     def generateFind(Classifier entity) {
         '''
-        public «entity.name» find(Serializable id) {
+        public «entity.name» find(Object id) {
             return entityManager.find(«entity.name».class, id);
+        }
+        '''
+    }
+    
+    def generateDelete(Classifier entity) {
+        '''
+        public void delete(Object id) {
+            «entity.name» found = entityManager.find(«entity.name».class, id);
+            if (found != null)
+                entityManager.remove(found);
         }
         '''
     }

@@ -40,6 +40,7 @@ class CRUDTestGenerator extends EntityGenerator {
                     this.«entityClass.name.toFirstLower»Repository.entityManager = this.em; 
                 }
                 «entityClass.generateCreateTest»
+                «entityClass.generateDeleteTest»
                 «generateTearDown»
             } 
         '''
@@ -55,6 +56,19 @@ class CRUDTestGenerator extends EntityGenerator {
             «entityClass.name» retrieved = «entityClass.name.toFirstLower»Repository.find(created.getId());
             assertNotNull(retrieved);
             assertEquals(created.getId(), retrieved.getId());
+        }
+        '''
+    }
+    
+    def generateDeleteTest(Class entityClass) {
+        '''
+        @Test
+        public void delete() {
+            «entityClass.name» toCreate = new «entityClass.name»(); 
+            Object id = «entityClass.name.toFirstLower»Repository.create(toCreate).getId();
+            assertNotNull(«entityClass.name.toFirstLower»Repository.find(id));
+            «entityClass.name.toFirstLower»Repository.delete(id);
+            assertNull(«entityClass.name.toFirstLower»Repository.find(id));
         }
         '''
     }
