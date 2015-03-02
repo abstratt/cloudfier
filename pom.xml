@@ -66,6 +66,7 @@
         <module>com.abstratt.mdd.target.sql</module>
         <module>com.abstratt.mdd.target.mean</module>
         <module>com.abstratt.mdd.target.jee</module>        
+        <module>com.abstratt.mdd.target.jse</module>                
 		<module>com.abstratt.mdd.target.engine.gstring</module>
 		<module>com.abstratt.kirra.mdd.rest</module>
 		<module>com.abstratt.kirra.mdd.rest.impl.v1</module>

@@ -62,7 +62,8 @@
       <plugin id="com.abstratt.mdd.target.core"/>
       <plugin id="com.abstratt.mdd.target.engine.gstring"/>
       <plugin id="com.abstratt.mdd.target.mean"/>
-      <plugin id="com.abstratt.mdd.target.jee"/>      
+      <plugin id="com.abstratt.mdd.target.jee"/>
+      <plugin id="com.abstratt.mdd.target.jse"/>      
       <plugin id="com.abstratt.modelrenderer"/>
       <plugin id="com.abstratt.nodestore"/>
       <plugin id="com.abstratt.nodestore.jdbc"/>
