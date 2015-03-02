@@ -13,7 +13,6 @@ import org.eclipse.uml2.uml.Signal
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import org.eclipse.uml2.uml.Interface
 import org.eclipse.uml2.uml.DataType
-import org.eclipse.uml2.uml.VisibilityKind
 
 class EntityMapper implements ITopLevelMapper<Classifier> {
     
@@ -64,12 +63,16 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         throw new UnsupportedOperationException
     }
     
+    def EntityGenerator createEntityGenerator(IRepository repository) {
+        new EntityGenerator(repository)
+    }
+    
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val result = new LinkedHashMap<String, CharSequence>()
         
         val entities = appPackages.entities
-        val entityGenerator = new EntityGenerator(repository)
+        val entityGenerator = createEntityGenerator(repository)
         result.putAll(entities.toMap[generateEntityFileName].mapValues[entityGenerator.generateEntity(it)])
 
         val services = appPackages.entities.filter[ownedOperations.exists[public && static]]

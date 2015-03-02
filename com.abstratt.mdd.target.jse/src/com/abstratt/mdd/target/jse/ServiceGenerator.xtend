@@ -20,6 +20,7 @@ class ServiceGenerator extends EntityGenerator {
         «entity.generateImports»
         
         public class «entity.name»Service {
+            «generateMany(findTriggerableSignals(serviceOperations), [generateSignal])»
             «entity.generateAnonymousDataTypes»
             «serviceOperations.generateMany[generateServiceOperation]»
         }

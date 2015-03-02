@@ -102,6 +102,7 @@ class EntityGenerator extends AbstractJavaGenerator {
         val derivedRelationships = entity.entityRelationships.filter[derived]
         val privateOperations = entity.operations.filter[!action && !finder]
         val hasState = !entity.findStateProperties.empty
+        val signals = findTriggerableSignals(actionOperations + privateOperations)
         
         val ports = entity.allAttributes.filter(typeof(Port))
         
@@ -143,20 +144,21 @@ class EntityGenerator extends AbstractJavaGenerator {
                     
                     «generateMany(ports, [generatePort])»
                 «ENDIF»
-                
-            
+                «IF !signals.empty»
+                    /*************************** SIGNALS ***************************/
+                    
+                    «generateMany(signals, [generateSignal])»
+                «ENDIF»
                 «IF !attributes.empty»
                     /*************************** ATTRIBUTES ***************************/
                     
                     «generateMany(attributes, [generateAttribute])»
                 «ENDIF»
-                
                 «IF !relationships.empty»
                     /*************************** RELATIONSHIPS ***************************/
                     
                     «generateMany(relationships, [generateRelationship])»
                 «ENDIF»
-                
                 
 «««                «IF !attributeInvariants.empty»
 «««                    /*************************** INVARIANTS ***************************/
@@ -281,6 +283,10 @@ class EntityGenerator extends AbstractJavaGenerator {
 
     def generateAttributeInvariants(Iterable<Constraint> constraints) {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
+    }
+    
+    def CharSequence generateSignal(Signal signal) {
+        ''''''
     }
 
     override def generateSendSignalAction(SendSignalAction action) {

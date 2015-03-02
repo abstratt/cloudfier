@@ -12,6 +12,7 @@ Require-Bundle: com.abstratt.mdd.target.core,
  com.abstratt.kirra.mdd.core,
  com.abstratt.kirra.mdd.schema,
  org.apache.commons.lang3,
- org.apache.commons.io
+ org.apache.commons.io,
+ com.abstratt.mdd.target.jse
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.abstratt.mdd.target.jee

@@ -7,8 +7,13 @@ import com.abstratt.mdd.core.target.spi.TargetUtils
 import java.util.LinkedHashMap
 import java.util.List
 import org.eclipse.uml2.uml.Class
+import java.io.InputStream
 
 class ApplicationMapper implements ITopLevelMapper<Class> {
+    
+    def InputStream getTemplateContents(String path) {
+        getClass().getResourceAsStream('''/templates/«path»''')
+    } 
     
     override mapFileName(Class element) {
         throw new UnsupportedOperationException
@@ -37,8 +42,7 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
         )
         repository.properties.forEach[key, value| replacements.put(key.toString(), value.toString)]
         val result = new LinkedHashMap<String, CharSequence>()
-        val getContents = [ String path | ApplicationMapper.getResourceAsStream('''/templates/«path»''') ]
-        result.putAll(#['pom.xml'].toInvertedMap[ name | TargetUtils.merge(getContents.apply(name), replacements)])
+        result.putAll(#['pom.xml'].toInvertedMap[ name | TargetUtils.merge(getTemplateContents(name), replacements)])
         return result
     }    
 }
