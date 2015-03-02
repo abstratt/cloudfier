@@ -6,6 +6,10 @@ import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.Type
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
+import com.abstratt.kirra.TypeRef.TypeKind
 
 class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
     protected IRepository repository
@@ -77,7 +81,7 @@ class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
         @Inject @Transient «super.generatePort(port)»
         '''
     }
-
+    
     override def generateSendSignalAction(SendSignalAction action) {
         '''/* generateSendSignalAction - TBD */'''
 //        val eventName = '''«action.signal.name.toFirstLower»Event'''

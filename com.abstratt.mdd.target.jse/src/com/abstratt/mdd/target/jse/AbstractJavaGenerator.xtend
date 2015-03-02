@@ -1042,6 +1042,23 @@ abstract class AbstractJavaGenerator {
                 case 'Double' : '0.0'
                 case 'Date' : 'new Date()'
                 case 'String' : '""'
+                case 'Memo' : '""'
+            }
+            default : null
+        }
+    }
+    
+    def generateSampleValue(Type type) {
+        switch (type) {
+            StateMachine : '''«type.name».«if (type.vertices.size > 1) type.vertices.findFirst[!it.initial] else type.initialVertex»'''
+            Enumeration : '''«type.name».«type.ownedLiterals.last.name»'''
+            Class : switch (type.name) {
+                case 'Boolean' : 'true'
+                case 'Integer' : '100L'
+                case 'Double' : '100.0'
+                case 'Date' : 'new Date(new Date().getTime() + 24 * 60 * 60 * 1000L)'
+                case 'String' : '"A string value"'
+                case 'Memo' : '"A memo value"'
             }
             default : null
         }
