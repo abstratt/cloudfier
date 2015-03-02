@@ -113,29 +113,11 @@ class EntityGenerator extends AbstractJavaGenerator {
             «entity.generateImports»
             
             «entity.generateComment»
-            public class «entity.name» {
-                
-                private final static Collection<«entity.name»> allInstances = new LinkedList<«entity.name»>();
-                
-                public static Collection<«entity.name»> extent() {
-                    return Collections.unmodifiableCollection(allInstances);
-                }
-                
-                public static «entity.name» objectCreated(«entity.name» created) {
-                    allInstances.add(created);
-                    return created;
-                }
-                
-                public static «entity.name» objectDestroyed(«entity.name» destroyed) {
-                    allInstances.remove(destroyed);
-                    return destroyed;
-                }
-                
-                public static void zap() {
-                    allInstances.clear();                    
-                }
+            «entity.generateEntityAnnotations»public class «entity.name» «entity.generateEntityGenealogy»{
                 
                 «entity.generateAnonymousDataTypes»
+                
+                «entity.generateEntityId»
 
                 «entity.generateProviders»
                 
@@ -201,9 +183,43 @@ class EntityGenerator extends AbstractJavaGenerator {
                     «entity.findStateProperties.map[it.type as StateMachine].head.generateStateMachine(entity)»
                     
                 «ENDIF»
+                
+                private final static Collection<«entity.name»> allInstances = new LinkedList<«entity.name»>();
+                
+                public static Collection<«entity.name»> extent() {
+                    return Collections.unmodifiableCollection(allInstances);
+                }
+                
+                public static «entity.name» objectCreated(«entity.name» created) {
+                    allInstances.add(created);
+                    return created;
+                }
+                
+                public static «entity.name» objectDestroyed(«entity.name» destroyed) {
+                    allInstances.remove(destroyed);
+                    return destroyed;
+                }
+                
+                public static void zap() {
+                    allInstances.clear();                    
+                }
             }
         '''
     }
+    
+    def generateEntityGenealogy(Class class1) {
+        ''
+    }
+    
+    def generateEntityAnnotations(Class class1) {
+        ''
+    }
+    
+    def generateEntityId(Class entity) {
+        ''
+    }
+    
+    
     
     def findTriggerableSignals(Iterable<Operation> operations) {
         operations.filter[op | op.activity != null].map[op | 

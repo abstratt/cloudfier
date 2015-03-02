@@ -7,9 +7,7 @@
                class="com.abstratt.mdd.target.jse.SystemMapper"/>
          <mapper artifactType="entity"
                class="com.abstratt.mdd.target.jee.EntityMapper"/>
-         <mapper artifactType="repository"
-               class="com.abstratt.mdd.target.jse.FunctionalTestMapper"/>
          <mapper artifactType="application"
-               class="com.abstratt.mdd.target.jse.ApplicationMapper"/>               
+               class="com.abstratt.mdd.target.jee.ApplicationMapper"/>               
    </extension>
 </plugin>

@@ -8,11 +8,16 @@ import java.util.LinkedHashMap
 import java.util.List
 import org.eclipse.uml2.uml.Class
 import java.io.InputStream
+import java.io.IOException
 
 class ApplicationMapper implements ITopLevelMapper<Class> {
     
     def InputStream getTemplateContents(String path) {
-        getClass().getResourceAsStream('''/templates/«path»''')
+        val templatePath = '''/templates/«path»'''
+        val templateContents = getClass().getResourceAsStream(templatePath)
+        if (templateContents == null)
+            throw new IOException("Resource not found: " + templatePath)
+        return templateContents
     } 
     
     override mapFileName(Class element) {

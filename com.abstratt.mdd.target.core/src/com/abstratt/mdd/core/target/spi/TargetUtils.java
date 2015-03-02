@@ -97,7 +97,7 @@ public class TargetUtils {
         } finally {
             IOUtils.closeQuietly(templateContents);
         }
-        Pattern pattern = Pattern.compile("(\\{([a-zA-Z_]+)\\})");
+        Pattern pattern = Pattern.compile("(\\{([a-zA-Z_.]+)\\})");
         for (int i = 0; i < read.size(); i++) {
             String line = read.get(i);
             Matcher matcher = pattern.matcher(line);
