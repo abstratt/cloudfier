@@ -61,13 +61,6 @@ class CRUDTestGenerator extends EntityGenerator {
             super.generateDefaultValue(type)
     }
     
-    override generateSampleValue(Type type) {
-        if (type.primitive && type.name == 'Date')
-            'new Timestamp(new Date().getTime() + 24 * 60 * 60 * 1000L)'
-        else
-            super.generateSampleValue(type)
-    }
-    
     def generateCreateTest(Class entityClass) {
         val property = entityClass.properties.findFirst[!derived]
         val sampleValue = property.type.generateDefaultValue
