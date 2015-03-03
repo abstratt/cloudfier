@@ -8,8 +8,6 @@ import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Type
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
-import com.abstratt.kirra.TypeRef.TypeKind
 
 class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
     protected IRepository repository
@@ -30,6 +28,10 @@ class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
         '''«relationship.toJpaRelationshipAnnotation» «super.generateRelationship(relationship)»'''
     }
     
+    override generateAttribute(Property attribute) {
+        '''«attribute.toJpaPropertyAnnotation» «super.generateAttribute(attribute)»'''
+    }
+    
     def toJpaRelationshipAnnotation(Property relationship) {
         val multivalued = relationship.multivalued
         val thisSideMultivalue = relationship.otherEnd != null && relationship.otherEnd.multivalued
@@ -39,6 +41,15 @@ class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
             if (thisSideMultivalue) '@ManyToOne' else '@OneToOne'
         }    
     }
+
+    def toJpaPropertyAnnotation(Property property) {
+        val values = #{'nullable' -> (property.lower == 0), 'updatable' -> !property.readOnly, 'unique' -> property.ID }
+        val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'unique' -> false }
+        val nonDefaults = values.filter[ key, value | value != defaultValues.get(key) ]
+        val pairs = nonDefaults.entrySet.map['''«key»=«value»''']
+        '''@Column«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»''' 
+    }
+
     
     override generateEntityId(Class entity) {
         '''

@@ -5,6 +5,8 @@ import org.eclipse.uml2.uml.Class
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import org.eclipse.uml2.uml.Type
 import com.abstratt.kirra.TypeRef
+import org.eclipse.uml2.uml.Property
+import java.util.UUID
 
 class CRUDTestGenerator extends EntityGenerator {
 
@@ -61,32 +63,54 @@ class CRUDTestGenerator extends EntityGenerator {
             super.generateDefaultValue(type)
     }
     
+    def generateDefaultValue(Property property) {
+        if (property.ID && property.type.primitive) {
+            if (property.type.name == 'String')
+                return '''"«UUID.randomUUID.toString»"'''
+        }
+        property.type.generateDefaultValue
+    }
+    
+    def getRequiredProperties(Class entityClass) {
+        entityClass.properties.filter[lower > 0 && !derived && (defaultValue == null)]
+    }
+    
+    def generateValueAssignments(Iterable<Property> properties, String target) {
+        '''
+        «FOR property : properties»
+        «target».«property.name» = «property.generateDefaultValue»;
+        «ENDFOR»    
+        '''
+    }
+    
     def generateCreateTest(Class entityClass) {
-        val property = entityClass.properties.findFirst[!derived]
-        val sampleValue = property.type.generateDefaultValue
-        
         '''
         @Test
         public void create() {
             «entityClass.name» toCreate = new «entityClass.name»();
-            toCreate.«property.name» = «sampleValue»; 
+            «entityClass.requiredProperties.generateValueAssignments('toCreate')»
             «entityClass.name» created = «entityClass.name.toFirstLower»Repository.create(toCreate);
             Object id = created.getId();
             assertNotNull(id);
             em.clear();
             «entityClass.name» retrieved = «entityClass.name.toFirstLower»Repository.find(id);
             assertNotNull(retrieved);
-            assertEquals(id, retrieved.getId()); 
+            assertEquals(id, retrieved.getId());
+            «FOR property : entityClass.requiredProperties»
             «assertEquals(property.type, '''created.«property.name»''', '''retrieved.«property.name»''')»;
+            «ENDFOR»
         }
         '''
     }
     
     def assertEquals(Type type, CharSequence actual, CharSequence expected) {
-        if (type.primitive && type.name == 'Date')
-            '''assertTrue((«actual».getTime() - «expected».getTime()) < 10000)'''
-        else    
-            '''assertEquals(«actual», «expected»)'''
+        if (type.primitive) {
+            if (type.name == 'Date')
+                return '''assertTrue((«actual».getTime() - «expected».getTime()) < 10000)'''
+            else if (type.name == 'Double')    
+                return '''assertEquals(«actual», «expected», 0.00000001)'''
+        }
+        '''assertEquals(«actual», «expected»)'''
     }
     
     def generateRetrieveTest(Class entityClass) {
@@ -94,8 +118,10 @@ class CRUDTestGenerator extends EntityGenerator {
         @Test
         public void retrieve() {
             «entityClass.name» toCreate1 = new «entityClass.name»();
+            «entityClass.requiredProperties.generateValueAssignments('toCreate1')»
             «entityClass.name.toFirstLower»Repository.create(toCreate1);
             «entityClass.name» toCreate2 = new «entityClass.name»();
+            «entityClass.requiredProperties.generateValueAssignments('toCreate2')»
             «entityClass.name.toFirstLower»Repository.create(toCreate2);
             em.clear();
             «entityClass.name» retrieved1 = «entityClass.name.toFirstLower»Repository.find(toCreate1.getId());
@@ -110,14 +136,17 @@ class CRUDTestGenerator extends EntityGenerator {
     }
     
     def generateUpdateTest(Class entityClass) {
-        val property = entityClass.properties.findFirst[!derived]
-        val originalValue = property.type.generateDefaultValue
+        val property = entityClass.requiredProperties.findFirst[!readOnly]
+        
+        if (property == null)
+            return ''
+        
         val newValue = property.type.generateSampleValue
         '''
         @Test
         public void update() {
-            «entityClass.name» toCreate = new «entityClass.name»(); 
-            toCreate.«property.name» = «originalValue»; 
+            «entityClass.name» toCreate = new «entityClass.name»();
+            «entityClass.requiredProperties.generateValueAssignments('toCreate')» 
             Object id = «entityClass.name.toFirstLower»Repository.create(toCreate).getId();
             em.flush();
             em.clear();
@@ -137,8 +166,9 @@ class CRUDTestGenerator extends EntityGenerator {
         '''
         @Test
         public void delete() {
-            «entityClass.name» toCreate = new «entityClass.name»(); 
-            Object id = «entityClass.name.toFirstLower»Repository.create(toCreate).getId();
+            «entityClass.name» toDelete = new «entityClass.name»();
+            «entityClass.requiredProperties.generateValueAssignments('toDelete')» 
+            Object id = «entityClass.name.toFirstLower»Repository.create(toDelete).getId();
             assertNotNull(«entityClass.name.toFirstLower»Repository.find(id));
             «entityClass.name.toFirstLower»Repository.delete(id);
             assertNull(«entityClass.name.toFirstLower»Repository.find(id));

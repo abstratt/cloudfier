@@ -1034,7 +1034,7 @@ abstract class AbstractJavaGenerator {
     
     def generateDefaultValue(Type type) {
         switch (type) {
-            StateMachine : '''«type.name».«type.initialVertex.name»'''
+            StateMachine : '''«type.context.name».«type.name».«type.initialVertex.name»'''
             Enumeration : '''«type.name».«type.ownedLiterals.head.name»'''
             Class : switch (type.name) {
                 case 'Boolean' : 'false'
@@ -1050,7 +1050,7 @@ abstract class AbstractJavaGenerator {
     
     def generateSampleValue(Type type) {
         switch (type) {
-            StateMachine : '''«type.name».«if (type.vertices.size > 1) type.vertices.findFirst[!it.initial] else type.initialVertex»'''
+            StateMachine : '''«type.context.name».«type.name».«(if (type.vertices.size > 1) type.vertices.findFirst[!it.initial] else type.initialVertex).name»'''
             Enumeration : '''«type.name».«type.ownedLiterals.last.name»'''
             Class : switch (type.name) {
                 case 'Boolean' : 'true'
