@@ -12,10 +12,19 @@ class BehaviorlessClassGenerator extends PlainJavaGenerator {
     }
     
     override generateActivity(Activity a) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        throw new UnsupportedOperationException("This generator cannot generate behavior")
     }
 
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        throw new UnsupportedOperationException("This generator cannot generate behavior")
     }
+    
+    override generateActivityAsExpression(Activity toGenerate) {
+        throw new UnsupportedOperationException("This generator cannot generate behavior")
+    }
+
+    override generateActivityAsExpression(Activity toGenerate, boolean asClosure) {
+        throw new UnsupportedOperationException("This generator cannot generate behavior")
+    }
+    
 }

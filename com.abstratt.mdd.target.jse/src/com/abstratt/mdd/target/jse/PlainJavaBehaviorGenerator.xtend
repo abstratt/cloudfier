@@ -75,7 +75,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
             «generateActivityRootAction(activity)»
         '''
     }
-
+    
     def dispatch CharSequence generateAction(Action toGenerate) {
         generateActionProper(toGenerate)
     }
@@ -679,6 +679,10 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
 
     def CharSequence generateReadSelfAction(ReadSelfAction action) {
         contextStack.peek.generateCurrentReference
+    }
+    
+    override CharSequence generateActivityAsExpression(Activity toGenerate) {
+        return this.generateActivityAsExpression(toGenerate, false, Arrays.<Parameter> asList());
     }
 
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure) {

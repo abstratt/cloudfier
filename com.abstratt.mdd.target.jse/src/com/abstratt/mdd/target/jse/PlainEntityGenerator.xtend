@@ -28,7 +28,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
 
-class PlainEntityGenerator extends PlainJavaGenerator {
+class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
     protected String applicationName
 

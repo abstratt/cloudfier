@@ -41,7 +41,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 
-abstract class PlainJavaGenerator extends AbstractGenerator {
+abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -147,8 +147,6 @@ abstract class PlainJavaGenerator extends AbstractGenerator {
     def CharSequence generateJavaMethodBody(Operation operation) {
         operation.activity.generateActivity
     }
-    
-    def abstract CharSequence generateActivity(Activity a)
     
     def Iterable<DataType> getAnonymousDataTypes(Activity activity) {
         val allActions = activity.bodyNode.findMatchingActions(UMLPackage.Literals.ACTION)
@@ -294,17 +292,6 @@ abstract class PlainJavaGenerator extends AbstractGenerator {
         val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
         predicateActivity.generateActivityAsExpression        
     }
-
-    def CharSequence generateActivityAsExpression(Activity toGenerate) {
-        generateActivityAsExpression(toGenerate, false)
-    }
-
-
-    def CharSequence generateActivityAsExpression(Activity toGenerate, boolean asClosure) {
-        generateActivityAsExpression(toGenerate, false, Arrays.<Parameter>asList())
-    }
-    
-    def abstract CharSequence generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters)
 
     def static CharSequence unsupportedElement(Element e) {
         unsupportedElement(e, if (e instanceof NamedElement) e.qualifiedName else null)

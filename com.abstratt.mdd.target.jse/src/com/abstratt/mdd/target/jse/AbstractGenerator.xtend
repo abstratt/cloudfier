@@ -18,7 +18,6 @@ abstract class AbstractGenerator {
     
     protected Collection<Package> appPackages
     
-    
     new(IRepository repository) {
         this.repository = repository
         this.appPackages = repository.getTopLevelPackages(null).applicationPackages
