@@ -6,13 +6,13 @@ import java.util.LinkedHashMap
 import java.util.List
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.DataType
 import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.Interface
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Signal
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import org.eclipse.uml2.uml.Interface
-import org.eclipse.uml2.uml.DataType
 
 class EntityMapper implements ITopLevelMapper<Classifier> {
     
@@ -63,8 +63,8 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         throw new UnsupportedOperationException
     }
     
-    def EntityGenerator createEntityGenerator(IRepository repository) {
-        new EntityGenerator(repository)
+    def PlainEntityGenerator createEntityGenerator(IRepository repository) {
+        new PlainEntityGenerator(repository)
     }
     
     override mapAll(IRepository repository) {
@@ -75,8 +75,8 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         val entityGenerator = createEntityGenerator(repository)
         result.putAll(entities.toMap[generateEntityFileName].mapValues[entityGenerator.generateEntity(it)])
 
-        val services = appPackages.entities.filter[ownedOperations.exists[public && static]]
-        val serviceGenerator = new ServiceGenerator(repository)
+        val services = findEntitiesWithServices(entities)
+        val serviceGenerator = createServiceGenerator(repository)
         result.putAll(services.toMap[generateServiceFileName].mapValues[serviceGenerator.generateService(it)])
         
         val interfaces = appPackages.map[ownedTypes.filter(typeof(Interface))].flatten
@@ -96,5 +96,13 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         result.putAll(signals.toMap[generateSignalFileName].mapValues[signalGenerator.generateSignal(it)])
         
         return result
+    }
+    
+    def findEntitiesWithServices(List<Class> entities) {
+        entities.filter[ownedOperations.exists[public && static]]
+    }
+    
+    def createServiceGenerator(IRepository repository) {
+        new ServiceGenerator(repository)
     }    
 }

@@ -7,8 +7,9 @@ import org.eclipse.uml2.uml.Type
 import com.abstratt.kirra.TypeRef
 import org.eclipse.uml2.uml.Property
 import java.util.UUID
+import com.abstratt.mdd.target.jse.PlainEntityGenerator
 
-class CRUDTestGenerator extends EntityGenerator {
+class CRUDTestGenerator extends PlainEntityGenerator {
 
     new(IRepository repository) {
         super(repository)
@@ -30,28 +31,38 @@ class CRUDTestGenerator extends EntityGenerator {
             import javax.inject.*;
             import javax.ejb.*;
             import java.sql.*;
+            import util.PersistenceHelper;
             
             
             import «entityClass.nearestPackage.toJavaPackage».*;
             
             public class «entityClass.name»CRUDTest {
+                private «entityClass.generateServiceClassName» «entityClass.generateServiceReference»;
+            
                 private EntityManager em;
                 private EntityTransaction tx;
-                private «entityClass.name»Repository «entityClass.name.toFirstLower»Repository;
             
                 @Before
                 public void initEM() {
                     this.em = Persistence.createEntityManagerFactory("integration-test").createEntityManager();
+                    util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();
-                    this.«entityClass.name.toFirstLower»Repository = new «entityClass.name»Repository();
-                    this.«entityClass.name.toFirstLower»Repository.entityManager = this.em; 
+                    this.«entityClass.generateServiceReference» = new «entityClass.generateServiceClassName»();
                 }
+                
+                @After
+                public void tearDown() {
+                    if (tx != null)
+                        tx.rollback();
+                    if (em != null)
+                        em.close();    
+                }
+                
                 «entityClass.generateCreateTest»
                 «entityClass.generateRetrieveTest»
                 «entityClass.generateUpdateTest»
                 «entityClass.generateDeleteTest»
-                «generateTearDown»
             } 
         '''
     }
@@ -89,11 +100,11 @@ class CRUDTestGenerator extends EntityGenerator {
         public void create() {
             «entityClass.name» toCreate = new «entityClass.name»();
             «entityClass.requiredProperties.generateValueAssignments('toCreate')»
-            «entityClass.name» created = «entityClass.name.toFirstLower»Repository.create(toCreate);
+            «entityClass.name» created = «entityClass.generateServiceReference».create(toCreate);
             Object id = created.getId();
             assertNotNull(id);
             em.clear();
-            «entityClass.name» retrieved = «entityClass.name.toFirstLower»Repository.find(id);
+            «entityClass.name» retrieved = «entityClass.generateServiceReference».find(id);
             assertNotNull(retrieved);
             assertEquals(id, retrieved.getId());
             «FOR property : entityClass.requiredProperties»
@@ -119,16 +130,16 @@ class CRUDTestGenerator extends EntityGenerator {
         public void retrieve() {
             «entityClass.name» toCreate1 = new «entityClass.name»();
             «entityClass.requiredProperties.generateValueAssignments('toCreate1')»
-            «entityClass.name.toFirstLower»Repository.create(toCreate1);
+            «entityClass.generateServiceReference».create(toCreate1);
             «entityClass.name» toCreate2 = new «entityClass.name»();
             «entityClass.requiredProperties.generateValueAssignments('toCreate2')»
-            «entityClass.name.toFirstLower»Repository.create(toCreate2);
+            «entityClass.generateServiceReference».create(toCreate2);
             em.clear();
-            «entityClass.name» retrieved1 = «entityClass.name.toFirstLower»Repository.find(toCreate1.getId());
+            «entityClass.name» retrieved1 = «entityClass.generateServiceReference».find(toCreate1.getId());
             assertNotNull(retrieved1);
             assertEquals(toCreate1.getId(), retrieved1.getId());
             
-            «entityClass.name» retrieved2 = «entityClass.name.toFirstLower»Repository.find(toCreate2.getId());
+            «entityClass.name» retrieved2 = «entityClass.generateServiceReference».find(toCreate2.getId());
             assertNotNull(retrieved2);
             assertEquals(toCreate2.getId(), retrieved2.getId());
         }
@@ -147,19 +158,25 @@ class CRUDTestGenerator extends EntityGenerator {
         public void update() {
             «entityClass.name» toCreate = new «entityClass.name»();
             «entityClass.requiredProperties.generateValueAssignments('toCreate')» 
-            Object id = «entityClass.name.toFirstLower»Repository.create(toCreate).getId();
-            em.flush();
-            em.clear();
-            «entityClass.name» retrieved = «entityClass.name.toFirstLower»Repository.find(id);
+            Object id = «entityClass.generateServiceReference».create(toCreate).getId();
+            PersistenceHelper.flush(true);
+            «entityClass.name» retrieved = «entityClass.generateServiceReference».find(id);
             «property.toJavaType» originalValue = retrieved.«property.name»;
             retrieved.«property.name» = «newValue»;
-            «entityClass.name.toFirstLower»Repository.update(retrieved);
-            em.flush();
-            em.clear();
-            «entityClass.name» updated = «entityClass.name.toFirstLower»Repository.find(id); 
+            «entityClass.generateServiceReference».update(retrieved);
+            PersistenceHelper.flush(true);
+            «entityClass.name» updated = «entityClass.generateServiceReference».find(id); 
             assertNotEquals(originalValue, updated.«property.name»);
         }
         '''
+    }
+    
+    def generateServiceClassName(Class entityClass) {
+        '''«entityClass.name.toFirstUpper»Service'''
+    }
+    
+    def generateServiceReference(Class entityClass) {
+        '''«entityClass.name.toFirstLower»Service'''
     }
     
     def generateDeleteTest(Class entityClass) {
@@ -168,20 +185,10 @@ class CRUDTestGenerator extends EntityGenerator {
         public void delete() {
             «entityClass.name» toDelete = new «entityClass.name»();
             «entityClass.requiredProperties.generateValueAssignments('toDelete')» 
-            Object id = «entityClass.name.toFirstLower»Repository.create(toDelete).getId();
-            assertNotNull(«entityClass.name.toFirstLower»Repository.find(id));
-            «entityClass.name.toFirstLower»Repository.delete(id);
-            assertNull(«entityClass.name.toFirstLower»Repository.find(id));
-        }
-        '''
-    }
-    
-    def generateTearDown() {
-        '''
-        @After
-        public void tearDown() {
-            if (tx != null )
-                tx.rollback();  
+            Object id = «entityClass.generateServiceReference».create(toDelete).getId();
+            assertNotNull(«entityClass.generateServiceReference».find(id));
+            «entityClass.generateServiceReference».delete(id);
+            assertNull(«entityClass.generateServiceReference».find(id));
         }
         '''
     }

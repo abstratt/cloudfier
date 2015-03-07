@@ -1,24 +1,27 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.jse.IBehaviorGenerator
+import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Port
-import org.eclipse.uml2.uml.SendSignalAction
-import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.Property
-import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.Signal
+
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
-class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
-    protected IRepository repository
-
+class JPAEntityGenerator extends PlainEntityGenerator {
     protected String applicationName
 
     new(IRepository repository) {
         super(repository)
     }
     
-    override generateEntityAnnotations(Class class1) {
+    override IBehaviorGenerator createBehaviorGenerator() {
+        return new JPABehaviorGenerator(repository) 
+    }
+    
+    override generateEntityAnnotations(Class entity) {
         '''
         @Entity
         '''
@@ -43,8 +46,13 @@ class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
     }
 
     def toJpaPropertyAnnotation(Property property) {
-        val values = #{'nullable' -> (property.lower == 0), 'updatable' -> !property.readOnly, 'unique' -> property.ID }
-        val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'unique' -> false }
+        // cannot use KirraHelper as this is about storing data, not user capabilities
+        val nullable = property.lower == 0
+        val unique = property.ID
+        val insertable = !property.readOnly || !nullable
+        val updatable = !property.readOnly || !insertable
+        val values = #{'nullable' -> (nullable), 'updatable' -> (updatable), 'insertable' -> (insertable), 'unique' -> unique }
+        val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'insertable' -> true, 'unique' -> false }
         val nonDefaults = values.filter[ key, value | value != defaultValues.get(key) ]
         val pairs = nonDefaults.entrySet.map['''«key»=«value»''']
         '''@Column«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»''' 
@@ -74,11 +82,18 @@ class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
         import javax.enterprise.context.*;
         '''
     }
+    
+    override generateSuffix(Class entity) {
+        // turn off any weird stuff we generate for POJO entities
+        ''''''
+    }
 
     override generateSignal(Signal signal) {
-        '''
-        @Inject @Transient Event<«signal.name»Event> «signal.name.toFirstLower»Event;
-        '''
+//        when we support CDI events        
+//        '''
+//        @Inject @Transient Event<«signal.name»Event> «signal.name.toFirstLower»Event;
+//        '''
+        ''
     }
     
     override generateProvider(Class provider) {
@@ -91,12 +106,5 @@ class EntityGenerator extends com.abstratt.mdd.target.jse.EntityGenerator {
         '''
         @Inject @Transient «super.generatePort(port)»
         '''
-    }
-    
-    override def generateSendSignalAction(SendSignalAction action) {
-        '''/* generateSendSignalAction - TBD */'''
-//        val eventName = '''«action.signal.name.toFirstLower»Event'''
-//        val signalName = action.signal.name
-//        '''this.«eventName».fire(new «signalName»Event(«action.arguments.generateMany([arg | arg.generateAction], ', ')»))'''
     }
 }

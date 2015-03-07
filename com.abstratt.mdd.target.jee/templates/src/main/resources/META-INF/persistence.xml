@@ -5,8 +5,7 @@
 	<persistence-unit name="integration-test">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<properties>
-			<property name="javax.persistence.jdbc.url"
-				value="{jdbc.url}" />
+			<property name="javax.persistence.jdbc.url" value="{jdbc.url}" />
 			<property name="javax.persistence.jdbc.user" value="{jdbc.user}" />
 			<property name="javax.persistence.jdbc.password" value="{jdbc.password}" />
 
@@ -23,6 +22,9 @@
 				value="script" />
 			<property name="javax.persistence.schema-generation.drop-script-source"
 				value=" META-INF/sql/drop.sql" />
+
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
 		</properties>
 
 	</persistence-unit>

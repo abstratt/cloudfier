@@ -6,7 +6,9 @@
          <mapper artifactType="systemClass"
                class="com.abstratt.mdd.target.jse.SystemMapper"/>
          <mapper artifactType="entity"
-               class="com.abstratt.mdd.target.jee.EntityMapper"/>
+               class="com.abstratt.mdd.target.jee.JPAEntityMapper"/>
+         <mapper artifactType="functionalTest"
+               class="com.abstratt.mdd.target.jee.FunctionalTestMapper"/>
          <mapper artifactType="application"
                class="com.abstratt.mdd.target.jee.ApplicationMapper"/>               
    </extension>

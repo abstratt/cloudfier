@@ -1,29 +1,21 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
-import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.Activity
 import java.util.List
 import org.eclipse.uml2.uml.Parameter
 
-class EnumerationGenerator extends BehaviorlessClassGenerator {
+class BehaviorlessClassGenerator extends PlainJavaGenerator {
     
     new(IRepository repository) {
         super(repository)
     }
     
-    def generateEnumeration(Enumeration enumeration) {
-        '''
-        package «enumeration.packagePrefix»;
-        
-        public enum «enumeration.name» {
-            «enumeration.ownedLiterals.generateMany([name], ',\n')»
-        }
-        '''
+    override generateActivity(Activity a) {
+        throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
-    
+
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
-    
 }

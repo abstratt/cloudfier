@@ -3,7 +3,7 @@ package com.abstratt.mdd.target.jse
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Signal
 
-class SignalGenerator extends AbstractJavaGenerator {
+class SignalGenerator extends BehaviorlessClassGenerator {
     
     new(IRepository repository) {
         super(repository)

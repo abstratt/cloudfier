@@ -3,7 +3,7 @@ package com.abstratt.mdd.target.jse
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.DataType
 
-class TupleGenerator extends AbstractJavaGenerator {
+class TupleGenerator extends BehaviorlessClassGenerator {
     
     new(IRepository repository) {
         super(repository)

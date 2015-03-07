@@ -3,15 +3,15 @@ package com.abstratt.mdd.target.jse
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Classifier
 
-class ServiceGenerator extends EntityGenerator {
+class ServiceGenerator extends PlainEntityGenerator {
     
     new(IRepository repository) {
         super(repository)
     }
     
     def generateService(Class entity) {
-        val serviceOperations = entity.allOperations.filter[static]
         '''
         package «entity.packagePrefix»;
 
@@ -19,15 +19,28 @@ class ServiceGenerator extends EntityGenerator {
         
         «entity.generateImports»
         
+        «entity.generateJavaClass»
+        '''
+    }
+    
+    def generateJavaClass(Class entity) {
+        val serviceOperations = entity.allOperations.filter[static]
+        val signals = findTriggerableSignals(serviceOperations)
+        '''
         public class «entity.name»Service {
-            «generateMany(findTriggerableSignals(serviceOperations), [generateSignal])»
+            «entity.generateJavaClassPrefix»
+            «generateMany(signals, [generateSignal])»
             «entity.generateAnonymousDataTypes»
             «serviceOperations.generateMany[generateServiceOperation]»
         }
         '''
     }
     
-    override generateProviderReference(Class context, Class provider) {
+    def generateJavaClassPrefix(Class entity) {
+        ''
+    }
+    
+    override generateProviderReference(Classifier context, Classifier provider) {
         if (context == provider) 'this' else super.generateProviderReference(context, provider)
     }
     

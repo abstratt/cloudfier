@@ -12,7 +12,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import org.eclipse.uml2.uml.Interface
 
-class InterfaceGenerator extends AbstractJavaGenerator {
+class InterfaceGenerator extends BehaviorlessClassGenerator {
     
     new(IRepository repository) {
         super(repository)
