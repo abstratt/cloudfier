@@ -21,9 +21,4 @@ class EnumerationGenerator extends BehaviorlessClassGenerator {
         }
         '''
     }
-    
-    override generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
-    }
-    
 }
