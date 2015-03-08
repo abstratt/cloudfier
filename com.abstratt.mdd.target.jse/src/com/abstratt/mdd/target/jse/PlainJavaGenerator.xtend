@@ -40,6 +40,7 @@ import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import org.eclipse.uml2.uml.ValueSpecificationAction
 
 abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
@@ -114,6 +115,10 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
             value + suffix
     }
     
+    def CharSequence generateOperationReturnType(Operation operation) {
+        operation.javaReturnType
+    }
+    
     def CharSequence generateJavaMethodSignature(Operation operation, VisibilityKind visibility, boolean staticOperation) {
         val methodName = operation.name
         val modifiers = newLinkedList()
@@ -123,7 +128,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
             
         '''
         «operation.generateComment»
-        «modifiers.map[toString].filter[!empty].join(' ').append(' ')»«operation.javaReturnType» «methodName»(«operation.parameters.generateMany([ generateJavaMethodParameter ], ', ')»)'''
+        «modifiers.map[toString].filter[!empty].join(' ').append(' ')»«operation.generateOperationReturnType» «methodName»(«operation.parameters.generateMany([ generateJavaMethodParameter ], ', ')»)'''
     }
     
     def CharSequence generateJavaMethodParameter(Parameter parameter) {
@@ -162,8 +167,9 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         var nullable = true 
         if (element instanceof MultiplicityElement) {
             nullable = element.lower == 0
-            if (element.multivalued)
-                return '''Collection<«element.type.toJavaType»>'''
+            if (element.multivalued) {
+                return '''«(element as MultiplicityElement).toJavaGeneralCollection»<«element.type.toJavaType»>'''
+            }
         }
         element.type.toJavaType(if (honorOptionality) nullable else true)
     }
@@ -179,6 +185,14 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     
     def toJavaName(String qualifiedName) {
         return qualifiedName.replace(NamedElement.SEPARATOR, '.')
+    }
+    
+    def <T extends MultiplicityElement> toJavaGeneralCollection(T element) {
+        val unique = element.unique
+        if (unique)
+            'Collection'
+        else
+            'Collection'
     }
     
     def <T extends MultiplicityElement&TypedElement> toJavaCollection(T element) {
@@ -306,6 +320,10 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
 
     def generateValue(ValueSpecification value) {
+        generateValue(value, true)
+    }
+
+    def generateValue(ValueSpecification value, boolean inline) {
         switch (value) {
             // the TextUML compiler maps all primitive values to LiteralString
             LiteralString : switch (value.type.name) {
@@ -320,7 +338,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
                 case value.isVertexLiteral : '''«value.toJavaType».«value.resolveVertexLiteral.name»'''
                 default : 'null'
             }
-            OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression(false)
+            OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression(!inline)
             InstanceValue case value.instance instanceof EnumerationLiteral: '''«value.instance.namespace.name».«value.instance.name»'''
             default : unsupportedElement(value)
         }

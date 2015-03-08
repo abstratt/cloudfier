@@ -39,6 +39,15 @@ class JPAServiceGenerator extends ServiceGenerator {
                     parameter.type.toJavaType
             '''«parameterType» «parameter.name»'''
         }
+        
+        override generateOperationReturnType(Operation operation) {
+            // methods returning collections will usually return lists (due to Query#getResultList())
+            val result = operation.getReturnResult()
+            if (result?.multivalued)
+                '''Collection<«result.type.toJavaType»> '''
+            else
+                super.generateOperationReturnType(operation)
+        }
 
         override generateProviderReference(Classifier context, Classifier provider) {
             if (context == provider)
@@ -64,6 +73,8 @@ class JPAServiceGenerator extends ServiceGenerator {
             
             «entity.generateCreate»
             «entity.generateFind»
+            «entity.generateRefresh»
+            «entity.generateMerge»
             «entity.generateFindAll»
             «entity.generateUpdate»
             «entity.generateDelete»
@@ -91,6 +102,7 @@ class JPAServiceGenerator extends ServiceGenerator {
             import javax.ejb.*;
             import javax.enterprise.event.*;
             import javax.enterprise.context.*;
+            import static util.PersistenceHelper.*;
         '''
     }
 
@@ -110,10 +122,27 @@ class JPAServiceGenerator extends ServiceGenerator {
             }
         '''
     }
+    
+    def generateRefresh(Classifier entity) {
+        '''
+            public «entity.name» refresh(«entity.name» toRefresh) {
+                entityManager.refresh(toRefresh);
+                return toRefresh; 
+            }
+        '''
+    }
+    
+    def generateMerge(Classifier entity) {
+        '''
+            public «entity.name» merge(«entity.name» toMerge) {
+                return entityManager.merge(toMerge);
+            }
+        '''
+    }
 
     def generateFindAll(Classifier entity) {
         '''
-            public Collection<«entity.name»> findAll() {
+            public List<«entity.name»> findAll() {
                 CriteriaQuery<«entity.name»> cq = entityManager.getCriteriaBuilder().createQuery(«entity.name».class);
                 return entityManager.createQuery(cq.select(cq.from(«entity.name».class))).getResultList();
             }
@@ -125,7 +154,7 @@ class JPAServiceGenerator extends ServiceGenerator {
         nonNavigableRelationships.generateMany[ relationship |
             val otherEnd = relationship.otherEnd
         '''
-            public Collection<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
+            public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = entityManager.getCriteriaBuilder();
                 CriteriaQuery<«relationship.type.name»> cq = cb.createQuery(«relationship.type.name».class);
                 return entityManager.createQuery(cq.select(cq.from(«relationship.type.name».class)).where(cb.equal(cq.from(«relationship.type.name».class).get("«otherEnd.name»"), «otherEnd.name»))).getResultList();
@@ -153,5 +182,4 @@ class JPAServiceGenerator extends ServiceGenerator {
             }
         '''
     }
-
 }

@@ -294,15 +294,18 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
     def boolean needsParenthesis(Action action) {
         val targetAction = action.targetAction
         return if (targetAction instanceof CallOperationAction)
-            targetAction.operation.isBasicTypeOperation &&
-                findOperator(targetAction.operationTarget, targetAction.operation) != null
+            // operators require the expression to be wrapped in parentheses
+            targetAction.operation.isBasicTypeOperation && findOperator(targetAction.operationTarget, targetAction.operation) != null
         else
             false
     }
 
     def parenthesize(CharSequence toWrap, Action action) {
         val needsParenthesis = action.needsParenthesis
-        '''«IF needsParenthesis»(«ENDIF»«toWrap»«IF needsParenthesis»)«ENDIF»'''
+        if (needsParenthesis)
+            '''(«toWrap»)'''
+        else
+            toWrap
     }
 
     def CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
@@ -436,7 +439,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
 
     def CharSequence generateCollectionSum(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
-        val isDouble = action.operation.getReturnResult.type.name == 'Double'
+        val isDouble = closure.closureReturnParameter.type.name == 'Double'
         '''«action.target.generateAction».stream().mapTo«IF isDouble»Double«ELSE»Long«ENDIF»(«closure.
             generateActivityAsExpression(true).toString.trim»).sum()'''
     }
@@ -448,11 +451,13 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
 
     def CharSequence generateCollectionCollect(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
+        val collectionGeneralType = action.operation.getReturnResult().toJavaGeneralCollection
         '''«action.target.generateAction».stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
 
     def CharSequence generateCollectionSelect(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
+        val collectionGeneralType = action.operation.getReturnResult().toJavaGeneralCollection
         '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
 
@@ -474,6 +479,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
 
     def CharSequence generateGroupingGroupCollect(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
+        val collectionGeneralType = action.operation.getReturnResult().toJavaGeneralCollection
         '''«action.target.generateAction».values().stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
 
@@ -646,7 +652,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
     }
 
     def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
-        '''«action.value.generateValue»'''
+        '''«action.value.generateValue(false)»'''
     }
 
     def dispatch CharSequence doGenerateAction(CreateObjectAction action) {

@@ -108,7 +108,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     
     def generateEntity(Class entity) {
         val actionOperations = entity.actions.filter[!static]
-        val relationships = entity.entityRelationships.filter[!derived]
+        val relationships = entity.entityRelationships.filter[!derived && navigable]
         val attributeInvariants = entity.properties.filter[!derived].map[findInvariantConstraints].flatten
         val derivedAttributes = entity.properties.filter[derived]
         val derivedRelationships = entity.entityRelationships.filter[derived]
@@ -320,23 +320,34 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         if (feature.static) 'static ' else ''
     }
     
+    def generateRelationshipType(Property relationship) {
+        if (relationship.multivalued)
+            '''«if (relationship.unique) 'Set' else 'Collection'»<«relationship.type.toJavaType»>'''
+        else
+            relationship.type.toJavaType
+    }
     
     def generateRelationship(Property relationship) {
-        '''public «relationship.generateStaticModifier»«relationship.toJavaType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;'''
+        '''public «relationship.generateStaticModifier»«relationship.generateRelationshipType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;'''
     }
     
     def generateDerivedRelationship(Property relationship) {
         val derivation = relationship.defaultValue.resolveBehaviorReference as Activity
         '''
-        public «relationship.generateStaticModifier»«relationship.toJavaType» «relationship.generateAccessorName»() {
+        public «relationship.generateStaticModifier»«relationship.generateRelationshipAccessorType» «relationship.generateAccessorName»() {
             return «derivation.generateActivityAsExpression»;
         }'''
     }
     
+    def CharSequence generateRelationshipAccessorType(Property relationship) {
+        relationship.toJavaType
+    }
+    
     def generateActionOperation(Operation action) {
         '''
-        «action.generateJavaMethodSignature(action.visibility, action.static)» «action.generateActionOperationBody»
-        '''
+        «action.generateJavaMethodSignature(action.visibility, action.static)» {
+            «action.generateActionOperationBody»
+        }'''
     }
     
     def generateActionOperationBody(Operation actionOperation) {
@@ -345,14 +356,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val stateMachine = stateProperty?.type as StateMachine
         val isEventTriggering = stateMachine != null && !stateMachine.findTriggersForCalling(actionOperation).empty
         '''
-        {
             «IF(firstMethod != null)»
             «generateActivity(firstMethod as Activity)»
             «ENDIF»
             «IF (isEventTriggering)»
             this.handleEvent(«stateMachine.name»Event.«actionOperation.name.toFirstUpper»);
             «ENDIF»
-        }
         '''
     }
 }

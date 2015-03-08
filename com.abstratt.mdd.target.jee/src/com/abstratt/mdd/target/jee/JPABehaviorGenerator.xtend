@@ -21,6 +21,10 @@ import org.eclipse.uml2.uml.ReadVariableAction
 import java.util.Set
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.Action
+import org.eclipse.uml2.uml.TestIdentityAction
+
+import org.eclipse.uml2.uml.UMLPackage.Literals
+import org.eclipse.uml2.uml.LinkAction
 
 class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     PlainJavaBehaviorGenerator plainJavaBehaviorGenerator
@@ -34,7 +38,21 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         '''new «provider.name.toFirstUpper»Service()'''
     }
     
+    override generateTestidentityAction(TestIdentityAction action) {
+        if (action.first.type.entity) {
+            if (action.second.nullValue)
+                '''(«action.first.generateAction» == null)'''
+            else
+                '''«action.first.generateAction».getId().equals(«action.second.generateAction».getId())'''
+        } else
+            super.generateTestidentityAction(action)
         
+    }
+    
+    override needsParenthesis(Action targetAction) {
+        targetAction instanceof TestIdentityAction || super.needsParenthesis(targetAction)
+    }
+    
     override generateReadExtentAction(ReadExtentAction action) {
         val classifier = action.classifier
         val providerReference = generateProviderReference(action.actionActivity.behaviorContext, classifier)
@@ -49,7 +67,7 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
 //        else
             core
     }
-
+    
     override generateTraverseRelationshipAction(InputPin target, Property property) {
         if (property.navigable)
             return super.generateTraverseRelationshipAction(target, property)
@@ -62,24 +80,50 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         val core = super.generateStructuredActivityNodeAsBlock(node)
         
         if (node == node.owningActivity.rootAction || node.shouldIsolate) {
+            val nonQueryOperation = node == node.owningActivity.rootAction && node.owningActivity.operation != null && !node.owningActivity.operation.query
+            val nonQueryOperationWithResult = nonQueryOperation && node.findStatements.last?.returnAction
             val currentEntity = node.owningActivity.behaviorContext
-            val creationVars = node.findMatchingActions(UMLPackage.Literals.CREATE_OBJECT_ACTION)
+
+            // objects created are hopefully assigned to a local variable - gotta persist those objects via their corresponding vars
+            val creationVars = node.findMatchingActions(Literals.CREATE_OBJECT_ACTION)
                 .map[it as CreateObjectAction]
                 .filter[
                     classifier.entity && 
                     targetAction instanceof AddVariableValueAction && 
                     !targetAction.returnAction
                 ]
-                .map[(targetAction as AddVariableValueAction).variable]
+                .map[(targetAction as AddVariableValueAction).variable.name].toSet
+                                  
+            val writtenVars = node.findMatchingActions(UMLPackage.Literals.ADD_VARIABLE_VALUE_ACTION)
+                .map[it as AddVariableValueAction]
+                .filter[
+                    variable.type.entity && !returnAction
+                ]
+                .map[variable.name].toSet
+                                    
+            // any objects we access in this block but that we did not create here need to be refetched (in JPA, refreshed)    
+            val readVars = node.findMatchingActions(UMLPackage.Literals.READ_VARIABLE_ACTION)
+                .map[it as ReadVariableAction]
+                .filter[
+                    variable.type.entity
+                ]
+                .map[variable.name].toSet
+            val refetchVars = readVars.filter[!creationVars.contains(it) && !writtenVars.contains(it)]
                 
-            val workingSet = creationVars.map[type -> name]
             '''
-            «core»
-            «workingSet.generateMany[pair | '''«generateProviderReference(currentEntity, pair.key as Classifier)».create(«pair.value»);''']»
-            «IF node.shouldIsolate»
-            util.PersistenceHelper.flush(true);
+            «IF node.shouldIsolate && !refetchVars.empty»
+            refresh(«refetchVars.join(', ')»);
             «ENDIF»
-            «IF node == node.owningActivity.rootAction && node.owningActivity.operation != null && !node.owningActivity.operation.query && node.findStatements.last?.returnAction»
+            «core»
+            «IF node.shouldIsolate || nonQueryOperation »
+            «IF !creationVars.empty»
+            persist(«creationVars.join(', ')»);
+            «ENDIF»
+            «IF node.shouldIsolate»
+            flush();
+            «ENDIF»
+            «ENDIF»
+            «IF nonQueryOperationWithResult»
                 «super.generateStatement(node.findStatements.last)»
             «ENDIF»
             '''

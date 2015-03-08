@@ -3,12 +3,15 @@ package com.abstratt.mdd.target.jee
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.jse.IBehaviorGenerator
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
+import org.apache.commons.lang3.StringUtils
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Signal
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 
 class JPAEntityGenerator extends PlainEntityGenerator {
     protected String applicationName
@@ -28,34 +31,86 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
     
     override generateRelationship(Property relationship) {
-        '''«relationship.toJpaRelationshipAnnotation» «super.generateRelationship(relationship)»'''
+        '''
+        «relationship.toJpaRelationshipAnnotation»
+        «relationship.toJpaJoinTableAnnotation»
+        «super.generateRelationship(relationship)»
+        '''
+    }
+    
+    override generateRelationshipAccessorType(Property relationship) {
+        if (relationship.multivalued)
+            '''Collection<«relationship.type.toJavaType»>'''
+        else
+            super.generateRelationshipAccessorType(relationship)
     }
     
     override generateAttribute(Property attribute) {
-        '''«attribute.toJpaPropertyAnnotation» «super.generateAttribute(attribute)»'''
+        '''
+        «attribute.toJpaPropertyAnnotation»
+        «super.generateAttribute(attribute)»
+        '''
     }
     
     def toJpaRelationshipAnnotation(Property relationship) {
+        val hasOtherEnd = relationship.otherEnd != null 
+        val navigableFromTheOtherSide = hasOtherEnd && relationship.otherEnd.navigable
         val multivalued = relationship.multivalued
-        val thisSideMultivalue = relationship.otherEnd != null && relationship.otherEnd.multivalued
-        if (multivalued) {
+        val thisSideMultivalue = hasOtherEnd && relationship.otherEnd.multivalued
+        
+        val values = newHashMap()
+        if (navigableFromTheOtherSide && !relationship.isPrimary)
+            values.put('mappedBy', '''"«relationship.otherEnd.name»"''')
+         
+        val pairs = values.entrySet.map['''«key»=«value»''']
+        val annotation = if (multivalued) {
             if (thisSideMultivalue) '@ManyToMany' else '@OneToMany'
         } else {
             if (thisSideMultivalue) '@ManyToOne' else '@OneToOne'
-        }    
+        }
+        '''«annotation»«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»'''
+    }
+    
+        
+    def toJpaJoinTableAnnotation(Property relationship) {
+        if (!relationship.primary || !(relationship.multivalued && relationship.otherEnd.multivalued))
+            return ''
+        val associationName = getMappingTableName(relationship.owningClassifier, relationship, relationship.otherEnd)
+        '''
+        @JoinTable(name = "«associationName»", 
+            joinColumns = {@JoinColumn(name = "«relationship.otherEnd.name»_id")},
+            inverseJoinColumns = {@JoinColumn(name = "«relationship.name»_id")}
+        )
+        '''
+    }
+    
+    
+    private def String getMappingTableName(Classifier contextEntity, Property source, Property opposite) {
+        val associationName = source.association.name
+        if (!StringUtils.isBlank(associationName))
+            return associationName;
+        if (opposite != null && opposite.isNavigable()) {
+            val primary = if (source.isPrimary()) source else opposite;
+            val secondary = if (source.isPrimary()) opposite else source;
+            return primary.getName() + "_" + secondary.getName();
+        }
+        return contextEntity.getName() + "_" + source.getName();
     }
 
     def toJpaPropertyAnnotation(Property property) {
         // cannot use KirraHelper as this is about storing data, not user capabilities
         val nullable = property.lower == 0
         val unique = property.ID
-        val insertable = !property.readOnly || !nullable
-        val updatable = !property.readOnly || !insertable
+        val insertable = true /* the back-end can anything) */ // !property.readOnly || !nullable
+        val updatable = true /* the back-end can anything) */ // !property.readOnly || !insertable
         val values = #{'nullable' -> (nullable), 'updatable' -> (updatable), 'insertable' -> (insertable), 'unique' -> unique }
         val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'insertable' -> true, 'unique' -> false }
         val nonDefaults = values.filter[ key, value | value != defaultValues.get(key) ]
         val pairs = nonDefaults.entrySet.map['''«key»=«value»''']
-        '''@Column«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»''' 
+        '''
+        @Column«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»
+        «IF property.type.enumeration»@Enumerated(EnumType.STRING)«ENDIF»
+        ''' 
     }
 
     
@@ -80,6 +135,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         import javax.ejb.*;
         import javax.enterprise.event.*;
         import javax.enterprise.context.*;
+        import static util.PersistenceHelper.*;
         '''
     }
     
