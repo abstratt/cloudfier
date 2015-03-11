@@ -55,7 +55,7 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
             «ENDIF»
             «state.generateStateEventHandler(stateMachine, entity)»
         }
-        '''.toString.trim
+        '''
     }
     
     def dispatch generateState(Pseudostate state, StateMachine stateMachine, Class entity) {
@@ -63,7 +63,7 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
         «state.name» {
             «state.generateStateEventHandler(stateMachine, entity)»
         }
-        '''.toString.trim 
+        ''' 
     }
     
     def generateStateEventHandler(Vertex state, StateMachine stateMachine, Class entity) {
@@ -76,20 +76,7 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
                     val triggers = pair.value
                     '''
                     case «event.generateEventName» :
-                        «triggers.generateMany
-                            [ trigger |
-                            val transition = trigger.eContainer as Transition
-                            '''
-                            «IF (transition.guard != null)»
-                            if («transition.guard.generatePredicate») {
-                                «transition.generateTransition»
-                                break;
-                            }
-                            «ELSE»
-                            «transition.generateTransition»
-                            «ENDIF»
-                            '''
-                        ]»
+                        «triggers.map[generateTrigger].join()»
                         break;
                     ''' 
                 ]»
@@ -99,6 +86,20 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
             // this is a final state
             «ENDIF»     
         }                       
+        '''
+    }
+    
+    def generateTrigger(Trigger trigger) {
+        val transition = trigger.eContainer as Transition
+        '''
+        «IF (transition.guard != null)»
+        if («transition.guard.generatePredicate») {
+            «transition.generateTransition»
+            break;
+        }
+        «ELSE»
+        «transition.generateTransition»
+        «ENDIF»
         '''
     }
     
@@ -126,11 +127,34 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
         if (stateAttribute == null)
             return ''
         val triggersPerEvent = stateMachine.findTriggersPerEvent
-        val eventNames = triggersPerEvent.keySet.map[it.generateEventName]
-        
-        val generated = '''
+        val eventNames = triggersPerEvent.keySet.map[it.generateEventName.toString]
+        '''
+        «stateMachine.generateComment»
         public enum «stateMachine.name» {
-            «stateMachine.vertices.generateMany([generateState(it, stateMachine, entity)],',\n')»;
+            «stateMachine.vertices.map[
+                generateState(it, stateMachine, entity).toString.trim
+            ].join(',\n')»;
+            «generateBaseMethods(stateMachine, entity, stateAttribute)»
+        }
+        
+        «generateStateMachineEventEnumeration(stateMachine, eventNames)»
+        
+        public void handleEvent(«stateMachine.name»Event event) {
+            «stateAttribute.name».handleEvent(this, event);
+        }
+        '''
+    }
+    def generateStateMachineEventEnumeration(StateMachine stateMachine, Iterable<String> eventNames) {
+    '''
+        public enum «stateMachine.name»Event {
+            «eventNames.join(',\n')»
+        }
+    '''        
+    }
+    
+    
+    def generateBaseMethods(StateMachine stateMachine, Class entity, Property stateAttribute) {
+        '''
             void onEntry(«entity.name» instance) {
                 // no entry behavior by default
             }
@@ -149,17 +173,7 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
                 instance.«stateAttribute.name» = newState;
                 instance.«stateAttribute.name».onEntry(instance);
             }
-        }
-        
-        public enum «stateMachine.name»Event {
-            «eventNames.join(',\n')»
-        }
-        
-        public void handleEvent(«stateMachine.name»Event event) {
-            «stateAttribute.name».handleEvent(this, event);
-        }
         '''
-        return generated
     }
 
     def generateEvent(Class entity, Property stateAttribute, Event event, List<Trigger> triggers) {

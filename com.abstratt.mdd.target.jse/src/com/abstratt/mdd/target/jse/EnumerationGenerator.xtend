@@ -17,7 +17,7 @@ class EnumerationGenerator extends BehaviorlessClassGenerator {
         package «enumeration.packagePrefix»;
         
         public enum «enumeration.name» {
-            «enumeration.ownedLiterals.generateMany([name], ',\n')»
+            «enumeration.ownedLiterals.map[name].join(',\n')»
         }
         '''
     }

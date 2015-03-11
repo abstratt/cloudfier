@@ -17,20 +17,23 @@ class SignalGenerator extends BehaviorlessClassGenerator {
         import java.util.*;
         
         public class «signal.name»Event implements Serializable {
-            «signal.allAttributes.generateMany['''
-                public final «it.type.toJavaType» «it.name»;
-            ''']»
+            private static final long serialVersionUID = 1L;
             
-            public «signal.name»Event(«signal.allAttributes.generateMany([
+            «signal.allAttributes.map['''
+                public final «it.type.toJavaType» «it.name»;
+            '''].join()»
+            
+            public «signal.name»Event(«signal.allAttributes.map[
                 '''«type.toJavaType» «name»'''
-            ], ', ')») {
-                «signal.allAttributes.generateMany([
-                  '''this.«name» = «name»;'''  
-                ])»
+            ].join(', ')») {
+                «signal.allAttributes.map[
+                  '''
+                  this.«name» = «name»;
+                  '''  
+                ].join»
             }
              
         }
         '''
     }
-    
 }

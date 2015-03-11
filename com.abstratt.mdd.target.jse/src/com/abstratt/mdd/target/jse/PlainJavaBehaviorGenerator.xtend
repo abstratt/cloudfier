@@ -431,7 +431,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         val closure = action.arguments.get(0).sourceClosure
         val initialValue = action.arguments.get(1)
 
-        // workaround forJDK bug 8058283
+        // workaround for JDK bug 8058283
         val cast = if (action.results.head.type.javaPrimitive) '''(«action.results.head.type.toJavaType») ''' else ''
         '''«cast»«action.target.generateAction».stream().reduce(«initialValue.generateAction», «closure.
             generateActivityAsExpression(true, closure.closureInputParameters.reverseView).toString.trim», null)'''
