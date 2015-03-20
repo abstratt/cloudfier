@@ -35,8 +35,8 @@ import com.abstratt.kirra.mdd.rest.impl.v1.resources.ServiceListResource;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.ServiceResource;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.SignupResource;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.StaticActionResource;
+import com.abstratt.kirra.mdd.rest.impl.v1.resources.TestCaseRunnerResource;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.TestResource;
-import com.abstratt.kirra.mdd.rest.impl.v1.resources.TestRunnerResource;
 
 public class LegacyKirraMDDRestletApplication extends Application {
     public static String ID = LegacyKirraMDDRestletApplication.class.getPackage().getName();
@@ -63,9 +63,9 @@ public class LegacyKirraMDDRestletApplication extends Application {
         // takes path in query
         attachTo(router, "/", createFinder(IndexResource.class));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.DATA, createRestlet(DataResource.class, false, true));
-        attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS, createRestlet(TestResource.class, false, true));
+        attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS, createRestlet(TestResource.class, false, false));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS + "/{testClassName}/{testCaseName}",
-                createRestlet(TestRunnerResource.class, false, false));
+                createRestlet(TestCaseRunnerResource.class, false, false));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.SIGNUP, createRestlet(SignupResource.class, false, false));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.PASSWORD_RESET,
                 createRestlet(PasswordResetResource.class, false, false));
