@@ -25,6 +25,8 @@ import org.eclipse.uml2.uml.TestIdentityAction
 
 import org.eclipse.uml2.uml.UMLPackage.Literals
 import org.eclipse.uml2.uml.LinkAction
+import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.Operation
 
 class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     PlainJavaBehaviorGenerator plainJavaBehaviorGenerator
@@ -58,6 +60,7 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         val providerReference = generateProviderReference(action.actionActivity.behaviorContext, classifier)
         '''«providerReference».findAll()'''
     }
+    
     
     override generateCreateObjectAction(CreateObjectAction action) {
         val classifier = action.classifier

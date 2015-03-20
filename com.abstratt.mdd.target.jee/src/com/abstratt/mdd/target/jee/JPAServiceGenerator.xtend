@@ -1,13 +1,19 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.jse.IBehaviorGenerator.SimpleContext
 import com.abstratt.mdd.target.jse.ServiceGenerator
-import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Operation
-import org.eclipse.uml2.uml.VisibilityKind
 import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.VisibilityKind
+
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 
 class JPAServiceGenerator extends ServiceGenerator {
 
@@ -17,45 +23,18 @@ class JPAServiceGenerator extends ServiceGenerator {
         super(repository)
         behaviorGenerator = new CustomJPABehaviorGenerator(this, repository)
     }
-
-    static class CustomJPABehaviorGenerator extends JPABehaviorGenerator {
+    
+    override isServiceOperation(Operation op) {
+        super.isServiceOperation(op) || op.activity?.queryPerformingActivity
+    }
+    
+    static class CustomJPABehaviorGenerator extends JPAServiceBehaviorGenerator {
         JPAServiceGenerator parent
 
         new(JPAServiceGenerator parent, IRepository repository) {
             super(repository)
             this.parent = parent
         }
-
-        override generateJavaMethodBody(Operation operation) {
-            '''
-                CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-                CriteriaQuery<?> cq = cb.createQuery();
-                «super.generateJavaMethodBody(operation)»
-            '''
-        }
-
-        override generateJavaMethodParameter(Parameter parameter) {
-            val parameterType = if (parameter.multivalued) '''CriteriaQuery<«parameter.type.toJavaType»>''' else
-                    parameter.type.toJavaType
-            '''«parameterType» «parameter.name»'''
-        }
-        
-        override generateOperationReturnType(Operation operation) {
-            // methods returning collections will usually return lists (due to Query#getResultList())
-            val result = operation.getReturnResult()
-            if (result?.multivalued)
-                '''Collection<«result.type.toJavaType»> '''
-            else
-                super.generateOperationReturnType(operation)
-        }
-
-        override generateProviderReference(Classifier context, Classifier provider) {
-            if (context == provider)
-                'this'
-            else 
-                '''new «provider.name.toFirstUpper»Service()'''
-        }
-
     }
 
     override generateJavaClassPrefix(Class entity) {
@@ -71,6 +50,8 @@ class JPAServiceGenerator extends ServiceGenerator {
                 this.entityManager = entityManager;
             }
             
+            «entity.generateDerivedRelationshipAccessors»
+            
             «entity.generateCreate»
             «entity.generateFind»
             «entity.generateRefresh»
@@ -81,7 +62,13 @@ class JPAServiceGenerator extends ServiceGenerator {
             «entity.generateRelated»
         '''
     }
-
+    
+    def CharSequence generateDerivedRelationshipAccessors(Class entity) {
+        val derivedRelationships = getRelationships(entity).filter[derived]
+        val derivedRelationshipsWithQuery = derivedRelationships.filter[derivation?.queryPerformingActivity]
+        return derivedRelationshipsWithQuery.map[generateDerivedRelationshipAccessor(entity, it)].join
+    }
+    
     override generateJavaClass(Class entity) {
         '''
             @Stateless
@@ -144,7 +131,7 @@ class JPAServiceGenerator extends ServiceGenerator {
         '''
             public List<«entity.name»> findAll() {
                 CriteriaQuery<«entity.name»> cq = entityManager.getCriteriaBuilder().createQuery(«entity.name».class);
-                return entityManager.createQuery(cq.select(cq.from(«entity.name».class))).getResultList();
+                return entityManager.createQuery(cq.select(cq.from(«entity.name».class)).distinct(true)).getResultList();
             }
         '''
     }
@@ -157,10 +144,25 @@ class JPAServiceGenerator extends ServiceGenerator {
             public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = entityManager.getCriteriaBuilder();
                 CriteriaQuery<«relationship.type.name»> cq = cb.createQuery(«relationship.type.name».class);
-                return entityManager.createQuery(cq.select(cq.from(«relationship.type.name».class)).where(cb.equal(cq.from(«relationship.type.name».class).get("«otherEnd.name»"), «otherEnd.name»))).getResultList();
+                return entityManager.createQuery(cq.select(cq.from(«relationship.type.name».class)).where(cb.equal(cq.from(«relationship.type.name».class).get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList();
             }
         '''
         ]
+    }
+    
+    def generateDerivedRelationshipAccessor(Class entity, Property derivedRelationship) {
+        val context = new SimpleContext("context")
+        behaviorGenerator.enterContext(context)
+        try {
+        return
+        '''
+            public «derivedRelationship.toJavaType» «derivedRelationship.generateAccessorName»(«entity.name» context) {
+                «behaviorGenerator.generateJavaMethodBody(derivedRelationship.derivation)»
+            }
+        '''
+        } finally {
+            behaviorGenerator.leaveContext(context)
+        }
     }
 
     def generateUpdate(Classifier entity) {

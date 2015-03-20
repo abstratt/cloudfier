@@ -13,6 +13,7 @@ import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Signal
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
 
 class EntityMapper implements ITopLevelMapper<Classifier> {
     
@@ -85,7 +86,7 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         
         val tuples = appPackages.tupleTypes.filter(typeof(DataType))
         val tupleGenerator = new TupleGenerator(repository)
-        result.putAll(tuples.toMap[generateTupleFileName].mapValues[tupleGenerator.generateTuple(it)])
+        result.putAll(tuples.filter[!anonymousDataType].toMap[generateTupleFileName].mapValues[tupleGenerator.generateTuple(it)])
 
         val enums = appPackages.map[ownedTypes.filter(typeof (Enumeration))].flatten
         val enumerationGenerator = new EnumerationGenerator(repository)

@@ -222,9 +222,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         ''
     }
     
-    
-    
-    def findTriggerableSignals(Iterable<Operation> operations) {
+    def Iterable<Signal> findTriggerableSignals(Iterable<Operation> operations) {
         operations.filter[op | op.activity != null].map[op | 
             op.activity.bodyNode
                 .findMatchingActions(UMLPackage.Literals.SEND_SIGNAL_ACTION)
@@ -233,7 +231,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                 ]
         ].flatten
     }
-
+    
     def generateProvider(Class provider) {
         '''
         private «provider.toJavaType»Service «provider.name.toFirstLower»Service = new «provider.toJavaType»Service();
@@ -282,10 +280,14 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         '''
     }
     
+    def generateDerivedAttributeComputationAsActivity(Property attribute, Activity activity) {
+        activity.generateActivity()
+    }
+    
     def generateDerivedAttributeComputation(Property attribute) {
         if (attribute.defaultValue != null) 
             if (attribute.defaultValue.behaviorReference)
-                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivity
+                generateDerivedAttributeComputationAsActivity(attribute, attribute.defaultValue.resolveBehaviorReference as Activity)
             else 
             '''return «attribute.defaultValue.generateValue»;'''
         else
@@ -332,11 +334,15 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateDerivedRelationship(Property relationship) {
-        val derivation = relationship.defaultValue.resolveBehaviorReference as Activity
+        val derivation = relationship.derivation
         '''
         public «relationship.generateStaticModifier»«relationship.generateRelationshipAccessorType» «relationship.generateAccessorName»() {
-            return «derivation.generateActivityAsExpression»;
+            «generateRelationshipDerivation(derivation, relationship)»
         }'''
+    }
+    
+    def generateRelationshipDerivation(Activity derivation, Property relationship) {
+        derivation.generateActivityAsExpression
     }
     
     def CharSequence generateRelationshipAccessorType(Property relationship) {

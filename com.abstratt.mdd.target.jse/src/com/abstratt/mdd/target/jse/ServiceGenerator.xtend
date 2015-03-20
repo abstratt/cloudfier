@@ -23,8 +23,12 @@ class ServiceGenerator extends PlainEntityGenerator {
         '''
     }
     
+    def boolean isServiceOperation(Operation op) {
+        op.static
+    }
+    
     def generateJavaClass(Class entity) {
-        val serviceOperations = entity.allOperations.filter[static]
+        val serviceOperations = entity.allOperations.filter[serviceOperation]
         val signals = findTriggerableSignals(serviceOperations)
         '''
         public class «entity.name»Service {

@@ -144,13 +144,13 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
             if («name» == null) «name» = «defaultValue.generateValue»; 
             '''
             ]»
-            «operation.generateJavaMethodBody»
+            «operation.activity.generateJavaMethodBody»
         }
         '''
     }
     
-    def CharSequence generateJavaMethodBody(Operation operation) {
-        operation.activity.generateActivity
+    def CharSequence generateJavaMethodBody(Activity activity) {
+        activity.generateActivity
     }
     
     def Iterable<DataType> getAnonymousDataTypes(Activity activity) {

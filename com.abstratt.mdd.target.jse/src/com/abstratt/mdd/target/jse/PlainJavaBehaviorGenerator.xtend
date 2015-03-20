@@ -3,6 +3,7 @@ package com.abstratt.mdd.target.jse
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDExtensionUtils
 import com.abstratt.mdd.target.jse.IBehaviorGenerator.IExecutionContext
+import java.util.ArrayList
 import java.util.Arrays
 import java.util.Deque
 import java.util.LinkedList
@@ -39,6 +40,8 @@ import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
 import org.eclipse.uml2.uml.VariableAction
+
+import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
@@ -88,7 +91,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
     }
 
     def dispatch CharSequence generateAction(Void input) {
-        throw new NullPointerException;
+        throw new NullPointerException
     }
 
     def dispatch CharSequence generateAction(InputPin input) {
@@ -103,12 +106,13 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         val isBlock = if (statementAction instanceof StructuredActivityNode)
                 !MDDExtensionUtils.isCast(statementAction) && !statementAction.objectInitialization
         val generated = generateAction(statementAction)
+        if (generated == null || generated.length == 0)
+            return ''
         if (isBlock)
             // actually a block
             return generated
-
         // else generate as a statement
-        '''«generated»;'''
+        return '''«generated.toString.trim»;'''
     }
 
     def dispatch CharSequence doGenerateAction(Action action) {
@@ -129,11 +133,20 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
     }
     
     def generateAddVariableValueActionAsReturn(AddVariableValueAction action) {
-        '''return «generateAction(action.value).toString.trim»'''
+        val valueAction = action.value.sourceAction
+        if (valueAction instanceof StructuredActivityNode) {
+            if (!isCast(valueAction) && !isObjectInitialization(valueAction))
+                return generateAddVariableValueActionCore(action)
+        }
+        '''return «generateAddVariableValueActionCore(action)»'''
+    }
+    
+    def generateAddVariableValueActionCore(AddVariableValueAction action) {
+        generateAction(action.value)
     }
 
     def generateAddVariableValueActionAsAssignment(AddVariableValueAction action) {
-        '''«action.variable.name» = «generateAction(action.value)»'''
+        '''«action.variable.name» = «generateAddVariableValueActionCore(action)»'''
     }    
 
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
@@ -340,31 +353,34 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
                         default: unsupported('''Primitive operation «operation.name»''')
                     }
                 case 'Date':
-                    switch (operation.name) {
-                        case 'year':
-                            '''«generateAction(action.target)».getYear() + 1900L'''.parenthesize(action)
-                        case 'month': '''«generateAction(action.target)».getMonth()'''
-                        case 'day': '''«generateAction(action.target)».getDate()'''
-                        case 'today':
-                            'java.sql.Date.valueOf(java.time.LocalDate.now())'
-                        case 'now':
-                            'new Date()'
-                        case 'transpose': '''new Date(«generateAction(action.target)».getTime() + «generateAction(
-                            action.arguments.head)»)'''
-                        case 'differenceInDays': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(
-                            action.target)».getTime()) / (1000*60*60*24)'''
-                        default: unsupported('''Date operation «operation.name»''')
-                    }
+                    generateDateOperationCall(action)
                 case 'Duration': {
-                    val period = switch (operation.name) {
-                        case 'days': '* 1000 * 60 * 60 * 24'
-                        case 'hours': '* 1000 * 60 * 60'
-                        case 'minutes': '* 1000 * 60'
-                        case 'seconds': '* 1000'
-                        case 'milliseconds': ''
-                        default: unsupported('''Duration operation: «operation.name»''')
+                    if (operation.static) {
+                        val period = switch (operation.name) {
+                            case 'days': '* 1000 * 60 * 60 * 24'
+                            case 'hours': '* 1000 * 60 * 60'
+                            case 'minutes': '* 1000 * 60'
+                            case 'seconds': '* 1000'
+                            case 'milliseconds': ''
+                            default: unsupported('''Duration operation: «operation.name»''')
+                        }
+                        '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
+                    } else {
+                        val period = switch (operation.name) {
+                            case 'toDays': '* 1000 * 60 * 60 * 24'
+                            case 'toHours': '* 1000 * 60 * 60'
+                            case 'toMinutes': '* 1000 * 60'
+                            case 'toSeconds': '* 1000'
+                            case 'toMilliseconds': ''
+                        }
+                        if (period != null)
+                            '''«generateAction(action.target)»«period» /*«operation.name»*/'''
+                        else
+                            switch (operation.name) {
+                                case 'difference' : '''«generateAction(action.target)».getTime() - «generateAction(action.arguments.head)».getTime()'''
+                                default: unsupported('''Duration operation: «operation.name»''')
+                            } 
                     }
-                    '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
                 }
                 case 'Memo': {
                     switch (operation.name) {
@@ -396,6 +412,25 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
                 }
                 default: unsupported('''classifier «targetType.name» - operation «operation.name»''')
             }
+    }
+    
+    def generateDateOperationCall(CallOperationAction action) {
+        val operation = action.operation
+        switch (operation.name) {
+            case 'year':
+                '''«generateAction(action.target)».getYear() + 1900L'''.parenthesize(action)
+            case 'month': '''«generateAction(action.target)».getMonth()'''
+            case 'day': '''«generateAction(action.target)».getDate()'''
+            case 'today':
+                'java.sql.Date.valueOf(java.time.LocalDate.now())'
+            case 'now':
+                'new Date()'
+            case 'transpose': '''new Date(«generateAction(action.target)».getTime() + «generateAction(
+                action.arguments.head)»)'''
+            case 'difference': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(
+                action.target)».getTime())'''
+            default: unsupported('''Date operation «operation.name»''')
+        }
     }
 
     def generateCollectionOperationCall(CallOperationAction action) {
@@ -534,7 +569,8 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
     }
 
     def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
-        '''«generateVariables(node)»«node.findTerminals.map[generateStatement].join('\n')»'''
+        val terminals = node.findTerminals
+        '''«generateVariables(node)»«terminals.map[generateStatement].join('\n')»'''
     }
 
     def generateVariables(StructuredActivityNode node) {
@@ -571,7 +607,8 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         if (targetClassifier.entity && !targetClassifier.findStateProperties.empty) {
             val stateMachine = targetClassifier.findStateProperties.head 
             '''«action.target.generateAction».handleEvent(«action.target.toJavaType».«stateMachine.name.toFirstUpper»Event.«signalName»)'''
-        }
+        } else 
+            ''
     }
 
     def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
@@ -688,7 +725,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
     }
     
     override CharSequence generateActivityAsExpression(Activity toGenerate) {
-        return this.generateActivityAsExpression(toGenerate, false, Arrays.<Parameter> asList());
+        return this.generateActivityAsExpression(toGenerate, false, Arrays.<Parameter> asList())
     }
 
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure) {

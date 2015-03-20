@@ -12,6 +12,9 @@ import org.eclipse.uml2.uml.Signal
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
+import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Activity
 
 class JPAEntityGenerator extends PlainEntityGenerator {
     protected String applicationName
@@ -21,7 +24,26 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
     
     override IBehaviorGenerator createBehaviorGenerator() {
-        return new JPABehaviorGenerator(repository) 
+        return new CustomJPABehaviorGenerator(this, repository) 
+    }
+    
+    static class CustomJPABehaviorGenerator extends JPABehaviorGenerator {
+        JPAEntityGenerator parent
+
+        new(JPAEntityGenerator parent, IRepository repository) {
+            super(repository)
+            this.parent = parent
+        }
+        
+        override generateActivity(Activity activity) {
+            val operation = activity.specification as Operation
+            if (!activity.queryPerformingActivity) {
+                return super.generateActivity(activity)
+            }
+            // delegate query performing operations to the service
+            '''return «operation.class_.name.toFirstLower»Service».«operation.name»(this);'''
+        }
+        
     }
     
     override generateEntityAnnotations(Class entity) {
@@ -162,5 +184,12 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         '''
         @Inject @Transient «super.generatePort(port)»
         '''
+    }
+    
+    override generateRelationshipDerivation(Activity derivation, Property relationship) {
+        if (!derivation.queryPerformingActivity)
+            return super.generateDerivedAttributeComputationAsActivity(relationship, derivation)
+        // delegate query performing to the service
+        '''return new «relationship.class_.name.toFirstUpper»Service().«relationship.generateAccessorName»(this);'''    
     }
 }
