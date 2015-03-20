@@ -32,6 +32,23 @@ public class DurationType extends PrimitiveType<Long> {
     public static DurationType fromValue(long original) {
         return new DurationType(original);
     }
+    
+    public IntegerType toDays(ExecutionContext context) {
+        return IntegerType.fromValue(value / (24 * 60 * 60 * 1000));
+    }
+    
+    public IntegerType toHours(ExecutionContext context) {
+        return IntegerType.fromValue(value / (60 * 60 * 1000));
+    }
+    
+    public IntegerType toMinutes(ExecutionContext context) {
+        return IntegerType.fromValue(value / (60 * 1000));
+    }
+    
+    public IntegerType toSeconds(ExecutionContext context) {
+        return IntegerType.fromValue(value / 1000);
+    }
+
 
     private long value;
 

@@ -49,6 +49,10 @@ public class DateType extends PrimitiveType<Date> {
     private DateType(Date value) {
         this.value = value;
     }
+    
+    public DurationType difference(@SuppressWarnings("unused") ExecutionContext context, DateType end) {
+        return DurationType.fromValue(end.value.getTime() - this.value.getTime());
+    }
 
     public IntegerType differenceInDays(@SuppressWarnings("unused") ExecutionContext context, DateType end) {
         return dateDifference(this, end, 1);
