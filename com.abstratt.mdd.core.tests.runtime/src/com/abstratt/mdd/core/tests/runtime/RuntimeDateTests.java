@@ -1,6 +1,8 @@
 package com.abstratt.mdd.core.tests.runtime;
 
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -73,6 +75,15 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         TestCase.assertFalse(((BooleanType) runStaticOperation("tests::DateUtil", "isLower", null, d2)).primitiveValue());
     }
 
+    private static Date makeDate(int year, int month, int day) {
+        Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
+        calendar.clear();
+        calendar.set(Calendar.YEAR, year);
+        calendar.set(Calendar.MONTH, month);
+        calendar.set(Calendar.DAY_OF_MONTH, day);
+        return calendar.getTime();
+    }
+    
     public void testDateMath() throws CoreException {
         String model = "";
         model += "model tests;\n";
@@ -80,7 +91,7 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "class DateUtil\n";
         model += "static operation dateDiff(d1 : Date,d2 : Date) : Integer;\n";
         model += "begin\n";
-        model += "  return d1.differenceInDays(d2);\n";
+        model += "  return d1.difference(d2).toDays();\n";
         model += "end;\n";
         model += "static operation dateTranspose(d : Date,diff : Integer) : Date;\n";
         model += "begin\n";
@@ -88,18 +99,20 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "end;\n";
         model += "static operation yearDiff(d1 : Date,d2 : Date) : Integer;\n";
         model += "begin\n";
-        model += "  return d1.differenceInYears(d2);\n";
+        model += "  return d1.difference(d2).toYears();\n";
         model += "end;\n";
         model += "static operation monthDiff(d1 : Date,d2 : Date) : Integer;\n";
         model += "begin\n";
-        model += "  return d1.differenceInMonths(d2);\n";
+        model += "  return d1.difference(d2).toMonths();\n";
         model += "end;\n";
         model += "end;\n";
         model += "end.";
 
         parseAndCheck(model);
-        DateType d1 = DateType.fromValue(new Date(2011 - 1900, 9, 11));
-        DateType d2 = DateType.fromValue(new Date(2011 - 1900, 9, 17));
+        
+
+        DateType d1 = DateType.fromValue(makeDate(2011, 9, 11));
+        DateType d2 = DateType.fromValue(makeDate(2011, 9, 17));
 
         IntegerType diff = (IntegerType) runStaticOperation("tests::DateUtil", "dateDiff", d1, d2);
         TestCase.assertEquals(6, diff.primitiveValue().intValue());
@@ -111,13 +124,13 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
 
         TestCase.assertEquals(
                 10,
-                ((IntegerType) runStaticOperation("tests::DateUtil", "yearDiff", DateType.fromValue(new Date(30, 1, 1)),
-                        DateType.fromValue(new Date(40, 1, 1)))).primitiveValue().intValue());
+                ((IntegerType) runStaticOperation("tests::DateUtil", "yearDiff", DateType.fromValue(makeDate(1930, 1, 1)),
+                        DateType.fromValue(makeDate(1940, 1, 1)))).primitiveValue().intValue());
 
         TestCase.assertEquals(
                 13,
                 ((IntegerType) runStaticOperation("tests::DateUtil", "monthDiff", DateType.fromValue(new Date(40, 9, 10)),
-                        DateType.fromValue(new Date(41, 10, 18)))).primitiveValue().intValue());
+                        DateType.fromValue(makeDate(1941, 10, 18)))).primitiveValue().intValue());
 
     }
 

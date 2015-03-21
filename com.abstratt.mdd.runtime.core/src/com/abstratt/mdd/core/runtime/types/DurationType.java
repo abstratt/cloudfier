@@ -33,16 +33,31 @@ public class DurationType extends PrimitiveType<Long> {
         return new DurationType(original);
     }
     
+    /**
+     * Useful when milliseconds are not significant enough.
+     */
+    private long toUnit(long unitInSeconds) {
+        return Math.round(value / 1000d) / unitInSeconds;
+    }
+    
+    public IntegerType toYears(ExecutionContext context) {
+        return IntegerType.fromValue(toUnit(365 * 24 * 60 * 60));
+    }
+    
+    public IntegerType toMonths(ExecutionContext context) {
+        return IntegerType.fromValue(toUnit(30 * 24 * 60 * 60));
+    }
+    
     public IntegerType toDays(ExecutionContext context) {
-        return IntegerType.fromValue(value / (24 * 60 * 60 * 1000));
+        return IntegerType.fromValue(toUnit(24 * 60 * 60));
     }
     
     public IntegerType toHours(ExecutionContext context) {
-        return IntegerType.fromValue(value / (60 * 60 * 1000));
+        return IntegerType.fromValue(toUnit(60 * 60));
     }
     
     public IntegerType toMinutes(ExecutionContext context) {
-        return IntegerType.fromValue(value / (60 * 1000));
+        return IntegerType.fromValue(toUnit(60));
     }
     
     public IntegerType toSeconds(ExecutionContext context) {

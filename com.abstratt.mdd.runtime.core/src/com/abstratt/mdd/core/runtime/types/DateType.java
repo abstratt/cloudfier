@@ -54,18 +54,6 @@ public class DateType extends PrimitiveType<Date> {
         return DurationType.fromValue(end.value.getTime() - this.value.getTime());
     }
 
-    public IntegerType differenceInDays(@SuppressWarnings("unused") ExecutionContext context, DateType end) {
-        return dateDifference(this, end, 1);
-    }
-
-    public IntegerType differenceInMonths(ExecutionContext context, DateType end) {
-        return dateDifference(this, end, 30);
-    }
-
-    public IntegerType differenceInYears(ExecutionContext context, DateType end) {
-        return dateDifference(this, end, 365);
-    }
-
     @Override
     public String getClassifierName() {
         return "mdd_types::Date";
@@ -103,30 +91,5 @@ public class DateType extends PrimitiveType<Date> {
         cal.setTime(this.primitiveValue());
         cal.add(Calendar.DATE, (int) (delta.primitiveValue() / 1000 / 60 / 60 / 24));
         return new DateType(cal.getTime());
-    }
-
-    private IntegerType dateDifference(DateType start, DateType end, int divider) {
-
-        Calendar startCal = Calendar.getInstance();
-        startCal.setTime(start.primitiveValue());
-
-        Calendar endCal = Calendar.getInstance();
-        endCal.setTime(end.primitiveValue());
-
-        startCal.clear(Calendar.HOUR);
-        startCal.clear(Calendar.MINUTE);
-        startCal.clear(Calendar.SECOND);
-        startCal.clear(Calendar.MILLISECOND);
-
-        endCal.clear(Calendar.HOUR);
-        endCal.clear(Calendar.MINUTE);
-        endCal.clear(Calendar.SECOND);
-        endCal.clear(Calendar.MILLISECOND);
-
-        startCal.setTimeZone(TimeZone.getTimeZone("GMT"));
-        endCal.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        long timeElapsed = endCal.getTimeInMillis() - startCal.getTimeInMillis();
-        return IntegerType.fromValue(timeElapsed / (divider * 1000L * 60 * 60 * 24));
     }
 }
