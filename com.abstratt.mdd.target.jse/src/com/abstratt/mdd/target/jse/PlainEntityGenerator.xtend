@@ -88,7 +88,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                 return UMLPackage.Literals.ACTIVITY.isInstance(eObject)
             }
         }, #{context})
-        allActivities.map[(it as Activity).anonymousDataTypes].flatten.map[generateDataType].join
+        allActivities.map[(it as Activity).anonymousDataTypes].flatten.toSet.map[generateDataType].join
     }
     
     def Iterable<Activity> findActivities(Iterable<Operation> operations) {
