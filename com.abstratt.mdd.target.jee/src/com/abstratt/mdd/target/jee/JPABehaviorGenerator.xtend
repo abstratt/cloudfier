@@ -40,14 +40,14 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         '''new «provider.name.toFirstUpper»Service()'''
     }
     
-    override generateTestidentityAction(TestIdentityAction action) {
+    override CharSequence generateTestIdentityAction(TestIdentityAction action) {
         if (action.first.type.entity) {
             if (action.second.nullValue)
                 '''(«action.first.generateAction» == null)'''
             else
                 '''«action.first.generateAction».getId().equals(«action.second.generateAction».getId())'''
         } else
-            super.generateTestidentityAction(action)
+            super.generateTestIdentityAction(action)
         
     }
     

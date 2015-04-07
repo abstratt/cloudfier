@@ -62,8 +62,6 @@
 		<module>com.abstratt.kirra.mdd.runtime</module>
 		<module>com.abstratt.kirra.server</module>
 		<module>com.abstratt.mdd.target.core</module>
-		<module>com.abstratt.mdd.target.query</module>
-        <module>com.abstratt.mdd.target.sql</module>
         <module>com.abstratt.mdd.target.mean</module>
         <module>com.abstratt.mdd.target.jee</module>        
         <module>com.abstratt.mdd.target.jse</module>                
@@ -79,7 +77,6 @@
 		<module>com.abstratt.kirra.tests.mdd.runtime</module>
 		<module>com.abstratt.mdd.frontend.web.tests</module>
 		<module>com.abstratt.mdd.target.tests</module>
-        <module>com.abstratt.mdd.target.mean.tests</module>		
 		<module>com.abstratt.kirra.server.product</module>
 	</modules>
 	<build>

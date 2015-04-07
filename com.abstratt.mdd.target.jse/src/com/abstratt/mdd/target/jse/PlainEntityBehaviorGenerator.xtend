@@ -44,7 +44,7 @@ class PlainEntityBehaviorGenerator extends PlainJavaBehaviorGenerator {
         '''«action.classifier.toJavaType».extent()'''
     }
     
-    override protected generateCallOperationAction(CallOperationAction action) {
+    override generateCallOperationAction(CallOperationAction action) {
         if (!action.operation.providerOperation)
             return super.generateCallOperationAction(action)
         val provider = action.operation.class_

@@ -82,13 +82,17 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         behaviorGenerator.generateActivityAsExpression(toGenerate, asClosure, parameters)
     }
     
-    def generateAnonymousDataTypes(Class context) {
+    def findAnonymousDataTypes(Class context) {
         val allActivities = MDDUtil.findAllFrom(new EObjectCondition() {
             override isSatisfied(EObject eObject) {
                 return UMLPackage.Literals.ACTIVITY.isInstance(eObject)
             }
         }, #{context})
-        allActivities.map[(it as Activity).anonymousDataTypes].flatten.toSet.map[generateDataType].join
+        allActivities.map[(it as Activity).anonymousDataTypes].flatten.toSet
+    }
+    
+    def generateAnonymousDataTypes(Class context) {
+        context.findAnonymousDataTypes.map[generateDataType].join
     }
     
     def Iterable<Activity> findActivities(Iterable<Operation> operations) {

@@ -47,7 +47,7 @@ public class GStringLanguageMapperTests extends AbstractRepositoryBuildingTests 
         FileUtils
                 .writeLines(
                         new File(repositoryDir, "foobar.gt"),
-                        Arrays.asList("import com.abstratt.mdd.target.engine.gstring.*;\nimport org.eclipse.uml2.uml.*;\nclass Simple extends GroovyTemplate {\nString generate(Classifier clazz) {\nclazz.ownedAttributes.collect{attr-> \"Attribute: ${attr.name}\"}.join('\\n') } }"));
+                        Arrays.asList("def generate(clazz) {\nclazz.ownedAttributes.collect{attr-> \"Attribute: ${attr.name}\"}.join('\\n') }"));
         getRepository().getProperties().setProperty("mdd.target.engine", "gstring");
         getRepository().getProperties().setProperty("mdd.target.foobar.template", "foobar.gt");
         ITargetPlatform platform = TargetCore.getPlatform(getRepository().getProperties(), "foobar");

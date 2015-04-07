@@ -174,6 +174,10 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         ''
     }
     
+    override generateAnonymousDataTypes(Class context) {
+        // let services do it
+    }
+    
     override generateProvider(Class provider) {
         '''
         @Inject @Transient «super.generateProvider(provider)»

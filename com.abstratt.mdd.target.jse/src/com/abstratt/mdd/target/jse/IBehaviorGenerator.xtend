@@ -1,12 +1,6 @@
 package com.abstratt.mdd.target.jse;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.eclipse.uml2.uml.Action;
-import org.eclipse.uml2.uml.Activity;
-import org.eclipse.uml2.uml.ActivityNode;
-import org.eclipse.uml2.uml.Parameter;
+import org.eclipse.uml2.uml.ActivityNode
 
 public interface IBehaviorGenerator extends IBasicBehaviorGenerator {
     

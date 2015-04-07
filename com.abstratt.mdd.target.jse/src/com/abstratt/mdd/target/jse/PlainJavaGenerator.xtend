@@ -281,10 +281,9 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     
         
     def generateDataType(DataType dataType) {
-        val visibility = dataType.toJavaVisibility
         val dataTypeName = if (dataType.anonymousDataType) dataType.generateAnonymousDataTypeName else dataType.name
         '''
-        «visibility» class «dataTypeName» implements Serializable {
+        public static class «dataTypeName» implements Serializable {
             «dataType.allAttributes.generateMany['''
                 public final «toJavaType» «generateAttributeName»;
             ''']»
@@ -307,15 +306,15 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         predicateActivity.generateActivityAsExpression        
     }
 
-    def static CharSequence unsupportedElement(Element e) {
+    def CharSequence unsupportedElement(Element e) {
         unsupportedElement(e, if (e instanceof NamedElement) e.qualifiedName else null)
     }
     
-    def static CharSequence unsupported(CharSequence message) {
+    def CharSequence unsupported(CharSequence message) {
         '''Unsupported: «message»''' 
     } 
     
-    def static CharSequence unsupportedElement(Element e, String message) {
+    def CharSequence unsupportedElement(Element e, String message) {
         unsupported('''«e.eClass.name»> «if (message != null) '''(«message»)''' else ''»''')
     }
 

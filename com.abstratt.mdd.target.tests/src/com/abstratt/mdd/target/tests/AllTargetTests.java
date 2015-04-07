@@ -7,10 +7,9 @@ public class AllTargetTests {
     public static Test suite() {
         TestSuite suite = new TestSuite(AllTargetTests.class.getName());
         suite.addTest(com.abstratt.mdd.target.tests.AllTests.suite());
-        //suite.addTest(com.abstratt.mdd.target.tests.query.AllTests.suite());
-        // suite.addTest(com.abstratt.mdd.target.tests.pojo.AllTests.suite());
-        // suite.addTest(com.abstratt.mdd.target.tests.jpa.AllTests.suite());
-        //suite.addTest(com.abstratt.mdd.target.tests.sql.AllTests.suite());
+        suite.addTest(com.abstratt.mdd.target.tests.jee.AllJEETests.suite());
+        // see issue abstratt/cloudfier/#33
+        //suite.addTest(com.abstratt.mdd.target.tests.mean.AllMeanTests.suite());
         return suite;
     }
 }

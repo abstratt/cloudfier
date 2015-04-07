@@ -151,18 +151,11 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
     
     def generateDerivedRelationshipAccessor(Class entity, Property derivedRelationship) {
-        val context = new SimpleContext("context")
-        behaviorGenerator.enterContext(context)
-        try {
-        return
         '''
             public «derivedRelationship.toJavaType» «derivedRelationship.generateAccessorName»(«entity.name» context) {
                 «behaviorGenerator.generateJavaMethodBody(derivedRelationship.derivation)»
             }
         '''
-        } finally {
-            behaviorGenerator.leaveContext(context)
-        }
     }
 
     def generateUpdate(Classifier entity) {

@@ -8,6 +8,9 @@ import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Package
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import org.eclipse.uml2.uml.ReadLinkAction
+import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -30,6 +33,22 @@ abstract class AbstractGenerator {
             return toCheck.target != null && toCheck.target.multivalued
         return false
     } 
+    
+     def boolean isPlainCollectionOperation(Action action) {
+        if (!action.collectionOperation)
+            return false
+        val asCallAction = action as CallOperationAction
+        val sourceAction = asCallAction.target.sourceAction
+        if (sourceAction instanceof ReadLinkAction || sourceAction instanceof ReadStructuralFeatureAction) {
+//            val end = sourceAction.endData.get(0).end.otherEnd
+//            val navigable = end != null && end.navigable
+//            return navigable
+            return true
+        }
+        return sourceAction.collectionOperation && sourceAction.plainCollectionOperation 
+    }
+
+    
     
     
 }

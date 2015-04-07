@@ -6,6 +6,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.MultiplicityElement
 import org.eclipse.uml2.uml.TypedElement
+import org.eclipse.uml2.uml.Type
 
 class JPAHelper {
     def static boolean isQueryPerformingActivity(Activity activity) {
@@ -21,4 +22,9 @@ class JPAHelper {
             'executeUpdate()'
         }
     } 
+    
+    def static CharSequence getAlias(Type classifier) {
+        '''«classifier.name.toFirstLower»_'''
+    }
+    
 }

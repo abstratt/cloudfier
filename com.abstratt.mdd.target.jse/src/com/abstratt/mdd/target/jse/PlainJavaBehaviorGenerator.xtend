@@ -50,56 +50,23 @@ import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
-class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehaviorGenerator {
-    
-    Deque<IExecutionContext> contextStack = new LinkedList(Arrays.asList(new SimpleContext("this")))
+class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
     new(IRepository repository) {
         super(repository)
     }
     
-    override enterContext(IExecutionContext context) {
-        contextStack.push(context)
-    }
-    
-    override leaveContext(IExecutionContext context) {
-        val top = contextStack.peek
-        if (context != top)
-            throw new IllegalStateException
-        contextStack.pop    
-    }
-    
-    override getContext() {
-        contextStack.peek
-    }
-
     override CharSequence generateActivity(Activity activity) {
         '''
             «generateActivityRootAction(activity)»
         '''
     }
     
-    def dispatch CharSequence generateAction(Action toGenerate) {
-        generateActionProper(toGenerate)
-    }
-
     def generateActivityRootAction(Activity activity) {
         val rootActionGenerated = generateAction(activity.rootAction)
         '''
             «rootActionGenerated»
         '''
-    }
-
-    def dispatch CharSequence generateAction(Void input) {
-        throw new NullPointerException
-    }
-
-    def dispatch CharSequence generateAction(InputPin input) {
-        generateAction(input.sourceAction)
-    }
-
-    def CharSequence generateActionProper(Action toGenerate) {
-        doGenerateAction(toGenerate)
     }
 
     def generateStatement(Action statementAction) {
@@ -115,17 +82,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         return '''«generated.toString.trim»;'''
     }
 
-    def dispatch CharSequence doGenerateAction(Action action) {
-
-        // should never pick this version - a more specific variant should exist for all supported actions
-        unsupported(action.eClass.name)
-    }
-
-    def dispatch CharSequence doGenerateAction(AddVariableValueAction action) {
-        generateAddVariableValueAction(action)
-    }
-
-    def generateAddVariableValueAction(AddVariableValueAction action) {
+    def override generateAddVariableValueAction(AddVariableValueAction action) {
         if (action.variable.name == '') 
             action.generateAddVariableValueActionAsReturn
         else
@@ -149,27 +106,11 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         '''«action.variable.name» = «generateAddVariableValueActionCore(action)»'''
     }    
 
-    def dispatch CharSequence doGenerateAction(ReadExtentAction action) {
-        generateReadExtentAction(action)
-    }
-
-    def CharSequence generateReadExtentAction(ReadExtentAction action) {
-        throw new UnsupportedOperationException("ReadExtent not supported")
-    }
-
-    def dispatch CharSequence doGenerateAction(TestIdentityAction action) {
-        '''«generateTestidentityAction(action)»'''
-    }
-
-    def generateTestidentityAction(TestIdentityAction action) {
+    def override generateTestIdentityAction(TestIdentityAction action) {
         '''«generateAction(action.first)» == «generateAction(action.second)»'''.parenthesize(action)
     }
 
-    def dispatch CharSequence doGenerateAction(DestroyLinkAction action) {
-        generateDestroyLinkAction(action)
-    }
-
-    def generateDestroyLinkAction(DestroyLinkAction action) {
+    def override generateDestroyLinkAction(DestroyLinkAction action) {
         generateUnsetLinkEnd(action.endData)
     }
 
@@ -197,11 +138,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
             otherEnd.navigable»;«ENDIF»'''
     }
 
-    def dispatch CharSequence doGenerateAction(CreateLinkAction action) {
-        generateCreateLinkAction(action)
-    }
-
-    def generateCreateLinkAction(CreateLinkAction action) {
+    def override generateCreateLinkAction(CreateLinkAction action) {
         generateSetLinkEnd(action.endData)
     }
 
@@ -232,11 +169,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
             otherEnd.navigable»;«ENDIF»'''
     }
 
-    def dispatch CharSequence doGenerateAction(CallOperationAction action) {
-        generateCallOperationAction(action)
-    }
-
-    protected def CharSequence generateCallOperationAction(CallOperationAction action) {
+    def override CharSequence generateCallOperationAction(CallOperationAction action) {
         val operation = action.operation
 
         if (isBasicTypeOperation(operation))
@@ -399,10 +332,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
                     }
                 }
                 case 'Grouping': {
-                    switch (operation.name) {
-                        case 'groupCollect': generateGroupingGroupCollect(action)
-                        default: '''«if(operation.getReturnResult != null) 'null' else ''» /*«unsupported('''Sequence operation: «operation.name»''')»*/'''
-                    }
+                    generateGroupingOperationCall(action)
                 }
                 case 'System': {
                     switch (operation.name) {
@@ -412,6 +342,14 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
                 }
                 default: unsupported('''classifier «targetType.name» - operation «operation.name»''')
             }
+    }
+    
+    def generateGroupingOperationCall(CallOperationAction action) {
+        val operation = action.operation
+        switch (operation.name) {
+            case 'groupCollect': generateGroupingGroupCollect(action)
+            default: '''«if(operation.getReturnResult != null) 'null' else ''» /*«unsupported('''Sequence operation: «operation.name»''')»*/'''
+        }
     }
     
     def generateDateOperationCall(CallOperationAction action) {
@@ -437,17 +375,19 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         val operation = action.operation
         switch (operation.name) {
             case 'size':
-                '''«generateAction(action.target)».size()'''.parenthesize(action)
-            case 'includes': '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
-            case 'isEmpty': '''«generateAction(action.target)».isEmpty()'''
+                generateCollectionSize(action)
+            case 'includes':
+                generateCollectionIncludes(action)
+            case 'isEmpty':
+                generateCollectionIsEmpty(action)
             case 'sum':
                 generateCollectionSum(action)
             case 'one':
                 generateCollectionOne(action)
             case 'any':
                 generateCollectionAny(action)
-            case 'asSequence': '''«IF !action.target.ordered»new ArrayList<«action.target.type.toJavaType»>(«ENDIF»«action.
-                target.generateAction»«IF !action.target.ordered»)«ENDIF»'''
+            case 'asSequence':
+                generateCollectionAsSequence(action)
             case 'forEach':
                 generateCollectionForEach(action)
             case 'select':
@@ -458,8 +398,26 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
                 generateCollectionReduce(action)
             case 'groupBy':
                 generateCollectionGroupBy(action)
-            default: '''«if(operation.getReturnResult != null) 'null' else ''» /*«unsupported('''Collection operation: «operation.name»''')»*/'''
+            default: '''«if(operation.getReturnResult != null) 'null' else ''» /*«unsupported(
+                '''Collection operation: «operation.name»''')»*/'''
         }
+    }
+    
+    def generateCollectionAsSequence(CallOperationAction action)
+        '''«IF !action.target.ordered»new ArrayList<«action.target.type.toJavaType»>(«ENDIF»«action.
+            target.generateAction»«IF !action.target.ordered»)«ENDIF»'''
+    
+    
+    def generateCollectionIsEmpty(CallOperationAction action)
+        '''«generateAction(action.target)».isEmpty()'''
+    
+    
+    def CharSequence generateCollectionSize(CallOperationAction action) {
+        '''«generateAction(action.target)».size()'''.parenthesize(action)
+    }
+    
+    def CharSequence generateCollectionIncludes(CallOperationAction action) {
+        '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
     }
 
     def CharSequence generateCollectionReduce(CallOperationAction action) {
@@ -518,7 +476,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         '''«action.target.generateAction».values().stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
 
-    def dispatch CharSequence doGenerateAction(ConditionalNode node) {
+    def override generateConditionalNode(ConditionalNode node) {
         val clauses = node.clauses
         val clauseCount = clauses.size()
         val current = new AtomicInteger(0)
@@ -541,14 +499,14 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         '''if («test.generateAction»)'''
     }
 
-    def dispatch CharSequence doGenerateAction(StructuredActivityNode node) {
+    def override generateStructuredActivityNode(StructuredActivityNode node) {
         val container = node.eContainer
-
+        
         // avoid putting a comma at a conditional node clause test 
         if (container instanceof ConditionalNode)
             if (container.clauses.exists[tests.contains(node)])
                 return '''«node.findStatements.head.generateAction»'''
-
+        
         // default path, generate as a statement
         if (MDDExtensionUtils.isCast(node))
             generateStructuredActivityNodeAsCast(node)
@@ -595,11 +553,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         '''
     }
 
-    def dispatch CharSequence doGenerateAction(SendSignalAction action) {
-        generateSendSignalAction(action)
-    }
-
-    def generateSendSignalAction(SendSignalAction action) {
+    def override generateSendSignalAction(SendSignalAction action) {
         val signalName = action.signal.name
         
         // TODO - this is a temporary implementation
@@ -611,11 +565,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
             ''
     }
 
-    def dispatch CharSequence doGenerateAction(ReadLinkAction action) {
-        generateReadLinkAction(action)
-    }
-
-    def generateReadLinkAction(ReadLinkAction action) {
+    def override generateReadLinkAction(ReadLinkAction action) {
         val fedEndData = action.endData.get(0)
         val target = fedEndData.value
         '''«generateTraverseRelationshipAction(target, fedEndData.end.otherEnd)»'''
@@ -625,11 +575,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         generateFeatureAccess(target, property, property.derived)
     }
 
-    def dispatch CharSequence doGenerateAction(ReadStructuralFeatureAction action) {
-        generateReadStructuralFeatureAction(action)
-    }
-
-    def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    def override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
         val feature = action.structuralFeature as Property
         if (feature.relationship)
             return generateTraverseRelationshipAction(action.object, feature)
@@ -645,11 +591,7 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         '''«targetString».«featureAccess»'''
     }
 
-    def dispatch CharSequence doGenerateAction(AddStructuralFeatureValueAction action) {
-        generateAddStructuralFeatureValueAction(action)
-    }
-
-    def generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
+    def override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
         val target = action.object
         val value = action.value
         val asProperty = action.structuralFeature as Property
@@ -688,39 +630,24 @@ class PlainJavaBehaviorGenerator extends PlainJavaGenerator implements IBehavior
         '''.toString.trim
     }
 
-    def dispatch CharSequence doGenerateAction(ValueSpecificationAction action) {
+    
+    def override generateValueSpecificationAction(ValueSpecificationAction action) {
         '''«action.value.generateValue(false)»'''
     }
 
-    def dispatch CharSequence doGenerateAction(CreateObjectAction action) {
-        generateCreateObjectAction(action)
-    }
-
-    def generateCreateObjectAction(CreateObjectAction action) {
+    def override generateCreateObjectAction(CreateObjectAction action) {
         '''new «action.classifier.name»()'''
     }
 
-    def dispatch CharSequence doGenerateAction(DestroyObjectAction action) {
-        generateDestroyObjectAction(action)
-    }
-
-    def generateDestroyObjectAction(DestroyObjectAction action) {
+    def override generateDestroyObjectAction(DestroyObjectAction action) {
         '''«action.target.generateAction» = null /* destroy */'''
     }
 
-    def dispatch CharSequence doGenerateAction(ReadVariableAction action) {
-        generateReadVariableValueAction(action)
-    }
-
-    def generateReadVariableValueAction(ReadVariableAction action) {
+    def override generateReadVariableAction(ReadVariableAction action) {
         '''«action.variable.name»'''
     }
 
-    def dispatch CharSequence doGenerateAction(ReadSelfAction action) {
-        generateReadSelfAction(action)
-    }
-
-    def CharSequence generateReadSelfAction(ReadSelfAction action) {
+    def override CharSequence generateReadSelfAction(ReadSelfAction action) {
         contextStack.peek.generateCurrentReference
     }
     
