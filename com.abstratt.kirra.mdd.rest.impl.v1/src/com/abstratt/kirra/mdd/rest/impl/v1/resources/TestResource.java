@@ -2,7 +2,9 @@ package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.emf.ecore.EObject;
@@ -16,6 +18,7 @@ import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
 import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
+import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.Status;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
@@ -61,8 +64,16 @@ public class TestResource extends AbstractTestRunnerResource {
         // first we enter a context to find all test cases
         List<TestCase> testCases = collectTestCases();
         // now we run them one by one, using a (potentially) different context every time
-        List<TestResult> results = testCases.stream().map(testCase -> runTestCaseAndRollback(testCase)).collect(Collectors.toList());
-        return jsonToStringRepresentation(results);
+        List<TestResult> testCaseResults = testCases.stream().map(testCase -> runTestCaseAndRollback(testCase)).collect(Collectors.toList());
+        Map<String, Number> stats = new LinkedHashMap<>();
+        long passed = testCaseResults.stream().filter(testCase -> testCase.testStatus == Status.Pass).count();
+        stats.put("total", testCaseResults.size());
+        stats.put("passed", passed);
+        stats.put("failed", testCaseResults.size() - passed);        
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("results", testCaseResults);
+        result.put("stats", stats);        
+        return jsonToStringRepresentation(result);
     }
 
     private List<TestCase> collectTestCases() {
