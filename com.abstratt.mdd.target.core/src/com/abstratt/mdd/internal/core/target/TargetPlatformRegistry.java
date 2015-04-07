@@ -117,8 +117,13 @@ public class TargetPlatformRegistry {
                 }
             }
             String id = extension.getSimpleIdentifier();
+            if (id == null) {
+                LogUtils.logError(TargetCore.PLUGIN_ID, "Missing required id in target platform extension in " + extension.getNamespaceIdentifier(), null);
+                continue;
+            }
             ITargetPlatform targetPlatform = new TargetPlatform(id, mappers);
-            result.put(targetPlatform.getId(), targetPlatform);
+            String platformId = targetPlatform.getId();
+            result.put(platformId, targetPlatform);
         }
         return result;
     }

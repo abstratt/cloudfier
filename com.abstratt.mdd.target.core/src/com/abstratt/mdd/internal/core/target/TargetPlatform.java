@@ -27,6 +27,8 @@ public class TargetPlatform implements ITargetPlatform {
 
     @Override
     public ITopLevelMapper<? extends NamedElement> getMapper(String mapperId) {
+        if (mapperId == null && mappers.size() == 1)
+            return mappers.values().stream().findAny().get();
         return mappers.get(mapperId);
     }
     

@@ -3,6 +3,7 @@
 */.settings
 */.project
 */.classpath
+*/xtend-gen
 */target
 */bin
 /qooxdoo
