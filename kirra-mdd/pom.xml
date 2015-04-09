@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.abstratt.mdd.kirra</groupId>
+	<artifactId>kirra-mdd</artifactId>
+	<version>1.120.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<artifactId>plugins</artifactId>
+    	<groupId>com.abstratt.mdd.kirra</groupId>
+		<version>1.120.1-SNAPSHOT</version>
+	</parent>
+	<modules>
+	    <!-- first so target gets updated/rebuilt first -->
+		<module>com.abstratt.kirra.mdd.schema</module>
+	</modules>
+</project>
+

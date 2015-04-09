@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.abstratt.mdd.kirra</groupId>
+	<artifactId>saas</artifactId>
+	<version>1.120.1-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<artifactId>plugins</artifactId>
+    	<groupId>com.abstratt.mdd.kirra</groupId>
+		<version>1.120.1-SNAPSHOT</version>
+	</parent>
+	<modules>
+		<module>com.abstratt.kirra.auth</module>
+		<module>com.abstratt.kirra.auth.ldap</module>
+		<module>com.abstratt.kirra.mdd.rest</module>
+		<module>com.abstratt.kirra.mdd.rest.impl.v1</module>
+		<module>com.abstratt.kirra.mdd.rest.impl.v2</module>
+		<module>com.abstratt.kirra.mdd.ui</module>
+		<module>com.abstratt.mdd.frontend.web</module>
+		<module>com.abstratt.mdd.frontend.orion</module>
+		<module>com.abstratt.mdd.frontend.web.tests</module>
+		<module>com.abstratt.kirra.server</module>
+		<module>com.abstratt.kirra.server.product</module>
+	</modules>
+</project>
+

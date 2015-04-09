@@ -51,33 +51,10 @@
 	<modules>
 	    <!-- first so target gets updated/rebuilt first -->
     	<module>kirra-dependencies</module>
-		<module>com.abstratt.nodestore</module>
-		<module>com.abstratt.nodestore.jdbc</module>
-		<module>com.abstratt.kirra.auth</module>
-		<module>com.abstratt.kirra.auth.ldap</module>
-		<module>com.abstratt.mdd.runtime.core</module>
-		<module>com.abstratt.kirra.mdd.schema</module>
-		<module>com.abstratt.kirra.populator</module>
-		<module>com.abstratt.kirra.populator.compiler</module>
-		<module>com.abstratt.kirra.mdd.runtime</module>
-		<module>com.abstratt.kirra.server</module>
-		<module>com.abstratt.mdd.target.core</module>
-        <module>com.abstratt.mdd.target.mean</module>
-        <module>com.abstratt.mdd.target.jee</module>        
-        <module>com.abstratt.mdd.target.jse</module>                
-		<module>com.abstratt.mdd.target.engine.gstring</module>
-		<module>com.abstratt.kirra.mdd.rest</module>
-		<module>com.abstratt.kirra.mdd.rest.impl.v1</module>
-		<module>com.abstratt.kirra.mdd.rest.impl.v2</module>
-		<module>com.abstratt.kirra.mdd.ui</module>
-		<module>com.abstratt.mdd.frontend.web</module>
-		<module>com.abstratt.mdd.frontend.orion</module>
-		<module>com.abstratt.nodestore.tests</module>
-		<module>com.abstratt.mdd.core.tests.runtime</module>
-		<module>com.abstratt.kirra.tests.mdd.runtime</module>
-		<module>com.abstratt.mdd.frontend.web.tests</module>
-		<module>com.abstratt.mdd.target.tests</module>
-		<module>com.abstratt.kirra.server.product</module>
+    	<module>kirra-mdd</module>    	
+		<module>runtime</module>
+		<module>codegen</module>
+		<module>saas</module>
 	</modules>
 	<build>
 		<plugins>
