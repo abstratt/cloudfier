@@ -2,8 +2,10 @@
 .project
 */.settings
 */.project
-*/.classpath
-*/xtend-gen
-*/target
-*/bin
+*/*/.settings
+*/*/.project
+*/*/.classpath
+*/*/xtend-gen
+*/*/target
+*/*/bin
 /qooxdoo
