@@ -5,3 +5,8 @@
 /.PipelineTests.java._trace
 /.QueryPipelineTests.java._trace
 /.AllMeanTests.java._trace
+/AllMeanTests.java
+/JSGeneratorTests.java
+/ModelGeneratorTests.java
+/PipelineTests.java
+/QueryPipelineTests.java
