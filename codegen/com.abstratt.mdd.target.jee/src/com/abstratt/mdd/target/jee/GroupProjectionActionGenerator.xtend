@@ -32,7 +32,7 @@ class GroupProjectionActionGenerator extends QueryFragmentGenerator {
         if (action.objectInitialization) {
             val outputType = action.structuredNodeOutputs.head.type as Classifier
             val List<CharSequence> projections = newLinkedList()
-            outputType.allAttributes.forEach[attribute, i |
+            outputType.getAllAttributes().forEach[attribute, i |
                 //projections.add('''«attribute.type.alias».alias("«action.structuredNodeInputs.get(i).name»")''')
                 projections.add('''«action.structuredNodeInputs.get(i).generateAction»''')
             ]

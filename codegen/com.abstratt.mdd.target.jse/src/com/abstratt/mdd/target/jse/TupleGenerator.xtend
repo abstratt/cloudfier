@@ -16,7 +16,7 @@ class TupleGenerator extends BehaviorlessClassGenerator {
         import java.io.Serializable;
         import java.util.*;
         
-        «dataType.generateDataType»
+        «dataType.generateDataType(true)»
         '''
     }
     

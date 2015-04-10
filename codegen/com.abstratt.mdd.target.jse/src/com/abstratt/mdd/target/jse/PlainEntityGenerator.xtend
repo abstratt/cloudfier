@@ -92,7 +92,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateAnonymousDataTypes(Class context) {
-        context.findAnonymousDataTypes.map[generateDataType].join
+        context.findAnonymousDataTypes.map[generateDataType(false)].join
     }
     
     def Iterable<Activity> findActivities(Iterable<Operation> operations) {
@@ -119,7 +119,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val privateOperations = entity.operations.filter[!action && !finder]
         val stateProperty = entity.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
-        val ports = entity.allAttributes.filter(typeof(Port))
+        val ports = entity.getAllAttributes().filter(typeof(Port))
         val signals = findTriggerableSignals(actionOperations)
         
         '''

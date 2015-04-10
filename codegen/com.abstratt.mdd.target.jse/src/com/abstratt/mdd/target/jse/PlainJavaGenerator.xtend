@@ -236,7 +236,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
     
     def generateAnonymousDataTypeName(DataType type) {
-        '''«type.allAttributes.map[
+        '''«type.getAllAttributes().map[
             generateAttributeName.toFirstUpper
         ].join()»Tuple'''.toString    
     }
@@ -280,18 +280,18 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
     
         
-    def generateDataType(DataType dataType) {
+    def generateDataType(DataType dataType, boolean topLevel) {
         val dataTypeName = if (dataType.anonymousDataType) dataType.generateAnonymousDataTypeName else dataType.name
         '''
-        public static class «dataTypeName» implements Serializable {
-            «dataType.allAttributes.generateMany['''
+        public «IF !topLevel»static «ENDIF»class «dataTypeName» implements Serializable {
+            «dataType.getAllAttributes().generateMany['''
                 public final «toJavaType» «generateAttributeName»;
             ''']»
             
-            public «dataTypeName»(«dataType.allAttributes.generateMany([
+            public «dataTypeName»(«dataType.getAllAttributes().generateMany([
                 '''«toJavaType» «generateAttributeName»'''
             ], ', ')») {
-                «dataType.allAttributes.generateMany([
+                «dataType.getAllAttributes().generateMany([
                   '''this.«generateAttributeName» = «generateAttributeName»;'''  
                 ])»
             }
