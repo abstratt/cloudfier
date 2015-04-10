@@ -84,20 +84,16 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
     
     def doGenerateJavaMethodBody(Activity activity) {
         
-        val extents = activity.rootAction.findMatchingActions(Literals.READ_EXTENT_ACTION).filter(typeof(ReadExtentAction));
-        // naively assume only one extent
-        val sourceType = extents.head?.classifier
         val resultType = activity.closureReturnParameter?.type
-        val resultTypeName = resultType.toJavaType
+        val resultTypeName = resultType?.toJavaType
         val usedEntities = activity.rootAction.findMatchingActions(Literals.ACTION).map[inputs.map[type].filter[entity]].flatten.toSet
         '''
-            «IF (sourceType != null)»
+            «IF (resultType != null)»
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
             CriteriaQuery<«resultTypeName»> cq = cb.createQuery(«resultTypeName».class);
             «usedEntities.map['''
             Root<«name»> «alias» = cq.from(«name».class);
             '''].join»
-            
             «ENDIF»
             «super.generateJavaMethodBody(activity)»
         '''
