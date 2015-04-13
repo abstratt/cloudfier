@@ -163,22 +163,17 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
 
-    def void testGroupByAttribute() throws CoreException, IOException {
+    def void testGroupByAttributeIntoCount() throws CoreException, IOException {
         var source = '''
             model crm;
-            enumeration Title
-                Mr;
-                Mrs;
-                Ms;
-            end;
             class Customer
                 attribute name : String;
-                attribute title : Title;              
-                query countByTitle() : {title : Title, customerCount : Integer} [*];
+                attribute title : String;              
+                query countByTitle() : {title : String, customerCount : Integer} [*];
                 begin
-                    return Customer extent.groupBy((c : Customer) : Title {
+                    return Customer extent.groupBy((c : Customer) : String {
                         c.title
-                    }).groupCollect((group : Customer[*]) : {title:Title, customerCount : Integer} {
+                    }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
                         { 
                             title := group.one().title,
                             customerCount := group.size()
@@ -197,6 +192,41 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq
                     .groupBy(customer_.get("title"))
                     .multiselect(customer_.get("title"), cb.count(customer_))
+            ''', generated.toString)
+    }
+
+    def void testGroupByAttributeIntoSum() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute title : String;
+                attribute salary : Double;              
+                query sumSalaryByTitle() : {title : String, totalSalary : Double} [*];
+                begin
+                    return Customer extent.groupBy((c : Customer) : String {
+                        c.title
+                    }).groupCollect((grouped : Customer[*]) : {title : String, totalSalary : Double} {
+                        { 
+                            title := grouped.one().title,
+                            totalSalary := grouped.sum((c : Customer) : Double {
+                                c.salary
+                            })
+                        }   
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::sumSalaryByTitle')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                cq
+                    .groupBy(customer_.get("title"))
+                    .multiselect(customer_.get("title"), cb.sum(customer_.get("salary")))
             ''', generated.toString)
     }
 

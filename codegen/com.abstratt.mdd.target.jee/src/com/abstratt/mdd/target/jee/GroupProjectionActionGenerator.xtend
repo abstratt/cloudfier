@@ -39,25 +39,31 @@ class GroupProjectionActionGenerator extends QueryFragmentGenerator {
             '''«projections.join(', ')»'''
         } else if (isCast(action)) {
             action.inputs.head.sourceAction.generateAction
+        } else if (action.rootAction) {
+            val singleStatement = action.findSingleStatement
+            if (!singleStatement.returnAction)
+                throw new IllegalArgumentException
+            singleStatement.sourceAction.generateAction    
         } else
             unsupportedElement(action)
     }
     
     def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
-        val classifier = action.object.type
-        '''«classifier.alias».get("«property.name»")'''
+        '''«action.object.generateAction».get("«property.name»")'''
         //'''«action.structuralFeature.owningClassifier.alias».get("«action.structuralFeature.name»")'''
     }
-    
+        
     override generateReadVariableAction(ReadVariableAction action) {
-        action.variable.name
+        action.variable.type.alias
     }
     
     override generateCallOperationAction(CallOperationAction action) {
         if (action.collectionOperation) {
             switch (action.operation.name) {
-                case 'size' : '''cb.count(«action.target.type.alias»)'''
+                case 'size' : '''/*count()*/cb.count(«action.target.type.alias»)'''
+                case 'sum' : '''/*sum()*/cb.sum(«action.arguments.head.sourceClosure.rootAction.generateAction»)'''
+                case 'one' : '''/*one()*/«action.target.generateAction»'''
                 default: unsupportedElement(action)
             }
         } else
