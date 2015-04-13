@@ -660,10 +660,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
-        val statements = toGenerate.rootAction.findStatements
-        if (statements.size != 1)
-            throw new IllegalArgumentException("Single statement activity expected")
-        val singleStatement = statements.head
+        val singleStatement  = toGenerate.rootAction.findSingleStatement
         val isReturnValue = singleStatement instanceof AddVariableValueAction &&
             (singleStatement as VariableAction).variable.isReturnVariable
         val expressionRoot = if(isReturnValue) singleStatement.sourceAction else singleStatement
