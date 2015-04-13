@@ -88,7 +88,7 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
         val resultTypeName = resultType?.toJavaType
         val usedEntities = activity.rootAction.findMatchingActions(Literals.ACTION).map[(outputs+inputs).map[type].filter[entity]].flatten.toSet
         '''
-            «IF (resultType != null && activity.operation?.query)»
+            «IF (resultType != null && (activity.operation == null || activity.operation.query))»
             CriteriaBuilder cb = entityManager.getCriteriaBuilder();
             CriteriaQuery<«resultTypeName»> cq = cb.createQuery(«resultTypeName».class);
             «usedEntities.map['''
