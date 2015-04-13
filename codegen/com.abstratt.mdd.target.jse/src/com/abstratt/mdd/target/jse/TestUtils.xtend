@@ -49,8 +49,15 @@ class TestUtils {
             case 'isNull': '''assertNull(«actionGenerator.apply(action.arguments.head.sourceAction)»)'''
             case 'isNotNull': '''assertNotNull(«actionGenerator.apply(action.arguments.head.sourceAction)»)'''
             case 'isTrue': '''assertTrue(«actionGenerator.apply(action.arguments.head.sourceAction)»)'''
-            case 'areEqual':
-                '''assertEquals(«actionGenerator.apply(action.arguments.head.sourceAction)», «actionGenerator.apply(action.arguments.last.sourceAction)»)'''
+            case 'areEqual': {
+                val operands = action.arguments.map[actionGenerator.apply(it.sourceAction)]
+                if (action.arguments.forall[source.type.name == 'Double' || source.type.name == 'Integer'] && action.arguments.exists[source.type.name == 'Double'])
+                    // special FP comparison
+                    '''assertEquals(«operands.get(0)», «operands.get(1)», 0D)'''
+                else
+                    // default
+                    '''assertEquals(«operands.get(0)», «operands.get(1)»)'''
+            }
             default: '''Unsupported Assert operation: «operation.name»'''
         }
     }
