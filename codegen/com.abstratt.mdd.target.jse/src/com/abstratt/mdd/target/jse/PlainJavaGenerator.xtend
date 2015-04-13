@@ -307,7 +307,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
 
     def CharSequence unsupportedElement(Element e) {
-        unsupportedElement(e, if (e instanceof NamedElement) e.qualifiedName else null)
+        unsupportedElement(e, if (e instanceof NamedElement) e.name else null)
     }
     
     def CharSequence unsupported(CharSequence message) {
