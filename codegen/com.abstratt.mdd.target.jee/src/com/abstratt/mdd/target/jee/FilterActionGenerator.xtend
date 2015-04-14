@@ -73,13 +73,13 @@ class FilterActionGenerator extends QueryFragmentGenerator {
         }
         
         val asQueryOperator = action.operation.toQueryOperator
-        if (asQueryOperator != null)
+        if (asQueryOperator != null) {
+            val operands = #[action.target] + action.arguments 
             return '''
             cb.«action.operation.toQueryOperator»(
-                «action.target.sourceAction.generateAction»,
-                «action.arguments.map[sourceAction.generateAction].join(',\n')»
+                «operands.map[sourceAction.generateAction].join(',\n')»
             )'''
-        else
+        } else
             super.generateCallOperationAction(action)
     }
     
