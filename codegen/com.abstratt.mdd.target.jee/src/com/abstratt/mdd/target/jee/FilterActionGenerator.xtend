@@ -31,8 +31,7 @@ class FilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def CharSequence generateFilter(Activity predicate, boolean newContext) {
-        val statementAction = predicate.rootAction.findStatements.head
-        generateAction(statementAction)
+        generateAction(predicate.findSingleStatement)
     }
     
     def override CharSequence generateReadLinkAction(ReadLinkAction action) {
@@ -77,7 +76,8 @@ class FilterActionGenerator extends QueryFragmentGenerator {
         if (asQueryOperator != null)
             return '''
             cb.«action.operation.toQueryOperator»(
-                «action.inputs.map[sourceAction.generateAction].join(',\n')»
+                «action.target.sourceAction.generateAction»,
+                «action.arguments.map[sourceAction.generateAction].join(',\n')»
             )'''
         else
             super.generateCallOperationAction(action)

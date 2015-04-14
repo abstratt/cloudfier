@@ -91,8 +91,8 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq.select(customer_)
                     .distinct(true)
                     .where(cb.greaterThanOrEqualTo(
-                        cb.parameter(Double.class,"threshold"),
-                        company_.get("revenue")
+                        company_.get("revenue"),
+                        cb.parameter(Double.class,"threshold")
                     ))
             ''', generated.toString)
     }
@@ -157,12 +157,47 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq.select(customer_)
                     .distinct(true)
                     .where(cb.greaterThanOrEqualTo(
-                        cb.parameter(Double.class,"threshold"),
-                        customer_.get("salary")
+                        customer_.get("salary"),
+                        cb.parameter(Double.class,"threshold")
                     ))
             ''', generated.toString)
     }
 
+    def void testGroupByAttributeIntoCountWithFilter() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute title : String;              
+                query countByTitle() : {title : String, customerCount : Integer} [*];
+                begin
+                    return Customer extent.groupBy((c : Customer) : String {
+                        c.title
+                    }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
+                        { 
+                            title := group.one().title,
+                            customerCount := group.size()
+                        }   
+                    }).select((counted : {title:String, customerCount : Integer}) : Boolean {
+                        counted.customerCount > 100
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::countByTitle')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                cq
+                    .groupBy(customer_.get("title"))
+                    .multiselect(customer_.get("title"), cb.count(customer_))
+                    .having(cb.greaterThan(cb.count(customer_), cb.literal(100)))
+            ''', generated.toString)
+    }
+    
     def void testGroupByAttributeIntoCount() throws CoreException, IOException {
         var source = '''
             model crm;
@@ -194,6 +229,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                     .multiselect(customer_.get("title"), cb.count(customer_))
             ''', generated.toString)
     }
+    
 
     def void testGroupByAttributeIntoSum() throws CoreException, IOException {
         var source = '''
@@ -229,8 +265,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                     .multiselect(customer_.get("title"), cb.sum(customer_.get("salary")))
             ''', generated.toString)
     }
-
-
+    
     def getStatementSourceAction(Operation op) {
         op.activity.rootAction.findStatements.last.sourceAction
     }

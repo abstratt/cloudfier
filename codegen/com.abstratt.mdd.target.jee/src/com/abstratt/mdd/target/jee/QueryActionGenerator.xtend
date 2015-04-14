@@ -24,6 +24,7 @@ import org.eclipse.uml2.uml.MultiplicityElement
 import org.eclipse.uml2.uml.UMLPackage.Literals
 import org.eclipse.uml2.uml.CallAction
 import org.eclipse.uml2.uml.ReadSelfAction
+import org.eclipse.uml2.uml.StructuredActivityNode
 
 final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     
@@ -75,9 +76,11 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     override generateCollectionSelect(CallOperationAction action) {
         val predicate = action.arguments.head.sourceClosure
         ''' 
-            «action.target.sourceAction.generateAction».where(
+            «action.target.sourceAction.generateAction».«IF action.target.sourceAction.groupedUpstream»having(
+                «predicate.generateHavingPredicate(action)» 
+            )«ELSE»where(
                 «predicate.generateSelectPredicate»
-            )
+            )«ENDIF»
         '''
     }
     
@@ -91,17 +94,26 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
         
     }
     
-    def private boolean isGrouped(Action action) {
+    def private boolean isGroupedDownstream(Action action) {
         if (!action.collectionOperation)
             false
         else {
             val callOpAction = action as CallOperationAction
-            callOpAction.operation.name == 'groupBy' || callOpAction.results.head.targetAction.grouped
+            callOpAction.operation.name == 'groupBy' || callOpAction.results.head.targetAction.groupedDownstream
+        }
+    }
+    
+    def private boolean isGroupedUpstream(Action action) {
+        if (!(action instanceof CallOperationAction))
+            false
+        else {
+            val callOpAction = action as CallOperationAction
+            callOpAction.operation.name == 'groupBy' || callOpAction.target.sourceAction.groupedUpstream
         }
     }
     
     override generateReadExtentAction(ReadExtentAction action) {
-        val isGrouped = action.result.targetAction.grouped 
+        val isGrouped = action.result.targetAction.groupedDownstream 
         if (isGrouped) 'cq' else '''cq.select(«action.classifier.alias  »).distinct(true)'''
     }
     
@@ -129,17 +141,25 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     }
     
     def generateJoin(Activity predicate) {
-        val statementAction = predicate.rootAction.findStatements.head
-        new JoinActionGenerator(repository).generateAction(statementAction)
+        new JoinActionGenerator(repository).generateAction(predicate.findSingleStatement)
     }
 
     def generateGroupByMapping(Activity mapping) {
-        //TODO taking only first statement into account
-        val statementAction = mapping.rootAction.findStatements.head
-        new GroupByActionGenerator(repository).generateAction(statementAction)
+        new GroupByActionGenerator(repository).generateAction(mapping.findSingleStatement)
     }
 
     def generateSelectPredicate(Activity predicate) {
         new FilterActionGenerator(repository).generateFilter(predicate, true)
+    }
+    
+    def generateHavingPredicate(Activity predicate, CallOperationAction action) {
+        val upstreamGroupCollect = action.target.sourceAction.findUpstreamAction(
+            [upstream | upstream instanceof CallOperationAction && (upstream as CallOperationAction).getOperation().getName().equals("groupCollect")]
+        ) as CallOperationAction;
+        val projector = upstreamGroupCollect.arguments.head.sourceAction.resolveBehaviorReference as Activity
+        val projectingAction = projector.findSingleStatement.findUpstreamAction(
+            [upstream | upstream instanceof StructuredActivityNode && (upstream as StructuredActivityNode).objectInitialization]
+        ) as StructuredActivityNode
+        new GroupProjectionFilterActionGenerator(repository, projectingAction).generateAction(predicate.findSingleStatement)
     }
 }

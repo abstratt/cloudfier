@@ -1,5 +1,6 @@
 package com.abstratt.mdd.core.runtime.types;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import org.eclipse.uml2.uml.Type;
@@ -22,6 +23,16 @@ public class GroupingType extends BuiltInClass {
             result.add(mappedGroup);
         }
         return result;
+    }
+    
+    public GroupingType groupSelect(ExecutionContext context, ElementReferenceType reference) {
+        Map<BasicType, CollectionType> result = new LinkedHashMap<>(); 
+        for (Map.Entry<BasicType, CollectionType> currentGroup : groups.entrySet()) {
+            BooleanType predicateOutcome = (BooleanType) CollectionType.runClosureBehavior(context, reference, currentGroup.getValue());
+            if (predicateOutcome.isTrue())
+                result.put(currentGroup.getKey(), currentGroup.getValue());
+        }
+        return new GroupingType(valueType, result);
     }
     
     public BasicType groupReduce(ExecutionContext context, ElementReferenceType reference, BasicType initial) {

@@ -51,7 +51,6 @@ class GroupProjectionActionGenerator extends QueryFragmentGenerator {
     def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
         '''«action.object.generateAction».get("«property.name»")'''
-        //'''«action.structuralFeature.owningClassifier.alias».get("«action.structuralFeature.name»")'''
     }
         
     override generateReadVariableAction(ReadVariableAction action) {
@@ -61,9 +60,9 @@ class GroupProjectionActionGenerator extends QueryFragmentGenerator {
     override generateCallOperationAction(CallOperationAction action) {
         if (action.collectionOperation) {
             switch (action.operation.name) {
-                case 'size' : '''/*count()*/cb.count(«action.target.type.alias»)'''
-                case 'sum' : '''/*sum()*/cb.sum(«action.arguments.head.sourceClosure.rootAction.generateAction»)'''
-                case 'one' : '''/*one()*/«action.target.generateAction»'''
+                case 'size' : '''cb.count(«action.target.type.alias»)'''
+                case 'sum' : '''cb.sum(«action.arguments.head.sourceClosure.rootAction.generateAction»)'''
+                case 'one' : '''«action.target.generateAction»'''
                 default: unsupportedElement(action)
             }
         } else

@@ -528,7 +528,15 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
     def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
         val terminals = node.findTerminals
-        '''«generateVariables(node)»«terminals.map[generateStatement].join('\n')»'''
+        val statements = terminals.map[
+            try {
+                generateStatement
+            } catch (RuntimeException e) {
+                e.printStackTrace
+                return e.toString
+            }
+        ]
+        '''«generateVariables(node)»«statements.join('\n')»'''
     }
 
     def generateVariables(StructuredActivityNode node) {

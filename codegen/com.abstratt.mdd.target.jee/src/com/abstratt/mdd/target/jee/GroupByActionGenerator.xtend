@@ -23,7 +23,6 @@ class GroupByActionGenerator extends QueryFragmentGenerator {
         val property = action.structuralFeature as Property
         val classifier = action.object.type
         '''«classifier.alias».get("«property.name»")'''
-        //'''«action.structuralFeature.owningClassifier.alias».get("«action.structuralFeature.name»")'''
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
