@@ -40,9 +40,6 @@ abstract class AbstractGenerator {
         val asCallAction = action as CallOperationAction
         val sourceAction = asCallAction.target.sourceAction
         if (sourceAction instanceof ReadLinkAction || sourceAction instanceof ReadStructuralFeatureAction) {
-//            val end = sourceAction.endData.get(0).end.otherEnd
-//            val navigable = end != null && end.navigable
-//            return navigable
             return true
         }
         return sourceAction.collectionOperation && sourceAction.plainCollectionOperation 

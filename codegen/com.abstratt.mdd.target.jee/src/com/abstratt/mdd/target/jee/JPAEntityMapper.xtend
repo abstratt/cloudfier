@@ -23,10 +23,6 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         
         val crudTestGenerator = new CRUDTestGenerator(repository)
         mappings.putAll(entities.toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
-
-//        val repositoryGenerator = new RepositoryGenerator(repository)
-//        mappings.putAll(entities.toMap[generateRepositoryFileName].mapValues[repositoryGenerator.generateRepository(it)])
-        
         return mappings 
     }
     
@@ -38,8 +34,4 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     def generateCRUDTestFileName(Classifier entityClass) {
         '''src/test/java/«entityClass.namespace.name»/«entityClass.name»CRUDTest.java'''.toString
     }
-
-//    def generateRepositoryFileName(Classifier entityClass) {
-//        '''src/main/java/«entityClass.namespace.name»/«entityClass.name»Repository.java'''.toString
-//    }
 }

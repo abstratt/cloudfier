@@ -41,12 +41,6 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
         val core = switch (operation.name) {
             case 'size':
                 generateCollectionSize(action)
-            //            case 'includes': '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
-            //            case 'isEmpty': '''«generateAction(action.target)».isEmpty()'''
-            //            case 'sum': generateCollectionSum(action)
-            //            case 'one': generateCollectionOne(action)
-            //            case 'asSequence' : '''«IF !action.target.ordered»new ArrayList<«action.target.type.toJavaType»>(«ENDIF»«action.target.generateAction»«IF !action.target.ordered»)«ENDIF»''' 
-            //            case 'forEach': generateCollectionForEach(action)
             case 'select':
                 generateCollectionSelect(action)
             case 'collect':
@@ -118,9 +112,6 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     }
     
     override generateGroupingOperationCall(CallOperationAction action) {
-//        if (action.plainGroupingOperation) {
-//            return plainJavaBehaviorGenerator.generateGroupingOperationCall(action)
-//        }
         val operation = action.operation
         val core = switch (operation.name) {
             case 'groupCollect':
