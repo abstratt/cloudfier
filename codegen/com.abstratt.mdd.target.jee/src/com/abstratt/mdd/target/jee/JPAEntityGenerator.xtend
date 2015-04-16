@@ -190,7 +190,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         '''
     }
     
-    override generateRelationshipDerivation(Activity derivation, Property relationship) {
+    override generateRelationshipDerivationAsActivity(Activity derivation, Property relationship) {
         if (!derivation.queryPerformingActivity)
             return super.generateDerivedAttributeComputationAsActivity(relationship, derivation)
         // delegate query performing to the service

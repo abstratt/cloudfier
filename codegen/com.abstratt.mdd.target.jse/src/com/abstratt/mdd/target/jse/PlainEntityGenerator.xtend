@@ -341,12 +341,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val derivation = relationship.derivation
         '''
         public «relationship.generateStaticModifier»«relationship.generateRelationshipAccessorType» «relationship.generateAccessorName»() {
-            «generateRelationshipDerivation(derivation, relationship)»
+            «generateRelationshipDerivationAsActivity(derivation, relationship)»
         }'''
     }
     
-    def generateRelationshipDerivation(Activity derivation, Property relationship) {
-        derivation.generateActivityAsExpression
+    def generateRelationshipDerivationAsActivity(Activity derivation, Property relationship) {
+        '''return «derivation.generateActivityAsExpression»;'''
     }
     
     def CharSequence generateRelationshipAccessorType(Property relationship) {
