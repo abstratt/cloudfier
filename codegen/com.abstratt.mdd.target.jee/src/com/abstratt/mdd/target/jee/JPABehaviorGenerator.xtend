@@ -63,17 +63,8 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     
     
     override generateCreateObjectAction(CreateObjectAction action) {
-        val classifier = action.classifier
         val core = super.generateCreateObjectAction(action)
         core
-    }
-    
-    override generateTraverseRelationshipAction(InputPin target, Property property) {
-        if (property.navigable)
-            return super.generateTraverseRelationshipAction(target, property)
-        else
-        // use service to get related instances
-        '''«generateProviderReference(target.owningAction.actionActivity.behaviorContext, property.type as Classifier)».find«property.name.toFirstUpper»By«property.otherEnd.name.toFirstUpper»(«target.generateAction»)'''        
     }
     
     override generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {

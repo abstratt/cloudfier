@@ -7,6 +7,7 @@ import org.eclipse.uml2.uml.Classifier
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.jse.TestUtils.*
+import org.eclipse.uml2.uml.ReadExtentAction
 
 class FunctionalTestBehaviorGenerator extends PlainJavaBehaviorGenerator {
 
@@ -23,6 +24,10 @@ class FunctionalTestBehaviorGenerator extends PlainJavaBehaviorGenerator {
             TestUtils.generateAssertOperationCall(action, [generateAction])
         else
             super.generateBasicTypeOperationCall(action)
+    }
+    
+    override generateReadExtentAction(ReadExtentAction action) {
+        '''«action.classifier.toJavaType».extent()'''
     }
     
     override generateStatement(Action statementAction) {

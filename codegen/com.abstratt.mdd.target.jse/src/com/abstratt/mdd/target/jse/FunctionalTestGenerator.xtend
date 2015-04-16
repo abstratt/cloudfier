@@ -60,6 +60,13 @@ class FunctionalTestGenerator extends PlainEntityGenerator {
     override generateStandardImports() {
         '''
             «super.generateStandardImports»
+            // anonymous:
+            «this.entities.generateMany[ entity |
+                entity.findAnonymousDataTypes.generateMany[ dataType |
+                '''import «entity.package.toJavaPackage».«entity.name»Service.«dataType.generateAnonymousDataTypeName»;'''
+                ]
+            ]»
+            
             import org.junit.*;  
             import static org.junit.Assert.*;  
         '''

@@ -55,7 +55,7 @@ class PlainEntityBehaviorGenerator extends PlainJavaBehaviorGenerator {
     }
     
     override generateProviderReference(Classifier context, Classifier provider) {
-        '''«provider.name.toFirstLower»Service'''
+        if (context == provider) 'this' else super.generateProviderReference(context, provider)
     }
 
     override def generateSendSignalAction(SendSignalAction action) {

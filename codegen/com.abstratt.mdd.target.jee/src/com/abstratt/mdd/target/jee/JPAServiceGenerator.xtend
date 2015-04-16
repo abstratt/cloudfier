@@ -59,7 +59,6 @@ class JPAServiceGenerator extends ServiceGenerator {
             «entity.generateFindAll»
             «entity.generateUpdate»
             «entity.generateDelete»
-            «entity.generateRelated»
         '''
     }
     
@@ -136,7 +135,7 @@ class JPAServiceGenerator extends ServiceGenerator {
         '''
     }
     
-    def generateRelated(Classifier entity) {
+    override generateRelated(Classifier entity) {
         val nonNavigableRelationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[!navigable]
         nonNavigableRelationships.generateMany[ relationship |
             val otherEnd = relationship.otherEnd

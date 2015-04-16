@@ -166,7 +166,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     def toJavaType(TypedElement element, boolean honorOptionality) {
         var nullable = true 
         if (element instanceof MultiplicityElement) {
-            nullable = element.lower == 0
+            nullable = element.lower == 0 || (element instanceof Parameter && (element as Parameter).defaultValue != null)
             if (element.multivalued) {
                 return '''«(element as MultiplicityElement).toJavaGeneralCollection»<«element.type.toJavaType»>'''
             }

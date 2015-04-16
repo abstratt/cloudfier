@@ -548,8 +548,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def CharSequence generateStructuredActivityNodeObjectInitialization(StructuredActivityNode node) {
-        val classifier = node.outputs.head.type
-        val tupleType = classifier.toJavaType
+        val targetType = node.outputs.head.target.type
+        val tupleType = targetType.toJavaType
         generateConstructorInvocation(tupleType, node.inputs)
     }
 
@@ -580,7 +580,11 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def generateTraverseRelationshipAction(InputPin target, Property property) {
-        generateFeatureAccess(target, property, property.derived)
+        if (property.navigable)
+            return generateFeatureAccess(target, property, property.derived)
+        else
+            // use service to get related instances
+            '''«generateProviderReference(target.owningAction.actionActivity.behaviorContext, property.type as Classifier)».find«property.name.toFirstUpper»By«property.otherEnd.name.toFirstUpper»(«target.generateAction»)'''        
     }
 
     def override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {

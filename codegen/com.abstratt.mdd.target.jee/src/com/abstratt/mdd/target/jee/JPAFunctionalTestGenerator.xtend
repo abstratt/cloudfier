@@ -59,12 +59,6 @@ class JPAFunctionalTestGenerator extends AbstractGenerator {
             «super.generateStandardImports()»
             «parent.childEntityGenerator.generateStandardImports()»
             import util.*;
-            // anonymous:
-            «this.entities.generateMany[ entity |
-                entity.findAnonymousDataTypes.generateMany[ dataType |
-                '''import «entity.package.toJavaPackage».«entity.name»Service.«dataType.generateAnonymousDataTypeName»;'''
-                ]
-            ]»
             '''
         }
         
