@@ -4,7 +4,6 @@ import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Classifier
-import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class ServiceGenerator extends PlainEntityGenerator {
