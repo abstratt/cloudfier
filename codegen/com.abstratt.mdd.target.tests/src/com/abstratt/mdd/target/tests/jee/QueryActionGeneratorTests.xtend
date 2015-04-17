@@ -33,7 +33,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new QueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                cq.select(customer_).distinct(true)
+                cq.distinct(true)
             ''', generated.toString)
     }
 
@@ -58,12 +58,11 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new QueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                cq.select(customer_)
-                    .distinct(true)
+                cq.distinct(true)
                     .where(cb.isTrue(customer_.get("vip")))
             ''', generated.toString)
     }
-
+    
     def void testSelectByAttributeInRelatedEntity() throws CoreException, IOException {
         var source = '''
             model crm;
@@ -88,12 +87,42 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new QueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                cq.select(customer_)
+                cq
                     .distinct(true)
                     .where(cb.greaterThanOrEqualTo(
                         company_.get("revenue"),
                         cb.parameter(Double.class,"threshold")
                     ))
+            ''', generated.toString)
+    }
+
+    def void testCollectAttributes() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute revenue : Double;
+            end;            
+            class Customer
+                attribute name : String;
+                attribute company : Company;                              
+                query getCompanyRevenueWithCustomerName() : { customerName : String, companyRevenue : Double}[*];
+                begin
+                    return Customer extent.collect((c : Customer) : { : String, : Double} {
+                        { cName := c.name, cRevenue := c.company.revenue }
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::getCompanyRevenueWithCustomerName')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                cq
+                    .distinct(true)
+                    .multiselect(customer_.get("name"), customer_.get("company").get("revenue"))
             ''', generated.toString)
     }
 
@@ -122,8 +151,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new QueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                cq.select(customer_)
-                    .distinct(true)
+                cq.distinct(true)
                     .where(cb.equal(
                         customer_.get("company"),
                         cb.parameter(Company.class,"toMatch")
@@ -154,7 +182,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new QueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                cq.select(customer_)
+                cq
                     .distinct(true)
                     .where(cb.greaterThanOrEqualTo(
                         customer_.get("salary"),

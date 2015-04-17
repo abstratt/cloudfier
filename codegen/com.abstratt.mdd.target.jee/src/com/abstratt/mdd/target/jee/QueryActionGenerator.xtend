@@ -57,12 +57,22 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     }
 
     override generateCollectionCollect(CallOperationAction action) {
+        // if the mapping returns a tuple, this is a projection
+        // if the mapping returns an entity, this is a join, as defined by the traversal in the mapping
+        // what other cases are there
         val mapping = action.arguments.head.sourceClosure
         val sourceType = mapping.closureInputParameter.type
         val targetType = mapping.closureReturnParameter.type
+        if (targetType.entity)
         ''' 
             «action.target.sourceAction.generateAction».join(
                 «mapping.generateJoin»
+            )
+        '''
+        else
+        '''
+            «action.target.sourceAction.generateAction».multiselect(
+                «mapping.generateProjection»
             )
         '''
     }
@@ -107,8 +117,10 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     }
     
     override generateReadExtentAction(ReadExtentAction action) {
-        val isGrouped = action.result.targetAction.groupedDownstream 
-        if (isGrouped) 'cq' else '''cq.select(«action.classifier.alias  »).distinct(true)'''
+        val isGrouped = action.result.targetAction.groupedDownstream
+        // we do not issue a select here as it should only be done in some cases
+        // and leaving it out seems to work 
+        if (isGrouped) 'cq' else '''cq.distinct(true)'''
     }
     
     override generateGroupingOperationCall(CallOperationAction action) {
@@ -133,6 +145,10 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     
     def generateJoin(Activity predicate) {
         new JoinActionGenerator(repository).generateAction(predicate.findSingleStatement)
+    }
+    
+    def generateProjection(Activity mapping) {
+        new ProjectionActionGenerator(repository).generateAction(mapping.findSingleStatement)
     }
 
     def generateGroupByMapping(Activity mapping) {
