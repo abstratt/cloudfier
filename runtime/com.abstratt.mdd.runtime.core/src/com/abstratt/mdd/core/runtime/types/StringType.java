@@ -58,4 +58,6 @@ public class StringType extends PrimitiveType<String> {
     protected StringType newInstance(String primitiveValue) {
         return new StringType(primitiveValue);
     }
+    
+
 }

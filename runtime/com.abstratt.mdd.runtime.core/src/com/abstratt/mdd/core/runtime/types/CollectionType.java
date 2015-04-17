@@ -15,6 +15,7 @@ import org.eclipse.uml2.uml.TypedElement;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 
 public abstract class CollectionType extends BuiltInClass implements Serializable {
@@ -259,5 +260,17 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
                 return current;
         }
         return null;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof CollectionType))
+            return false;
+        CollectionType other = (CollectionType) obj;
+        if (this.backEnd.isEmpty() && other.backEnd.isEmpty())
+            return true;
+        if (this.baseType != other.baseType)
+            return false;
+        return this.backEnd.equals(other.backEnd);
     }
 }
