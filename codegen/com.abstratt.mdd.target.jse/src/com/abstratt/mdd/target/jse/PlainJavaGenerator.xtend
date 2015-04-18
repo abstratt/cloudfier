@@ -41,6 +41,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 import org.eclipse.uml2.uml.ValueSpecificationAction
+import org.eclipse.uml2.uml.PackageableElement
 
 abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
@@ -48,7 +49,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         super(repository)
     }
     
-    def String packagePrefix(Classifier contextual) {
+    def String packagePrefix(PackageableElement contextual) {
         contextual.nearestPackage.toJavaPackage
     }
     

@@ -14,6 +14,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.TemplateUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import com.abstratt.mdd.core.util.StereotypeUtils
 
 class FunctionalTestGenerator extends PlainEntityGenerator {
 
@@ -87,8 +88,11 @@ class FunctionalTestGenerator extends PlainEntityGenerator {
     
     def CharSequence generateTestCase(Operation testCase) {
         val testBehavior = testCase.activity
+        val expectedFailureConstraint = StereotypeUtils.getValue(testCase, 'Failure', "constraint")
+        val expectedFailuresEnabled = false 
+        
         '''
-            @Test
+            @Test«IF expectedFailuresEnabled && expectedFailureConstraint != null»(expected=«expectedFailureConstraint»Exception.class)«ENDIF»
             public void «testCase.name»() {
                 «testBehavior.generateActivity»
             }

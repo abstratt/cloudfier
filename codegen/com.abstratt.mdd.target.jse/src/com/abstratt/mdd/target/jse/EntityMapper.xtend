@@ -14,6 +14,10 @@ import org.eclipse.uml2.uml.Signal
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
+import org.eclipse.uml2.uml.Constraint
+import org.eclipse.uml2.uml.Operation
 
 class EntityMapper implements ITopLevelMapper<Classifier> {
     
@@ -46,6 +50,11 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
     
     def generateSignalFileName(Classifier classifier) {
         '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name»Event.java'''.toString
+    }
+    
+    def generateConstraintExceptionFileName(Constraint constraint) {
+        val namespace = constraint.nearestPackage
+        '''src/main/java/«namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«constraint.name»Exception.java'''.toString
     }
 
     def generateServiceFileName(Classifier classifier) {
@@ -96,6 +105,11 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         val signalGenerator = new SignalGenerator(repository)
         result.putAll(signals.toMap[generateSignalFileName].mapValues[signalGenerator.generateSignal(it)])
         
+        val invariants = appPackages.entities.map[ownedRules.filter[name != null]].flatten
+        val preconditions = appPackages.entities.map[actions.map[ownedRules.filter[name != null]].flatten].flatten
+        val constraints = invariants + preconditions
+        val constraintExceptionGenerator = new ConstraintExceptionGenerator(repository)
+        result.putAll(constraints.toMap[generateConstraintExceptionFileName].mapValues[constraintExceptionGenerator.generateConstraintException(it)])
         return result
     }
     
