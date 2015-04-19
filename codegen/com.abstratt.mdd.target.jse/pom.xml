@@ -5,7 +5,7 @@
   <artifactId>com.abstratt.mdd.target.jse</artifactId>
   <packaging>eclipse-plugin</packaging>
 	<parent>
-		<artifactId>plugins</artifactId>
+		<artifactId>codegen</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
 		<version>1.120.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
