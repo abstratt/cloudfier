@@ -98,7 +98,7 @@
                         <target>1.8</target>
                     </configuration>
                 </plugin>		    
-				<plugin>
+                <plugin>
 					<groupId>org.eclipse.xtend</groupId>
 					<artifactId>xtend-maven-plugin</artifactId>
 					<version>${xtext.version}</version>
@@ -112,6 +112,7 @@
 					</executions>
 					<configuration>
 						<outputDirectory>xtend-gen</outputDirectory>
+						<complianceLevel>1.8</complianceLevel>
 					</configuration>
 				</plugin>
 				<plugin>
