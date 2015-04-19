@@ -32,45 +32,22 @@ import org.eclipse.uml2.uml.ConditionalNode
 
 class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehaviorGenerator {
 
-    public static ThreadLocal<Deque<IExecutionContext>> currentContextStack = new ThreadLocal<Deque<IExecutionContext>>() {
-        override protected initialValue() {
-            new LinkedList(Arrays.asList(new SimpleContext("this")))
-        }
-    }  
-
     new(IRepository repository) {
         super(repository)
     }
-    
-    final def getContextStack() {
-        currentContextStack.get()
-    }
-
-    final override enterContext(IExecutionContext context) {
-        contextStack.push(context)
-    }
-
-    final override leaveContext(IExecutionContext context) {
-        val top = contextStack.peek
-        if (context != top)
-            throw new IllegalStateException
-        contextStack.pop
-    }
-
-    final override getContext() {
-        contextStack.peek
-    }
-
-    def dispatch CharSequence generateAction(Action toGenerate) {
-        generateActionProper(toGenerate)
-    }
-
     def dispatch CharSequence generateAction(Void input) {
         throw new NullPointerException
     }
 
     def dispatch CharSequence generateAction(InputPin input) {
-        generateAction(input.sourceAction)
+        generateAction(input.sourceAction, true)
+    }
+    
+    override generateAction(Action node, boolean delegate) {
+        if (delegate && context.delegate != null)
+            context.delegate.generateAction(node, false)
+        else
+            generateActionProper(node)
     }
 
     def CharSequence generateActionProper(Action toGenerate) {
@@ -81,16 +58,7 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
 
-    override CharSequence generateActivityAsExpression(Activity toGenerate) {
-        return this.generateActivityAsExpression(toGenerate, false, Arrays.<Parameter>asList())
-    }
-
-    override generateActivityAsExpression(Activity toGenerate, boolean asClosure) {
-        generateActivityAsExpression(toGenerate, asClosure, toGenerate.closureInputParameters)
-    }
-
     def dispatch CharSequence doGenerateAction(Action action) {
-
         // should never pick this version - a more specific variant should exist for all supported actions
         unsupported(action.eClass.name)
     }

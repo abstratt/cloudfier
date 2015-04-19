@@ -49,7 +49,7 @@ class ServiceGenerator extends PlainEntityGenerator {
         '''
             public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 return «relationship.type.name».extent().stream().filter(
-                    candidate -> candidate.«otherEnd.name» == «otherEnd.name» 
+                    candidate -> candidate.get«otherEnd.name.toFirstUpper»() == «otherEnd.name» 
                 ).collect(Collectors.toList());
             }
         '''

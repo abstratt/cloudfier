@@ -1,10 +1,11 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
-import org.eclipse.uml2.uml.Activity
 import java.util.List
+import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.ActivityNode
 import org.eclipse.uml2.uml.Parameter
-import java.util.Arrays
+import org.eclipse.uml2.uml.Action
 
 class BehaviorlessClassGenerator extends PlainJavaGenerator {
     
@@ -20,12 +21,8 @@ class BehaviorlessClassGenerator extends PlainJavaGenerator {
         throw new UnsupportedOperationException("This generator cannot generate behavior")
     }
     
-    final override generateActivityAsExpression(Activity toGenerate) {
-        generateActivityAsExpression(toGenerate, false)
-    }
-
-    final override generateActivityAsExpression(Activity toGenerate, boolean asClosure) {
-        generateActivityAsExpression(toGenerate, asClosure, Arrays.<Parameter>asList())
+    override generateAction(Action action, boolean delegate) {
+        throw new UnsupportedOperationException("This generator cannot generate behavior")
     }
     
 }

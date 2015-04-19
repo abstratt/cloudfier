@@ -296,7 +296,12 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
                   '''this.«generateAttributeName» = «generateAttributeName»;'''  
                 ])»
             }
-             
+            
+            «dataType.getAllAttributes().generateMany['''
+                public «toJavaType» get«generateAttributeName.toFirstUpper»() {
+                    return «generateAttributeName»;
+                }    
+            ''']» 
         }
         
         '''
@@ -304,7 +309,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     
     def generatePredicate(Constraint predicate) {
         val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
-        predicateActivity.generateActivityAsExpression        
+        predicateActivity.generateActivityAsExpression
     }
 
     def CharSequence unsupportedElement(Element e) {

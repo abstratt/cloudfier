@@ -27,6 +27,13 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
+import com.abstratt.mdd.core.util.MDDExtensionUtils
+import com.abstratt.mdd.target.jse.IBehaviorGenerator.IExecutionContext
+import com.abstratt.mdd.target.jse.IBehaviorGenerator.SimpleContext
+import org.eclipse.uml2.uml.ActivityNode
+import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.Action
+import org.eclipse.uml2.uml.ReadSelfAction
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -72,6 +79,10 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         «generateMany(providers, [generateProvider])»
         '''    
         
+    }
+    
+    override generateAction(Action action) {
+        behaviorGenerator.generateAction(action)
     }
     
     override CharSequence generateActivity(Activity a) {
@@ -248,11 +259,9 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         '''
     }
     
-    
     def generateProviderReference(Classifier context, Classifier provider) {
         '''«provider.name.toFirstLower»Service'''
     }
-
 
     def generatePrivateOperation(Operation operation) {
         // for now...
@@ -267,10 +276,35 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
 
-
-    def generateAttributeInvariants(Iterable<Constraint> constraints) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+    def generateAttributeInvariants(Property attribute) {
+        val constraints = attribute.findInvariantConstraints
+        constraints.map[generateAttributeInvariant(attribute, it)].join()
     }
+    
+    def generateAttributeInvariant(Property attribute, Constraint constraint) {
+        val delegate = new DelegatingBehaviorGenerator(behaviorGenerator) {
+            
+            override generateAction(Action action, boolean delegate) {
+                if (action instanceof ReadStructuralFeatureAction && ((action as ReadStructuralFeatureAction).structuralFeature == attribute))
+                    '''new«attribute.name.toFirstUpper»'''      
+                else          
+                    super.generateAction(action, false)
+            }
+            
+        }
+        val newContext = new SimpleContext(behaviorGenerator.context.generateCurrentReference.toString, delegate)
+        behaviorGenerator.enterContext(newContext)
+        try {
+        '''
+        if (!(«generatePredicate(constraint)»)) {
+            throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
+        }
+        '''
+        } finally {
+            behaviorGenerator.leaveContext(newContext)            
+        }
+    }
+    
     
     def CharSequence generateSignal(Signal signal) {
         ''''''
@@ -319,7 +353,18 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                 // enumeration covers state machines as well
                 attribute.type.generateDefaultValue
         
-        '''public «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;'''
+        '''
+        private «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;
+        
+        public «attribute.generateStaticModifier»«attribute.toJavaType» get«attribute.name.toFirstUpper»() {
+            return this.«attribute.name»;
+        }
+        
+        public void set«attribute.name.toFirstUpper»(«attribute.generateStaticModifier»«attribute.toJavaType» new«attribute.name.toFirstUpper») {
+            «generateAttributeInvariants(attribute)»            
+            this.«attribute.name» = new«attribute.name.toFirstUpper»;
+        }
+        '''
     }
     
     def generateStaticModifier(Feature feature) {
@@ -334,7 +379,28 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateRelationship(Property relationship) {
-        '''public «relationship.generateStaticModifier»«relationship.generateRelationshipType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;'''
+        '''
+        private «relationship.generateStaticModifier»«relationship.generateRelationshipType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;
+        
+        public «relationship.generateStaticModifier»«relationship.generateRelationshipType» get«relationship.name.toFirstUpper»() {
+            return this.«relationship.name»;
+        }
+        
+        «IF relationship.multivalued»
+        
+        public «relationship.generateStaticModifier»void addTo«relationship.name.toFirstUpper»(«relationship.type.toJavaType» new«relationship.name.toFirstUpper») {
+            this.«relationship.name».add(new«relationship.name.toFirstUpper»);
+        }
+        
+        public «relationship.generateStaticModifier»void removeFrom«relationship.name.toFirstUpper»(«relationship.type.toJavaType» existing«relationship.name.toFirstUpper») {
+            this.«relationship.name».remove(existing«relationship.name.toFirstUpper»);
+        }
+        «ELSE»
+        public «relationship.generateStaticModifier»void set«relationship.name.toFirstUpper»(«relationship.generateRelationshipType» new«relationship.name.toFirstUpper») {
+            this.«relationship.name» = new«relationship.name.toFirstUpper»;
+        }
+        «ENDIF»
+        '''
     }
     
     def generateDerivedRelationship(Property relationship) {
@@ -360,12 +426,32 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         }'''
     }
     
+    def generatePrecondition(Operation operation, Constraint constraint) {
+        val predicateActivity = constraint.specification.resolveBehaviorReference as Activity
+        
+        val parameterless = predicateActivity.closureInputParameters.empty
+        val selfReference = predicateActivity.rootAction.findFirstMatchingAction([it instanceof ReadSelfAction]) != null 
+        '''
+        «IF parameterless && !selfReference»
+        // TBD: support for global-data based preconditions
+        /*
+        «ENDIF»
+        if (!(«generatePredicate(constraint)»)) {
+            throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
+        }
+        «IF parameterless && !selfReference»
+        */
+        «ENDIF»
+        '''
+    }
+    
     def generateActionOperationBody(Operation actionOperation) {
         val firstMethod = actionOperation.methods?.head
         val stateProperty = actionOperation.class_.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
         val isEventTriggering = stateMachine != null && !stateMachine.findTriggersForCalling(actionOperation).empty
         '''
+            «actionOperation.preconditions.map[generatePrecondition(actionOperation, it)].join()»
             «IF(firstMethod != null)»
             «generateActivity(firstMethod as Activity)»
             «ENDIF»

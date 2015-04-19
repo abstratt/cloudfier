@@ -106,7 +106,7 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         result.putAll(signals.toMap[generateSignalFileName].mapValues[signalGenerator.generateSignal(it)])
         
         val invariants = appPackages.entities.map[ownedRules.filter[name != null]].flatten
-        val preconditions = appPackages.entities.map[actions.map[ownedRules.filter[name != null]].flatten].flatten
+        val preconditions = appPackages.entities.map[allOperations.filter[!query].map[ownedRules.filter[name != null]].flatten].flatten
         val constraints = invariants + preconditions
         val constraintExceptionGenerator = new ConstraintExceptionGenerator(repository)
         result.putAll(constraints.toMap[generateConstraintExceptionFileName].mapValues[constraintExceptionGenerator.generateConstraintException(it)])

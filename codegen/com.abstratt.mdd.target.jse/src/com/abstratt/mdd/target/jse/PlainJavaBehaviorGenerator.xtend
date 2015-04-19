@@ -49,6 +49,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.mdd.core.util.NamedElementUtils.*
 
 class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
@@ -134,7 +135,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def generateLinkDestruction(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd,
         boolean addSemiColon) {
         if(!thisEnd.navigable) return ''
-        '''«targetObject».«thisEnd.name»«IF thisEnd.multivalued».remove(«otherObject»)«ELSE» = null«ENDIF»«IF addSemiColon &&
+        '''«targetObject».«IF thisEnd.multivalued»removeFrom«thisEnd.name.toFirstUpper»(«otherObject»)«ELSE»set«thisEnd.name.toFirstUpper»(null)«ENDIF»«IF addSemiColon &&
             otherEnd.navigable»;«ENDIF»'''
     }
 
@@ -165,7 +166,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def generateLinkCreation(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd,
         boolean addSemiColon) {
         if(!thisEnd.navigable) return ''
-        '''«targetObject».«thisEnd.name»«IF thisEnd.multivalued».add(«otherObject»)«ELSE» = «otherObject»«ENDIF»«IF addSemiColon &&
+        '''«targetObject».«IF thisEnd.multivalued»addTo«ELSE»set«ENDIF»«thisEnd.name.toFirstUpper»(«otherObject»)«IF addSemiColon &&
             otherEnd.navigable»;«ENDIF»'''
     }
 
@@ -270,6 +271,11 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             }
         } else
             switch (action.operation.owningClassifier.name) {
+                case 'Basic':
+                    switch (operation.name) {
+                        case 'notNull': '''«action.target.generateAction» != null'''
+                        default: unsupported('''Basic operation «operation.name»''')
+                    }
                 case 'Primitive':
                     switch (operation.name) {
                         case 'equals': '''«action.target.generateAction».equals(«action.arguments.head.generateAction»)'''
@@ -376,6 +382,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         switch (operation.name) {
             case 'size':
                 generateCollectionSize(action)
+            case 'exists':
+                generateCollectionExists(action)                
             case 'includes':
                 generateCollectionIncludes(action)
             case 'isEmpty':
@@ -419,6 +427,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def CharSequence generateCollectionIncludes(CallOperationAction action) {
         '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
     }
+    
 
     def CharSequence generateCollectionReduce(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
@@ -453,7 +462,12 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val collectionGeneralType = action.operation.getReturnResult().toJavaGeneralCollection
         '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
-
+    
+    def CharSequence generateCollectionExists(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure
+        '''«action.target.generateAction».stream().anyMatch(«closure.generateActivityAsExpression(true)»)'''
+    }
+    
     def CharSequence generateCollectionGroupBy(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
         '''«action.target.generateAction».stream().collect(Collectors.groupingBy(«closure.
@@ -599,7 +613,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def generateFeatureAccess(InputPin target, Property feature, boolean computed) {
         val clazz = feature.owningClassifier
         val targetString = if(target == null) clazz.name else generateAction(target)
-        val featureAccess = if (computed) '''«feature.generateAccessorName»()''' else feature.name
+        val featureAccess = '''«feature.generateAccessorName»()'''
         '''«targetString».«featureAccess»'''
     }
 
@@ -613,8 +627,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 action.generateAddStructuralFeatureValueActionAsUnlinking
             else
                 action.generateAddStructuralFeatureValueActionAsLinking
-
-        '''«generateAction(target)».«featureName» = «generateAction(value)»'''
+        '''«generateAction(target)».set«featureName.toFirstUpper»(«generateAction(value)»)'''
     }
 
     def generateAddStructuralFeatureValueActionAsLinking(AddStructuralFeatureValueAction action) {
