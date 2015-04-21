@@ -296,7 +296,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         behaviorGenerator.enterContext(newContext)
         try {
         '''
-        if (!(«generatePredicate(constraint)»)) {
+        if («generatePredicate(constraint, true)») {
             throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
         }
         '''
@@ -436,7 +436,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         // TBD: support for global-data based preconditions
         /*
         «ENDIF»
-        if (!(«generatePredicate(constraint)»)) {
+        if («generatePredicate(constraint, true)») {
             throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
         }
         «IF parameterless && !selfReference»

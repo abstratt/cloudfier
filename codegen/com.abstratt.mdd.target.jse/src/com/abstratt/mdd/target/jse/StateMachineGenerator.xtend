@@ -93,7 +93,7 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
         val transition = trigger.eContainer as Transition
         '''
         «IF (transition.guard != null)»
-        if («transition.guard.generatePredicate») {
+        if («transition.guard.generatePredicate(false)») {
             «transition.generateTransition»
             break;
         }

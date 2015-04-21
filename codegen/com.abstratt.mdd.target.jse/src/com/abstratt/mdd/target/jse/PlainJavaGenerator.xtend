@@ -42,6 +42,7 @@ import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.PackageableElement
+import org.eclipse.uml2.uml.CallOperationAction
 
 abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
@@ -307,9 +308,18 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         '''
     }
     
-    def generatePredicate(Constraint predicate) {
+    def generatePredicate(Constraint predicate, boolean negate) {
         val predicateActivity = predicate.specification.resolveBehaviorReference as Activity
-        predicateActivity.generateActivityAsExpression
+        val core = predicateActivity.generateActivityAsExpression
+        val needsParenthesis = core.toString.contains(' ')
+        val rootSourceAction = predicateActivity.rootAction.findSingleStatement.sourceAction
+        if (negate) {
+            if (rootSourceAction instanceof CallOperationAction && (rootSourceAction as CallOperationAction).operation.qualifiedName == 'mdd_types::Boolean::not')
+                '''«core.toString.replaceFirst('!', '')»'''
+            else
+                '''!«IF needsParenthesis»(«ENDIF»«core»«IF needsParenthesis»)«ENDIF»'''
+        } else 
+            '''«core»'''
     }
 
     def CharSequence unsupportedElement(Element e) {
