@@ -3,7 +3,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.abstratt.mdd.kirra</groupId>
-  <artifactId>com.abstratt.kirra.mdd.schema</artifactId>
+  <artifactId>com.abstratt.kirra.mdd.core</artifactId>
   <version>1.120.1-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 	<parent>

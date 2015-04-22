@@ -11,8 +11,8 @@
 		<version>1.120.1-SNAPSHOT</version>
 	</parent>
 	<modules>
-	    <!-- first so target gets updated/rebuilt first -->
 		<module>com.abstratt.kirra.mdd.schema</module>
+        <module>com.abstratt.kirra.mdd.core</module>		
 	</modules>
 </project>
 
