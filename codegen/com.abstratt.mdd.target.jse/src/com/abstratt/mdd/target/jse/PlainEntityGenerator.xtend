@@ -147,7 +147,6 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                 «entity.generateAnonymousDataTypes»
                 
                 «entity.generateEntityId»
-                
                 «entity.generateProviders»
                 
                 «IF !ports.empty»

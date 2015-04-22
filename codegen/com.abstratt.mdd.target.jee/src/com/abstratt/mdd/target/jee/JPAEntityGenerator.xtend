@@ -139,7 +139,6 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     override generateEntityId(Class entity) {
         '''
         @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
-        
         public Long getId() {
             return id;
         }
