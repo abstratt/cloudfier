@@ -7,7 +7,7 @@
   <version>1.120.1-SNAPSHOT</version>
   <packaging>eclipse-plugin</packaging>
 	<parent>
-		<artifactId>plugins</artifactId>
+		<artifactId>runtime</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
 		<version>1.120.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>

@@ -6,7 +6,7 @@
 	<artifactId>com.abstratt.kirra.mdd.ui</artifactId>
 	<packaging>eclipse-plugin</packaging>
 	<parent>
-		<artifactId>plugins</artifactId>
+		<artifactId>saas</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
 		<version>1.120.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>

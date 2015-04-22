@@ -6,7 +6,7 @@
 	<artifactId>com.abstratt.kirra.tests.mdd.runtime</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 	<parent>
-		<artifactId>plugins</artifactId>
+		<artifactId>runtime</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
 		<version>1.120.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>

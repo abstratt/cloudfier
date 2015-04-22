@@ -6,7 +6,7 @@
 	<artifactId>com.abstratt.mdd.frontend.web.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 	<parent>
-		<artifactId>plugins</artifactId>
+		<artifactId>saas</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
 		<version>1.120.1-SNAPSHOT</version>
 		<relativePath>..</relativePath>
