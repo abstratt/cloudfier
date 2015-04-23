@@ -33,6 +33,10 @@ https://github.com/abstratt/cloudfier-maven-plugin
 
 Plugin that exposes the functionality of a Cloudfier server to a Maven build. 
 
+### TextUML
+
+The core model compilation functionality using TextUML as front-end notation.
+
 ## Building
 
 You need to have Maven 3, Java 8 and Postgres 9 installed. You also need a database named "cloudfier" accessible to a user named "cloudfier" with no password. You can build and run the tests the usual way:
