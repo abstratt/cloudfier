@@ -27,6 +27,57 @@ https://github.com/abstratt/codegen-examples
 
 Command-line (bash-only) tools for generating code for the target platforms supported in Cloudfier.
 
+## Building
+
+You need to have Maven 3, Java 8 and Postgres 9 installed. You also need a database named "cloudfier" accessible to a user named "cloudfier" with no password. You can build and run the tests the usual way:
+
+```
+mvn clean install
+```
+
+## Running
+
+After building, you can run the tooling/runtime back-end this way (on Linux):
+```
+cd saas/com.abstratt.kirra.server.product/
+find target -name kirra-server
+```
+which will show the target platforms available, for example, on a Linux box:
+
+```
+target/products/com.abstratt.kirra.server.product/linux/gtk/x86/kirra-server
+target/products/com.abstratt.kirra.server.product/linux/gtk/x86_64/kirra-server
+```
+
+Change into the directory of choice, and run:
+
+```
+./kirra-server -data {path/to/workspace}
+```
+
+which will show:
+
+```
+!SESSION 2015-04-23 12:58:11.358 -----------------------------------------------
+eclipse.buildId=unknown
+java.version=1.8.0_31
+java.vendor=Oracle Corporation
+BootLoader constants: OS=linux, ARCH=x86, WS=gtk, NL=en_US
+Command-line arguments:  -os linux -ws gtk -arch x86 -console -consolelog
+
+!ENTRY com.abstratt.mdd.frontend.web 1 0 2015-04-23 12:58:12.095
+!MESSAGE Started endpoint
+	External: http://localhost/mdd/
+	Internal: http://localhost/mdd/
+osgi> 
+```
+
+### Running the Orion integration
+
+In order to run a local development environment, you need to install Orion. 
+
+TBD
+
 ## Licensing
 
 The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
