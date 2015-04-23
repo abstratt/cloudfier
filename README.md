@@ -37,6 +37,8 @@ mvn clean install
 
 ## Running
 
+> This is a work-in-progress. The instructions won't allow you yet to run a fully functional Cloudfier instance, steps for configuring the development environment integration are not included yet.
+
 After building, you can run the tooling/runtime back-end this way (on Linux):
 ```
 cd saas/com.abstratt.kirra.server.product/
