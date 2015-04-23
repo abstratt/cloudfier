@@ -12,3 +12,19 @@ Subsystems:
 - codegen provides a code generation subsystem
 - runtime provides a model interpreter subsystem (both UML-centric and Kirra-centric)
 - saas provides the components required to support the Cloudfier SaaS environment: Orion integration, product packaging etc.
+
+## Related repositories
+
+### cloudfier-examples
+
+https://github.com/abstratt/cloudfier-examples
+
+Simple Cloudfier applications that help demonstrate and validate Cloudfier. You can clone that repo into your Cloudfier repository and play with Cloudfier's features.
+
+### codegen-examples
+
+https://github.com/abstratt/codegen-examples
+
+Command-line (bash-only) tools for generating code for the target platforms supported in Cloudfier.
+
+
