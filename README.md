@@ -29,5 +29,5 @@ Command-line (bash-only) tools for generating code for the target platforms supp
 
 ## Licensing
 
-The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest LICENSE file for more details. 
+The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
 
