@@ -35,6 +35,8 @@ Plugin that exposes the functionality of a Cloudfier server to a Maven build.
 
 ### TextUML
 
+https://github.com/abstratt/textuml
+
 The core model compilation functionality using TextUML as front-end notation.
 
 ## Building
