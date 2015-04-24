@@ -49,7 +49,7 @@ mvn clean install
 
 ## Running
 
-> This is a work-in-progress. The instructions won't allow you yet to run a fully functional Cloudfier instance, steps for configuring the development environment integration are not included yet.
+> This is a work-in-progress. The instructions won't allow you yet to run a fully functional Cloudfier instance (steps for configuring the development environment integration are not included yet), but you can use this server via the cloudfier-maven-plugin (details below).
 
 After building, you can run the tooling/runtime back-end this way (on Linux):
 ```
@@ -85,6 +85,12 @@ Command-line arguments:  -os linux -ws gtk -arch x86 -console -consolelog
 	Internal: http://localhost/mdd/
 osgi> 
 ```
+
+Your Cloudfier server is now up and running.
+
+### Using the Cloudfier server via the cloudfier-maven-plugin
+
+You can use those Cloudfier features exposed via the cloudfier-maven-plugin (starting with version 0.12.0 of the plugin). In order to do that, once the server is up and running, follow the instructions in the [cloudfier-maven-plugin project](http://github.com/abstratt/cloudfier-maven-plugin), and make sure you always specify the -Dkirra.uri property pointing to your local instance (example: -Dkirra.uri=http://localhost:<port>/mdd).
 
 ### Running the Orion integration
 
