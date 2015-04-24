@@ -90,9 +90,9 @@ Your Cloudfier server is now up and running.
 
 ### Using the Cloudfier server via the cloudfier-maven-plugin
 
-You can use those Cloudfier features exposed via the cloudfier-maven-plugin (starting with version 0.12.0 of the plugin). In order to do that, once the server is up and running, follow the instructions in the [cloudfier-maven-plugin project](http://github.com/abstratt/cloudfier-maven-plugin), and make sure you always specify the -Dkirra.uri property pointing to your local instance, for example:
+You can use those Cloudfier features exposed via the cloudfier-maven-plugin (starting with version 0.12.0 of the plugin, which is not avaailable yet). In order to do that, once the server is up and running, follow the instructions in the [cloudfier-maven-plugin project](http://github.com/abstratt/cloudfier-maven-plugin), and make sure you always specify the -Dkirra.uri property pointing to your local instance, for example:
 
-mvn com.abstratt:cloudfier-maven-plugin:publish -Dkirra.uri=http://localhost:<port>/mdd).
+mvn com.abstratt:cloudfier-maven-plugin:publish -Dkirra.uri=http://localhost:<port>/mdd
 
 ### Running the Orion integration
 
