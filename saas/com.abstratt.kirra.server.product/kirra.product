@@ -18,7 +18,7 @@
 -Dorg.eclipse.uml2.common.util.CacheAdapter.ThreadLocal
 -Dcloudfier.api.internalBaseUri=http://localhost:8081/mdd/
 -Dcloudfier.api.externalBaseUri=http://localhost/services/
--Dorg.eclipse.equinox.http.jetty.http.port=8081
+-Dcloudfier.api.port=8081
 -Dcloudfier.database.username=cloudfier
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts

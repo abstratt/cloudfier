@@ -9,8 +9,11 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws Exception {
-        LogUtils.logInfo(WebFrontEnd.ID, "Started endpoint\n\tExternal: " + ReferenceUtils.EXTERNAL_BASE + "\n\tInternal: "
-                + ReferenceUtils.INTERNAL_BASE, null);
+        LogUtils.logInfo(WebFrontEnd.ID, 
+                "Started endpoint\n" 
+                        + "\tExternal: " + ReferenceUtils.EXTERNAL_BASE + "\n" 
+                        + "\tInternal: " + ReferenceUtils.INTERNAL_BASE + "\n"
+                        + "\tInternal port: " + System.getProperty("cloudfier.api.port"), null);
     }
 
     @Override
