@@ -7,11 +7,17 @@ Tests: [![Build Status](https://textuml.ci.cloudbees.com/buildStatus/icon?job=cl
 
 This repository contains the code for [Cloudfier](http://cloudfier.com), a web-based environment for modeling with support for editing, testing, deploying and generating business applications based on executable models.
 
-Subsystems:
+> ***If you just want to learn about Cloudfier, and how to use to develop model-based applications, stop reading this and instead head to the [Cloudfier documentation](http://doc.cloudfier.com).***
+
+### Code organization 
+
+The components that make up Cloudfier are divided among subsystems:
 - [kirra-mdd](kirra-mdd/) provides a [Kirra](http://github.com/abstratt/kirra/) compatible view over UML models.
 - [codegen](codegen) provides a code generation subsystem, including some code generators such as [Expert4JEE](codegen/com.abstratt.mdd.target.jee/).
 - [runtime](runtime/) provides a model interpreter subsystem (containing components that are either UML-centric or Kirra-centric)
 - [saas](saas/) provides the components required to support the Cloudfier SaaS environment: Orion integration, product packaging etc.
+
+Also, the TextUML Toolkit project, which has [its own repository](http://github.com/abstratt/textuml), provides a number of core components to Cloudfier: model repository management, front-end infrastructure and support for the primary notation (TextUML), and a number of model manipulation utilities.
 
 ## Related repositories
 
