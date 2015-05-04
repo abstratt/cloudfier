@@ -6,3 +6,9 @@ A code generator that can produce fully functional Java EE applications from Clo
 Examples: 
 
 https://textuml.ci.cloudbees.com/job/codegen-examples-JEE/ws/jee/
+
+How to use:
+
+https://github.com/abstratt/cloudfier-maven-plugin (via Maven)
+
+https://github.com/abstratt/codegen-examples (from bash scripts)
