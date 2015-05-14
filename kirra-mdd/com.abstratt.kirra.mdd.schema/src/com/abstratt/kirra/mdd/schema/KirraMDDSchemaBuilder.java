@@ -4,17 +4,14 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Enumeration;
-import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.StateMachine;
 import org.eclipse.uml2.uml.Type;
-import org.eclipse.uml2.uml.Vertex;
 import org.eclipse.uml2.uml.VisibilityKind;
 
 import com.abstratt.kirra.Entity;
@@ -37,16 +34,11 @@ import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.MDDUtil;
-import com.abstratt.mdd.core.util.StateMachineUtils;
 
 /**
  * Builds Kirra schema elements based on UML elements.
  */
 public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder {
-    private static String mapToClientType(String typeName) {
-        return TypeRef.sanitize(typeName);
-    }
-
     @Override
     public Schema build() {
         IRepository repository = RepositoryService.DEFAULT.getFeature(IRepository.class);
@@ -256,7 +248,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         if (umlOperation instanceof org.eclipse.uml2.uml.Operation)
             setTypeInfo(basicOperation, ((org.eclipse.uml2.uml.Operation) umlOperation).getType());
 
-        basicOperation.setOwner(convertType((Type) umlOperation.getOwner()));
+        basicOperation.setOwner(KirraHelper.convertType((Type) umlOperation.getOwner()));
         List<Parameter> entityOperationParameters = new ArrayList<Parameter>();
         for (org.eclipse.uml2.uml.Parameter parameter : KirraHelper.getParameters(umlOperation)) {
             final Parameter entityOperationParameter = new Parameter();
@@ -271,27 +263,6 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         return basicOperation;
     }
 
-    public static TypeRef convertType(Type umlType) {
-        if (umlType == null)
-            return null;
-        String mappedTypeName = KirraMDDSchemaBuilder.mapToClientType(umlType.getQualifiedName());
-        return new TypeRef(mappedTypeName, getKind(umlType));
-    }
-
-    public static TypeKind getKind(Type umlType) {
-        if (KirraHelper.isEnumeration(umlType))
-            return TypeKind.Enumeration;
-        if (KirraHelper.isService(umlType))
-            return TypeKind.Service;
-        if (KirraHelper.isEntity(umlType))
-            return TypeKind.Entity;
-        if (KirraHelper.isTupleType(umlType))
-            return TypeKind.Tuple;
-        if (KirraHelper.isPrimitive(umlType))
-            return TypeKind.Primitive;
-        return null;
-    }
-
     private void setName(org.eclipse.uml2.uml.NamedElement sourceElement, NamedElement<?> targetElement) {
         targetElement.setName(KirraHelper.getName(sourceElement));
         targetElement.setSymbol(KirraHelper.getSymbol(sourceElement));
@@ -302,6 +273,6 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     private void setTypeInfo(com.abstratt.kirra.TypedElement<?> typedElement, Type umlType) {
         if (umlType instanceof Enumeration || umlType instanceof StateMachine)
             typedElement.setEnumerationLiterals(KirraHelper.getEnumerationLiterals(umlType));
-        typedElement.setTypeRef(convertType(umlType));
+        typedElement.setTypeRef(KirraHelper.convertType(umlType));
     }
 }

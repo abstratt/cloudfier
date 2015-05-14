@@ -5,8 +5,9 @@ Bundle-SymbolicName: com.abstratt.kirra.mdd.core;singleton:=true
 Bundle-Version: 1.120.1.qualifier
 Bundle-Vendor: Abstratt Technologies
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: com.abstratt.mdd.core,
- com.abstratt.resman
+Require-Bundle: com.abstratt.mdd.core
 Export-Package: com.abstratt.kirra.mdd.core
 Import-Package: com.abstratt.resman,
- org.apache.commons.lang3
+ org.apache.commons.lang3,
+ com.abstratt.kirra
+

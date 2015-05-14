@@ -74,10 +74,6 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         }
     }
 
-    def String toJavaPackage(Package package_) {
-        package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")
-    }
-
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper) {
         return items.generateMany(mapper, '\n')
     }

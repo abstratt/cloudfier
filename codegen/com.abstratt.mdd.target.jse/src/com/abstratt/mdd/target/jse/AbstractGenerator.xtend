@@ -11,6 +11,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.NamedElement
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -24,9 +25,14 @@ abstract class AbstractGenerator {
     new(IRepository repository) {
         this.repository = repository
         this.appPackages = repository.getTopLevelPackages(null).applicationPackages
-        this.applicationName = repository.getApplicationName(appPackages)
+        this.applicationName = appPackages.head.name
         this.entities = appPackages.entities.filter[topLevel]
     }
+    
+    def String toJavaPackage(Package package_) {
+        package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")
+    }
+    
     
     def boolean isCollectionOperation(Action toCheck) {
         if (toCheck instanceof CallOperationAction)
@@ -44,8 +50,4 @@ abstract class AbstractGenerator {
         }
         return sourceAction.collectionOperation && sourceAction.plainCollectionOperation 
     }
-
-    
-    
-    
 }

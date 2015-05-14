@@ -17,7 +17,6 @@ import java.util.concurrent.Callable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioralFeature;
@@ -26,7 +25,6 @@ import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.Enumeration;
-import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.Feature;
 import org.eclipse.uml2.uml.Interface;
 import org.eclipse.uml2.uml.NamedElement;
@@ -42,9 +40,10 @@ import org.eclipse.uml2.uml.StateMachine;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
-import org.eclipse.uml2.uml.Vertex;
 import org.eclipse.uml2.uml.VisibilityKind;
 
+import com.abstratt.kirra.TypeRef;
+import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.AssociationUtils;
@@ -900,5 +899,29 @@ public class KirraHelper {
 
     public static boolean isPrimitive(Type umlType) {
         return BasicTypeUtils.isBasicType(umlType);
+    }
+    
+    public static TypeRef.TypeKind getKind(Type umlType) {
+        if (isEnumeration(umlType))
+            return TypeKind.Enumeration;
+        if (isService(umlType))
+            return TypeKind.Service;
+        if (isEntity(umlType))
+            return TypeKind.Entity;
+        if (isTupleType(umlType))
+            return TypeKind.Tuple;
+        if (isPrimitive(umlType))
+            return TypeKind.Primitive;
+        return null;
+    }
+    
+    public static TypeRef convertType(Type umlType) {
+        if (umlType == null)
+            return null;
+        String mappedTypeName = mapToClientType(umlType.getQualifiedName());
+        return new TypeRef(mappedTypeName, getKind(umlType));
+    }
+    private static String mapToClientType(String typeName) {
+        return TypeRef.sanitize(typeName);
     }
 }
