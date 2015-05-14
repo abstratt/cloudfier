@@ -7,11 +7,17 @@ Tests: [![Build Status](https://textuml.ci.cloudbees.com/buildStatus/icon?job=cl
 
 This repository contains the code for [Cloudfier](http://cloudfier.com), a web-based environment for modeling with support for editing, testing, deploying and generating business applications based on executable models.
 
-Subsystems:
-- kirra-mdd provides a [Kirra](http://github.com/abstratt/kirra/) compatible view over UML models.
-- codegen provides a code generation subsystem
-- runtime provides a model interpreter subsystem (both UML-centric and Kirra-centric)
-- saas provides the components required to support the Cloudfier SaaS environment: Orion integration, product packaging etc.
+> ***If you just want to learn about Cloudfier, and how to use to develop model-based applications, stop reading this and instead head to the [Cloudfier documentation](http://doc.cloudfier.com).***
+
+### Code organization 
+
+The components that make up Cloudfier are divided among subsystems:
+- [kirra-mdd](kirra-mdd/) provides a [Kirra](http://github.com/abstratt/kirra/) compatible view over UML models.
+- [codegen](codegen) provides a code generation subsystem, including some code generators such as [Expert4JEE](codegen/com.abstratt.mdd.target.jee/).
+- [runtime](runtime/) provides a model interpreter subsystem (containing components that are either UML-centric or Kirra-centric)
+- [saas](saas/) provides the components required to support the Cloudfier SaaS environment: Orion integration, product packaging etc.
+
+Also, the TextUML Toolkit project, which has [its own repository](http://github.com/abstratt/textuml), provides a number of core components to Cloudfier: model repository management, front-end infrastructure and support for the primary notation (TextUML), and a number of model manipulation utilities.
 
 ## Related repositories
 
@@ -86,13 +92,13 @@ Command-line arguments:  -os linux -ws gtk -arch x86 -console -consolelog
 osgi> 
 ```
 
-Your Cloudfier server is now up and running.
+Your local Cloudfier server is now up and running.
 
-### Using the Cloudfier server via the cloudfier-maven-plugin
+### Using your local Cloudfier server via the cloudfier-maven-plugin
 
-You can use those Cloudfier features exposed via the cloudfier-maven-plugin (starting with version 0.12.0 of the plugin, which is not available yet). In order to do that, once the server is up and running, follow the instructions in the [cloudfier-maven-plugin project](http://github.com/abstratt/cloudfier-maven-plugin), and make sure you always specify the -Dkirra.uri property pointing to your local instance, for example:
+You can use those Cloudfier features exposed via the cloudfier-maven-plugin (starting with version 0.12.0 of the plugin). In order to do that, once the server is up and running, follow the instructions in the [cloudfier-maven-plugin project](http://github.com/abstratt/cloudfier-maven-plugin), and make sure you always specify the -Dkirra.uri property pointing to your local instance, for example:
 
-mvn com.abstratt:cloudfier-maven-plugin:publish -Dkirra.uri=http://localhost:8090/mdd
+mvn com.abstratt:cloudfier-maven-plugin:publish -Dkirra.uri=http://localhost:8081/mdd
 
 ### Running the Orion integration
 
