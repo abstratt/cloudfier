@@ -22,6 +22,7 @@ class JAXBElementGenerator extends BehaviorlessClassGenerator {
         
         @XmlRootElement
         public class «entity.name»Element {
+            public String uri;
             «entity.properties.map['''
                 public «it.type.toJaxbType» «it.name»;
             '''].join()»

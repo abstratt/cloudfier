@@ -13,6 +13,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateResource(Class entity) {
+        val typeRef = entity.convertType
+        val entityFullName = typeRef.fullName
         '''
         package resource.«entity.packagePrefix»;
         
@@ -20,6 +22,10 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         
         import java.util.*;
         import java.util.stream.*;
+        import java.text.*;
+        
+        import javax.ws.rs.core.Context;
+        import javax.ws.rs.core.UriInfo;
         import javax.ws.rs.GET;
         import javax.ws.rs.PUT;
         import javax.ws.rs.POST;
@@ -31,46 +37,80 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import javax.ws.rs.core.Response;
         import javax.ws.rs.core.Response.Status;
         
+        import java.net.URI;
         
         «entity.generateImports»
         
-        @Path("«entity.name.toLowerCase»")
+        @Path("entities/«entityFullName»/instances")
         @Produces("application/json")
         public class «entity.name»Resource {
+                @Context
+                UriInfo uri;
+            
                 private «entity.name»Service service = new «entity.name»Service();
                 @GET
+                @Path("{id}")
                 public Response getSingle(@PathParam("id") Long id) {
                     «entity.name» found = service.find(id);
                     if (found == null)
                         return Response.status(Response.Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
-                    «entity.name»Element result = new «entity.name»Element();
-                    «entity.properties.map[
-                        '''result.«name» = «getModelValue(it, 'found')»;'''
-                    ].join('\n')» 
-                    return Response.ok(result, MediaType.APPLICATION_JSON).build();
+                    return Response.ok(toExternalRepresentation(found, uri.getRequestUri().resolve(""), true), MediaType.APPLICATION_JSON).build();
                 }
                 @GET
                 public Response getList() {
                     Collection<«entity.name»> models = service.findAll();
-                    
-                    Collection<«entity.name»Element> items = models.stream().map(toMap -> {
-                        «entity.name»Element item = new «entity.name»Element();
-                        «entity.properties.map[
-                            '''item.«name» = «getModelValue(it, 'toMap')»;'''
-                        ].join('\n')»
-                        return item;
+                    URI extentURI = uri.getRequestUri();
+                    Collection<Map<String, Object>> items = models.stream().map(toMap -> {
+                        return toExternalRepresentation(toMap, extentURI, true);
                     }).collect(Collectors.toList());
                     
                     Map<String, Object> result = new LinkedHashMap<String, Object>();
-                    result.put("items", items);  
+                    result.put("contents", items);
+                    result.put("offset", 0);
+                    result.put("length", items.size());  
                     return Response.ok(result, MediaType.APPLICATION_JSON).build();
                 }
+                
+                private Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
+                    Map<String, Object> result = new LinkedHashMap<>();
+                    Map<String, Object> values = new LinkedHashMap<>();
+                    «IF (entity.properties.exists[type.name == 'Date'])»
+                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+                    «ENDIF»
+                    «entity.properties.map[
+                        '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
+                    ].join('\n')»
+                    result.put("values", values);
+                    Map<String, Object> links = new LinkedHashMap<>();
+                    result.put("links", links);
+                    result.put("uri", instancesURI.resolve(toRender.getId().toString()).toString());
+                    result.put("entityUri", instancesURI.resolve("../..").resolve("«entityFullName»").toString());
+                    result.put("objectId", toRender.getId().toString());
+                    result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
+                    result.put("full", full);
+                    result.put("disabledActions", Collections.emptyMap());
+                    result.put("scopeName", "«typeRef.typeName»");
+                    result.put("scopeNamespace", "«typeRef.entityNamespace»");
+                    Map<String, Object> typeRef = new LinkedHashMap<>();
+                    typeRef.put("entityNamespace", "«typeRef.entityNamespace»");
+                    typeRef.put("kind", "«typeRef.kind»");
+                    typeRef.put("typeName", "«typeRef.typeName»");
+                    typeRef.put("fullName", "«typeRef.fullName»");
+                    result.put("typeRef", typeRef);   
+                    return result;                    
+                }    
         }
         '''
     }
     
     def getModelValue(Property property, String varName) {
-         '''«varName».«property.generateAccessorName»()«IF property.type.enumeration».name()«ENDIF»'''
+        val core = '''«varName».«property.generateAccessorName»()'''
+        if (property.type.enumeration) 
+            '''«core».name()'''
+        else if (property.type.name == 'Date') 
+            '''«core» == null ? null : dateFormat.format(«core»)'''            
+        else
+            core
     }
     
 }

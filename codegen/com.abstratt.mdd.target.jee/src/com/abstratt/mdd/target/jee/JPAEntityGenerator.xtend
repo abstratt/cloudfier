@@ -83,6 +83,10 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         val values = newHashMap()
         if (navigableFromTheOtherSide && !relationship.isPrimary)
             values.put('mappedBy', '''"«relationship.otherEnd.name»"''')
+        // only ...ToOne annotations have optionality
+// TODO: need to improve CRUD tests before enforcing required relationships         
+//        if (!multivalued && relationship.isRequired(true))    
+//            values.put('optional', 'false')
          
         val pairs = values.entrySet.map['''«key»=«value»''']
         val annotation = if (multivalued) {

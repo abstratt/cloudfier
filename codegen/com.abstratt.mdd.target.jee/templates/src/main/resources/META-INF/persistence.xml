@@ -18,6 +18,8 @@
 				value="script-then-metadata" />
 			<property name="javax.persistence.schema-generation.create-script-source"
 				value=" META-INF/sql/create.sql" />
+			<property name="javax.persistence.sql-load-script-source"
+                value="META-INF/sql/data.sql" />	
 			<property name="javax.persistence.schema-generation.drop-source"
 				value="script" />
 			<property name="javax.persistence.schema-generation.drop-script-source"

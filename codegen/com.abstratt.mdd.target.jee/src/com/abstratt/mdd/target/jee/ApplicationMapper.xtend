@@ -15,7 +15,8 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
             'src/main/resources/META-INF/sql/create.sql',
             'src/main/resources/META-INF/sql/drop.sql',
             'src/main/resources/log4j.properties',
-            'src/main/java/util/PersistenceHelper.java'            
+            'src/main/java/util/PersistenceHelper.java',
+            'src/main/java/resource/util/RequestResponseFilter.java'            
         ]
         val replacements = newLinkedHashMap(
             'applicationName' -> applicationPackages.head.name,
