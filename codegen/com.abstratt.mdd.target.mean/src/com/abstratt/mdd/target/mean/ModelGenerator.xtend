@@ -46,6 +46,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 class ModelGenerator extends AsyncJSGenerator {
 
@@ -692,7 +693,7 @@ class ModelGenerator extends AsyncJSGenerator {
     
     def generateSchemaAttribute(Property attribute) {
         val attributeDef = newLinkedHashMap()
-        val typeDef = generateTypeDef(attribute, KirraMDDSchemaBuilder.convertType(attribute.type))
+        val typeDef = generateTypeDef(attribute, KirraHelper.convertType(attribute.type))
         attributeDef.put('type', typeDef)
 // TODO        
 //        if (attribute.required)

@@ -822,7 +822,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     private Tuple convertToTuple(RuntimeObject source) {
         Classifier modelClassifier = source.getRuntimeClass().getModelClassifier();
-        Tuple tuple = new Tuple(KirraMDDSchemaBuilder.convertType(modelClassifier));
+        Tuple tuple = new Tuple(KirraHelper.convertType(modelClassifier));
         EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
         for (org.eclipse.uml2.uml.Property property : allAttributes) {
             BasicType value = source.getValue(property);
