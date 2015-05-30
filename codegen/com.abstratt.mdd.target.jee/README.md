@@ -25,7 +25,7 @@ https://github.com/abstratt/codegen-examples (from bash scripts)
 
 #### JAX-RS Resources
 
-E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON representations compatible with the [Kirra API](http://github.com.abstratt/kirra-api) (so it can get a free dynamic UI etc).
+E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON representations compatible with the [Kirra API](http://github.com/abstratt/kirra-api) (so it can get a free dynamic UI etc).
 
 ##### single resource GET/PUT
 
