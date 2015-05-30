@@ -39,15 +39,12 @@ class JPAServiceGenerator extends ServiceGenerator {
 
     override generateJavaClassPrefix(Class entity) {
         '''
-            @Inject
-            EntityManager entityManager;
             
             public «entity.name»Service() {
-                this(util.PersistenceHelper.getEntityManager());       
             }
             
-            public «entity.name»Service(EntityManager entityManager) {
-                this.entityManager = entityManager;
+            private EntityManager getEntityManager() {
+                return util.PersistenceHelper.getEntityManager();
             }
             
             «entity.generateDerivedRelationshipAccessors»
@@ -95,7 +92,7 @@ class JPAServiceGenerator extends ServiceGenerator {
     def generateCreate(Classifier entity) {
         '''
             public «entity.name» create(«entity.name» toCreate) {
-                entityManager.persist(toCreate);
+                getEntityManager().persist(toCreate);
                 return toCreate;
             }
         '''
@@ -104,7 +101,7 @@ class JPAServiceGenerator extends ServiceGenerator {
     def generateFind(Classifier entity) {
         '''
             public «entity.name» find(Object id) {
-                return entityManager.find(«entity.name».class, id);
+                return getEntityManager().find(«entity.name».class, id);
             }
         '''
     }
@@ -112,7 +109,7 @@ class JPAServiceGenerator extends ServiceGenerator {
     def generateRefresh(Classifier entity) {
         '''
             public «entity.name» refresh(«entity.name» toRefresh) {
-                entityManager.refresh(toRefresh);
+                getEntityManager().refresh(toRefresh);
                 return toRefresh; 
             }
         '''
@@ -121,7 +118,7 @@ class JPAServiceGenerator extends ServiceGenerator {
     def generateMerge(Classifier entity) {
         '''
             public «entity.name» merge(«entity.name» toMerge) {
-                return entityManager.merge(toMerge);
+                return getEntityManager().merge(toMerge);
             }
         '''
     }
@@ -129,8 +126,10 @@ class JPAServiceGenerator extends ServiceGenerator {
     def generateFindAll(Classifier entity) {
         '''
             public List<«entity.name»> findAll() {
-                CriteriaQuery<«entity.name»> cq = entityManager.getCriteriaBuilder().createQuery(«entity.name».class);
-                return entityManager.createQuery(cq.select(cq.from(«entity.name».class)).distinct(true)).getResultList();
+                CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+                CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
+                Root<«entity.name»> «entity.alias» = cq.from(«entity.name».class);
+                return getEntityManager().createQuery(cq.select(«entity.alias»).orderBy(cb.asc(«entity.alias».get("id"))).distinct(true)).getResultList();
             }
         '''
     }
@@ -141,9 +140,9 @@ class JPAServiceGenerator extends ServiceGenerator {
             val otherEnd = relationship.otherEnd
         '''
             public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
-                CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+                CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«relationship.type.name»> cq = cb.createQuery(«relationship.type.name».class);
-                return entityManager.createQuery(cq.select(cq.from(«relationship.type.name».class)).where(cb.equal(cq.from(«relationship.type.name».class).get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList();
+                return getEntityManager().createQuery(cq.select(cq.from(«relationship.type.name».class)).where(cb.equal(cq.from(«relationship.type.name».class).get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList();
             }
         '''
         ]
@@ -161,7 +160,7 @@ class JPAServiceGenerator extends ServiceGenerator {
         '''
             public «entity.name» update(«entity.name» toUpdate) {
                 assert toUpdate.getId() != null;
-                entityManager.persist(toUpdate);
+                getEntityManager().persist(toUpdate);
                 return toUpdate;
             }
         '''
@@ -170,9 +169,9 @@ class JPAServiceGenerator extends ServiceGenerator {
     def generateDelete(Classifier entity) {
         '''
             public void delete(Object id) {
-                «entity.name» found = entityManager.find(«entity.name».class, id);
+                «entity.name» found = getEntityManager().find(«entity.name».class, id);
                 if (found != null)
-                    entityManager.remove(found);
+                    getEntityManager().remove(found);
             }
         '''
     }

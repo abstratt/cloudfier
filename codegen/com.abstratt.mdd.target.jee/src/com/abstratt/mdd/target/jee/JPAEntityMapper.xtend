@@ -35,7 +35,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         mappings.put(generateJAXRSServerFileName(applicationName), new JAXRSServerGenerator(repository).generate())
         mappings.put('src/main/resources/META-INF/sql/data.sql', new DataSnapshotGenerator(repository).generate())
         // no data snapshot for testing
-        mappings.put('src/test/resources/META-INF/sql/data.sql', '')
+        mappings.put('src/test/resources/META-INF/sql/test-data.sql', '--NO TEST DATA')
         mappings.putAll(entities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
         mappings.put(
             '''src/main/java/resource/«applicationName»/EntityResource.java'''.toString, 

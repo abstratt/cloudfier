@@ -15,6 +15,8 @@ import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import com.abstratt.mdd.target.jse.AbstractJavaBehaviorGenerator
+import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.Property
 
 class JoinActionGenerator extends QueryFragmentGenerator {
     
@@ -22,12 +24,12 @@ class JoinActionGenerator extends QueryFragmentGenerator {
         super(repository)
     }
 
-    def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         '''join("«action.structuralFeature.name»")'''
     }
     
-    def override CharSequence generateReadLinkAction(ReadLinkAction action) {
-        '''join("«action.endData.get(0).end.name»")'''
+    override generateTraverseRelationshipAction(InputPin target, Property end) {
+        '''join("«end.name»")'''
     }
     
     def override CharSequence generateStructuredActivityNode(StructuredActivityNode action) {

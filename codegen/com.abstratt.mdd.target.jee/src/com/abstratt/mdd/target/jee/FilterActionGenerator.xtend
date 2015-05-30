@@ -22,6 +22,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import com.abstratt.mdd.target.jse.AbstractJavaBehaviorGenerator
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.InputPin
 
 /** Builds a query based on a filter closure. */
 class FilterActionGenerator extends QueryFragmentGenerator {
@@ -34,13 +35,13 @@ class FilterActionGenerator extends QueryFragmentGenerator {
         generateAction(predicate.findSingleStatement)
     }
     
-    def override CharSequence generateReadLinkAction(ReadLinkAction action) {
-        val property = action.endData.get(0).end.otherEnd
-        val targetType = action.endData.get(0).value.type
+    def override generateTraverseRelationshipAction(InputPin target, Property end) {
+        val property = end
+        val targetType = target.type
         '''«targetType.alias».get("«property.name»")'''
     }
     
-    def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val isCondition = action.result.type.name == 'Boolean'
         val property = action.structuralFeature as Property
         val classifier = action.object.type
@@ -79,7 +80,9 @@ class FilterActionGenerator extends QueryFragmentGenerator {
             cb.«action.operation.toQueryOperator»(
                 «operands.map[sourceAction.generateAction].join(',\n')»
             )'''
-        } else
+        } else if (action.collectionOperation)
+            return new SubQueryActionGenerator(repository).generateSubQuery(action)
+        else
             super.generateCallOperationAction(action)
     }
     

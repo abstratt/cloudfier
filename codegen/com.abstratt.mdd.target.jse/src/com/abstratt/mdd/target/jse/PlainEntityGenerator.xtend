@@ -341,16 +341,19 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         '''
     }
     
+    def generateAttributeDefaultValue(Property attribute) {
+        if (attribute.defaultValue != null) {
+            if (attribute.defaultValue.behaviorReference)
+                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsExpression 
+            else
+                attribute.defaultValue.generateValue
+        } else if (attribute.required || attribute.type.enumeration)
+            // enumeration covers state machines as well
+            attribute.type.generateDefaultValue
+    }
+    
     def generateAttribute(Property attribute) {
-        val defaultValue = if (attribute.defaultValue != null) {
-                if (attribute.defaultValue.behaviorReference)
-                    (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsExpression 
-                else
-                    attribute.defaultValue.generateValue
-            } 
-            else if (attribute.required || attribute.type.enumeration)
-                // enumeration covers state machines as well
-                attribute.type.generateDefaultValue
+        val defaultValue = attribute.generateAttributeDefaultValue
         
         '''
         private «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;

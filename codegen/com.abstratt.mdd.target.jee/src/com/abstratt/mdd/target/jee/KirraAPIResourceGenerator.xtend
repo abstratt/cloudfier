@@ -60,6 +60,11 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "editable": «property.editable»,
             "initializable": «property.initializable»,
             "hasDefault": «property.defaultValue != null»,
+            «IF property.type.enumeration»
+            "enumerationLiterals": [
+                «property.type.enumerationLiterals.map['''"«it»"'''].join(',\n')»
+            ],
+            «ENDIF»
             "multiple": «property.multivalued»,
             "required": «property.required»,
             "typeRef": «getTypeRefRepresentation(property.type)»,

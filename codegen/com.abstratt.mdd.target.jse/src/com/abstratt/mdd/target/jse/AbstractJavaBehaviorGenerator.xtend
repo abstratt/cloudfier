@@ -15,6 +15,7 @@ import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.ReadExtentAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.CreateLinkAction
@@ -29,6 +30,7 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.ConditionalNode
+import org.eclipse.uml2.uml.Property
 
 class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehaviorGenerator {
 
@@ -100,8 +102,18 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
     }
 
     def generateReadLinkAction(ReadLinkAction action) {
-        unsupported(action.eClass.name)
+        val fedEndData = action.endData.get(0)
+        val target = fedEndData.value
+        '''«generateTraverseRelationshipAction(target, fedEndData.end.otherEnd)»'''
     }
+    
+    def generateTraverseRelationshipAction(InputPin target, Property end) {
+        unsupported(target.owningAction.eClass.name)    
+    }
+    
+    def generateReadPropertyAction(ReadStructuralFeatureAction action) {
+        unsupported(action.eClass.name)
+    }    
 
     def dispatch CharSequence doGenerateAction(CreateObjectAction action) {
         generateCreateObjectAction(action)
@@ -111,8 +123,12 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
         generateReadStructuralFeatureAction(action)
     }
 
-    def generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
-        unsupported(action.eClass.name)
+    def final generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+        val feature = action.structuralFeature as Property
+        if (feature.relationship)
+            generateTraverseRelationshipAction(action.object, feature)
+        else
+            generateReadPropertyAction(action)
     }
 
     def dispatch CharSequence doGenerateAction(SendSignalAction action) {

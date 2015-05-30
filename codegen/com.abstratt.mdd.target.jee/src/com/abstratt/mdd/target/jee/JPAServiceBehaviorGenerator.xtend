@@ -31,6 +31,10 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.*
 import org.eclipse.uml2.uml.UMLPackage.Literals
 import java.util.List
+import java.util.Collection
+import java.util.LinkedHashSet
+import java.util.Map
+import java.util.LinkedHashMap
 
 class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
     PlainJavaBehaviorGenerator plainJavaBehaviorGenerator
@@ -57,7 +61,7 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
         if (query) {
             val parameters = input.actionActivity.activityInputParameters
             '''
-            entityManager.createQuery(
+            getEntityManager().createQuery(
                 «core»
             )«parameters.map['''.setParameter("«name»", «name»)'''].join()».«generateQueryExecutionMethod(output)»
             '''
@@ -82,17 +86,53 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
         }
     }
     
+    /**
+     * Returns the entity-related actions for any activities in the given activity or any activity
+     * invoked from it.
+     * 
+     * @return a map where the key is the activity and the value is a collection of entity types
+     * found in actions within the activity  
+     */
+    private def Map<Activity, Collection<Type>> collectEntityActions(Map<Activity, Collection<Type>> collected, Activity activity) {
+        val Collection<Action> found = activity.rootAction.findMatchingActions(Literals.ACTION)
+        if (activity.closure) {
+            // XXX for closures, only the inputs?/outputs? matter
+            collected.put(activity, activity.inputParameters.map[type].filter[entity || tupleType].toSet)
+        } else {
+            // XXX for the base (non-closure) entity, all types matter (why???)
+            collected.put(null, activity.ownedParameters.map[type].filter[entity || tupleType].toSet)
+        }
+            
+        found
+            .filter[it instanceof ValueSpecificationAction]
+            .map[it as ValueSpecificationAction]
+            .map[value]
+            .filter[behaviorReference]
+            .map[resolveBehaviorReference as Activity]
+            .forEach[collectEntityActions(collected, it)]
+        return collected
+    }
+    
     def doGenerateJavaMethodBody(Activity activity) {
-        
+        if (activity.closure)
+            throw new IllegalArgumentException
         val resultType = activity.closureReturnParameter?.type
         val resultTypeName = resultType?.toJavaType
-        val usedEntities = activity.rootAction.findMatchingActions(Literals.ACTION).map[(outputs+inputs).map[type].filter[entity]].flatten.toSet
+        val usedEntities = collectEntityActions(new LinkedHashMap<Activity, Collection<Type>>, activity)
+        // null is used for the current activity, which is not a closure
+        val entitiesUsedHere = usedEntities.get(null)
+        // we omit the first entity as that is the base query's entity
+        val entitiesUsedInSubqueries = usedEntities.entrySet.filter[key != null].map[value].tail.flatten.toSet
         '''
             «IF (resultType != null && (activity.operation == null || activity.operation.query))»
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
             CriteriaQuery<«resultTypeName»> cq = cb.createQuery(«resultTypeName».class);
-            «usedEntities.map['''
+            «entitiesUsedHere.map['''
             Root<«name»> «alias» = cq.from(«name».class);
+            '''].join»
+            «entitiesUsedInSubqueries.map[entity | ''' 
+            Subquery<«entity.name»> «entity.name.toFirstLower»Subquery = cq.subquery(«entity.name».class);
+            Root<«entity.name»> sub«entity.name.toFirstUpper» = «entity.name.toFirstLower»Subquery.from(«entity.name».class);
             '''].join»
             «ENDIF»
             «super.generateJavaMethodBody(activity)»

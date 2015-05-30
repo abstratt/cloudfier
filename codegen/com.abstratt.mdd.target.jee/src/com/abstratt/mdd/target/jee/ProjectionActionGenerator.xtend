@@ -18,6 +18,7 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.InputPin
 
 /**
  * Builds up a query based on a (non-group) projection closure.
@@ -48,9 +49,13 @@ class ProjectionActionGenerator extends QueryFragmentGenerator {
             unsupportedElement(action)
     }
     
-    def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
         '''«action.object.generateAction».get("«property.name»")'''
+    }
+    
+    override generateTraverseRelationshipAction(InputPin target, Property end) {
+        '''«target.generateAction».get("«end.name»")'''
     }
         
     override generateReadVariableAction(ReadVariableAction action) {

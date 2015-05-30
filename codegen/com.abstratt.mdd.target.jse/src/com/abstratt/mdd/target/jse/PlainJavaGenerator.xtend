@@ -391,4 +391,9 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         val prefix = if ("Boolean".equals(attribute.type.name)) "is" else "get"
         '''«prefix»«attribute.name.toFirstUpper»'''
     }
+    
+    def generateSetterName(Property attribute) {
+        val prefix = "set"
+        '''«prefix»«attribute.name.toFirstUpper»'''
+    }
 }

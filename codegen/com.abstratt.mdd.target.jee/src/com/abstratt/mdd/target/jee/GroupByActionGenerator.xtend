@@ -12,6 +12,7 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.Classifier
 import java.util.List
+import org.eclipse.uml2.uml.InputPin
 
 class GroupByActionGenerator extends QueryFragmentGenerator {
     
@@ -19,10 +20,15 @@ class GroupByActionGenerator extends QueryFragmentGenerator {
         super(repository)
     }
     
-    def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
         val classifier = action.object.type
         '''«classifier.alias».get("«property.name»")'''
+    }
+    
+    override generateTraverseRelationshipAction(InputPin target, Property end) {
+        val classifier = target.type
+        '''«classifier.alias».get("«end.name»")'''
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {

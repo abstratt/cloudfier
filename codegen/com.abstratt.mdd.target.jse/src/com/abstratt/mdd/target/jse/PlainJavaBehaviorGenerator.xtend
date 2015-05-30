@@ -48,8 +48,8 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.NamedElementUtils.*
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
 class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
@@ -587,13 +587,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             ''
     }
 
-    def override generateReadLinkAction(ReadLinkAction action) {
-        val fedEndData = action.endData.get(0)
-        val target = fedEndData.value
-        '''«generateTraverseRelationshipAction(target, fedEndData.end.otherEnd)»'''
-    }
-
-    def generateTraverseRelationshipAction(InputPin target, Property property) {
+    override generateTraverseRelationshipAction(InputPin target, Property property) {
         if (property.navigable)
             return generateFeatureAccess(target, property, property.derived)
         else
@@ -601,10 +595,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             '''«generateProviderReference(target.owningAction.actionActivity.behaviorContext, property.type as Classifier)».find«property.name.toFirstUpper»By«property.otherEnd.name.toFirstUpper»(«target.generateAction»)'''        
     }
 
-    def override generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    override generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val feature = action.structuralFeature as Property
-        if (feature.relationship)
-            return generateTraverseRelationshipAction(action.object, feature)
         val computed = feature.derived
         val target = action.object
         generateFeatureAccess(target, feature, computed)

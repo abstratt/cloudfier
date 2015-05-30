@@ -27,6 +27,8 @@ import org.eclipse.uml2.uml.Property
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import java.util.List
 import java.util.Iterator
+import java.io.StringWriter
+import java.io.PrintWriter
 
 class DataSnapshotGenerator extends AbstractGenerator {
     
@@ -42,7 +44,9 @@ class DataSnapshotGenerator extends AbstractGenerator {
             sourceStream = dataUrl.openStream
             IOUtils.copy(sourceStream, contents)
         } catch (IOException e) {
-            return ''
+            val stringWriter = new StringWriter()
+            e.printStackTrace(new PrintWriter(stringWriter))
+            return '-- ERROR\n'+ stringWriter.buffer.toString.split('\n').map['''-- «it»'''].join('\n')  
         } finally {
             IOUtils.closeQuietly(sourceStream)
         }

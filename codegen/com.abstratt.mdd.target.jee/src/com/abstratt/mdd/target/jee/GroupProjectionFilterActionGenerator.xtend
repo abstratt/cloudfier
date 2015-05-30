@@ -20,6 +20,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import org.eclipse.uml2.uml.InputPin
 
 /**
  * Builds up a query having filter based on a filter closure.
@@ -33,7 +34,7 @@ class GroupProjectionFilterActionGenerator extends FilterActionGenerator {
         this.projectingAction = projectingAction
     }
     
-    def override CharSequence generateReadStructuralFeatureAction(ReadStructuralFeatureAction action) {
+    def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         // we are accessing grouped properties, so need to figure out what was used to
         // initialize the property upstream and regenerate that expression here
         

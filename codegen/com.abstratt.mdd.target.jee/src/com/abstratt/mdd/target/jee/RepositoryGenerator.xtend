@@ -21,8 +21,6 @@ class RepositoryGenerator extends BehaviorlessClassGenerator {
 
         @Stateless
         public class «entity.name»Repository {
-            @Inject
-            EntityManager entityManager;
             
             «entity.generateCreate»
             «entity.generateFind»

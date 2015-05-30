@@ -43,6 +43,8 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
                 generateCollectionSize(action)
             case 'select':
                 generateCollectionSelect(action)
+            case 'exists':
+                generateCollectionExists(action)
             case 'collect':
                 generateCollectionCollect(action)                
             case 'any':
@@ -74,6 +76,17 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
             «action.target.sourceAction.generateAction».multiselect(
                 «mapping.generateProjection»
             )
+        '''
+    }
+    
+    override generateCollectionExists(CallOperationAction action) {
+        val predicate = action.arguments.head.sourceClosure
+        ''' 
+            «action.target.sourceAction.generateAction».«IF action.target.sourceAction.groupedUpstream»having(
+                «predicate.generateHavingPredicate(action)» 
+            )«ELSE»where(
+                «predicate.generateSelectPredicate»
+            )«ENDIF»
         '''
     }
     
