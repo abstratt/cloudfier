@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.equinox.http.registry.servlets">
       <servlet
-            alias="/mdd"
+            alias="/services"
             class="com.abstratt.mdd.frontend.web.FrontendWebServlet">
       </servlet>
    </extension>

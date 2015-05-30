@@ -16,7 +16,7 @@ import com.abstratt.pluginutils.LogUtils;
 /**
  * Archiver resource.
  * <p>
- * URI: http://localhost:8090/mdd/publisher/{workspace}.zip
+ * URI: http://localhost:8090/services/publisher/{workspace}.zip
  */
 public class ArchiverResource extends AbstractWorkspaceResource {
     /**

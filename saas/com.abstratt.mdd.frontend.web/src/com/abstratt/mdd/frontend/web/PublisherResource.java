@@ -50,7 +50,7 @@ import com.abstratt.pluginutils.LogUtils;
 /**
  * Publisher resource.
  * <p>
- * URI: http://localhost:8090/mdd/publisher/{workspace}/
+ * URI: http://localhost:8090/services/publisher/{workspace}/
  */
 public class PublisherResource extends AbstractWorkspaceResource {
     /**

@@ -24,7 +24,7 @@ import com.abstratt.mdd.core.IProblem;
 /**
  * Validator resource.
  * <p>
- * URI: http://localhost:8090/mdd/validator/
+ * URI: http://localhost:8090/services/validator/
  */
 public class ValidatorResource extends ServerResource {
 

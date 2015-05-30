@@ -3,7 +3,7 @@ package com.abstratt.mdd.frontend.web;
 public interface WebFrontEnd {
     String ID = WebFrontEnd.class.getPackage().getName();
     String PORT = System.getProperty("org.eclipse.equinox.http.jetty.http.port");
-    String BASE_PATH = "/mdd";
+    String BASE_PATH = "/services";
     String STATUS_SEGMENT = "/status";
     String BUILDER_SEGMENT = "/builder/";
     String DEPLOYER_SEGMENT = "/deployer/";
@@ -23,6 +23,6 @@ public interface WebFrontEnd {
     String GENERATOR_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.BASE_PATH + WebFrontEnd.GENERATOR_SEGMENT;
     String STATUS_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.BASE_PATH + WebFrontEnd.STATUS_SEGMENT;
 
-    String APP_API_SEGMENT = "/mdd/" + Paths.API + "/";
+    String APP_API_SEGMENT = BASE_PATH + "/ "+ Paths.API + "/";
     String APP_API_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.APP_API_SEGMENT;
 }

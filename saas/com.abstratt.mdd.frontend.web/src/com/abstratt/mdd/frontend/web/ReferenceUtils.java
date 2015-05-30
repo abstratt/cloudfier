@@ -19,10 +19,10 @@ public class ReferenceUtils {
     }
 
     // something like http://foobar/barfoo/ (internal endpoints are
-    // http://localhost:8090/mdd/)
+    // http://localhost:8090/services/)
     public static final String EXTERNAL_BASE_PROPERTY = "cloudfier.api.externalBaseUri";
     public static final String INTERNAL_BASE_PROPERTY = "cloudfier.api.internalBaseUri";
-    public static final String INTERNAL_BASE = System.getProperty(ReferenceUtils.INTERNAL_BASE_PROPERTY, "http://localhost/mdd/");
+    public static final String INTERNAL_BASE = System.getProperty(ReferenceUtils.INTERNAL_BASE_PROPERTY, "http://localhost/services/");
     public static final String EXTERNAL_BASE = System.getProperty(ReferenceUtils.EXTERNAL_BASE_PROPERTY, ReferenceUtils.INTERNAL_BASE);
 
 }

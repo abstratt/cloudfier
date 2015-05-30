@@ -7,8 +7,6 @@ Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Import-Package: com.abstratt.kirra.auth,
- com.abstratt.kirra.mdd.rest.impl.v2,
- com.abstratt.kirra.populator,
  com.abstratt.kirra.rest.common,
  com.abstratt.kirra.rest.resources,
  com.abstratt.nodestore,

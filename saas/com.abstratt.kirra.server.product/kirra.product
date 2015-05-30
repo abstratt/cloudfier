@@ -16,7 +16,7 @@
 -DDEBUG_VERBOSE=1
 -Xmx400m
 -Dorg.eclipse.uml2.common.util.CacheAdapter.ThreadLocal
--Dcloudfier.api.internalBaseUri=http://localhost:8081/mdd/
+-Dcloudfier.api.internalBaseUri=http://localhost:8081/services/
 -Dcloudfier.api.externalBaseUri=http://localhost/services/
 -Dcloudfier.api.port=8081
 -Dcloudfier.database.username=cloudfier
