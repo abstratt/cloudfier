@@ -12,3 +12,18 @@ How to use:
 https://github.com/abstratt/cloudfier-maven-plugin (via Maven)
 
 https://github.com/abstratt/codegen-examples (from bash scripts)
+
+### Features
+
+#### JPA entities and services 
+
+##### Preconditions
+
+##### State machines
+
+##### Queries
+
+#### JAX-RS Resources
+
+#### Maven support
+
