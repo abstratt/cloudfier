@@ -23,6 +23,6 @@ public interface WebFrontEnd {
     String GENERATOR_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.BASE_PATH + WebFrontEnd.GENERATOR_SEGMENT;
     String STATUS_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.BASE_PATH + WebFrontEnd.STATUS_SEGMENT;
 
-    String APP_API_SEGMENT = BASE_PATH + "/ "+ Paths.API + "/";
+    String APP_API_SEGMENT = BASE_PATH + "/"+ Paths.API + "/";
     String APP_API_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.APP_API_SEGMENT;
 }

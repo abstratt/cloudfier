@@ -31,7 +31,7 @@ public class Activator implements BundleActivator {
             System.setProperty("org.eclipse.equinox.http.jetty.http.port", cloudfierAPIPort);
         else
             if (equinoxHttpPort != null)
-                System.setProperty("cloudfier.api.port", cloudfierAPIPort);
+                System.setProperty("cloudfier.api.port", equinoxHttpPort);
             else {
                 System.setProperty("cloudfier.api.port", defaultPort);
                 System.setProperty("org.eclipse.equinox.http.jetty.http.port", defaultPort);
