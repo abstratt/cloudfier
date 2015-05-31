@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.equinox.http.registry.servlets">
       <servlet
-          alias="/mdd/api-v2"
+          alias="/services/api-v2"
           class="com.abstratt.kirra.mdd.rest.impl.v2.KirraRESTServlet"/>
    </extension>
 </plugin>
