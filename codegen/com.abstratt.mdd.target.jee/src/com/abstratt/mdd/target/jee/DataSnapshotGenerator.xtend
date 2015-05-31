@@ -75,7 +75,7 @@ class DataSnapshotGenerator extends AbstractGenerator {
         ]
         val alterSequences = ids.entrySet.map[ pair |
             '''
-            ALTER SEQUENCE «namespace».«entities.get(pair.key).name.toLowerCase»_id_seq RESTART WITH «pair.value»;
+            ALTER SEQUENCE «namespace».«entities.get(pair.key).name.toLowerCase»_id_seq RESTART WITH «pair.value.get + 1»;
             '''
         ]
         return (inserts + alterSequences)
