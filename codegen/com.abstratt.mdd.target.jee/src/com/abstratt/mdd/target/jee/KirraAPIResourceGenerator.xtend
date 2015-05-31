@@ -9,6 +9,7 @@ import org.eclipse.uml2.uml.Type
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import com.abstratt.kirra.mdd.core.KirraHelper
+import org.eclipse.uml2.uml.Operation
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
     
@@ -43,7 +44,9 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "instanceActionUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)",
             "relationshipDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/relationships/(relationshipName)/domain",
             "instanceActionParameterDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)/parameters/(parameterName)/domain",            
-            "operations" : {},
+            "operations" : {
+                «entity.actions.map[operationRepresentation].join(',\n')»
+            },
             "properties" : {
                 «entity.properties.map[propertyRepresentation].join(',\n')»
             }
@@ -76,6 +79,22 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         }
         '''
     }
+    
+    def CharSequence getOperationRepresentation(Operation operation) {
+        '''
+        "«operation.name»" : {
+            "enabled": false,
+            "instanceOperation": «!operation.static»,
+            "kind": "Action",
+            "parameters": [],
+            "owner": «operation.owningClassifier.typeRefRepresentation»,
+            "description": "«operation.description»",
+            "label": "«KirraHelper.getLabel(operation)»",
+            "name": "«operation.name»",
+            "symbol": "«operation.symbol»"
+        }
+        '''
+    }    
     
     def getTypeRefRepresentation(Type type) {
         val typeRef = type.convertType
