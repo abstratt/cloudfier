@@ -148,11 +148,45 @@ public class Car {
 
 ##### Queries
 
+Modeled:
+```
+class Rental
+    /* ... */
+    static query inProgress() : Rental[*];
+    begin
+        return Rental extent.select((l : Rental) : Boolean {
+            l.inProgress
+        });
+    end;
+end;
+```
+
+Generated:
+
+```
+public class RentalService {
+    /* ... */
+    
+    public Collection<Rental>  inProgress() {
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<Rental> cq = cb.createQuery(Rental.class);
+        Root<Rental> rental_ = cq.from(Rental.class);
+        return getEntityManager().createQuery(
+            cq.distinct(true).where(
+                cb.equal(rental_.get("returned"), cb.nullLiteral(null))
+            )
+        ).getResultList();
+    }
+}
+```
+
 #### JAX-RS Resources
 
 E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON representations compatible with the [Kirra API](http://github.com/abstratt/kirra) (so it can get a free dynamic UI etc).
 
 ##### single resource GET/PUT
+
+##### list resource POST
 
 ##### list resource GET
 
