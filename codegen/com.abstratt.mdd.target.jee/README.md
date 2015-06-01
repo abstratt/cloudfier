@@ -274,6 +274,7 @@ E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON
 
 #### JAX-RS resource
 
+```
 package resource.car_rental;
 
 import car_rental.*;
