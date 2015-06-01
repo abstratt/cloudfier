@@ -13,11 +13,11 @@ https://github.com/abstratt/cloudfier-maven-plugin (via Maven)
 
 https://github.com/abstratt/codegen-examples (from bash scripts)
 
-### Features
+## Features
 
-#### JPA entities and services 
+### JPA entities and services 
 
-##### Preconditions
+#### Preconditions
 
 Modeled:
 ```
@@ -38,7 +38,7 @@ Generated:
     }
 ```
 
-##### State machines
+#### State machines
 
 Modeled:
 
@@ -145,8 +145,7 @@ public class Car {
     }
 }
 ```
-
-##### Queries
+#### Queries
 
 Modeled:
 ```
@@ -180,14 +179,26 @@ public class RentalService {
 }
 ```
 
-#### JAX-RS Resources
+#### Aggregation queries
+
+TBD
+
+### JAX-RS Resources
 
 E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON representations compatible with the [Kirra API](http://github.com/abstratt/kirra) (so it can get a free dynamic UI etc).
 
-##### single resource GET/PUT
+#### single resource GET/PUT
 
-##### list resource POST
+Relationships TBD
 
-##### list resource GET
+#### list resource POST
 
-#### Maven support
+Relationships TBD
+
+#### list resource GET
+
+Relationships TBD
+
+### Maven support
+
+Done.
