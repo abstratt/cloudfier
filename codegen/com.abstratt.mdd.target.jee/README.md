@@ -45,7 +45,7 @@ class Car
 ```
 
 Generated:
-```
+```java
 @Entity
 public class Car {
     /* ... */
@@ -80,7 +80,7 @@ Modeled:
 ```
 
 Generated:
-```
+```java
     protected void finish() {
         if (!this.isInProgress()) {
             throw new MustBeInProgressException();
@@ -105,7 +105,7 @@ Modeled:
 ```
 
 Generated:
-```
+```java
     public void rent(Car car) {
         if (!car.isAvailable()) {
             throw new CarMustBeAvailableException();
@@ -151,7 +151,7 @@ class Car
 ```
 
 Generated:
-```
+```java
 public class Car {
     /* ... */
     
@@ -247,7 +247,7 @@ end;
 
 Generated:
 
-```
+```java
 public class RentalService {
     /* ... */
     
@@ -274,7 +274,7 @@ E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON
 
 #### JAX-RS resource
 
-```
+```java
 package resource.car_rental;
 
 import car_rental.*;
@@ -316,7 +316,7 @@ public class CarResource {
 
 #### single resource GET
 
-```
+```java
         @GET
         @Path("{id}")
         public Response getSingle(@PathParam("id") String idString) {
@@ -334,7 +334,7 @@ public class CarResource {
 
 #### single resource PUT
 
-```
+```java
         @PUT
         @Path("{id}")
         @Consumes(MediaType.APPLICATION_JSON)
@@ -354,7 +354,7 @@ public class CarResource {
 
 #### list resource POST
 
-```
+```java
         @POST
         @Consumes(MediaType.APPLICATION_JSON)
         public Response post(Map<String, Object> representation) {
@@ -372,7 +372,7 @@ public class CarResource {
 
 #### list resource GET
 
-```
+```java
         @GET
         public Response getList() {
             Collection<Car> models = service.findAll();
@@ -412,7 +412,7 @@ class Car
 ```
 
 Generated:
-```
+```java
         private Map<String, Object> toExternalRepresentation(Car toRender, URI instancesURI, boolean full) {
             Map<String, Object> result = new LinkedHashMap<>();
             Map<String, Object> values = new LinkedHashMap<>();
