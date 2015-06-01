@@ -233,17 +233,142 @@ TBD
 
 E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON representations compatible with the [Kirra API](http://github.com/abstratt/kirra) (so it can get a free dynamic UI etc).
 
-#### single resource GET/PUT
+#### single resource GET
 
-Relationships TBD
+```
+        @GET
+        @Path("{id}")
+        public Response getSingle(@PathParam("id") String idString) {
+            if ("_template".equals(idString)) {
+                Car template = new Car(); 
+                return status(Status.OK).entity(toExternalRepresentation(template, uri.getRequestUri().resolve(""), true)).build();
+            }
+            Long id = Long.parseLong(idString);
+            Car found = service.find(id);
+            if (found == null)
+                return status(Status.NOT_FOUND).entity(Collections.singletonMap("message", "Car not found: " + id)).build();
+            return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(""), true)).build();
+        }
+```
+
+#### single resource PUT
+
+```
+        @PUT
+        @Path("{id}")
+        @Consumes(MediaType.APPLICATION_JSON)
+        public Response put(@PathParam("id") Long id, Map<String, Object> representation) {
+            Car found = service.find(id);
+            if (found == null)
+                return status(Status.NOT_FOUND).entity("Car not found: " + id).build();
+            try {    
+                updateFromExternalRepresentation(found, representation);
+            } catch (RuntimeException e) {
+                return status(Status.BAD_REQUEST).entity(Collections.singletonMap("message", e.getMessage())).build();
+            }    
+            service.update(found);
+            return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(""), true)).build();
+        }
+```
 
 #### list resource POST
 
-Relationships TBD
+```
+        @POST
+        @Consumes(MediaType.APPLICATION_JSON)
+        public Response post(Map<String, Object> representation) {
+            Car newInstance = new Car();
+            try {    
+                updateFromExternalRepresentation(newInstance, representation);
+            } catch (RuntimeException e) {
+                return status(Status.BAD_REQUEST).entity(Collections.singletonMap("message", e.getMessage())).build();
+            }    
+            service.create(newInstance);
+            return status(Status.CREATED).entity(toExternalRepresentation(newInstance, uri.getRequestUri().resolve(newInstance.getId().toString()), true)).build();
+        }
+
+```
 
 #### list resource GET
 
-Relationships TBD
+```
+        @GET
+        public Response getList() {
+            Collection<Car> models = service.findAll();
+            URI extentURI = uri.getRequestUri();
+            Collection<Map<String, Object>> items = models.stream().map(toMap -> {
+                return toExternalRepresentation(toMap, extentURI, true);
+            }).collect(Collectors.toList());
+            
+            Map<String, Object> result = new LinkedHashMap<String, Object>();
+            result.put("contents", items);
+            result.put("offset", 0);
+            result.put("length", items.size());  
+            return status(Status.OK).entity(result).build();
+        }
+```
+#### Converting domain instances from/to JSON
+
+```
+private Map<String, Object> toExternalRepresentation(Car toRender, URI instancesURI, boolean full) {
+            Map<String, Object> result = new LinkedHashMap<>();
+            Map<String, Object> values = new LinkedHashMap<>();
+            boolean persisted = toRender.getId() != null;
+            values.put("plate", toRender.getPlate());
+            values.put("price", toRender.getPrice());
+            values.put("year", toRender.getYear());
+            values.put("color", toRender.getColor());
+            values.put("status", toRender.getStatus().name());
+            if (persisted) {
+                values.put("description", toRender.getDescription());
+                values.put("available", toRender.isAvailable());
+                values.put("underRepair", toRender.isUnderRepair());
+                values.put("rented", toRender.isRented());
+            } else {
+                values.put("description", "");
+                values.put("available", false);
+                values.put("underRepair", false);
+                values.put("rented", false);
+            }
+            result.put("values", values);
+            Map<String, Object> links = new LinkedHashMap<>();
+            result.put("links", links);
+            result.put("uri", instancesURI.resolve(persisted ? toRender.getId().toString() : "_template").toString());
+            result.put("entityUri", instancesURI.resolve("../..").resolve("car_rental.Car").toString());
+            if (persisted) {
+                result.put("objectId", toRender.getId().toString());
+                result.put("shorthand", toRender.getDescription());
+            }
+            result.put("full", full);
+            result.put("disabledActions", Collections.emptyMap());
+            result.put("scopeName", "Car");
+            result.put("scopeNamespace", "car_rental");
+            Map<String, Object> typeRef = new LinkedHashMap<>();
+            typeRef.put("entityNamespace", "car_rental");
+            typeRef.put("kind", "Entity");
+            typeRef.put("typeName", "Car");
+            typeRef.put("fullName", "car_rental.Car");
+            result.put("typeRef", typeRef);   
+            return result;                    
+        }
+        
+        private void updateFromExternalRepresentation(Car toUpdate, Map<String, Object> external) {
+            Map<String, Object> values = (Map<String, Object>) external.get("values");
+            if (values.get("plate") != null)
+                toUpdate.setPlate((String) values.get("plate"));
+            else
+                toUpdate.setPlate("");
+            if (values.get("price") != null)
+                toUpdate.setPrice(Double.parseDouble((String) values.get("price")));
+            else
+                toUpdate.setPrice(500.0);
+            if (values.get("year") != null)
+                toUpdate.setYear(Long.parseLong((String) values.get("year")));
+            else
+                toUpdate.setYear(java.sql.Date.valueOf(java.time.LocalDate.now()).getYear() + 1900L);
+            toUpdate.setColor((String) values.get("color"));
+        }    
+```
 
 ### Maven support
 
