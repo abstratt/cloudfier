@@ -171,12 +171,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                     «generateMany(actionOperations, [generateActionOperation])»
                 «ENDIF»
                 «IF !derivedAttributes.empty»
-                    /*************************** DERIVED PROPERTIES (TBD) ****************/
+                    /*************************** DERIVED PROPERTIES ****************/
                     
                     «generateMany(derivedAttributes, [generateDerivedAttribute])»
                 «ENDIF»
                 «IF !derivedRelationships.empty»
-                    /*************************** DERIVED RELATIONSHIPS (TBD) ****************/
+                    /*************************** DERIVED RELATIONSHIPS ****************/
                     
                     «generateMany(derivedRelationships, [generateDerivedRelationship])»
                 «ENDIF»

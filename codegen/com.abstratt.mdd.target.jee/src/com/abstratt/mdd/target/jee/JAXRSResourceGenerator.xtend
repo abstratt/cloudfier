@@ -20,6 +20,9 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     def generateResource(Class entity) {
         val typeRef = entity.convertType
         val entityFullName = typeRef.fullName
+        val properties = entity.properties
+        val dataProperties = properties.filter[!derived]
+        val derivedProperties = properties.filter[derived]        
         '''
         package resource.«entity.packagePrefix»;
         
@@ -64,7 +67,12 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 
                 @GET
                 @Path("{id}")
-                public Response getSingle(@PathParam("id") Long id) {
+                public Response getSingle(@PathParam("id") String idString) {
+                    if ("_template".equals(idString)) {
+                        «entity.name» template = new «entity.name»(); 
+                        return status(Status.OK).entity(toExternalRepresentation(template, uri.getRequestUri().resolve(""), true)).build();
+                    }
+                    Long id = Long.parseLong(idString);
                     «entity.name» found = service.find(id);
                     if (found == null)
                         return status(Status.NOT_FOUND).entity(Collections.singletonMap("message", "«entity.name» not found: " + id)).build();
@@ -74,7 +82,6 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 @PUT
                 @Path("{id}")
                 @Consumes(MediaType.APPLICATION_JSON)
-                @Produces(MediaType.APPLICATION_JSON)
                 public Response put(@PathParam("id") Long id, Map<String, Object> representation) {
                     «entity.name» found = service.find(id);
                     if (found == null)
@@ -86,6 +93,19 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                     }    
                     service.update(found);
                     return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(""), true)).build();
+                }
+                
+                @POST
+                @Consumes(MediaType.APPLICATION_JSON)
+                public Response post(Map<String, Object> representation) {
+                    «entity.name» newInstance = new «entity.name»();
+                    try {    
+                        updateFromExternalRepresentation(newInstance, representation);
+                    } catch (RuntimeException e) {
+                        return status(Status.BAD_REQUEST).entity(Collections.singletonMap("message", e.getMessage())).build();
+                    }    
+                    service.create(newInstance);
+                    return status(Status.CREATED).entity(toExternalRepresentation(newInstance, uri.getRequestUri().resolve(newInstance.getId().toString()), true)).build();
                 }
                 
                 @DELETE
@@ -115,19 +135,34 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 private Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
                     Map<String, Object> result = new LinkedHashMap<>();
                     Map<String, Object> values = new LinkedHashMap<>();
-                    «IF (entity.properties.exists[type.name == 'Date'])»
+                    boolean persisted = toRender.getId() != null;
+                    «IF (properties.exists[type.name == 'Date'])»
                     DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
                     «ENDIF»
-                    «entity.properties.map[
+                    «dataProperties.map[
                         '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
                     ].join('\n')»
+                    «if (!derivedProperties.empty)
+                    '''
+                    if (persisted) {
+                        «derivedProperties.map[
+                            '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
+                        ].join('\n')»
+                    } else {
+                        «derivedProperties.map[
+                            '''values.put("«name»", «it.type.generateDefaultValue»);'''
+                        ].join('\n')»
+                    }
+                    '''»
                     result.put("values", values);
                     Map<String, Object> links = new LinkedHashMap<>();
                     result.put("links", links);
-                    result.put("uri", instancesURI.resolve(toRender.getId().toString()).toString());
+                    result.put("uri", instancesURI.resolve(persisted ? toRender.getId().toString() : "_template").toString());
                     result.put("entityUri", instancesURI.resolve("../..").resolve("«entityFullName»").toString());
-                    result.put("objectId", toRender.getId().toString());
-                    result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
+                    if (persisted) {
+                        result.put("objectId", toRender.getId().toString());
+                        result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
+                    }
                     result.put("full", full);
                     result.put("disabledActions", Collections.emptyMap());
                     result.put("scopeName", "«typeRef.typeName»");
