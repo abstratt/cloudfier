@@ -390,6 +390,28 @@ public class CarResource {
 ```
 #### Converting domain instances from/to JSON
 
+(relationship support TBD)
+
+Modeled:
+```
+class Car
+
+    derived attribute description : String /* ...*/;
+    attribute plate : String;
+    attribute price : Double  /* ...*/;
+    derived attribute available : Boolean  /* ...*/;
+    derived attribute currentRental : Rental /* ...*/;
+    attribute year : Integer /* ...*/;
+    attribute color : String[0,1];
+    readonly attribute carModel : CarModel;
+    derived attribute underRepair : Boolean /* ...*/;
+    derived attribute rented : Boolean /* ...*/;
+    readonly attribute rentals : Rental[*];
+    attribute status : Status;
+    /* ... */
+```
+
+Generated:
 ```
         private Map<String, Object> toExternalRepresentation(Car toRender, URI instancesURI, boolean full) {
             Map<String, Object> result = new LinkedHashMap<>();
