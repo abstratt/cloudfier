@@ -475,4 +475,14 @@ Generated:
 
 ### Maven support
 
-Done.
+#### mvn test
+
+Includes support for running the tests generated (JPA CRUD and functional).
+
+#### mvn install
+
+Produces a deployable WAR file containing the application.
+
+#### mvn exec:java
+
+Launchs the application as a standalone server (using Jetty).
