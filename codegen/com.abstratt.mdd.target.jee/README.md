@@ -485,4 +485,4 @@ Produces a deployable WAR file containing the application.
 
 #### mvn exec:java
 
-Launchs the application as a standalone server (using Jetty).
+Launches the application as a standalone server (using Jetty). You can then use Kirra Qooxdoo to access the application via a mobile-styled web UI using [Kirra Qooxdoo](https://github.com/abstratt/kirra/tree/master/kirra_qooxdoo).
