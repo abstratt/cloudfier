@@ -29,6 +29,45 @@ Generated:
 
 ### JPA entities and services 
 
+#### Attribute invariants
+
+Modeled:
+```
+class Car
+
+    /* ...*/
+    
+    attribute price : Double := 500.0
+        (* Price mustbe $50 at least. *)
+        invariant PriceAboveMinimum { self.price >= 50.0 }
+        (* Price cannot be above $500. *)
+        invariant PriceBelowMaximum { self.price <= 500.0 };
+```
+
+Generated:
+```
+@Entity
+public class Car {
+    /* ... */
+    
+    @Column(nullable=false)
+    private double price = 500.0;
+    
+    public double getPrice() {
+        return this.price;
+    }
+    
+    public void setPrice(double newPrice) {
+        if (!(newPrice >= 50.0)) {
+            throw new PriceAboveMinimumException();
+        }
+        if (!(newPrice <= 500.0)) {
+            throw new PriceBelowMaximumException();
+        }
+        this.price = newPrice;
+    }
+```
+
 #### Preconditions
 
 Modeled:
