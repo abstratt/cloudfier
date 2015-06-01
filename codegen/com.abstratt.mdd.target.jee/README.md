@@ -15,6 +15,18 @@ https://github.com/abstratt/codegen-examples (from bash scripts)
 
 ## Features
 
+The sections below describe the various features of the JavaEE generator, in the following format:
+
+Modeled:
+
+\<example-model\>
+
+Generated:
+
+\<example-generated-code\>
+
+
+
 ### JPA entities and services 
 
 #### Preconditions
