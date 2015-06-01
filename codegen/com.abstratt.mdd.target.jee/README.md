@@ -485,4 +485,6 @@ Produces a deployable WAR file containing the application, which comprises a per
 
 #### mvn exec:java
 
-Launches the application as a standalone server (using Jetty). You can then use Kirra Qooxdoo to access the application via a mobile-styled web UI using [Kirra Qooxdoo](https://github.com/abstratt/kirra/tree/master/kirra_qooxdoo).
+Launches the application as a standalone server (using Jetty) on port 8888. You can then use Kirra Qooxdoo to access the application via a mobile-styled web UI using [Kirra Qooxdoo](https://github.com/abstratt/kirra/tree/master/kirra_qooxdoo), for instance, using the URI:
+
+localhost:9999/kirra-api/kirra_qooxdoo/source/index.html?app-uri=http://localhost:8888
