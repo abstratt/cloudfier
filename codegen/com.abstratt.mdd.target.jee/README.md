@@ -229,9 +229,51 @@ public class RentalService {
 
 TBD
 
-### JAX-RS Resources
+### JAX-RS based REST API
 
 E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON representations compatible with the [Kirra API](http://github.com/abstratt/kirra) (so it can get a free dynamic UI etc).
+
+#### JAX-RS resource
+
+package resource.car_rental;
+
+import car_rental.*;
+
+import java.util.*;
+import java.util.stream.*;
+import java.text.*;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.GET;
+import javax.ws.rs.PUT;
+import javax.ws.rs.POST;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.Consumes;        
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+
+import java.net.URI;
+
+```
+@Path("entities/car_rental.Car/instances")
+@Produces(MediaType.APPLICATION_JSON)
+public class CarResource {
+    
+        private static ResponseBuilder status(Status status) {
+            return Response.status(status).type(MediaType.APPLICATION_JSON);
+        }
+    
+        @Context
+        UriInfo uri;
+    
+        private CarService service = new CarService();
+```
 
 #### single resource GET
 
@@ -310,7 +352,7 @@ E4J generates JAX-RS resources backed by JPA services. It produces/consumes JSON
 #### Converting domain instances from/to JSON
 
 ```
-private Map<String, Object> toExternalRepresentation(Car toRender, URI instancesURI, boolean full) {
+        private Map<String, Object> toExternalRepresentation(Car toRender, URI instancesURI, boolean full) {
             Map<String, Object> result = new LinkedHashMap<>();
             Map<String, Object> values = new LinkedHashMap<>();
             boolean persisted = toRender.getId() != null;
