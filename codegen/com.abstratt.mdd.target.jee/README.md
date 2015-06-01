@@ -300,7 +300,6 @@ import javax.ws.rs.core.Response.Status;
 
 import java.net.URI;
 
-```
 @Path("entities/car_rental.Car/instances")
 @Produces(MediaType.APPLICATION_JSON)
 public class CarResource {
