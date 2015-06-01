@@ -37,7 +37,41 @@ Generated:
         /* ... */
     }
 ```
+#### Actions
 
+Modeled:
+```
+    operation rent(car : Car)
+        precondition CarMustBeAvailable(car) { car.available }
+        precondition CustomerMustHaveNoCurrentRental { self.currentRental == null };
+    begin
+        var rental;
+        rental := new Rental;
+        link RentalsCustomer(customer := self, rentals := rental);
+        link RentalsCar(car := car, rentals := rental);
+        send CarRented() to car;
+    end;
+```
+
+Generated:
+```
+    public void rent(Car car) {
+        if (!car.isAvailable()) {
+            throw new CarMustBeAvailableException();
+        }
+        if (!((this.getCurrentRental() == null))) {
+            throw new CustomerMustHaveNoCurrentRentalException();
+        }
+        Rental rental;
+        rental = new Rental();
+        rental.setCustomer(this);
+        this.addToRentals(rental);
+        rental.setCar(car);
+        car.addToRentals(rental);
+        car.handleEvent(Car.StatusEvent.CarRented);
+        persist(rental);
+    }
+```
 #### State machines
 
 Modeled:
