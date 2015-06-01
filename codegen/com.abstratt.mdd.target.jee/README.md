@@ -481,7 +481,7 @@ Includes support for running the tests generated (JPA CRUD and functional).
 
 #### mvn install
 
-Produces a deployable WAR file containing the application.
+Produces a deployable WAR file containing the application, which comprises a persistent domain layer using JPA, exposed via a REST API using JAX-RS.
 
 #### mvn exec:java
 
