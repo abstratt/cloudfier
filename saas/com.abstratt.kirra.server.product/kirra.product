@@ -54,6 +54,10 @@
       <plugin id="com.abstratt.kirra.rest.resources"/>
       <plugin id="com.abstratt.kirra.server"/>
       <plugin id="com.abstratt.mdd.core"/>
+      <plugin id="com.abstratt.graphviz"/>
+      <plugin id="com.abstratt.modelrenderer"/>
+      <plugin id="com.abstratt.mdd.modelrenderer.dot"/>
+      <plugin id="com.abstratt.mdd.modelrenderer.uml2dot"/>
       <plugin id="com.abstratt.mdd.frontend.core"/>
       <plugin id="com.abstratt.mdd.frontend.orion"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.core"/>

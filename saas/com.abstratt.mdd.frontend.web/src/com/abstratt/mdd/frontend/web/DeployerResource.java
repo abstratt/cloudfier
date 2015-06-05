@@ -82,7 +82,7 @@ public class DeployerResource extends AbstractBuildDirectoryResource {
         for (String filename : filenames)
             if ("uml".equals(FilenameUtils.getExtension(filename)))
                 packageNames.add(FilenameUtils.getBaseName(filename));
-        info.put("packages", StringUtils.join(packageNames, ", "));
+        info.put("packages", packageNames);
 
         Properties properties = new Properties();
 

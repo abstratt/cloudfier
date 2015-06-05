@@ -262,7 +262,7 @@ var shellAppInfo = function(args, context) {
              for (name in result) {
                  message += name + " = " + result[name] + "\n"
              }
-             return message + showLinks(projectPath);
+             return message + showLinks(projectPath, result.packages);
          },
          error: function(error) {
              if (error.status == 404) {
@@ -461,16 +461,22 @@ var shellDbDeploy = function(args, context, message) {
     });
 };
 
-var showLinks = function(projectPath) {
+var showLinks = function(projectPath, packages) {
     var applicationName = locationToWorkspace(projectPath);
+    packages = packages || [];
     var uiUrl = "http:/services/ui/" + applicationName + "/";
     var mobileUiUrl = "http:/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
     var apiUrl = "http:/services/api/" + applicationName + "/";
     var api2Url = "http:/services/api-v2/" + applicationName + "/";
-    return "\nStart [desktop UI](" + uiUrl + ")" +
+    var appInfo = "\nStart [desktop UI](" + uiUrl + ")" +
         "\nStart [mobile UI](" + mobileUiUrl + ") (experimental)" +
         "\nBrowse [REST API](" + apiUrl + ") (make sure to log in via a UI first)" +
-        "\nBrowse [REST API (v2 - experimental)](" + api2Url + ") (make sure to log in via a UI first)"; 
+        "\nBrowse [REST API (v2 - experimental)](" + api2Url + ") (make sure to log in via a UI first)";
+    for (var i in packages) {
+        appInfo += "\nClass diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showClasses=true&showOperations=true&showAttributes=true&showEnumerations=true&showDataTypes=true&showSignals=true)"; 
+        appInfo += "\nStatechart diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showStateMachines=true)";
+    }    
+    return appInfo     
 }
 
 var takeDatabaseSnapshot = function(selectedText, text, selection, resource) {

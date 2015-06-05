@@ -1,5 +1,6 @@
 package com.abstratt.kirra.server;
 
+import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.Bundle;
@@ -17,6 +18,7 @@ public class Activator implements BundleActivator {
         for (Bundle current : context.getBundles())
             if (current.getBundleId() != context.getBundle().getBundleId() && current.getHeaders().get(Constants.FRAGMENT_HOST) == null)
                 try {
+                    LogUtils.logInfo(getClass().getPackage().getName(), "Starting bundle : " + current.getHeaders().get(Constants.BUNDLE_SYMBOLICNAME), null);
                     current.start();
                 } catch (BundleException e) {
                     LogUtils.logError(getClass().getPackage().getName(), "Error starting " + current.getSymbolicName(), e);
@@ -36,6 +38,7 @@ public class Activator implements BundleActivator {
                 System.setProperty("cloudfier.api.port", defaultPort);
                 System.setProperty("org.eclipse.equinox.http.jetty.http.port", defaultPort);
             }
+        LogUtils.logInfo(getClass().getPackage().getName(), "Instance location: " + Platform.getInstanceLocation().getURL(), null);
     }
 
     @Override

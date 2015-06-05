@@ -159,6 +159,7 @@ public class PublisherResource extends AbstractWorkspaceResource {
         if (!secret.isEmpty()) {
             baseReference.setQuery(AbstractWorkspaceResource.SECRET_PARAMETER + "=" + getSecret());
         }
+        ArrayList<File> umlFiles = new ArrayList<>(); 
         for (File file : workspaceFiles) {
             if (file.getName().equals(AbstractWorkspaceResource.SECRET_FILE))
                 continue;
@@ -169,6 +170,7 @@ public class PublisherResource extends AbstractWorkspaceResource {
                 element = "properties";
             else if (FilenameUtils.isExtension(file.getName(), "uml")) {
                 packageCount++;
+                umlFiles.add(file);
                 timestamp = Math.min(timestamp, file.lastModified());
                 element = "model";
             }
@@ -193,6 +195,9 @@ public class PublisherResource extends AbstractWorkspaceResource {
         }
         String archiveURI = baseReference.getParentRef().addSegment(getWorkspaceDir(false).getName() + ".zip").toString();
         workspaceMarkup.append("<archive uri=\"" + archiveURI + "\"/>");
+        
+        String baseDiagramURI = baseReference.clone().toString().replace(WebFrontEnd.PUBLISHER_SEGMENT, WebFrontEnd.DIAGRAM_SEGMENT);
+        umlFiles.forEach(f -> workspaceMarkup.append("<diagram uri=\"" + baseDiagramURI + "package/" + f.getName() + "\"/>"));
         if (includeClasses)
             try {
                 workspaceMarkup.append(getClasses(getWorkspaceDir(false)));
