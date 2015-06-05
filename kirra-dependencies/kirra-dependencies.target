@@ -82,7 +82,7 @@
 			<unit id="com.abstratt.mdd.frontend.toolkit.feature.feature.group"
 				version="0.0.0" />
 			<repository
-				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.0/com.abstratt.mdd.oss.repository-2.0.zip!/" />
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.0/com.abstratt.mdd.oss.repository-2.1.zip!/" />
 		</location>		
 
                 <location includeAllPlatforms="false" includeMode="planner"
@@ -97,7 +97,7 @@
 			includeSource="true" type="InstallableUnit">
 			<unit id="com.abstratt.mdd.core.tests.harness" version="0.0.0" />
 			<repository
-				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.tests.repository/2.0/com.abstratt.mdd.tests.repository-2.0.zip!/" />
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.tests.repository/2.0/com.abstratt.mdd.tests.repository-2.1.zip!/" />
 		</location>
 	</locations>
 </target>
