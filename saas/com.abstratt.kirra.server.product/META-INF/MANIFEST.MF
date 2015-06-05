@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Kirra Server Product
 Bundle-SymbolicName: com.abstratt.kirra.server.product;singleton:=true
-Bundle-Version: 2.0.150605.latest
+Bundle-Version: 2.1.201501.latest
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy

@@ -2,11 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Web Frontend
 Bundle-SymbolicName: com.abstratt.mdd.frontend.web;singleton:=true
-Bundle-Version: 2.0.150605.qualifier
+Bundle-Version: 2.1.201501.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Import-Package: com.abstratt.mdd.modelrenderer.uml2dot,
- javax.servlet;version="2.4.0",
+Import-Package: javax.servlet;version="2.4.0",
  org.eclipse.core.runtime,
  org.eclipse.osgi.service.datalocation,
  org.osgi.framework,
@@ -18,12 +17,12 @@ Require-Bundle: org.restlet,
  org.restlet.ext.fileupload,
  jackson-core-asl;visibility:=reexport,
  jackson-mapper-asl;visibility:=reexport,
- com.abstratt.mdd.frontend.core,
- com.abstratt.mdd.frontend.textuml.core,
+ com.abstratt.mdd.frontend.core;bundle-version="2.1.201501",
+ com.abstratt.mdd.frontend.textuml.core;bundle-version="2.1.201501",
  com.abstratt.mdd.target.core,
- com.abstratt.modelrenderer,
- com.abstratt.mdd.modelrenderer.uml2dot,
- com.abstratt.graphviz,
+ com.abstratt.modelrenderer;bundle-version="2.1.201501",
+ com.abstratt.mdd.modelrenderer.uml2dot;bundle-version="2.1.201501",
+ com.abstratt.graphviz;bundle-version="2.1.201501",
  org.apache.commons.collections,
  org.apache.commons.lang,
  org.apache.commons.logging,
