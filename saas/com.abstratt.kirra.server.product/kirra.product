@@ -61,9 +61,11 @@
       <plugin id="com.abstratt.mdd.frontend.core"/>
       <plugin id="com.abstratt.mdd.frontend.orion"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.core"/>
+      <plugin id="com.abstratt.mdd.frontend.textuml.renderer"/>      
       <plugin id="com.abstratt.mdd.frontend.web"/>
       <plugin id="com.abstratt.mdd.runtime.core"/>
       <plugin id="com.abstratt.mdd.target.core"/>
+      <plugin id="com.abstratt.mdd.target.base"/>
       <plugin id="com.abstratt.mdd.target.engine.gstring"/>
       <plugin id="com.abstratt.mdd.target.mean"/>
       <plugin id="com.abstratt.mdd.target.jee"/>
