@@ -2,9 +2,13 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil
+import com.abstratt.mdd.target.base.DelegatingBehaviorGenerator
+import com.abstratt.mdd.target.base.IBehaviorGenerator
+import com.abstratt.mdd.target.base.IBehaviorGenerator.SimpleContext
 import java.util.List
 import org.eclipse.emf.ecore.EObject
 import org.eclipse.emf.query.conditions.eobjects.EObjectCondition
+import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
@@ -15,6 +19,8 @@ import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadSelfAction
+import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.StateMachine
@@ -27,13 +33,6 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
-import com.abstratt.mdd.core.util.MDDExtensionUtils
-import com.abstratt.mdd.target.jse.IBehaviorGenerator.IExecutionContext
-import com.abstratt.mdd.target.jse.IBehaviorGenerator.SimpleContext
-import org.eclipse.uml2.uml.ActivityNode
-import org.eclipse.uml2.uml.ReadStructuralFeatureAction
-import org.eclipse.uml2.uml.Action
-import org.eclipse.uml2.uml.ReadSelfAction
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 

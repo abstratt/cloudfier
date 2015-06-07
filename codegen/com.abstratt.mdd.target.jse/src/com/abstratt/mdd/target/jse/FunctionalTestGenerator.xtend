@@ -1,22 +1,15 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
-import org.eclipse.uml2.uml.Action
-import org.eclipse.uml2.uml.CallOperationAction
+import com.abstratt.mdd.core.util.StereotypeUtils
+import com.abstratt.mdd.target.base.IBehaviorGenerator
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Operation
-import org.eclipse.uml2.uml.Package
-import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import static extension com.abstratt.mdd.core.util.TemplateUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import com.abstratt.mdd.core.util.StereotypeUtils
-import com.abstratt.mdd.core.util.MDDExtensionUtils
-import com.abstratt.mdd.core.util.MDDUtil
 
 class FunctionalTestGenerator extends PlainEntityGenerator {
 

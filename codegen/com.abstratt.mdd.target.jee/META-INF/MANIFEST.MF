@@ -14,6 +14,7 @@ Require-Bundle: com.abstratt.mdd.target.core,
  org.apache.commons.lang3,
  org.apache.commons.io,
  com.abstratt.mdd.target.jse,
+ com.abstratt.mdd.target.base,
  jackson-core-asl;bundle-version="1.9.2",
  jackson-mapper-asl;bundle-version="1.9.2"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

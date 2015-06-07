@@ -2,11 +2,7 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDExtensionUtils
-import com.abstratt.mdd.target.jse.IBehaviorGenerator.IExecutionContext
-import java.util.ArrayList
 import java.util.Arrays
-import java.util.Deque
-import java.util.LinkedList
 import java.util.List
 import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.uml2.uml.Action
@@ -28,8 +24,6 @@ import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Property
-import org.eclipse.uml2.uml.ReadExtentAction
-import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
@@ -41,14 +35,10 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
 import org.eclipse.uml2.uml.VariableAction
 
-import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
-
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import static extension com.abstratt.mdd.core.util.NamedElementUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
 class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
@@ -93,7 +83,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def generateAddVariableValueActionAsReturn(AddVariableValueAction action) {
         val valueAction = action.value.sourceAction
         if (valueAction instanceof StructuredActivityNode) {
-            if (!isCast(valueAction) && !isObjectInitialization(valueAction))
+            if (!MDDExtensionUtils.isCast(valueAction) && !isObjectInitialization(valueAction))
                 return generateAddVariableValueActionCore(action)
         }
         '''return «generateAddVariableValueActionCore(action)»'''
@@ -233,10 +223,6 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         }
     }
 
-    def Classifier getOperationTarget(CallOperationAction action) {
-        return if(action.target != null && !action.target.multivalued) action.target.type as Classifier else action.
-            operation.owningClassifier
-    }
 
     def boolean needsParenthesis(Action action) {
         val targetAction = action.targetAction

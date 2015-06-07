@@ -1,7 +1,7 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.target.jse.IBehaviorGenerator.SimpleContext
+import com.abstratt.mdd.target.base.IBehaviorGenerator.SimpleContext
 import com.abstratt.mdd.target.jse.ServiceGenerator
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class

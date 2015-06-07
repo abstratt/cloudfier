@@ -1,7 +1,7 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.target.jse.IBehaviorGenerator
+import com.abstratt.mdd.target.base.IBehaviorGenerator
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.uml2.uml.Class

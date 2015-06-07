@@ -5,14 +5,13 @@ import java.util.Collection
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Package
-
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
-import org.eclipse.uml2.uml.NamedElement
 
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 abstract class AbstractGenerator {
     protected IRepository repository
 
@@ -24,9 +23,11 @@ abstract class AbstractGenerator {
     
     new(IRepository repository) {
         this.repository = repository
-        this.appPackages = repository.getTopLevelPackages(null).applicationPackages
-        this.applicationName = appPackages.head.name
-        this.entities = appPackages.entities.filter[topLevel]
+        if (repository != null) {
+            this.appPackages = repository.getTopLevelPackages(null).applicationPackages
+            this.applicationName = appPackages.head.name
+            this.entities = appPackages.entities.filter[topLevel]
+        }
     }
     
     def String toJavaPackage(Package package_) {

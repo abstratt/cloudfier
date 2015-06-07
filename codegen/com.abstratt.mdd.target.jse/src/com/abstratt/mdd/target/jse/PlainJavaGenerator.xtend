@@ -1,8 +1,6 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
-import java.util.Arrays
-import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
@@ -43,6 +41,7 @@ import static extension org.apache.commons.lang3.text.WordUtils.*
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.PackageableElement
 import org.eclipse.uml2.uml.CallOperationAction
+import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
 
 abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
@@ -80,10 +79,6 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
 
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper, String separator) {
         return items.map[mapper.apply(it)].join(separator)
-    }
-    
-    protected def isBasicTypeOperation(Operation operation) {
-        operation.owningClassifier.package.hasStereotype("ModelLibrary")
     }
     
     def boolean isJavaPrimitive(Type toCheck) {

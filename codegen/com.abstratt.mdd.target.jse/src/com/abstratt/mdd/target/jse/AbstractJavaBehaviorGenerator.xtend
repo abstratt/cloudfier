@@ -1,36 +1,34 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
-import java.util.Arrays
-import java.util.Deque
-import java.util.LinkedList
 import java.util.List
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.ActivityNode
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
-import org.eclipse.uml2.uml.InputPin
-import org.eclipse.uml2.uml.Parameter
-import org.eclipse.uml2.uml.ReadExtentAction
-
-import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import org.eclipse.uml2.uml.DestroyLinkAction
-import org.eclipse.uml2.uml.ReadLinkAction
+import org.eclipse.uml2.uml.CallOperationAction
+import org.eclipse.uml2.uml.ConditionalNode
 import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
+import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.DestroyObjectAction
-import org.eclipse.uml2.uml.ReadVariableAction
-import org.eclipse.uml2.uml.CallOperationAction
+import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadExtentAction
+import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.SendSignalAction
-import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.TestIdentityAction
-import org.eclipse.uml2.uml.ConditionalNode
-import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ValueSpecificationAction
+
+import com.abstratt.mdd.target.base.IBehaviorGenerator
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 
 class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehaviorGenerator {
 

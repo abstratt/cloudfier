@@ -10,7 +10,7 @@ import org.eclipse.uml2.uml.Class
 import com.abstratt.mdd.target.jse.FunctionalTestBehaviorGenerator
 import com.abstratt.mdd.target.jse.PlainJavaBehaviorGenerator
 import static extension com.abstratt.mdd.target.jse.TestUtils.*
-import com.abstratt.mdd.target.jse.IBehaviorGenerator
+import com.abstratt.mdd.target.base.IBehaviorGenerator
 import org.eclipse.uml2.uml.Classifier
 import com.abstratt.mdd.target.jse.TestUtils
 import org.eclipse.uml2.uml.Action

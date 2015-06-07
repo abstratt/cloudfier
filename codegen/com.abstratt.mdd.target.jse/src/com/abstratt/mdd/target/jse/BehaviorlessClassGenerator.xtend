@@ -2,10 +2,9 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import java.util.List
-import org.eclipse.uml2.uml.Activity
-import org.eclipse.uml2.uml.ActivityNode
-import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Action
+import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.Parameter
 
 class BehaviorlessClassGenerator extends PlainJavaGenerator {
     

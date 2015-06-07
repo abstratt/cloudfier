@@ -1,12 +1,15 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.base.IBehaviorGenerator
+import com.abstratt.mdd.target.base.IBehaviorGenerator.SimpleContext
 import java.util.List
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AnyReceiveEvent
 import org.eclipse.uml2.uml.CallEvent
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Event
+import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Pseudostate
 import org.eclipse.uml2.uml.SignalEvent
@@ -18,9 +21,6 @@ import org.eclipse.uml2.uml.Trigger
 import org.eclipse.uml2.uml.Vertex
 
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.Parameter
-import com.abstratt.mdd.target.jse.IBehaviorGenerator.IExecutionContext
-import com.abstratt.mdd.target.jse.IBehaviorGenerator.SimpleContext
 
 class StateMachineGenerator extends BehaviorlessClassGenerator {
     
