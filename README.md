@@ -87,8 +87,8 @@ Command-line arguments:  -os linux -ws gtk -arch x86 -console -consolelog
 
 !ENTRY com.abstratt.mdd.frontend.web 1 0 2015-04-23 12:58:12.095
 !MESSAGE Started endpoint
-	External: http://localhost/mdd/
-	Internal: http://localhost/mdd/
+	External: http://localhost/services/
+	Internal: http://localhost/services/
 osgi> 
 ```
 
