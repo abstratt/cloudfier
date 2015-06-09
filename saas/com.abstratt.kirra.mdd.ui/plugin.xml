@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.equinox.http.registry.servlets">
       <servlet
-            alias="/mdd/ui"
+            alias="/services/ui"
             class="com.abstratt.kirra.mdd.ui.KirraUIServlet">
       </servlet>
    </extension>
