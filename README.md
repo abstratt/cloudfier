@@ -106,6 +106,10 @@ In order to run a local development environment, you need to install Orion.
 
 TBD
 
+### Developing Cloudfier
+
+See the TextUML Toolkit [contribution guide](http://abstratt.github.io/textuml/docs/contributing). Much of what is said there applies here too.
+
 ## Licensing
 
 The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
