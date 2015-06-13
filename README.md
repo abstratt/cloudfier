@@ -106,7 +106,15 @@ In order to run a local development environment, you need to install Orion.
 
 TBD
 
-### Developing Cloudfier
+
+###  Continuous builds
+
+Continuous builds run on [Jenkins at
+CloudBees](http://textuml.ci.cloudbees.com/). Artifact repository is also
+available at [CloudBees Forge](http://repository-
+textuml.forge.cloudbees.com/snapshot/).
+
+### Developing Cloudfier in the IDE
 
 ####  Requirements
 
@@ -114,9 +122,10 @@ TBD
   * Maven 3.3.x 
   * Eclipse Luna or newer([download](http://www.eclipse.org/downloads/)) 
   * A git client, including Eclipse Git 
-  * M2E - Maven Integration for Eclipse (with Tycho support) 
+  * M2E (Maven Integration for Eclipse) 1.5.x - Maven Integration for Eclipse (with Tycho support) 
+  * Xtext SDK 2.8.x (use their own [update site](http://download.eclipse.org/modeling/tmf/xtext/updates/releases/))
 
-You can easily obtain M2E and EGit from the Eclipse Marketplace. If you
+You can easily obtain M2E, Xtext and EGit from the Eclipse Marketplace. If you
 don't have the Marketplace client installed (check Help &gt; Eclipse
 Marketplace), install it from here:
 [https://www.eclipse.org/mpc/](https://www.eclipse.org/mpc/)
@@ -128,23 +137,16 @@ point it to the root directory for the cloudfier git workspace. It should find a
 inside that directory.
 
 After the sources are imported, you should choose the target definition file
-textuml/textuml-dependencies/textuml-dependencies.target as your target
+cloudfier/kirra-dependencies/kirra-dependencies.target as your target
 platform (Window &gt; Preferences &gt; Plug-n Development &gt; Target Platform &gt;
-Kirra Dependencies Target, or Kirra IDE Dependencies if you also have the TextUML Toolkit loaded into Eclipse).
+Kirra Dependencies Target, or kirra-ide-dependencies.target if you also have the TextUML Toolkit source code loaded into Eclipse). Loading the target platform may take a long time (several minutes, much of it apparently stuck at 0%), so be patient and wait until the "Load Target Platform" job completes. Once it completes, you should have no error markers in your workspace.
 
 ####  Running Cloudfier as an Eclipse application
 
-Just launch a runtime workbench from your development Eclipse ([instructions](
-http://help.eclipse.org/stable/index.jsp?topic=/org.eclipse.platform.doc.user/
-tasks/tasks-121.htm)). Allow enough memory for the VM with -Xmx300m or
-more.
+1. Open the kirra.product product definition file (find it with Ctrl-Shift-R)
+2. Launch the product from the Testing section on the Overview page. For more information, see [this](http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Feditors%2Fproduct_editor%2Flaunching.htm)
+3. From there on, you can use the launch configuration that was created during the previous step for relaunching Cloudfier
 
-####  Continuous builds
-
-Continuous builds run on [Jenkins at
-CloudBees](http://textuml.ci.cloudbees.com/). Artifact repository is also
-available at [CloudBees Forge](http://repository-
-textuml.forge.cloudbees.com/snapshot/).
 
 ## Licensing
 
