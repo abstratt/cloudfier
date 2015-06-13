@@ -19,34 +19,6 @@ The components that make up Cloudfier are divided among subsystems:
 
 Also, the TextUML Toolkit project, which has [its own repository](http://github.com/abstratt/textuml), provides a number of core components to Cloudfier: model repository management, front-end infrastructure and support for the primary notation (TextUML), and a number of model manipulation utilities.
 
-## Related repositories
-
-You should NOT need to load any of the following respositories.
-
-### cloudfier-examples
-
-https://github.com/abstratt/cloudfier-examples
-
-Simple Cloudfier applications that help demonstrate and validate Cloudfier. You can clone that repo into your Cloudfier repository and play with Cloudfier's features.
-
-### codegen-examples
-
-https://github.com/abstratt/codegen-examples
-
-Command-line (bash-only) tools for generating code for the target platforms supported in Cloudfier.
-
-### cloudfier-maven-plugin
-
-https://github.com/abstratt/cloudfier-maven-plugin
-
-Plugin that exposes the functionality of a Cloudfier server to a Maven build. 
-
-### TextUML
-
-https://github.com/abstratt/textuml
-
-The core model compilation functionality using TextUML as front-end notation.
-
 ## Developing Cloudfier
 
 ### Requirements
@@ -161,4 +133,32 @@ Kirra Dependencies Target, or kirra-ide-dependencies.target if you also have the
 ### Licensing
 
 The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
+
+## Related repositories
+
+This is just for your information about where other related pieces live. You should NOT need to load any of the following respositories to develop Cloudfier.
+
+### cloudfier-examples
+
+https://github.com/abstratt/cloudfier-examples
+
+Simple Cloudfier applications that help demonstrate and validate Cloudfier. You can clone that repo into your Cloudfier repository and play with Cloudfier's features.
+
+### codegen-examples
+
+https://github.com/abstratt/codegen-examples
+
+Command-line (bash-only) tools for generating code for the target platforms supported in Cloudfier.
+
+### cloudfier-maven-plugin
+
+https://github.com/abstratt/cloudfier-maven-plugin
+
+Plugin that exposes the functionality of a Cloudfier server to a Maven build. 
+
+### TextUML
+
+https://github.com/abstratt/textuml
+
+The core model compilation functionality using TextUML as front-end notation.
 
