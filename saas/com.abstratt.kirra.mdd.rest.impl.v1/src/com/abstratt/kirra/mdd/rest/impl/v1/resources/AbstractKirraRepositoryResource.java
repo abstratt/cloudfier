@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
 import org.restlet.data.Form;
 import org.restlet.data.Reference;
 import org.restlet.data.Status;
@@ -28,11 +26,13 @@ import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
 import com.abstratt.kirra.mdd.rest.KirraReferenceBuilder;
 import com.abstratt.kirra.mdd.rest.KirraReferenceUtils;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentation;
+import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentationBuilder;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.TupleParser;
-import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public abstract class AbstractKirraRepositoryResource extends ServerResource {
 
@@ -100,7 +100,7 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
             } else {
                 // parameters in entity
                 JsonNode invocation = JsonHelper.parse(getRequestEntity().getReader());
-                Iterator<String> argNames = invocation.getFieldNames();
+                Iterator<String> argNames = invocation.fieldNames();
                 Map<String, JsonNode> argumentMap = new HashMap<String, JsonNode>();
                 while (argNames.hasNext()) {
                     String argName = argNames.next();
@@ -113,7 +113,7 @@ public abstract class AbstractKirraRepositoryResource extends ServerResource {
                     JsonNode argumentValueNode = argumentMap.get(parameter.getName());
                     Object argumentValue;
                     if (parameter.getTypeRef().getKind() == TypeKind.Entity)
-                        argumentValue = tupleParser.resolveLink(argumentValueNode.getTextValue(), parameter.getTypeRef());
+                        argumentValue = tupleParser.resolveLink(argumentValueNode.textValue(), parameter.getTypeRef());
                     else
                         argumentValue = tupleParser.convertSlotValue(parameter.getTypeRef(), argumentValueNode);
                     arguments.add(argumentValue);

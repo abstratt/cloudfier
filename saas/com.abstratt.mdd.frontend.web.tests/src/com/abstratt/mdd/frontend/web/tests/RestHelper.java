@@ -21,12 +21,12 @@ import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
-import org.codehaus.jackson.JsonNode;
 import org.junit.Assert;
 
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.Paths;
 import com.abstratt.mdd.frontend.web.WebFrontEnd;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class RestHelper {
 

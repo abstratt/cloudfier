@@ -2,7 +2,6 @@ package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 
 import java.io.IOException;
 
-import org.codehaus.jackson.JsonNode;
 import org.restlet.data.Status;
 import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
@@ -16,6 +15,7 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class InstanceResource extends AbstractKirraRepositoryResource {
 

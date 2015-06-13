@@ -14,17 +14,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonGenerator;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.SerializationConfig;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
-
 import com.abstratt.kirra.DataScope;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Helper;
@@ -37,6 +26,16 @@ import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class TupleParser {
     
@@ -71,7 +70,7 @@ public class TupleParser {
             TupleType expectedTupleType = schemaManagement.getTupleType(expectedType);
             Map<String, Object> map = new LinkedHashMap<String, Object>();
             ObjectNode asObject = (ObjectNode) slotValueNode;
-            for (Iterator<Map.Entry<String, JsonNode>> entries = asObject.getFields(); entries.hasNext(); ) {
+            for (Iterator<Map.Entry<String, JsonNode>> entries = asObject.fields(); entries.hasNext(); ) {
                 Entry<String, JsonNode> entry = entries.next();
                 Property entryProperty = expectedTupleType.getProperty(entry.getKey());
                 if (entryProperty != null)
@@ -88,7 +87,7 @@ public class TupleParser {
         Tuple newTuple = new Tuple(tupleType.getTypeRef());
         if (tupleRepresentation == null || tupleRepresentation.isNull())
             return null;
-        Iterator<String> fieldNames = tupleRepresentation.getFieldNames();
+        Iterator<String> fieldNames = tupleRepresentation.fieldNames();
         while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             JsonNode fieldValueNode = tupleRepresentation.get(fieldName);
@@ -127,7 +126,7 @@ public class TupleParser {
     public static String renderAsJson(Object toRender) {
         try {
             StringWriter writer = new StringWriter();
-            ((ObjectMapper) TupleParser.jsonFactory.getCodec()).defaultPrettyPrintingWriter().writeValue(writer, toRender);
+            ((ObjectMapper) TupleParser.jsonFactory.getCodec()).writerWithDefaultPrettyPrinter().writeValue(writer, toRender);
             return writer.toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -137,7 +136,7 @@ public class TupleParser {
     public Instance resolveLink(JsonNode fieldValueNode, TypeRef type) {
         if (fieldValueNode == null || fieldValueNode.isNull())
             return null;
-        return resolveLink(fieldValueNode.getTextValue(), type);
+        return resolveLink(fieldValueNode.textValue(), type);
     }
 
     public Instance resolveLink(String uriString, TypeRef type) {
@@ -157,7 +156,7 @@ public class TupleParser {
         JsonNode values = toUpdate.get("values");
         if (values == null || values.isNull())
             return;
-        Iterator<String> fieldNames = values.getFieldNames();
+        Iterator<String> fieldNames = values.fieldNames();
         while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             JsonNode fieldValueNode = values.get(fieldName);
@@ -181,7 +180,7 @@ public class TupleParser {
             existingInstance.setSingleRelated(relationship.getName(), resolveLink(fieldValueNode, relationship.getTypeRef()));
         else if (fieldValueNode.isArray()) {
             List<Instance> allRelated = new ArrayList<Instance>();
-            for (Iterator<JsonNode> elements = ((ArrayNode) fieldValueNode).getElements(); elements.hasNext();)
+            for (Iterator<JsonNode> elements = ((ArrayNode) fieldValueNode).elements(); elements.hasNext();)
                 allRelated.add(resolveLink(elements.next(), relationship.getTypeRef()));
             existingInstance.setRelated(relationship.getName(), allRelated);
         } else if (fieldValueNode.isObject()) {
@@ -200,11 +199,11 @@ public class TupleParser {
     private static Object getPrimitiveValueFromJsonRepresentation(JsonNode jsonNode) {
         Object value = null;
         if (jsonNode.isNumber())
-            value = jsonNode.getNumberValue();
+            value = jsonNode.numberValue();
         else if (jsonNode.isBoolean())
-            value = jsonNode.getBooleanValue();
+            value = jsonNode.booleanValue();
         else if (jsonNode.isTextual())
-            value = jsonNode.getTextValue();
+            value = jsonNode.textValue();
         return value;
     }
 
@@ -228,9 +227,9 @@ public class TupleParser {
         TupleParser.jsonFactory.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         TupleParser.jsonFactory.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
         TupleParser.jsonFactory.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-        TupleParser.jsonFactory.configure(JsonParser.Feature.CANONICALIZE_FIELD_NAMES, true);
+        TupleParser.jsonFactory.configure(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES, true);
         ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+        objectMapper.enable(SerializationFeature.INDENT_OUTPUT);
         objectMapper.configure(JsonGenerator.Feature.QUOTE_FIELD_NAMES, true);
         objectMapper.setDateFormat(new SimpleDateFormat("yyyy/MM/dd"));
         TupleParser.jsonFactory.setCodec(objectMapper);

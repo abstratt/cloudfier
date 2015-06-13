@@ -14,8 +14,9 @@ Require-Bundle: org.junit,
  com.abstratt.mdd.frontend.textuml.core,
  org.eclipse.equinox.http.jetty,
  org.eclipse.equinox.http.registry,
- jackson-core-asl,
- jackson-mapper-asl
+ com.fasterxml.jackson.core.jackson-core,
+ com.fasterxml.jackson.core.jackson-annotations,
+ com.fasterxml.jackson.core.jackson-databind
 Bundle-Activator: com.abstratt.mdd.frontend.web.tests.Activator
 Bundle-ActivationPolicy: lazy
 Export-Package: com.abstratt.mdd.frontend.web.tests

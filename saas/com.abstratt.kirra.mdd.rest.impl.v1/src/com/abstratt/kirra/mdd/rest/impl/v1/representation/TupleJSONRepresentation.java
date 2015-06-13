@@ -2,7 +2,7 @@ package com.abstratt.kirra.mdd.rest.impl.v1.representation;
 
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class TupleJSONRepresentation {
 

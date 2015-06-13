@@ -6,14 +6,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.codehaus.jackson.annotate.JsonValue;
-
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.InstanceRef;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 /**
  * Produces a JSON representation from a repository's data.

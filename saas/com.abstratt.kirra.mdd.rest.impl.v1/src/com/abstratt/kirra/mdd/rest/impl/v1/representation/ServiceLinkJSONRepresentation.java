@@ -1,6 +1,6 @@
 package com.abstratt.kirra.mdd.rest.impl.v1.representation;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ServiceLinkJSONRepresentation {
     @JsonProperty

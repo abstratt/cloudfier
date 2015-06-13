@@ -2,10 +2,8 @@ package com.abstratt.kirra.mdd.rest.impl.v1;
 
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -15,8 +13,6 @@ import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
 import org.restlet.data.Form;
 
 import com.abstratt.kirra.ExternalService;
@@ -37,6 +33,7 @@ import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ReferenceUtils;
 import com.abstratt.pluginutils.LogUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class KirraRESTExternalService implements ExternalService {
 

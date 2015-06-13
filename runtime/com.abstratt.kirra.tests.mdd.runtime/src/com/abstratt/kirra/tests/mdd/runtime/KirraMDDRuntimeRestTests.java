@@ -15,10 +15,6 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.NullNode;
-import org.codehaus.jackson.node.ObjectNode;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.ServiceRegistration;
 
@@ -30,6 +26,10 @@ import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.Task;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
 
@@ -75,7 +75,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         post.setRequestEntity(new StringRequestEntity("{value: 15}", "application/json", "UTF-8"));
         ObjectNode result = (ObjectNode) executeJsonMethod(200, post);
 
-        TestCase.assertEquals(25, result.path("values").path("attr1").getIntValue());
+        TestCase.assertEquals(25, result.path("values").path("attr1").intValue());
 
         RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Object>() {
             @Override
@@ -246,9 +246,9 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
 
         ObjectNode jsonEntity = (ObjectNode) JsonHelper.parse(new InputStreamReader(getEntity.getResponseBodyAsStream()));
 
-        TestCase.assertEquals("MyClass1", jsonEntity.get("name").getTextValue());
-        TestCase.assertEquals("mypackage", jsonEntity.get("namespace").getTextValue());
-        TestCase.assertEquals(entityUri, jsonEntity.get("uri").getTextValue());
+        TestCase.assertEquals("MyClass1", jsonEntity.get("name").textValue());
+        TestCase.assertEquals("mypackage", jsonEntity.get("namespace").textValue());
+        TestCase.assertEquals(entityUri, jsonEntity.get("uri").textValue());
 
         TestCase.assertNotNull(jsonEntity.get("instances"));
 
@@ -278,11 +278,11 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         ArrayNode entities = (ArrayNode) JsonHelper.parse(new InputStreamReader(getDomainTypes.getResponseBodyAsStream()));
         TestCase.assertEquals(2, entities.size());
 
-        TestCase.assertEquals("MyClass1", entities.get(0).get("name").getTextValue());
-        TestCase.assertEquals("MyClass2", entities.get(1).get("name").getTextValue());
+        TestCase.assertEquals("MyClass1", entities.get(0).get("name").textValue());
+        TestCase.assertEquals("MyClass2", entities.get(1).get("name").textValue());
 
         for (JsonNode jsonNode : entities) {
-            TestCase.assertEquals("mypackage", jsonNode.get("namespace").getTextValue());
+            TestCase.assertEquals("mypackage", jsonNode.get("namespace").textValue());
             TestCase.assertNotNull(jsonNode.get("uri"));
             executeMethod(200, new GetMethod(jsonNode.get("uri").toString()));
         }
@@ -326,7 +326,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         executeMethod(200, new GetMethod(jsonInstance.get("type").toString()));
 
         ObjectNode values = (ObjectNode) jsonInstance.get("values");
-        TestCase.assertEquals("The answer is", values.get("attr1").getTextValue());
+        TestCase.assertEquals("The answer is", values.get("attr1").textValue());
         TestCase.assertEquals(42L, values.get("attr2").asLong());
     }
 
@@ -392,8 +392,8 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         ArrayNode entities = (ArrayNode) JsonHelper.parse(new InputStreamReader(getDomainTypes.getResponseBodyAsStream()));
         TestCase.assertEquals(1, entities.size());
 
-        TestCase.assertEquals("CalculatorService", entities.get(0).get("name").getTextValue());
-        TestCase.assertEquals("tests", entities.get(0).get("namespace").getTextValue());
+        TestCase.assertEquals("CalculatorService", entities.get(0).get("name").textValue());
+        TestCase.assertEquals("tests", entities.get(0).get("namespace").textValue());
         TestCase.assertNotNull(entities.get(0).get("uri"));
         executeMethod(200, new GetMethod(entities.get(0).get("uri").toString()));
     }
@@ -499,7 +499,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
             TestCase.assertNotNull(jsonNode.get("type"));
             executeMethod(200, new GetMethod(jsonNode.get("type").toString()));
             JsonNode instance = executeJsonMethod(200, new GetMethod(jsonNode.get("uri").toString()));
-            TestCase.assertTrue(instance.get("values").get("attr1").getLongValue() > 15);
+            TestCase.assertTrue(instance.get("values").get("attr1").longValue() > 15);
         }
 
         queryMethod.setRequestEntity(new StringRequestEntity("{value: 20}", "application/json", "UTF-8"));
@@ -507,7 +507,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         instances = (ArrayNode) executeJsonMethod(200, queryMethod);
         TestCase.assertEquals(1, instances.size());
         JsonNode instance = executeJsonMethod(200, new GetMethod(instances.get(0).get("uri").toString()));
-        TestCase.assertEquals(30, instance.get("values").get("attr1").getLongValue());
+        TestCase.assertEquals(30, instance.get("values").get("attr1").longValue());
     }
 
     /**
@@ -552,7 +552,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         TestCase.assertNotNull(jsonResult.get("data"));
         ArrayNode asArray = (ArrayNode) jsonResult.get("data");
         TestCase.assertEquals(1, asArray.size());
-        TestCase.assertEquals(42L, asArray.get(0).getLongValue());
+        TestCase.assertEquals(42L, asArray.get(0).longValue());
     }
 
     public void testSignup() throws CoreException, IOException {

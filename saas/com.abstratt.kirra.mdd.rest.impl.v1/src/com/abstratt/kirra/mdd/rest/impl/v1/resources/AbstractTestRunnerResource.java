@@ -8,10 +8,8 @@ import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.restlet.representation.Representation;
-import org.restlet.resource.Post;
 
 import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
-import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.SourceLocation;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.Status;
 import com.abstratt.mdd.core.IRepository;
@@ -21,7 +19,6 @@ import com.abstratt.mdd.core.runtime.ModelExecutionException;
 import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.types.BasicType;
-import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;

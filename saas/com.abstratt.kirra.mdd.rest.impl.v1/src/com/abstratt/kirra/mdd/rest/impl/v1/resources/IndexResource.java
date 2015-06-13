@@ -10,7 +10,6 @@ import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.rest.Activator;
 import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
-import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentation;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentation.SingleLink;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.frontend.web.JsonHelper;

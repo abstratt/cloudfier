@@ -9,7 +9,6 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
-import org.codehaus.jackson.JsonNode;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
@@ -18,6 +17,7 @@ import org.eclipse.core.runtime.Path;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryTests;
 import com.abstratt.mdd.frontend.web.BuildDirectoryUtils;
 import com.abstratt.mdd.frontend.web.tests.RestHelper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class AbstractKirraRestTests extends AbstractRepositoryTests {
 

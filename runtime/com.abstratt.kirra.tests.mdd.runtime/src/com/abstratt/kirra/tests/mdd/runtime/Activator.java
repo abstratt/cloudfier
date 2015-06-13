@@ -1,10 +1,9 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.Constants;
 
 public class Activator implements BundleActivator {
 

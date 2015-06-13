@@ -1,6 +1,6 @@
-package com.abstratt.kirra.populator;
+package com.abstratt.kirra.populator; 
 
-import java.io.BufferedInputStream;
+import java.io.BufferedInputStream; 
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -19,8 +19,6 @@ import java.util.Map.Entry;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
@@ -30,6 +28,8 @@ import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.pluginutils.LogUtils;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class DataPopulator {
     class Loader {
@@ -40,7 +40,7 @@ public class DataPopulator {
                 Entity relatedEntity = repository.getEntity(type.getEntityNamespace(), type.getTypeName());
                 return processInstance(relatedEntity, referenceOrObject);
             } else if (referenceOrObject.isTextual()) {
-                Instance resolved = resolveReference(currentNamespace, referenceOrObject.getTextValue());
+                Instance resolved = resolveReference(currentNamespace, referenceOrObject.textValue());
                 return resolved != null && resolved.isInstanceOf(type) ? resolved : null;
             }
             return null;
@@ -61,7 +61,7 @@ public class DataPopulator {
                 return 0;
             int count = 0;
             if (entity != null && entityNode.getValue().isArray()) {
-                for (Iterator<JsonNode> instanceNodes = entityNode.getValue().getElements(); instanceNodes.hasNext();) {
+                for (Iterator<JsonNode> instanceNodes = entityNode.getValue().elements(); instanceNodes.hasNext();) {
                     JsonNode instanceNode = instanceNodes.next();
                     if (instanceNode.isObject() && processInstance(entity, instanceNode) != null)
                         count++;
@@ -79,7 +79,7 @@ public class DataPopulator {
             Map<String, Relationship> validRelationships = new HashMap<String, Relationship>();
             for (Relationship relationship : entity.getRelationships())
                 validRelationships.put(relationship.getName(), relationship);
-            for (Iterator<String> propertyNames = instanceNode.getFieldNames(); propertyNames.hasNext();) {
+            for (Iterator<String> propertyNames = instanceNode.fieldNames(); propertyNames.hasNext();) {
                 String slotName = propertyNames.next();
                 if (validProperties.containsKey(slotName))
                     setProperty(newInstance, instanceNode.get(slotName), validProperties.get(slotName));
@@ -95,10 +95,10 @@ public class DataPopulator {
             for (String namespace : repository.getNamespaces())
                 instances.put(namespace, new HashMap<String, List<String>>());
             int count = 0;
-            for (Iterator<Map.Entry<String, JsonNode>> namespaceNodes = tree.getFields(); namespaceNodes.hasNext();) {
+            for (Iterator<Map.Entry<String, JsonNode>> namespaceNodes = tree.fields(); namespaceNodes.hasNext();) {
                 Entry<String, JsonNode> namespaceNode = namespaceNodes.next();
                 if (instances.containsKey(namespaceNode.getKey()) && namespaceNode.getValue().isObject()) {
-                    Iterator<Map.Entry<String, JsonNode>> entityNodes = namespaceNode.getValue().getFields();
+                    Iterator<Map.Entry<String, JsonNode>> entityNodes = namespaceNode.getValue().fields();
                     for (; entityNodes.hasNext();) {
                         Entry<String, JsonNode> entityNode = entityNodes.next();
                         count += processEntity(namespaceNode.getKey(), entityNode);

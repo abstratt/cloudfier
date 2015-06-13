@@ -7,18 +7,18 @@
    </configIni>
 
    <launcherArgs>
-      <programArgs>-console -consolelog
+      <programArgs>-console -consolelog -data cloudfier-workspace
       </programArgs>
       <vmArgs>-Declipse.ignoreApp=false 
 -Dosgi.noShutdown=true
 -Dorg.eclipse.jetty.LEVEL=DEBUG 
+-Dorg.eclipse.equinox.http.jetty.http.port=8081
 -DDEBUG_PATTERNS=main,org.mortbay.http 
 -DDEBUG_VERBOSE=1
 -Xmx400m
 -Dorg.eclipse.uml2.common.util.CacheAdapter.ThreadLocal
 -Dcloudfier.api.internalBaseUri=http://localhost:8081/services/
 -Dcloudfier.api.externalBaseUri=http://localhost/services/
--Dcloudfier.api.port=8081
 -Dcloudfier.database.username=cloudfier
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
@@ -38,6 +38,7 @@
    </vm>
 
    <plugins>
+      <plugin id="com.abstratt.graphviz"/>
       <plugin id="com.abstratt.kirra.api"/>
       <plugin id="com.abstratt.kirra.auth"/>
       <plugin id="com.abstratt.kirra.auth.ldap"/>
@@ -46,6 +47,7 @@
       <plugin id="com.abstratt.kirra.mdd.rest.impl.v1"/>
       <plugin id="com.abstratt.kirra.mdd.rest.impl.v2"/>
       <plugin id="com.abstratt.kirra.mdd.runtime"/>
+      <plugin id="com.abstratt.kirra.mdd.schema"/>
       <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.populator"/>
       <plugin id="com.abstratt.kirra.populator.compiler"/>
@@ -54,22 +56,21 @@
       <plugin id="com.abstratt.kirra.rest.resources"/>
       <plugin id="com.abstratt.kirra.server"/>
       <plugin id="com.abstratt.mdd.core"/>
-      <plugin id="com.abstratt.graphviz"/>
-      <plugin id="com.abstratt.mdd.modelrenderer"/>
-      <plugin id="com.abstratt.mdd.modelrenderer.dot"/>
-      <plugin id="com.abstratt.mdd.modelrenderer.uml2dot"/>
       <plugin id="com.abstratt.mdd.frontend.core"/>
       <plugin id="com.abstratt.mdd.frontend.orion"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.core"/>
-      <plugin id="com.abstratt.mdd.frontend.textuml.renderer"/>      
+      <plugin id="com.abstratt.mdd.frontend.textuml.renderer"/>
       <plugin id="com.abstratt.mdd.frontend.web"/>
+      <plugin id="com.abstratt.mdd.modelrenderer"/>
+      <plugin id="com.abstratt.mdd.modelrenderer.dot"/>
+      <plugin id="com.abstratt.mdd.modelrenderer.uml2dot"/>
       <plugin id="com.abstratt.mdd.runtime.core"/>
-      <plugin id="com.abstratt.mdd.target.core"/>
       <plugin id="com.abstratt.mdd.target.base"/>
+      <plugin id="com.abstratt.mdd.target.core"/>
       <plugin id="com.abstratt.mdd.target.engine.gstring"/>
-      <plugin id="com.abstratt.mdd.target.mean"/>
       <plugin id="com.abstratt.mdd.target.jee"/>
-      <plugin id="com.abstratt.mdd.target.jse"/>      
+      <plugin id="com.abstratt.mdd.target.jse"/>
+      <plugin id="com.abstratt.mdd.target.mean"/>
       <plugin id="com.abstratt.nodestore"/>
       <plugin id="com.abstratt.nodestore.jdbc"/>
       <plugin id="com.abstratt.pluginutils"/>
@@ -77,11 +78,10 @@
       <plugin id="com.abstratt.wrapped.postgresql"/>
       <plugin id="com.fasterxml.jackson.core.jackson-annotations"/>
       <plugin id="com.fasterxml.jackson.core.jackson-core"/>
-      <plugin id="com.google.guava"/>
+      <plugin id="com.fasterxml.jackson.core.jackson-databind"/>
       <plugin id="com.google.gson" version="2.2.4"/>
+      <plugin id="com.google.guava"/>
       <plugin id="com.ibm.icu"/>
-      <plugin id="jackson-core-asl"/>
-      <plugin id="jackson-mapper-asl"/>
       <plugin id="javax.servlet"/>
       <plugin id="javax.ws.rs.jsr311-api"/>
       <plugin id="org.apache.ant"/>

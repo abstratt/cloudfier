@@ -7,18 +7,13 @@ import java.net.URI;
 import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.node.ArrayNode;
-import org.codehaus.jackson.node.ObjectNode;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.URIUtil;
 
 import com.abstratt.mdd.core.IRepository;
-import com.abstratt.pluginutils.LogUtils;
 
 public class BuildDirectoryUtils {
     public static void clearDirectory(File buildDir) {

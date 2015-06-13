@@ -47,8 +47,9 @@
 			
             <!-- piggybacking on Restlet's repo while we can for these. -->
             <unit id="javax.ws.rs.jsr311-api" version="0.0.0" />
-            <unit id="com.fasterxml.jackson.core.jackson-annotations" version="2.2.3" />
-            <unit id="com.fasterxml.jackson.core.jackson-core" version="2.2.3" />
+            <unit id="com.fasterxml.jackson.core.jackson-annotations" version="2.1.0" />
+            <unit id="com.fasterxml.jackson.core.jackson-core" version="2.1.0" />
+            <unit id="com.fasterxml.jackson.core.jackson-databind" version="2.1.0" />
             <unit id="com.google.gson" version="2.2.4" />
             
             <repository location="http://p2.restlet.org/2.2/" />
@@ -85,13 +86,22 @@
 				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.1/com.abstratt.mdd.oss.repository-2.1.zip!/" />
 		</location>		
 
-                <location includeAllPlatforms="false" includeMode="planner"
+        <location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
 			<unit id="com.abstratt.kirra.feature.feature.group"
 				version="0.0.0" />
 			<repository
 				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/kirra/com.abstratt.kirra.repository/0.1.1/com.abstratt.kirra.repository-0.1.1.zip!/" />
 		</location>
+
+        <location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.wrapped.postgresql"
+				version="0.0.0" />
+			<repository
+				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/wrapped/com.abstratt.wrapped.repository/3.0/com.abstratt.wrapped.repository-3.0.zip!/" />
+		</location>
+
 
 		<location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">

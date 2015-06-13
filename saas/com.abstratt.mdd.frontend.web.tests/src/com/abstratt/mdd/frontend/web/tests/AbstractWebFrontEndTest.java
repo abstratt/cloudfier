@@ -6,9 +6,9 @@ import java.util.Map;
 
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
-import org.codehaus.jackson.JsonNode;
 
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryTests;
+import com.fasterxml.jackson.databind.JsonNode;
 
 /**
  * @deprecated declare a child {@link RestHelper} object instead

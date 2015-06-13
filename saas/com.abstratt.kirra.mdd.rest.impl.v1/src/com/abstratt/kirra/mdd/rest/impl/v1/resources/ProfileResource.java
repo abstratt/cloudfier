@@ -3,7 +3,6 @@ package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 import java.io.IOException;
 
 import org.apache.commons.lang.StringUtils;
-import org.codehaus.jackson.JsonNode;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Post;
@@ -18,6 +17,7 @@ import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class ProfileResource extends AbstractKirraRepositoryResource {
 
@@ -37,7 +37,7 @@ public class ProfileResource extends AbstractKirraRepositoryResource {
 
         JsonNode toCreate = JsonHelper.parse(requestRepresentation.getReader());
 
-        String typeURI = toCreate.get("type").getTextValue();
+        String typeURI = toCreate.get("type").textValue();
         ResourceUtils.ensure(!StringUtils.isBlank(typeURI), "Type is required ", Status.CLIENT_ERROR_BAD_REQUEST);
 
         Entity profileEntity = getEntityFromURI(typeURI);

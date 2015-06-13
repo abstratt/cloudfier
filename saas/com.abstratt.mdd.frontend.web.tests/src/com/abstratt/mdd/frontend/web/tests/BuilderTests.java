@@ -13,14 +13,6 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.io.FileUtils;
-import org.codehaus.jackson.JsonFactory;
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.JsonParser;
-import org.codehaus.jackson.JsonParser.Feature;
-import org.codehaus.jackson.JsonProcessingException;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.node.ArrayNode;
 import org.eclipse.core.filesystem.EFS;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
@@ -29,6 +21,14 @@ import org.eclipse.core.runtime.Path;
 
 import com.abstratt.mdd.frontend.web.BuildDirectoryUtils;
 import com.abstratt.mdd.frontend.web.WebFrontEnd;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 public class BuilderTests extends AbstractWebFrontEndTest {
     public static <T extends JsonNode> T parse(Reader contents) throws IOException, JsonParseException, JsonProcessingException {
@@ -44,7 +44,7 @@ public class BuilderTests extends AbstractWebFrontEndTest {
         BuilderTests.jsonFactory.configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         BuilderTests.jsonFactory.configure(Feature.ALLOW_SINGLE_QUOTES, true);
         BuilderTests.jsonFactory.configure(Feature.ALLOW_COMMENTS, true);
-        BuilderTests.jsonFactory.configure(Feature.CANONICALIZE_FIELD_NAMES, false);
+        BuilderTests.jsonFactory.configure(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES, false);
     }
 
     public BuilderTests(String name) {

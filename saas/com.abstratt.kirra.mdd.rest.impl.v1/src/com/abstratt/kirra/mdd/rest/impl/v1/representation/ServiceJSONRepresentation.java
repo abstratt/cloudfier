@@ -3,7 +3,7 @@ package com.abstratt.kirra.mdd.rest.impl.v1.representation;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.codehaus.jackson.annotate.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class ServiceJSONRepresentation {
     @JsonProperty

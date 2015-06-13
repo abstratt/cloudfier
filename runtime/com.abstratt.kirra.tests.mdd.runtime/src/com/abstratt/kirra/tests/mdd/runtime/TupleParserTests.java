@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.List;
 
-import org.codehaus.jackson.JsonNode;
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.SchemaManagement;
@@ -12,6 +11,7 @@ import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class TupleParserTests extends AbstractKirraMDDRuntimeTests {
     public TupleParserTests(String name) {

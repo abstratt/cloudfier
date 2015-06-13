@@ -12,14 +12,13 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.codehaus.jackson.JsonNode;
-
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class DataValidator {
     public interface ErrorCollector {
@@ -41,7 +40,7 @@ public class DataValidator {
 
     public void validate(JsonNode root) {
         List<String> availableNamespaces = schema.getNamespaces();
-        for (Iterator<Map.Entry<String, JsonNode>> namespaceNodes = root.getFields(); namespaceNodes.hasNext();) {
+        for (Iterator<Map.Entry<String, JsonNode>> namespaceNodes = root.fields(); namespaceNodes.hasNext();) {
             Entry<String, JsonNode> namespaceNode = namespaceNodes.next();
             String namespace = namespaceNode.getKey();
             if (!availableNamespaces.contains(namespace)) {
@@ -53,7 +52,7 @@ public class DataValidator {
                         + "'. Namespace data must be a map of entity names to arrays of instances.");
                 continue;
             }
-            Iterator<Map.Entry<String, JsonNode>> entityNodes = namespaceNode.getValue().getFields();
+            Iterator<Map.Entry<String, JsonNode>> entityNodes = namespaceNode.getValue().fields();
             for (; entityNodes.hasNext();) {
                 Entry<String, JsonNode> entityNode = entityNodes.next();
                 if (entityNode == null || !entityNode.getValue().isArray()) {
@@ -70,7 +69,7 @@ public class DataValidator {
                 index = instanceCount.get(namespace + '.' + entityName);
                 if (index == null)
                     instanceCount.put(namespace + '.' + entityName, index = new AtomicInteger(0));
-                for (Iterator<JsonNode> instanceNodes = entityNode.getValue().getElements(); instanceNodes.hasNext();) {
+                for (Iterator<JsonNode> instanceNodes = entityNode.getValue().elements(); instanceNodes.hasNext();) {
                     index.incrementAndGet();
                     JsonNode instanceNode = instanceNodes.next();
                     if (instanceNode == null || !instanceNode.isObject()) {
@@ -100,7 +99,7 @@ public class DataValidator {
         for (Relationship relationship : entity.getRelationships())
             validRelationships.put(relationship.getName(), relationship);
         Set<String> propertiesFound = new HashSet<String>();
-        for (Iterator<String> propertyNames = instanceNode.getFieldNames(); propertyNames.hasNext();) {
+        for (Iterator<String> propertyNames = instanceNode.fieldNames(); propertyNames.hasNext();) {
             String propertyName = propertyNames.next();
             if (validProperties.containsKey(propertyName)) {
                 validateProperty(entityName, instanceNode.get(propertyName), validProperties.get(propertyName));
@@ -142,7 +141,7 @@ public class DataValidator {
             else if (property.getTypeRef().getKind() == TypeKind.Enumeration) {
                 if (!property.getEnumerationLiterals().contains(propertyValue.asText())) {
                     valueTypeError = "Expected one of " + property.getEnumerationLiterals().toString() + ", found: "
-                            + propertyValue.getTextValue();
+                            + propertyValue.textValue();
                 }
             } else if (!validPropertyTypeName.equals("String") && !validPropertyTypeName.equals("Memo"))
                 valueTypeError = "Expected " + validPropertyTypeName + " value, found string value";
@@ -162,7 +161,7 @@ public class DataValidator {
     }
 
     private void validateReference(TypeRef typeRef, String currentNamespace, JsonNode jsonNode) {
-        Reference ref = Reference.parse(currentNamespace, jsonNode.getTextValue());
+        Reference ref = Reference.parse(currentNamespace, jsonNode.textValue());
         if (ref == null) {
             collector.addError(jsonNode + " is not a valid reference (expected format: entity@index)");
             return;
@@ -179,7 +178,7 @@ public class DataValidator {
             return;
         }
         if (!referredEntity.isA(typeRef)) {
-            collector.addError("Invalid reference " + jsonNode.getTextValue() + ". " + referredEntity.getName() + " is not a kind of "
+            collector.addError("Invalid reference " + jsonNode.textValue() + ". " + referredEntity.getName() + " is not a kind of "
                     + typeRef.getTypeName());
             return;
         }

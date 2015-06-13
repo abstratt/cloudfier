@@ -17,8 +17,6 @@ import junit.framework.TestCase;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.io.IOUtils;
-import org.codehaus.jackson.node.ObjectNode;
-import org.codehaus.jackson.node.TextNode;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -33,6 +31,8 @@ import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.kirra.mdd.rest.impl.v1.KirraRESTExternalService;
 import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
 import com.abstratt.mdd.frontend.web.JsonHelper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntimeTests {
 
@@ -116,12 +116,12 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
 
         TestCase.assertNotNull(requestEntity[0]);
         ObjectNode parsedEntity = JsonHelper.parse(new StringReader(requestEntity[0]));
-        TestCase.assertEquals(Arrays.asList("typeName", "values"), IteratorUtils.toList(parsedEntity.getFieldNames()));
+        TestCase.assertEquals(Arrays.asList("typeName", "values"), IteratorUtils.toList(parsedEntity.fieldNames()));
         TestCase.assertEquals(new TextNode("tests.IssueChange"), parsedEntity.get("typeName"));
 
         ObjectNode values = (ObjectNode) parsedEntity.get("values");
 
-        List<String> fieldNames = IteratorUtils.toList(values.getFieldNames());
+        List<String> fieldNames = IteratorUtils.toList(values.fieldNames());
         Collections.sort(fieldNames);
         TestCase.assertEquals(Arrays.asList("issueNumber", "newStatus"), fieldNames);
     }

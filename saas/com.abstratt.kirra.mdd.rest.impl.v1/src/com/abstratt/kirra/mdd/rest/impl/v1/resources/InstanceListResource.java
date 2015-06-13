@@ -3,7 +3,6 @@ package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 import java.io.IOException;
 import java.util.List;
 
-import org.codehaus.jackson.JsonNode;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Post;
@@ -13,6 +12,7 @@ import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.TupleParser;
 import com.abstratt.mdd.frontend.web.JsonHelper;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class InstanceListResource extends AbstractInstanceListResource {
 

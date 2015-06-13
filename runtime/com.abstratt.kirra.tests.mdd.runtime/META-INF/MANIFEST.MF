@@ -42,7 +42,8 @@ Require-Bundle: com.abstratt.kirra.api,
  com.abstratt.kirra.populator,
  com.abstratt.kirra.populator.compiler,
  com.abstratt.mdd.frontend.web,
- jackson-core-asl;bundle-version="1.9.2",
- jackson-mapper-asl;bundle-version="1.9.2"
+ com.fasterxml.jackson.core.jackson-core,
+ com.fasterxml.jackson.core.jackson-databind,
+ com.fasterxml.jackson.core.jackson-annotations
 Export-Package: com.abstratt.kirra.tests.mdd.runtime
 Bundle-ActivationPolicy: lazy

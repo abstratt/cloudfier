@@ -3,32 +3,31 @@ package com.abstratt.mdd.target.jee
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil
 import com.abstratt.mdd.target.jse.AbstractGenerator
+import com.fasterxml.jackson.core.JsonFactory
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.core.JsonParser
+import com.fasterxml.jackson.core.JsonProcessingException
+import com.fasterxml.jackson.databind.JsonNode
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.node.ArrayNode
+import com.fasterxml.jackson.databind.node.ObjectNode
+import com.fasterxml.jackson.databind.node.TextNode
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
+import java.io.PrintWriter
 import java.io.Reader
+import java.io.StringWriter
 import java.util.Map
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.commons.io.IOUtils
-import org.codehaus.jackson.JsonFactory
-import org.codehaus.jackson.JsonNode
-import org.codehaus.jackson.JsonParseException
-import org.codehaus.jackson.JsonParser
-import org.codehaus.jackson.JsonProcessingException
-import org.codehaus.jackson.map.ObjectMapper
-import org.codehaus.jackson.node.ArrayNode
-import org.codehaus.jackson.node.ObjectNode
-import org.codehaus.jackson.node.TextNode
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Property
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import java.util.List
-import java.util.Iterator
-import java.io.StringWriter
-import java.io.PrintWriter
+import com.fasterxml.jackson.core.JsonGenerator
 
 class DataSnapshotGenerator extends AbstractGenerator {
     
@@ -138,7 +137,7 @@ class DataSnapshotGenerator extends AbstractGenerator {
         factory.configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
         factory.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
         factory.configure(JsonParser.Feature.ALLOW_COMMENTS, true);
-        factory.configure(JsonParser.Feature.CANONICALIZE_FIELD_NAMES, false);
+        factory.configure(JsonFactory.Feature.CANONICALIZE_FIELD_NAMES, false);
         return factory;
     ].apply
 }

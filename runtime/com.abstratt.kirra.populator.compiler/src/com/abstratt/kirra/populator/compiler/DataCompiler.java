@@ -6,8 +6,6 @@ import static com.abstratt.mdd.core.IProblem.Severity.WARNING;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.codehaus.jackson.JsonNode;
-import org.codehaus.jackson.JsonProcessingException;
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.SchemaManagement;
@@ -15,11 +13,13 @@ import com.abstratt.kirra.populator.DataParser;
 import com.abstratt.kirra.populator.DataValidator;
 import com.abstratt.kirra.populator.DataValidator.ErrorCollector;
 import com.abstratt.mdd.core.IProblem;
+import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.core.Problem;
 import com.abstratt.mdd.core.RepositoryService;
-import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.frontend.core.spi.CompilationContext;
 import com.abstratt.mdd.frontend.core.spi.ICompiler;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 public class DataCompiler implements ICompiler {
 

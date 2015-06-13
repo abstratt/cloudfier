@@ -15,12 +15,12 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.time.StopWatch;
-import org.codehaus.jackson.node.ObjectNode;
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.tests.mdd.runtime.AbstractKirraRestTests;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class InstancePerformanceTests extends AbstractKirraRestTests {
 
