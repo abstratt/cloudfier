@@ -21,6 +21,8 @@ Also, the TextUML Toolkit project, which has [its own repository](http://github.
 
 ## Related repositories
 
+You should NOT need to load any of the following respositories.
+
 ### cloudfier-examples
 
 https://github.com/abstratt/cloudfier-examples
@@ -45,19 +47,30 @@ https://github.com/abstratt/textuml
 
 The core model compilation functionality using TextUML as front-end notation.
 
-## Building
+## Developing Cloudfier
 
-You need to have Maven 3, Java 8 and Postgres 9 installed. You also need a database named "cloudfier" accessible to a user named "cloudfier" with no password. You can build and run the tests the usual way:
+### Requirements
+
+  * Java 8 or later 
+  * Maven 3.3.x 
+  * A git client
+  * Postgres 9
+
+You You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. 
+
+### Building
+
+You can build and run the tests the usual way:
 
 ```
 mvn clean install
 ```
 
-## Running
+### Running
 
 > This is a work-in-progress. The instructions won't allow you yet to run a fully functional Cloudfier instance (steps for configuring the development environment integration are not included yet), but you can use this server via the cloudfier-maven-plugin (details below).
 
-After building, you can run the tooling/runtime back-end this way (on Linux):
+After building, you can run the tooling/runtime back-end this way (on Linux - the build is currently not generating packages for other platforms, help wanted here):
 ```
 cd saas/com.abstratt.kirra.server.product/
 find target -name kirra-server
@@ -106,11 +119,46 @@ In order to run a local development environment, you need to install Orion.
 
 TBD
 
-### Developing Cloudfier
 
-See the TextUML Toolkit [contribution guide](http://abstratt.github.io/textuml/docs/contributing). Much of what is said there applies here too.
+###  Continuous builds
 
-## Licensing
+Continuous builds run on [Jenkins at
+CloudBees](http://textuml.ci.cloudbees.com/). Artifact repository is also
+available at [CloudBees Forge](http://repository-
+textuml.forge.cloudbees.com/snapshot/).
+
+### Developing Cloudfier in the IDE
+
+####  Requirements
+
+  * Eclipse Luna or newer([download](http://www.eclipse.org/downloads/)) 
+  * M2E (Maven Integration for Eclipse) 1.5.x - Maven Integration for Eclipse (with Tycho support) 
+  * Xtext SDK 2.8.x (use their own [update site](http://download.eclipse.org/modeling/tmf/xtext/updates/releases/))
+
+You can easily obtain M2E, Xtext and EGit from the Eclipse Marketplace. If you
+don't have the Marketplace client installed (check Help &gt; Eclipse
+Marketplace), install it from here:
+[https://www.eclipse.org/mpc/](https://www.eclipse.org/mpc/)
+
+####  Importing the source code into Eclipse
+
+Use the M2E import wizard (Import... &gt; Maven &gt; Existing Maven Projects) and
+point it to the root directory for the cloudfier git workspace. It should find all Cloudfier modules
+inside that directory.
+
+After the sources are imported, you should choose the target definition file
+cloudfier/kirra-dependencies/kirra-dependencies.target as your target
+platform (Window &gt; Preferences &gt; Plug-n Development &gt; Target Platform &gt;
+Kirra Dependencies Target, or kirra-ide-dependencies.target if you also have the TextUML Toolkit source code loaded into Eclipse). Loading the target platform may take a long time (several minutes, much of it apparently stuck at 0%), so be patient and wait until the "Load Target Platform" job completes. Once it completes, you should have no error markers in your workspace.
+
+####  Running Cloudfier as an Eclipse application
+
+1. Open the kirra.product product definition file (find it with Ctrl-Shift-R)
+2. Launch the product from the Testing section on the Overview page. For more information, see [this](http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Feditors%2Fproduct_editor%2Flaunching.htm)
+3. From there on, you can use the launch configuration that was created during the previous step for relaunching Cloudfier
+
+
+### Licensing
 
 The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
 

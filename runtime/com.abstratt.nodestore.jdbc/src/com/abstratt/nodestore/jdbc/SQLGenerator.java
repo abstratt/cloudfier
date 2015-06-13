@@ -442,6 +442,8 @@ public class SQLGenerator {
             return Types.DATE;
         if (type.getKind() == TypeKind.Enumeration)
             return Types.VARCHAR;
+        if ("Blob".equals(name))
+            return Types.BLOB;
         throw new IllegalArgumentException("" + name);
     }
 
@@ -668,6 +670,8 @@ public class SQLGenerator {
 
     private String getDBType(TypeRef type) {
         String name = type.getTypeName();
+        if ("Blob".equals(name))
+            return "bytea";
         if ("Integer".equals(name))
             return "bigint";
         if ("Double".equals(name))
