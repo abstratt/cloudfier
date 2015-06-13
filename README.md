@@ -21,6 +21,8 @@ Also, the TextUML Toolkit project, which has [its own repository](http://github.
 
 ## Related repositories
 
+You should NOT need to load any of the following respositories.
+
 ### cloudfier-examples
 
 https://github.com/abstratt/cloudfier-examples
