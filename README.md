@@ -45,16 +45,20 @@ https://github.com/abstratt/textuml
 
 The core model compilation functionality using TextUML as front-end notation.
 
-### Building
+## Developing Cloudfier
 
-#### Requirements
+### Requirements
 
   * Java 8 or later 
   * Maven 3.3.x 
   * A git client
   * Postgres 9
 
-You You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. You can build and run the tests the usual way:
+You You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. 
+
+### Building
+
+You can build and run the tests the usual way:
 
 ```
 mvn clean install
@@ -64,7 +68,7 @@ mvn clean install
 
 > This is a work-in-progress. The instructions won't allow you yet to run a fully functional Cloudfier instance (steps for configuring the development environment integration are not included yet), but you can use this server via the cloudfier-maven-plugin (details below).
 
-After building, you can run the tooling/runtime back-end this way (on Linux):
+After building, you can run the tooling/runtime back-end this way (on Linux - the build is currently not generating packages for other platforms, help wanted here):
 ```
 cd saas/com.abstratt.kirra.server.product/
 find target -name kirra-server
