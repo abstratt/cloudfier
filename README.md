@@ -45,15 +45,22 @@ https://github.com/abstratt/textuml
 
 The core model compilation functionality using TextUML as front-end notation.
 
-## Building
+### Building
 
-You need to have Maven 3, Java 8 and Postgres 9 installed. You also need a database named "cloudfier" accessible to a user named "cloudfier" with no password. You can build and run the tests the usual way:
+#### Requirements
+
+  * Java 8 or later 
+  * Maven 3.3.x 
+  * A git client
+  * Postgres 9
+
+You You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. You can build and run the tests the usual way:
 
 ```
 mvn clean install
 ```
 
-## Running
+### Running
 
 > This is a work-in-progress. The instructions won't allow you yet to run a fully functional Cloudfier instance (steps for configuring the development environment integration are not included yet), but you can use this server via the cloudfier-maven-plugin (details below).
 
@@ -118,10 +125,7 @@ textuml.forge.cloudbees.com/snapshot/).
 
 ####  Requirements
 
-  * Java 8 or later 
-  * Maven 3.3.x 
   * Eclipse Luna or newer([download](http://www.eclipse.org/downloads/)) 
-  * A git client, including Eclipse Git 
   * M2E (Maven Integration for Eclipse) 1.5.x - Maven Integration for Eclipse (with Tycho support) 
   * Xtext SDK 2.8.x (use their own [update site](http://download.eclipse.org/modeling/tmf/xtext/updates/releases/))
 
@@ -148,7 +152,7 @@ Kirra Dependencies Target, or kirra-ide-dependencies.target if you also have the
 3. From there on, you can use the launch configuration that was created during the previous step for relaunching Cloudfier
 
 
-## Licensing
+### Licensing
 
 The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
 
