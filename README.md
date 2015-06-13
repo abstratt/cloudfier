@@ -106,6 +106,48 @@ In order to run a local development environment, you need to install Orion.
 
 TBD
 
+
+###  Continuous builds
+
+Continuous builds run on [Jenkins at
+CloudBees](http://textuml.ci.cloudbees.com/). Artifact repository is also
+available at [CloudBees Forge](http://repository-
+textuml.forge.cloudbees.com/snapshot/).
+
+### Developing Cloudfier in the IDE
+
+####  Requirements
+
+  * Java 8 or later 
+  * Maven 3.3.x 
+  * Eclipse Luna or newer([download](http://www.eclipse.org/downloads/)) 
+  * A git client, including Eclipse Git 
+  * M2E (Maven Integration for Eclipse) 1.5.x - Maven Integration for Eclipse (with Tycho support) 
+  * Xtext SDK 2.8.x (use their own [update site](http://download.eclipse.org/modeling/tmf/xtext/updates/releases/))
+
+You can easily obtain M2E, Xtext and EGit from the Eclipse Marketplace. If you
+don't have the Marketplace client installed (check Help &gt; Eclipse
+Marketplace), install it from here:
+[https://www.eclipse.org/mpc/](https://www.eclipse.org/mpc/)
+
+####  Importing the source code into Eclipse
+
+Use the M2E import wizard (Import... &gt; Maven &gt; Existing Maven Projects) and
+point it to the root directory for the cloudfier git workspace. It should find all Cloudfier modules
+inside that directory.
+
+After the sources are imported, you should choose the target definition file
+cloudfier/kirra-dependencies/kirra-dependencies.target as your target
+platform (Window &gt; Preferences &gt; Plug-n Development &gt; Target Platform &gt;
+Kirra Dependencies Target, or kirra-ide-dependencies.target if you also have the TextUML Toolkit source code loaded into Eclipse). Loading the target platform may take a long time (several minutes, much of it apparently stuck at 0%), so be patient and wait until the "Load Target Platform" job completes. Once it completes, you should have no error markers in your workspace.
+
+####  Running Cloudfier as an Eclipse application
+
+1. Open the kirra.product product definition file (find it with Ctrl-Shift-R)
+2. Launch the product from the Testing section on the Overview page. For more information, see [this](http://help.eclipse.org/luna/index.jsp?topic=%2Forg.eclipse.pde.doc.user%2Fguide%2Ftools%2Feditors%2Fproduct_editor%2Flaunching.htm)
+3. From there on, you can use the launch configuration that was created during the previous step for relaunching Cloudfier
+
+
 ## Licensing
 
 The code in this repository is licensed under one of the following licenses: EPL or AGPL. Look for the closest [LICENSE file](https://github.com/abstratt/cloudfier/search?q=filename%3ALICENSE) for more details. 
