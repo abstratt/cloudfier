@@ -108,7 +108,43 @@ TBD
 
 ### Developing Cloudfier
 
-See the TextUML Toolkit [contribution guide](http://abstratt.github.io/textuml/docs/contributing). Much of what is said there applies here too.
+####  Requirements
+
+  * Java 8 or later 
+  * Maven 3.3.x 
+  * Eclipse Luna or newer([download](http://www.eclipse.org/downloads/)) 
+  * A git client, including Eclipse Git 
+  * M2E - Maven Integration for Eclipse (with Tycho support) 
+
+You can easily obtain M2E and EGit from the Eclipse Marketplace. If you
+don't have the Marketplace client installed (check Help &gt; Eclipse
+Marketplace), install it from here:
+[https://www.eclipse.org/mpc/](https://www.eclipse.org/mpc/)
+
+####  Importing the source code into Eclipse
+
+Use the M2E import wizard (Import... &gt; Maven &gt; Existing Maven Projects) and
+point it to the root directory for the cloudfier git workspace. It should find all Cloudfier modules
+inside that directory.
+
+After the sources are imported, you should choose the target definition file
+textuml/textuml-dependencies/textuml-dependencies.target as your target
+platform (Window &gt; Preferences &gt; Plug-n Development &gt; Target Platform &gt;
+Kirra Dependencies Target, or Kirra IDE Dependencies if you also have the TextUML Toolkit loaded into Eclipse).
+
+####  Running Cloudfier as an Eclipse application
+
+Just launch a runtime workbench from your development Eclipse ([instructions](
+http://help.eclipse.org/stable/index.jsp?topic=/org.eclipse.platform.doc.user/
+tasks/tasks-121.htm)). Allow enough memory for the VM with -Xmx300m or
+more.
+
+####  Continuous builds
+
+Continuous builds run on [Jenkins at
+CloudBees](http://textuml.ci.cloudbees.com/). Artifact repository is also
+available at [CloudBees Forge](http://repository-
+textuml.forge.cloudbees.com/snapshot/).
 
 ## Licensing
 
