@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+    <bundle id="com.abstratt.mdd.frontend.orion"/>
+    <bundle id="com.abstratt.mdd.frontend.web"/>
+    <bundle id="com.abstratt.mdd.runtime.core"/>
+    <bundle id="com.abstratt.mdd.target.core"/>
+    <bundle id="com.abstratt.mdd.target.engine.gstring"/>
+    <bundle id="com.abstratt.mdd.target.jee"/>
+    <bundle id="com.abstratt.mdd.target.jse"/>
+    <bundle id="com.abstratt.mdd.target.mean"/>
+    <bundle id="com.abstratt.nodestore"/>
+    <bundle id="com.abstratt.nodestore.jdbc"/>
+
+    <bundle id="com.abstratt.kirra.auth"/>
+    <bundle id="com.abstratt.kirra.auth.ldap"/>
+    <bundle id="com.abstratt.kirra.mdd.core"/>
+    <bundle id="com.abstratt.kirra.mdd.rest"/>
+    <bundle id="com.abstratt.kirra.mdd.rest.impl.v1"/>
+    <bundle id="com.abstratt.kirra.mdd.rest.impl.v2"/>
+    <bundle id="com.abstratt.kirra.mdd.runtime"/>
+    <bundle id="com.abstratt.kirra.mdd.schema"/>
+    <bundle id="com.abstratt.kirra.mdd.ui"/>
+    <bundle id="com.abstratt.kirra.populator"/>
+    <bundle id="com.abstratt.kirra.populator.compiler"/>
+    <bundle id="com.abstratt.kirra.server"/>
+    <bundle id="com.abstratt.kirra.server.product"/>
+</site>

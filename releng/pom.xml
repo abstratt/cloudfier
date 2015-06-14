@@ -12,6 +12,7 @@
 	</parent>
 	<modules>
 		<module>com.abstratt.kirra.server.product</module>
+		<module>com.abstratt.kirra.mdd.repository</module>
 	</modules>
 </project>
 

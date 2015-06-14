@@ -7,10 +7,10 @@
 	<version>2.1.201501.latest</version>
 	<packaging>eclipse-repository</packaging>
 	<parent>
-		<artifactId>saas</artifactId>
+		<artifactId>plugins</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
 		<version>2.1.201501-SNAPSHOT</version>
-		<relativePath>..</relativePath>
+		<relativePath>../..</relativePath>
 	</parent>
   <build>
     <plugins>
