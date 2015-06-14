@@ -42,7 +42,8 @@
     	<module>kirra-mdd</module>    	
 		<module>runtime</module>
 		<module>codegen</module>
-		<module>saas</module>
+		<module>server</module>
+		<module>product</module>
 	</modules>
 	<build>
 		<plugins>

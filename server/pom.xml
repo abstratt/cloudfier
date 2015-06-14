@@ -2,7 +2,7 @@
 <project>
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.abstratt.mdd.kirra</groupId>
-	<artifactId>saas</artifactId>
+	<artifactId>server</artifactId>
 	<version>2.1.201501-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
@@ -21,7 +21,6 @@
 		<module>com.abstratt.mdd.frontend.orion</module>
 		<module>com.abstratt.mdd.frontend.web.tests</module>
 		<module>com.abstratt.kirra.server</module>
-		<module>com.abstratt.kirra.server.product</module>
 	</modules>
 </project>
 
