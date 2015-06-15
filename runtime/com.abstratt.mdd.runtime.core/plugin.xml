@@ -2,7 +2,7 @@
    <extension
          point="com.abstratt.resman.features">
       <feature
-            provider="com.abstratt.mdd.runtime.core.RuntimeProvider">
+            provider="com.abstratt.mdd.core.runtime.RuntimeProvider">
       </feature>
    </extension>
 
