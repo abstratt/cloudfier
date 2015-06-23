@@ -39,12 +39,16 @@
 					</execution>
 				</executions>
 			</plugin>
-      <plugin>
-        <groupId>org.eclipse.tycho.extras</groupId>
-        <artifactId>target-platform-validation-plugin</artifactId>
-        <version>${tycho-version}</version>
-        <configuration><targetFiles><targetFile>kirra-dependencies.target</targetFile></targetFiles></configuration>
-      </plugin>		
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>target-platform-validation-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<targetFiles>
+						<targetFile>kirra-dependencies.target</targetFile>
+					</targetFiles>
+				</configuration>
+			</plugin>  			
 		</plugins>
 	</build>
 
