@@ -1,8 +1,6 @@
-package com.abstratt.mdd.runtime.core;
+package com.abstratt.mdd.core.runtime;
 
 import com.abstratt.mdd.core.IRepository;
-import com.abstratt.mdd.core.runtime.ActorSelector;
-import com.abstratt.mdd.core.runtime.Runtime;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.resman.ActivatableFeatureProvider;
 import com.abstratt.resman.Resource;

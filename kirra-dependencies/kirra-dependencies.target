@@ -97,7 +97,7 @@
 
         <location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
-			<unit id="com.abstratt.kirra.feature.feature.group"
+			<unit id="com.abstratt.kirra.feature.source.feature.group"
 				version="0.0.0" />
 			<repository
 				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/kirra/com.abstratt.kirra.repository/0.1.1/com.abstratt.kirra.repository-0.1.1.zip!/" />
