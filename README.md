@@ -28,7 +28,7 @@ Also, the TextUML Toolkit project, which has [its own repository](http://github.
   * A git client
   * Postgres 9
 
-You You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. 
+You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. 
 
 ### Building
 
