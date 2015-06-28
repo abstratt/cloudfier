@@ -15,7 +15,8 @@ The components that make up Cloudfier are divided among subsystems:
 - [kirra-mdd](kirra-mdd/) provides a [Kirra](http://github.com/abstratt/kirra/) compatible view over UML models.
 - [codegen](codegen) provides a code generation subsystem, including some code generators such as [Expert4JEE](codegen/com.abstratt.mdd.target.jee/).
 - [runtime](runtime/) provides a model interpreter subsystem (containing components that are either UML-centric or Kirra-centric)
-- [server](server/) provides the components required to support the Cloudfier Server environment: REST endpoints, Orion integration, product packaging etc.
+- [server](server/) provides the components required to support the Cloudfier Server environment (REST endpoints, UI generation, etc).
+- [releng](releng/) provides the components required to ship Cloudfier: product packaging, p2 repository etc.
 
 Also, the TextUML Toolkit project, which has [its own repository](http://github.com/abstratt/textuml), provides a number of core components to Cloudfier: model repository management, front-end infrastructure and support for the primary notation (TextUML), and a number of model manipulation utilities.
 
