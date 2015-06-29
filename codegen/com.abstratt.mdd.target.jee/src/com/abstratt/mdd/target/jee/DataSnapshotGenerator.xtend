@@ -1,5 +1,6 @@
 package com.abstratt.mdd.target.jee
 
+import com.abstratt.kirra.NamedElement
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil
 import com.abstratt.mdd.target.jse.AbstractGenerator
@@ -23,16 +24,34 @@ import java.io.StringWriter
 import java.util.Map
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.commons.io.IOUtils
+import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Element
+import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.EnumerationLiteral
+import org.eclipse.uml2.uml.InstanceValue
+import org.eclipse.uml2.uml.LiteralBoolean
+import org.eclipse.uml2.uml.LiteralNull
+import org.eclipse.uml2.uml.LiteralString
+import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.ValueSpecification
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import com.fasterxml.jackson.core.JsonGenerator
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
 class DataSnapshotGenerator extends AbstractGenerator {
     
     new(IRepository repository) {
         super(repository)
+        if (appPackages != null) {
+        	// contrary to elsewhere, we do care about non-top-level entities here
+            this.entities = appPackages.entities
+        }
     }
     
     def CharSequence generate() {
@@ -49,13 +68,16 @@ class DataSnapshotGenerator extends AbstractGenerator {
         } finally {
             IOUtils.closeQuietly(sourceStream)
         }
+        val jsonContents = new String(contents.toByteArray)
+        System.out.println(jsonContents)
         val jsonTree = parse(new InputStreamReader(new ByteArrayInputStream(contents.toByteArray)))
         generateContents(jsonTree as ObjectNode)
     }
     
     def CharSequence generateContents(ObjectNode root) {
         val entities = entities.toMap[qualifiedName]
-        val ids = entities.keySet.toInvertedMap[ new AtomicLong(0) ]
+        val entityNames = entities.keySet() 
+		val ids = entityNames.toInvertedMap[ new AtomicLong(0) ]
         val namespaceStatements = root.fields.toIterable.map[ entry |
             val namespaceName = entry.key
             val namespaceNode = entry.value as ObjectNode
@@ -109,7 +131,7 @@ class DataSnapshotGenerator extends AbstractGenerator {
     
     def CharSequence toSqlValue(Property property, JsonNode propertyValue) {
         if (propertyValue == null)
-            return 'null'
+            return property.generateDefaultSqlValue
         return switch (propertyValue.asToken()) {
             case VALUE_NULL:
                 'null'
@@ -125,6 +147,71 @@ class DataSnapshotGenerator extends AbstractGenerator {
                 '''«propertyValue.asText()»'''
             }
     }
+	
+	def CharSequence generateDefaultSqlValue(Property attribute) {
+        if (attribute.defaultValue != null) {
+            if (attribute.defaultValue.behaviorReference)
+                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsExpression 
+            else
+                attribute.defaultValue.generateValue
+        } else if (attribute.required || attribute.type.enumeration)
+            // enumeration covers state machines as well
+            attribute.type.generateDefaultValue
+	}
+	
+	def CharSequence generateActivityAsExpression(Activity activity) {
+		//TODO
+		'null'
+	}
+	
+    def CharSequence unsupported(CharSequence message) {
+        '''Unsupported: «message»''' 
+    } 
+    
+    def CharSequence unsupportedElement(Element e, String message) {
+ 	   unsupported('''«e.eClass.name»> «if (message != null) '''(«message»)''' else ''»''')
+    }
+    
+    def CharSequence unsupportedElement(Element e) {
+        unsupportedElement(e, if (e instanceof NamedElement) e.name else null)
+    }    
+	
+	def CharSequence generateValue(ValueSpecification value) {
+	        switch (value) {
+            // the TextUML compiler maps all primitive values to LiteralString
+            LiteralString : switch (value.type.name) {
+                case 'String' : '''«'\''»«value.stringValue»«'\''»'''
+                case 'Integer' : '''«value.stringValue»'''
+                case 'Double' : '''«value.stringValue»'''
+                case 'Boolean' : '''«value.stringValue»'''
+                default : unsupported(value.stringValue)
+            }
+            LiteralBoolean : '''«value.booleanValue»'''
+            LiteralNull : switch (value) {
+                case value.isVertexLiteral : '''«'\''»«value.resolveVertexLiteral.name»«'\''»'''
+                default : 'null'
+            }
+            OpaqueExpression case value.behaviorReference : (value.resolveBehaviorReference as Activity).generateActivityAsExpression()
+            InstanceValue case value.instance instanceof EnumerationLiteral: '''«value.instance.namespace.name».«value.instance.name»'''
+            default : unsupportedElement(value)
+        }
+	}
+	
+	def CharSequence generateDefaultValue(Type type) {
+        switch (type) {
+            StateMachine : '''«'\''»«type.initialVertex.name»«'\''»'''
+            Enumeration : '''«type.name».«type.ownedLiterals.head.name»'''
+            Class : switch (type.name) {
+                case 'Boolean' : 'false'
+                case 'Integer' : '0'
+                case 'Double' : '0'
+                case 'Date' : 'now()'
+                case 'String' : '\'\''
+                case 'Memo' : '\'\''
+            }
+            default : null
+        }
+	}
     
     private def static JsonNode parse(Reader contents) throws IOException, JsonParseException, JsonProcessingException {
         val parser = jsonFactory.createJsonParser(contents);

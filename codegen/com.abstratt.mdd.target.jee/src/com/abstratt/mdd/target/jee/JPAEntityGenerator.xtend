@@ -124,8 +124,10 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
 
     def toJpaPropertyAnnotation(Property property) {
-        // cannot use KirraHelper as this is about storing data, not user capabilities
-        val nullable = property.lower == 0
+        // cannot (in general) use KirraHelper as this is about storing data, not user capabilities
+        
+        // making an exception for username properties as they may not be necessarily filled in (unprovisioned user)
+        val nullable = property.lower == 0 || property.userNameProperty
         val unique = property.ID
         val insertable = true /* the back-end can anything) */ // !property.readOnly || !nullable
         val updatable = true /* the back-end can anything) */ // !property.readOnly || !insertable
@@ -139,7 +141,6 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         ''' 
     }
 
-    
     override generateEntityId(Class entity) {
         '''
         @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;

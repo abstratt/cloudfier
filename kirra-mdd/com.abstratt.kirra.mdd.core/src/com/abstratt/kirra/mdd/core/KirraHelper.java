@@ -228,14 +228,19 @@ public class KirraHelper {
             @Override
             public Property call() throws Exception {
                 for (Property property : getProperties(userClass))
-                    if (isUnique(property) && !isEditable(property) && property.getType()!= null && "String".equals(property.getType().getName()))
+                    if (isUserNameProperty(property))
                         return property;
                 return null;
             }
         });
     }
-    
-    public static boolean isRequired(Property property) {
+
+    /** Is the given property usable as a username property? */
+    public static boolean isUserNameProperty(Property property) {
+    	return isUnique(property) && !isEditable(property) && property.getType()!= null && "String".equals(property.getType().getName());
+	}
+
+	public static boolean isRequired(Property property) {
         return isRequired(property, false);
     }
     
@@ -613,7 +618,8 @@ public class KirraHelper {
                         else if (attribute.getOtherEnd().isNavigable())
                             otherRefs++;
                 // if has exactly one parent and no incoming references, it is not top-level
-                return parentCount != 1 || otherRefs > 0;
+                boolean isTopLevel = parentCount != 1 || otherRefs > 0;
+				return isTopLevel;
             }
         });
     }
