@@ -15,7 +15,8 @@ The components that make up Cloudfier are divided among subsystems:
 - [kirra-mdd](kirra-mdd/) provides a [Kirra](http://github.com/abstratt/kirra/) compatible view over UML models.
 - [codegen](codegen) provides a code generation subsystem, including some code generators such as [Expert4JEE](codegen/com.abstratt.mdd.target.jee/).
 - [runtime](runtime/) provides a model interpreter subsystem (containing components that are either UML-centric or Kirra-centric)
-- [saas](saas/) provides the components required to support the Cloudfier SaaS environment: Orion integration, product packaging etc.
+- [server](server/) provides the components required to support the Cloudfier Server environment (REST endpoints, UI generation, Orion integration, etc).
+- [releng](releng/) provides the components required to ship Cloudfier: product packaging, p2 repository etc.
 
 Also, the TextUML Toolkit project, which has [its own repository](http://github.com/abstratt/textuml), provides a number of core components to Cloudfier: model repository management, front-end infrastructure and support for the primary notation (TextUML), and a number of model manipulation utilities.
 
@@ -28,7 +29,7 @@ Also, the TextUML Toolkit project, which has [its own repository](http://github.
   * A git client
   * Postgres 9
 
-You You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. 
+You also need a database named "cloudfier" accessible (can create/drop schemas) to a user named "cloudfier" with no password. 
 
 ### Building
 
@@ -44,7 +45,7 @@ mvn clean install
 
 After building, you can run the tooling/runtime back-end this way (on Linux - the build is currently not generating packages for other platforms, help wanted here):
 ```
-cd saas/com.abstratt.kirra.server.product/
+cd server/com.abstratt.kirra.server.product/
 find target -name kirra-server
 ```
 which will show the target platforms available, for example, on a Linux box:
