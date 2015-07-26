@@ -4,6 +4,10 @@ import com.abstratt.kirra.mdd.core.KirraMDDCore
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
 import java.util.Properties
+import org.eclipse.uml2.uml.Operation
+
+
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 
 abstract class AbstractGeneratorTest extends AbstractRepositoryBuildingTests {
     
@@ -21,5 +25,9 @@ abstract class AbstractGeneratorTest extends AbstractRepositoryBuildingTests {
         // so classes extend Object by default (or else weaver ignores them)
         defaultSettings.setProperty(IRepository.EXTEND_BASE_OBJECT, Boolean.TRUE.toString())
         return defaultSettings
+    }
+    
+    def getStatementSourceAction(Operation op) {
+        op.activity.rootAction.findStatements.last.sourceAction
     }
 }

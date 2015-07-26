@@ -93,16 +93,14 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
      * @return a map where the key is the activity and the value is a collection of entity types
      * found in actions within the activity  
      */
-    private def Map<Activity, Collection<Type>> collectEntityActions(Map<Activity, Collection<Type>> collected, Activity activity) {
+    public def Map<Activity, Collection<Type>> collectEntityActions(Map<Activity, Collection<Type>> collected, Activity activity) {
         val Collection<Action> found = activity.rootAction.findMatchingActions(Literals.ACTION)
         if (activity.closure) {
-            // XXX for closures, only the inputs?/outputs? matter
             collected.put(activity, activity.inputParameters.map[type].filter[entity || tupleType].toSet)
         } else {
-            // XXX for the base (non-closure) entity, all types matter (why???)
-            collected.put(null, activity.ownedParameters.map[type].filter[entity || tupleType].toSet)
+            collected.put(null, found.map[(inputs+outputs).map[type].filter[entity || tupleType]].flatten.toSet)
         }
-            
+        // now recurse into closures    
         found
             .filter[it instanceof ValueSpecificationAction]
             .map[it as ValueSpecificationAction]
@@ -121,8 +119,7 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
         val usedEntities = collectEntityActions(new LinkedHashMap<Activity, Collection<Type>>, activity)
         // null is used for the current activity, which is not a closure
         val entitiesUsedHere = usedEntities.get(null)
-        // we omit the first entity as that is the base query's entity
-        val entitiesUsedInSubqueries = usedEntities.entrySet.filter[key != null].map[value].tail.flatten.toSet
+        val entitiesUsedInSubqueries = usedEntities.entrySet.filter[key != null].map[value].flatten.toSet.filter[!entitiesUsedHere.contains(it)]
         '''
             «IF (resultType != null && (activity.operation == null || activity.operation.query))»
             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();

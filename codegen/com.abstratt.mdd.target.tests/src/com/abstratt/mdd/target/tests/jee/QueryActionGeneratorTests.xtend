@@ -5,9 +5,6 @@ import com.abstratt.mdd.target.jee.QueryActionGenerator
 import com.abstratt.mdd.target.tests.AbstractGeneratorTest
 import java.io.IOException
 import org.eclipse.core.runtime.CoreException
-import org.eclipse.uml2.uml.Operation
-
-import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 
 class QueryActionGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
@@ -103,6 +100,36 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                             )
                     ))
                             
+            ''', generated.toString)
+    }
+
+    def void testCount() throws CoreException, IOException {
+        var source = '''
+	        model car_rental;
+            class Rental
+                attribute returnDate : Date[0,1];  
+			    derived readonly attribute inProgress : Boolean := {
+			        self.returnDate == null
+			    };
+			    static query countRentalsInProgress() : Integer;
+			    begin
+			        return Rental extent.select((l : Rental) : Boolean {
+			            l.inProgress
+			        }).size();
+			    end;
+            end;
+    	    end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('car_rental::Rental::countRentalsInProgress')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+	            cq.distinct(true).where(
+	                cb.equal(rental_.get("returnDate"), cb.nullLiteral(null))
+	            )
+	            .select(cb.count(rental_))
             ''', generated.toString)
     }
     
@@ -338,8 +365,4 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
-    def getStatementSourceAction(Operation op) {
-        op.activity.rootAction.findStatements.last.sourceAction
-    }
-
 }

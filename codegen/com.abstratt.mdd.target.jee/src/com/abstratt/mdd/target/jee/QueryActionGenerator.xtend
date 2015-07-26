@@ -101,6 +101,12 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
         '''
     }
     
+	override generateCollectionSize(CallOperationAction action) {
+		'''
+		«action.target.sourceAction.generateAction».select(cb.count(«action.target.type.alias»))
+		'''
+	}
+    
     override generateCollectionGroupBy(CallOperationAction action) {
         val mapping = action.arguments.head.sourceClosure
         ''' 
