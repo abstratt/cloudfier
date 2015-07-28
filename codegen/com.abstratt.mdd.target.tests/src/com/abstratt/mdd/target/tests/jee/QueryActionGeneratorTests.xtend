@@ -40,7 +40,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
             class Customer
                 attribute name : String;
                 attribute vip : Boolean;              
-                query findVip() : Customer[*];
+                static query findVip() : Customer[*];
                 begin
                     return Customer extent.select((c : Customer) : Boolean {
                         c.vip
@@ -59,6 +59,37 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                     .where(cb.isTrue(customer_.get("vip")))
             ''', generated.toString)
     }
+    
+    def void testCollectTuples() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;              
+                static query customerDetails() : {customerName : String, isVip : Boolean}[*];
+                begin
+                    return Customer extent.collect((c : Customer) : {customerName : String, isVip : Boolean} {
+                    	{
+	                        customerName := c.name,
+	                        isVip := c.vip
+                        }
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::customerDetails')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                cq.distinct(true).multiselect(
+        	        customer_.get("name"), customer_.get("vip")
+                )
+            ''', generated.toString)
+    }
+    
     
     def void testExists() throws CoreException, IOException {
         var source = '''
