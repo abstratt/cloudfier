@@ -13,11 +13,19 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
     
     def CharSequence generate() {
         val entities = appPackages.entities
+        val entityPackages = entities.map[package.name].toSet
         '''
         package resource.«applicationName»;
         
         import java.util.HashSet;
         import java.util.Set;
+        
+        
+        «entityPackages.map[ appPackage |
+        	'''
+        	import resource.«appPackage».*;
+        	'''
+        ].join»
         
         public class Application extends javax.ws.rs.core.Application {
             private Set<Object> services = new HashSet<>();
