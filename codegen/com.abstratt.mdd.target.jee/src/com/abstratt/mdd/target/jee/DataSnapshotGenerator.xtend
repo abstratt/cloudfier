@@ -108,9 +108,15 @@ class DataSnapshotGenerator extends AbstractGenerator {
             toSqlValue(property, jsonValue)
         ]
         
-        val sqlForeignKeys = entity.entityRelationships.filter[!derived && primary].toMap [ name ].mapValues[ relationship |
-            getRelatedInstanceId(node.get(relationship.name))
-        ]
+        val sqlForeignKeys = entity.entityRelationships
+        	.filter[!derived && primary && !multivalued]
+        	.toMap [ name ]
+        	.filter[ relationshipName, value |
+        		node.get(relationshipName) != null
+        	]
+        	.mapValues[ relationship |
+            	getRelatedInstanceId(node.get(relationship.name))
+        	]
         
         val sqlValues = newHashMap()
         sqlPropertyValues.forEach[key, value | sqlValues.put(key, value)]
