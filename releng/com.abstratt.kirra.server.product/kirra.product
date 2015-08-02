@@ -58,6 +58,7 @@
       <plugin id="com.abstratt.mdd.core"/>
       <plugin id="com.abstratt.mdd.frontend.core"/>
       <plugin id="com.abstratt.mdd.frontend.orion"/>
+      <plugin id="com.abstratt.mdd.frontend.textuml.grammar"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.core"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.renderer"/>
       <plugin id="com.abstratt.mdd.frontend.web"/>
