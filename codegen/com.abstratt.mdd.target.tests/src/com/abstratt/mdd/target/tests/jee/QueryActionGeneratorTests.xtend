@@ -10,7 +10,51 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
-
+    
+    def void testExists() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithVipCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.exists((customer : Customer) : Boolean {
+                            customer.vip
+                        })
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;              
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        // we want to issue the exists function the same way for whichever case we are handling here
+        // so we will always add a criteria for relating the child object to the parent object
+        // (I don't really know which cases I am talking about here)  
+        AssertHelper.assertStringsEqual(
+            '''
+                cq.distinct(true)
+                    .where(cb.exists(
+                        customerSubquery
+                            .select(subCustomer_)
+                            .where(
+                                cb.equal(subCustomer_.get("company"), company_), 
+                                cb.isTrue(subCustomer_.get("vip"))
+                            )
+                    ))
+                            
+            ''', generated.toString)
+    }
+    
+    
     def void testExtent() throws CoreException, IOException {
         var source = '''
             model crm;
@@ -91,49 +135,6 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
     }
     
     
-    def void testExists() throws CoreException, IOException {
-        var source = '''
-            model crm;
-            class Company
-                attribute name : String;
-                attribute customers : Customer[*];              
-                static query companiesWithVipCustomers() : Company[*];
-                begin
-                    return Company extent.select((company : Company) : Boolean {
-                        company.customers.exists((customer : Customer) : Boolean {
-                            customer.vip
-                        })
-                    });
-                end;
-            end;
-            class Customer
-                attribute name : String;
-                attribute vip : Boolean;              
-            end;
-            end.
-        '''
-        parseAndCheck(source)
-        val op = getOperation('crm::Company::companiesWithVipCustomers')
-        val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
-        // we want to issue the exists function the same way for whichever case we are handling here
-        // so we will always add a criteria for relating the child object to the parent object
-        // (I don't really know what I am saying here)  
-        AssertHelper.assertStringsEqual(
-            '''
-                cq.distinct(true)
-                    .where(cb.exists(
-                        customerSubquery
-                            .select(customer_)
-                            .where(
-                                cb.equal(customer_.get("company"), company_), 
-                                cb.isTrue(customer_.get("vip"))
-                            )
-                    ))
-                            
-            ''', generated.toString)
-    }
-
     def void testCount() throws CoreException, IOException {
         var source = '''
 	        model car_rental;

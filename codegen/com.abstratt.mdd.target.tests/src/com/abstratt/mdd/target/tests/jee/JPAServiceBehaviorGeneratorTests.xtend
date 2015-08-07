@@ -41,6 +41,44 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
             ).getResultList().stream().findAny().orElse(null);
             ''', generated.toString)
     }
+    
+    def void testExists() {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithVipCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.exists((customer : Customer) : Boolean {
+                            customer.vip
+                        })
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;              
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val activity = getActivity('crm::Company::companiesWithVipCustomers')
+        val generated = new JPAServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
+        AssertHelper.assertStringMatches(
+            '''
+	        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+	        CriteriaQuery<Company> cq = cb.createQuery(Company.class);
+	        Root<Company> company_ = cq.from(Company.class);
+	        Subquery<Customer> customerSubquery = cq.subquery(Customer.class);
+	        Root<Customer> subCustomer = customerSubquery.from(Customer.class);
+	        return getEntityManager().createQuery(
+	        	...
+	        ).getResultList();
+            ''', generated.toString)
+    }
+    
 
     def void testCollectTuples() {
         var source = '''
