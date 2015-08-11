@@ -1,7 +1,7 @@
 Cloudfier Expert for Java (Expert4J)
 ==============
 
-A code generator that can produce fully functional Java EE applications from Cloudfier models. 
+A code generator that can produce fully functional Java EE applications from Cloudfier (UML) models. 
 
 Examples: 
 
