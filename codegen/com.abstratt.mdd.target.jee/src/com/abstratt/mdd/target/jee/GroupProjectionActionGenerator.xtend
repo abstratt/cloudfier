@@ -17,7 +17,7 @@ class GroupProjectionActionGenerator extends ProjectionActionGenerator {
     override generateCallOperationAction(CallOperationAction action) {
         if (action.collectionOperation) {
             switch (action.operation.name) {
-                case 'size' : '''cb.count(«action.target.type.alias»)'''
+                case 'size' : '''cb.count(«action.target.alias»)'''
                 case 'sum' : '''cb.sum(«action.arguments.head.sourceClosure.rootAction.generateAction»)'''
                 case 'one' : '''«action.target.generateAction»'''
                 default: unsupportedElement(action)

@@ -44,10 +44,10 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq.distinct(true)
                     .where(cb.exists(
                         customerSubquery
-                            .select(subCustomer_)
+                            .select(customers)
                             .where(
-                                cb.equal(subCustomer_.get("company"), company_), 
-                                cb.isTrue(subCustomer_.get("vip"))
+                                cb.equal(customers.get("company"), company_), 
+                                cb.isTrue(customers.get("vip"))
                             )
                     ))
                             
@@ -165,6 +165,32 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
+    def void testCount_InlinedCondition() throws CoreException, IOException {
+        var source = '''
+	        model car_rental;
+            class Rental
+                attribute returnDate : Date[0,1];  
+			    static query countRentalsInProgress() : Integer;
+			    begin
+			        return Rental extent.select((l : Rental) : Boolean {
+			            l.returnDate == null
+			        }).size();
+			    end;
+            end;
+    	    end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('car_rental::Rental::countRentalsInProgress')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+	            cq.distinct(true).where(
+	                cb.equal(rental_.get("returnDate"), cb.nullLiteral(null))
+	            )
+	            .select(cb.count(rental_))
+            ''', generated.toString)
+    }
     
     def void testSelectByAttributeInRelatedEntity() throws CoreException, IOException {
         var source = '''
@@ -174,11 +200,11 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
             end;
             class Customer
                 attribute name : String;
-                attribute company : Company;              
+                attribute employer : Company;              
                 query findByCompanyRevenue(threshold : Double) : Customer[*];
                 begin
                     return Customer extent.select((c : Customer) : Boolean {
-                        c.company.revenue >= threshold
+                        c.employer.revenue >= threshold
                     });
                 end;
             end;
@@ -193,7 +219,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq
                     .distinct(true)
                     .where(cb.greaterThanOrEqualTo(
-                        company_.get("revenue"),
+                        employer.get("revenue"),
                         cb.parameter(Double.class,"threshold")
                     ))
             ''', generated.toString)

@@ -22,13 +22,11 @@ class GroupByActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
-        val classifier = action.object.type
-        '''«classifier.alias».get("«property.name»")'''
+        '''«action.object.alias».get("«property.name»")'''
     }
     
     override generateTraverseRelationshipAction(InputPin target, Property end) {
-        val classifier = target.type
-        '''«classifier.alias».get("«end.name»")'''
+        '''«target.alias».get("«end.name»")'''
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {

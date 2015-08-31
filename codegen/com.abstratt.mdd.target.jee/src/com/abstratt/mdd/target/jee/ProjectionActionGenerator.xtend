@@ -59,7 +59,7 @@ class ProjectionActionGenerator extends QueryFragmentGenerator {
     }
         
     override generateReadVariableAction(ReadVariableAction action) {
-        action.variable.type.alias
+        action.result.alias
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {

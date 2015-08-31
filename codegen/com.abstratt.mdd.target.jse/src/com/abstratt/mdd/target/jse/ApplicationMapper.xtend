@@ -1,6 +1,6 @@
 package com.abstratt.mdd.target.jse
 
-import com.abstratt.kirra.mdd.core.KirraHelper
+import static com.abstratt.kirra.mdd.core.KirraHelper.*
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
 import com.abstratt.mdd.core.target.spi.TargetUtils
@@ -37,8 +37,8 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
     }
     
     override mapAll(IRepository repository) {
-        val applicationPackages = KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null))
-        val applicationDescription = KirraHelper.getApplicationName(repository, applicationPackages)
+        val applicationPackages = getApplicationPackages(repository.getTopLevelPackages(null)).filter[hasKirraType(it)].toList
+        val applicationDescription = getApplicationName(repository, applicationPackages)
         val replacements = newLinkedHashMap(
             'applicationName' -> applicationPackages.head.name,
             'applicationDescription' -> applicationDescription,

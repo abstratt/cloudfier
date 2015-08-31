@@ -70,9 +70,9 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
             '''
 	        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
 	        CriteriaQuery<Company> cq = cb.createQuery(Company.class);
-	        Root<Company> company_ = cq.from(Company.class);
 	        Subquery<Customer> customerSubquery = cq.subquery(Customer.class);
-	        Root<Customer> subCustomer = customerSubquery.from(Customer.class);
+	        Root<Company> company_ = cq.from(Company.class);
+	        Root<Customer> customers = customerSubquery.from(Customer.class);
 	        return getEntityManager().createQuery(
 	        	...
 	        ).getResultList();
@@ -112,7 +112,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
         ''', generated.toString)
     }
 
-    def testCollectEntityActions_Count() {
+    def testCollectUsedEntities_Count() {
         var source = '''
             model mypackage;
                 class MyEntity
@@ -128,7 +128,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
         val myEntity = getClass("mypackage::MyEntity")
         val activity = getActivity('mypackage::MyEntity::countInstances')
         val collected = new LinkedHashMap
-        new JPAServiceBehaviorGenerator(repository).collectEntityActions(collected, activity)
+        new JPAServiceBehaviorGenerator(repository).collectUsedEntities(collected, activity)
         assertEquals(1, collected.size())
         val entitiesUsed = collected.get(null)
         assertNotNull(entitiesUsed)

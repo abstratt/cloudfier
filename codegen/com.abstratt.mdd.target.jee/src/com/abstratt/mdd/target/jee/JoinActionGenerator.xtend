@@ -17,7 +17,8 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import com.abstratt.mdd.target.jse.AbstractJavaBehaviorGenerator
 import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.Property
-
+import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+	
 class JoinActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
@@ -34,10 +35,11 @@ class JoinActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateStructuredActivityNode(StructuredActivityNode action) {
         if (action.objectInitialization) {
-            val outputType = action.structuredNodeOutputs.head.type as Classifier
+        	val tupleInstance = action.structuredNodeOutputs.head
+            val outputType = tupleInstance.type as Classifier
             val List<CharSequence> projections = newLinkedList()
             outputType.getAllAttributes().forEach[attribute, i |
-                projections.add('''«attribute.type.alias».get("«action.structuredNodeInputs.get(i).name»")''')
+                projections.add('''«alias(action.structuredNodeInputs.head)».get("«action.structuredNodeInputs.get(i).name»")''')
             ]
             '''cq.multiselect(«projections.join(', ')»)'''
         } else if (isCast(action)) {

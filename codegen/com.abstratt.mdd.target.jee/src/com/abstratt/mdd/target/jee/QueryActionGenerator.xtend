@@ -103,7 +103,7 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     
 	override generateCollectionSize(CallOperationAction action) {
 		'''
-		«action.target.sourceAction.generateAction».select(cb.count(«action.target.type.alias»))
+		«action.target.sourceAction.generateAction».select(cb.count(«action.target.alias»))
 		'''
 	}
     

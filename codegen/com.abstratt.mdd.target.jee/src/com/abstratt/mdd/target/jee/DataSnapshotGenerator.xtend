@@ -68,8 +68,6 @@ class DataSnapshotGenerator extends AbstractGenerator {
         } finally {
             IOUtils.closeQuietly(sourceStream)
         }
-        val jsonContents = new String(contents.toByteArray)
-        System.out.println(jsonContents)
         val jsonTree = parse(new InputStreamReader(new ByteArrayInputStream(contents.toByteArray)))
         generateContents(jsonTree as ObjectNode)
     }

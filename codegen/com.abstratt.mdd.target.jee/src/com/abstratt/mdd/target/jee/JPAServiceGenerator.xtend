@@ -124,12 +124,13 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
 
     def generateFindAll(Classifier entity) {
+    	val entityAlias = entity.name.toFirstLower
         '''
             public List<«entity.name»> findAll() {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
-                Root<«entity.name»> «entity.alias» = cq.from(«entity.name».class);
-                return getEntityManager().createQuery(cq.select(«entity.alias»).orderBy(cb.asc(«entity.alias».get("id"))).distinct(true)).getResultList();
+                Root<«entity.name»> «entityAlias» = cq.from(«entity.name».class);
+                return getEntityManager().createQuery(cq.select(«entityAlias»).orderBy(cb.asc(«entityAlias».get("id"))).distinct(true)).getResultList();
             }
         '''
     }

@@ -19,10 +19,10 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import com.abstratt.mdd.target.jse.AbstractJavaBehaviorGenerator
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.OutputPin
 
 /** Builds a query based on a filter closure. */
 class FilterActionGenerator extends QueryFragmentGenerator {
@@ -36,22 +36,21 @@ class FilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override generateTraverseRelationshipAction(InputPin target, Property end) {
-        val property = end
-        val targetType = target.type
-        '''«targetType.alias».get("«property.name»")'''
+        '''«target.alias».get("«end.name»")'''
     }
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val isCondition = action.result.type.name == 'Boolean'
         val property = action.structuralFeature as Property
-        val classifier = action.object.type
         if (isCondition) {
             if (property.derived) {
                 val derivation = property.defaultValue.resolveBehaviorReference as Activity
-                derivation.generateFilter(false)
-            } else '''cb.isTrue(«classifier.alias».get("«property.name»"))'''
+                ActivityContext.generateInNewContext(derivation, action.object.source as OutputPin, [
+					generateFilter(derivation, false)
+				])
+            } else '''cb.isTrue(«action.object.alias».get("«property.name»"))'''
         } else
-            '''«classifier.alias».get("«property.name»")'''
+            '''«action.object.alias».get("«property.name»")'''
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
