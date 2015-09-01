@@ -16,7 +16,6 @@ import javax.ws.rs.ext.Provider;
 
 import util.PersistenceHelper;
 
-@Provider
 public class StandaloneRequestResponseFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static final Collection<String> MUTATION_METHODS = Arrays.asList("PUT", "POST", "DELETE");
     private EntityManagerFactory entityManagerFactory;
