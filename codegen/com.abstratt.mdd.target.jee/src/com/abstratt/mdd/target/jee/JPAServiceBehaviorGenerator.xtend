@@ -198,7 +198,9 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
 	override generateOperationReturnType(Operation operation) {
 		// methods returning collections will usually return lists (due to Query#getResultList())
 		val result = operation.getReturnResult()
-		if (result?.multivalued) '''Collection<«result.type.toJavaType»> ''' else
+		if (result?.multivalued) 
+			'''Collection<«result.type.toJavaType»>'''
+		else
 			super.generateOperationReturnType(operation)
 	}
 }

@@ -37,13 +37,13 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
     }
     
     override mapAll(IRepository repository) {
-        val applicationPackages = getApplicationPackages(repository.getTopLevelPackages(null)).filter[hasKirraType(it)].toList
-        val applicationDescription = getApplicationName(repository, applicationPackages)
+        val entityPackages = getEntities(repository.getTopLevelPackages(null)).map[package].toSet
+        val applicationDescription = getApplicationName(repository, entityPackages)
         val replacements = newLinkedHashMap(
-            'applicationName' -> applicationPackages.head.name,
+            'applicationName' -> entityPackages.head.name,
             'applicationDescription' -> applicationDescription,
-            'groupId' -> (applicationPackages.head?.namespace?.qualifiedName ?: 'undefined'),
-            'artifactId' -> applicationPackages.head.name
+            'groupId' -> (entityPackages.head?.namespace?.qualifiedName ?: 'undefined'),
+            'artifactId' -> entityPackages.head.name
         )
         repository.properties.forEach[key, value| replacements.put(key.toString(), value.toString)]
         val result = new LinkedHashMap<String, CharSequence>()
