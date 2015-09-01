@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
@@ -145,6 +146,13 @@ public class KirraHelper {
         for (Package it : packages)
             KirraHelper.addApplications(it, applicationPackages);
         return applicationPackages;
+    }
+    
+    public static Collection<Package> getEntityPackages(Package... packages) {
+        Set<Package> applicationPackages = new LinkedHashSet<Package>();
+        for (Package it : packages)
+            KirraHelper.addApplications(it, applicationPackages);
+        return getApplicationPackages(packages).stream().filter(it -> hasEntity(it)).collect(Collectors.toList());
     }
 
     public static List<Property> getEntityRelationships(Classifier modelClass) {
@@ -752,6 +760,13 @@ public class KirraHelper {
                 return true;
         return false;
     }
+    
+    public static boolean hasEntity(final org.eclipse.uml2.uml.Package current) {
+        for (Type type : current.getOwnedTypes())
+            if (isEntity(type))
+                return true;
+        return false;
+    }
 
     private static boolean isKirraType(Type type) {
         return isEntity(type) || isService(type) || isTupleType(type);
@@ -811,10 +826,11 @@ public class KirraHelper {
     public static String getApplicationName(IRepository repository, Collection<org.eclipse.uml2.uml.Package> namespaces) {
         Properties repositoryProperties = repository.getProperties();
         String applicationName = repositoryProperties.getProperty(IRepository.APPLICATION_NAME);
-        if (applicationName == null)
+        if (applicationName == null) {
             for (Package package_ : namespaces)
                 if (isApplication(package_))
                     return getLabel(package_);
+        }
         return applicationName == null ? "App" : applicationName;
     }
     

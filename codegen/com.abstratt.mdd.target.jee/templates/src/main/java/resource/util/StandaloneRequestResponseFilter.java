@@ -17,12 +17,12 @@ import javax.ws.rs.ext.Provider;
 import util.PersistenceHelper;
 
 @Provider
-public class RequestResponseFilter implements ContainerRequestFilter, ContainerResponseFilter {
+public class StandaloneRequestResponseFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static final Collection<String> MUTATION_METHODS = Arrays.asList("PUT", "POST", "DELETE");
     private EntityManagerFactory entityManagerFactory;
 
-    public RequestResponseFilter() {
-        entityManagerFactory = Persistence.createEntityManagerFactory("integration-test");
+    public StandaloneRequestResponseFilter() {
+        entityManagerFactory = Persistence.createEntityManagerFactory("{applicationName}-local");
     }
     @Override
     public void filter(ContainerRequestContext request) throws IOException {

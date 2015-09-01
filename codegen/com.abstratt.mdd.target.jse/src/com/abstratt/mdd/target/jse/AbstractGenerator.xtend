@@ -25,8 +25,8 @@ abstract class AbstractGenerator {
         this.repository = repository
         if (repository != null) {
             this.appPackages = repository.getTopLevelPackages(null).applicationPackages
-            this.applicationName = appPackages.head.name
             this.entities = appPackages.entities.filter[topLevel]
+            this.applicationName = entities.head.package.name
         }
     }
     

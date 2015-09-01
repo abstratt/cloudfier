@@ -3,7 +3,7 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/persistence/orm orm_2_0.xsd"
     version="2.0">
     <persistence-unit-metadata>
-        <persistence-unit-defaults>
+        <persistence-unit-defaults> 
             <schema>{applicationName}</schema>
         </persistence-unit-defaults>
     </persistence-unit-metadata>   

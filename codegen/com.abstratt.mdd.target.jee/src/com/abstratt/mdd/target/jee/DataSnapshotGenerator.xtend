@@ -143,8 +143,13 @@ class DataSnapshotGenerator extends AbstractGenerator {
                 'true'
             case VALUE_FALSE:
                 'false'
-            case VALUE_STRING:
-                ''' '«(propertyValue as TextNode).textValue»' '''.toString.trim()
+            case VALUE_STRING: {
+            	var value = ''' '«(propertyValue as TextNode).textValue»' '''.toString.trim()
+		        if ("Date" == property.type.name) {
+		            value = value.replace("/", "-")	
+		        }
+                return value
+            }
             case VALUE_NUMBER_INT:
                 '''«propertyValue.asText()»'''
             case VALUE_NUMBER_FLOAT:

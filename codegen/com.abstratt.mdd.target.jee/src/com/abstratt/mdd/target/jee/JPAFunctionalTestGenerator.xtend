@@ -31,13 +31,14 @@ class JPAFunctionalTestGenerator extends AbstractGenerator {
         }
 
         override generateTestClassPrefix() {
+        	val applicationName = applicationName
             '''
                 private EntityManager em;
                 private EntityTransaction tx;
             
                 @Before
                 public void initEM() {
-                    this.em = Persistence.createEntityManagerFactory("integration-test").createEntityManager();
+                    this.em = Persistence.createEntityManagerFactory("«applicationName»-local").createEntityManager();
                     util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();

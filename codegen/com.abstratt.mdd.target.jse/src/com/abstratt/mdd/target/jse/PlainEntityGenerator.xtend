@@ -33,6 +33,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -46,6 +47,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         super(repository)
         behaviorGenerator = createBehaviorGenerator()
         stateMachineGenerator = new StateMachineGenerator(repository, createBehaviorGenerator())
+        applicationName = getEntityPackages(KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null))).head.name
     }
     
     def IBehaviorGenerator createBehaviorGenerator() {

@@ -16,6 +16,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
     }
     
     def CharSequence generateCRUDTestClass(Class entityClass) {
+    	val applicationName = entityClass.package.name
         '''
             package «entityClass.packagePrefix»;
             
@@ -44,7 +45,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             
                 @Before
                 public void initEM() {
-                    this.em = Persistence.createEntityManagerFactory("integration-test").createEntityManager();
+                    this.em = Persistence.createEntityManagerFactory("«applicationName»-local").createEntityManager();
                     util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();

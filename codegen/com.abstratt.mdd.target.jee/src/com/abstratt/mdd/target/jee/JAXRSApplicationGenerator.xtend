@@ -34,7 +34,7 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
                 «entities.map [ entity | '''
                 services.add(new «entity.name»Resource());
                 '''].join()»
-                services.add(new resource.util.RequestResponseFilter());
+                services.add(new resource.util.StandaloneRequestResponseFilter());
                 services.add(new EntityResource());
             }
         

@@ -6,20 +6,24 @@ import com.abstratt.mdd.core.target.spi.TargetUtils
 
 class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
     override mapAll(IRepository repository) {
-        val applicationPackages = KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null))
         val result = super.mapAll(repository)
+        val entityPackages = KirraHelper.getEntityPackages(repository.getTopLevelPackages(null))
+        val applicationName = entityPackages.head.name
         val templates = #[
-            'src/main/webapp/WEB-INF/web.xml', 
-            'src/main/resources/META-INF/persistence.xml',
+            'src/main/webapp/WEB-INF/web.xml',
+            'src/main/resources/META-INF/persistence.xml', 
+            'src/test/resources/META-INF/persistence.xml',
             'src/main/resources/META-INF/orm.xml',
-            'src/main/resources/META-INF/sql/create.sql',
-            'src/main/resources/META-INF/sql/drop.sql',
+            'src/test/resources/META-INF/sql/create.sql',
+            'src/test/resources/META-INF/sql/drop.sql',
             'src/main/resources/log4j.properties',
             'src/main/java/util/PersistenceHelper.java',
-            'src/main/java/resource/util/RequestResponseFilter.java'            
+            'src/main/java/resource/util/StandaloneRequestResponseFilter.java',
+            'src/main/java/resource/util/ContainerRequestResponseFilter.java',            
+            'src/main/java/resource/util/EntityManagerProvider.java'            
         ]
-        val replacements = newLinkedHashMap(
-            'applicationName' -> applicationPackages.head.name,
+		val replacements = newLinkedHashMap(
+            'applicationName' -> applicationName,
             'jdbc.url' -> 'jdbc:postgresql://127.0.0.1:5432/cloudfier',
             'jdbc.user' -> 'cloudfier',
             'jdbc.password' -> ''

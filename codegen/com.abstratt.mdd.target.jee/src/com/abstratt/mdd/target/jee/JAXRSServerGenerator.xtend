@@ -22,10 +22,20 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.jboss.resteasy.plugins.server.servlet.HttpServletDispatcher;
+import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
+
+import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.AbstractHandler;
 import org.eclipse.jetty.webapp.WebAppContext;
+
+import org.postgresql.ds.PGSimpleDataSource;
+
+import javax.sql.DataSource;
+
+import javax.naming.InitialContext;
 
 public class RESTServer extends AbstractHandler {
 
@@ -50,6 +60,11 @@ public class RESTServer extends AbstractHandler {
         context.setDescriptor(webXml.toString());
         context.setContextPath("/");
         context.setParentLoaderPriority(true);
+        
+		context.setInitParameter("javax.ws.rs.Application", Application.class.getName());
+		context.setInitParameter("resteasy.servlet.mapping.prefix", "/");
+		context.addEventListener(new ResteasyBootstrap());
+        
         server.setHandler(context);
         server.start();
         server.join();

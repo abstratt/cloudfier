@@ -20,8 +20,8 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
-        val applicationName = appPackages.head.name
         val entities = appPackages.entities.filter[!abstract]
+        val applicationName = entities.head.package.name
         val entityNames = entities.map [ TypeRef.sanitize(qualifiedName) ]
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
@@ -33,9 +33,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         mappings.putAll(entities.toMap[generateJAXBElementFileName].mapValues[jaxbElementGenerator.generateElement(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
         mappings.put(generateJAXRSServerFileName(applicationName), new JAXRSServerGenerator(repository).generate())
-        mappings.put('src/main/resources/META-INF/sql/data.sql', new DataSnapshotGenerator(repository).generate())
-        // no data snapshot for testing
-        mappings.put('src/test/resources/META-INF/sql/data.sql', '--NO TEST DATA')
+        mappings.put('src/test/resources/META-INF/sql/data.sql', new DataSnapshotGenerator(repository).generate())
         mappings.putAll(entities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
         mappings.put(
             '''src/main/java/resource/«applicationName»/EntityResource.java'''.toString, 
