@@ -266,7 +266,37 @@ public class RentalService {
 
 #### Aggregation queries
 
-TBD
+##### Count
+```
+class City
+    attribute name : String;
+    attribute population : Integer;
+    attribute cityState : State;
+    static query citiesMorePopulousThan(threshold : Integer) : Integer;
+    begin
+        return City extent.select((c : City) : Boolean { c.population >= threshold } ).size();
+    end;
+end;
+```
+
+Generated:
+
+```java
+public long citiesMorePopulousThan(Long threshold) {
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<Long> cq = cb.createQuery(Long.class);
+        Root<City> city_ = cq.from(City.class);
+        return getEntityManager().createQuery(
+            cq.distinct(true).where(
+                cb.greaterThanOrEqualTo(
+                    city_.get("population"),
+                    cb.parameter(Long.class, "threshold")
+                )
+            )
+            .select(cb.count(city_))
+        ).setParameter("threshold", threshold).getResultList().stream().findAny().orElse(null);
+    }
+```
 
 ### JAX-RS based REST API
 
