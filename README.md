@@ -7,6 +7,8 @@ Tests: [![Build Status](https://textuml.ci.cloudbees.com/buildStatus/icon?job=cl
 
 This repository contains the code for [Cloudfier](http://cloudfier.com), a web-based environment for modeling with support for editing, testing, deploying and generating business applications based on executable models.
 
+# Just want to use Cloudfier?
+
 > ***If you just want to learn about Cloudfier, and how to use to develop model-based applications, stop reading this and instead head to the [Cloudfier documentation](http://doc.cloudfier.com).***
 
 ### Code organization 
