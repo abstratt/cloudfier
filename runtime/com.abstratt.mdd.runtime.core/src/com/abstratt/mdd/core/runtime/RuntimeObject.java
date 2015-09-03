@@ -46,6 +46,7 @@ import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
+import com.abstratt.mdd.core.util.DataTypeUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
@@ -773,6 +774,7 @@ public class RuntimeObject extends BasicType {
     }
 
     private BasicType getSlotValue(Property attribute, Map<String, Object> properties) {
+    	attribute = mapToActualAttribute(attribute);
         Object value = properties.get(nodeProperty(attribute));
         if (value instanceof RuntimeObject)
             // seen this when dealing with anonymously typed objects (object literals) with a slot that is a full Class instance 
@@ -786,7 +788,17 @@ public class RuntimeObject extends BasicType {
         return PrimitiveType.fromValue(attribute.getType(), value);
     }
 
-    private void handleEventForState(RuntimeEvent runtimeEvent, Property stateProperty, Vertex currentState) {
+    private Property mapToActualAttribute(Property attribute) {
+    	Classifier thisClassifier = this.runtimeClass.getModelClassifier();
+    	if (DataTypeUtils.isAnonymousDataType(thisClassifier)) {
+    		// for anonymous data types, property access is positional
+    		int position = FeatureUtils.getOwningClassifier(attribute).getAllAttributes().indexOf(attribute);
+    	    return thisClassifier.getAllAttributes().get(position);
+    	}
+    	return attribute;
+	}
+
+	private void handleEventForState(RuntimeEvent runtimeEvent, Property stateProperty, Vertex currentState) {
         for (Transition transition : currentState.getOutgoings()) {
             if (transition.getGuard() != null) {
                 boolean enabled = isConstraintSatisfied(transition.getGuard());
