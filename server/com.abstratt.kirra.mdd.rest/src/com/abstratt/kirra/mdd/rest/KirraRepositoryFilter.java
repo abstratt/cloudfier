@@ -19,6 +19,7 @@ import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.runtime.KirraOnMDDRuntime;
 import com.abstratt.kirra.rest.common.KirraContext;
+import com.abstratt.kirra.rest.resources.KirraRestException;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.pluginutils.ISharedContextRunnable;
@@ -76,6 +77,8 @@ public class KirraRepositoryFilter extends Filter {
             }
         } catch (KirraException e) {
             handleKirraException(response, e);
+        } catch (KirraRestException e) {
+        	handleKirraRESTException(response, e);
         } catch (RuntimeException e) {
             handleInternalError(response, e);
         }
@@ -93,6 +96,16 @@ public class KirraRepositoryFilter extends Filter {
         error.put("message", e.getMessage());
         response.setEntity(KirraRESTUtils.jsonToStringRepresentation(error));
         response.getEntity().setExpirationDate(new Date(0));
+    }
+    
+    private void handleKirraRESTException(final Response response, KirraRestException kirraRestException) {
+        LogUtils.logWarning(getClass().getPackage().getName(), "REST error", kirraRestException);
+        response.setStatus(Status.valueOf(kirraRestException.getStatus().getStatusCode()));
+        Map<String, String> error = new HashMap<String, String>();
+        error.put("message", kirraRestException.getMessage());
+        response.setEntity(KirraRESTUtils.jsonToStringRepresentation(error));
+        response.getEntity().setExpirationDate(new Date(0));
+
     }
 
     private void handleKirraException(final Response response, KirraException kirraException) {
