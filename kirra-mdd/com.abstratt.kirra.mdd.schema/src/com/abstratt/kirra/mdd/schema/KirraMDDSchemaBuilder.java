@@ -85,6 +85,9 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setNamespace(getNamespace(umlClass));
         setName(umlClass, entity);
         entity.setProperties(getEntityProperties(umlClass));
+        org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(umlClass);
+        if (mnemonic != null)
+        	entity.setMnemonicProperty(mnemonic.getName());
         entity.setOperations(getEntityOperations(umlClass));
         entity.setRelationships(getEntityRelationships(umlClass));
         entity.setConcrete(KirraHelper.isConcrete(umlClass));
