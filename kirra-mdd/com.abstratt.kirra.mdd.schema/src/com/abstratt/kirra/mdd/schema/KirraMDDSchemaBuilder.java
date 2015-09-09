@@ -115,11 +115,11 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     public Property getEntityProperty(org.eclipse.uml2.uml.Property umlAttribute) {
         Property entityProperty = new Property();
         setName(umlAttribute, entityProperty);
-        entityProperty.setRequired(KirraHelper.isRequired(umlAttribute));
         entityProperty.setMultiple(umlAttribute.isMultivalued());
         entityProperty.setHasDefault(umlAttribute.getDefaultValue() != null);
         entityProperty.setInitializable(KirraHelper.isInitializable(umlAttribute));
         entityProperty.setEditable(KirraHelper.isEditable(umlAttribute));
+        entityProperty.setRequired(KirraHelper.isRequired(umlAttribute, !entityProperty.isEditable() && entityProperty.isInitializable()));
         Type umlType = umlAttribute.getType();
         setTypeInfo(entityProperty, umlType);
         entityProperty.setDerived(KirraHelper.isDerived(umlAttribute));
@@ -219,8 +219,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     List<Property> getEntityProperties(Class umlClass) {
         List<Property> entityProperties = new ArrayList<Property>();
         for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getProperties(umlClass))
-            if (KirraHelper.isUserVisible(attribute))
-                entityProperties.add(getEntityProperty(attribute));
+            entityProperties.add(getEntityProperty(attribute));
         return entityProperties;
     }
     
