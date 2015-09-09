@@ -99,7 +99,7 @@ public class SQLGenerator {
             if (multi.isPrimary())
                 statements.addAll(generateMappingConstraints(clazz, multi));
         for (Property property : clazz.getProperties())
-            if (property.isUnique())
+            if (property.isUnique() && (!property.isHasDefault() || !property.isDerived())) 
                 statements.addAll(generateUniqueConstraints(clazz, property));
 
         return statements;
