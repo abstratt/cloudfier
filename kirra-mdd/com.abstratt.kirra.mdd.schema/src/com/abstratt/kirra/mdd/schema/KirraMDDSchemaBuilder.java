@@ -159,8 +159,8 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entityRelationship.setMultiple(umlAttribute.isMultivalued());
         setTypeInfo(entityRelationship, umlAttribute.getType());
         entityRelationship.setDerived(KirraHelper.isDerived(umlAttribute));
-        entityRelationship.setVisible(umlAttribute.isNavigable()
-                && (umlAttribute.getOtherEnd() == null || umlAttribute.getOtherEnd().getAggregation() == AggregationKind.NONE_LITERAL));
+        entityRelationship.setUserVisible(umlAttribute.isNavigable()
+		&& (umlAttribute.getOtherEnd() == null || umlAttribute.getOtherEnd().getAggregation() == AggregationKind.NONE_LITERAL));
         return entityRelationship;
     }
 

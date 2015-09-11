@@ -12,6 +12,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
@@ -114,7 +115,7 @@ public class DataValidator {
             collector.addError("Instance " + entityName + "#" + index + " missing required property: '" + missing + "'");
     }
 
-    private void validateProperty(String entityName, JsonNode propertyValue, Property property) {
+    private void validateProperty(String entityName, JsonNode propertyValue, DataElement property) {
         if (property.isDerived()) {
             collector.addError("Instance " + entityName + "#" + index + " has value for a derived property (" + property.getName() + "): "
                     + propertyValue.asToken());

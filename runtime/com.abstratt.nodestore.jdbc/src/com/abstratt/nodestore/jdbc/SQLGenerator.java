@@ -156,7 +156,7 @@ public class SQLGenerator {
 
     public List<String> generateInsert(Entity clazz, Map<String, Object> values, Map<String, Collection<Long>> references, Long id) {
         String stmt = "insert into " + modelToSchemaName(clazz) + " (id";
-        for (Property property : getProperties(clazz))
+        for (DataElement property : getProperties(clazz))
             stmt += ", " + modelToSchemaName(property);
         for (Relationship relationship : getRelationships(clazz))
             if (!isMappingTableRelationship(relationship))
@@ -346,7 +346,7 @@ public class SQLGenerator {
 
     public List<String> generateTable(Entity clazz) {
         String stmt = "create table " + modelToSchemaName(clazz) + " (id bigint primary key";
-        for (Property property : getProperties(clazz)) {
+        for (DataElement property : getProperties(clazz)) {
             stmt += ", " + modelToSchemaName(property) + " " + getDBType(property);
             if (property.isRequired())
                 stmt += " not null";
@@ -488,7 +488,7 @@ public class SQLGenerator {
         String aliasPrefix = alias == null ? "" : alias + '.';
         String stmt = "select " + aliasPrefix + "id";
         if (!keysOnly) {
-            for (Property property : getProperties(clazz))
+            for (DataElement property : getProperties(clazz))
                 stmt += ", " + aliasPrefix + modelToSchemaName(property);
             for (Relationship relationship : getRelationships(clazz))
                 if (relationship.isNavigable() && !isMappingTableRelationship(relationship))
@@ -518,7 +518,7 @@ public class SQLGenerator {
         return contextEntity.getName() + "_" + source.getName();
     }
 
-    protected boolean isPersistable(Property property) {
+    protected boolean isPersistable(DataElement property) {
         return !property.isDerived() && !property.isMultiple();
     }
 
@@ -664,7 +664,7 @@ public class SQLGenerator {
         return Arrays.asList(stmt1);
     }
 
-    private String getDBType(Property property) {
+    private String getDBType(DataElement property) {
         return getDBType(property.getTypeRef());
     }
 
@@ -728,7 +728,7 @@ public class SQLGenerator {
         return "" + value;
     }
 
-    private String uniqueConstraintName(Entity contextEntity, Property uniqueProperty) {
+    private String uniqueConstraintName(Entity contextEntity, DataElement uniqueProperty) {
         String namespace = contextEntity.getNamespace();
         String entityName = contextEntity.getName();
         String constraintName = escape(namespace + '_' + entityName + '_' + modelToSchemaName(uniqueProperty, false) + "_uk");

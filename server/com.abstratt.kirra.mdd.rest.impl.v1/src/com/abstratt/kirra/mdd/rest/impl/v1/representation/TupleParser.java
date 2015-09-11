@@ -14,12 +14,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.DataScope;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Helper;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
-import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.SchemaManagement;
@@ -72,7 +72,7 @@ public class TupleParser {
             ObjectNode asObject = (ObjectNode) slotValueNode;
             for (Iterator<Map.Entry<String, JsonNode>> entries = asObject.fields(); entries.hasNext(); ) {
                 Entry<String, JsonNode> entry = entries.next();
-                Property entryProperty = expectedTupleType.getProperty(entry.getKey());
+                DataElement entryProperty = expectedTupleType.getProperty(entry.getKey());
                 if (entryProperty != null)
                     map.put(entry.getKey(), convertSlotValue(entryProperty.getTypeRef(), entry.getValue()));
             }
@@ -91,7 +91,7 @@ public class TupleParser {
         while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             JsonNode fieldValueNode = tupleRepresentation.get(fieldName);
-            Property property = tupleType.getProperty(fieldName);
+            DataElement property = tupleType.getProperty(fieldName);
             if (property != null)
                 setProperty(newTuple, fieldName, fieldValueNode);
         }
@@ -160,7 +160,7 @@ public class TupleParser {
         while (fieldNames.hasNext()) {
             String fieldName = fieldNames.next();
             JsonNode fieldValueNode = values.get(fieldName);
-            Property property = entity.getProperty(fieldName);
+            DataElement property = entity.getProperty(fieldName);
             if (property != null) {
                 if (property.isEditable())
                     setProperty(existingInstance, fieldName, fieldValueNode);
@@ -191,7 +191,7 @@ public class TupleParser {
 
     protected void setProperty(Tuple record, String fieldName, JsonNode fieldValueNode) {
         DataScope dataScope = Helper.resolveDataScope(schemaManagement, record.getTypeRef());
-        Property property = dataScope.getProperty(fieldName);
+        DataElement property = dataScope.getProperty(fieldName);
         if (property != null)
             record.setValue(fieldName, convertSlotValue(property.getTypeRef(), fieldValueNode));
     }

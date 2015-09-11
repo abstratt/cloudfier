@@ -6,10 +6,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.InstanceRef;
-import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -78,7 +78,7 @@ public class DataRenderer {
      */
     private Map<String, Object> renderInstance(Entity entity, Instance instance) {
         Map<String, Object> instanceMap = new LinkedHashMap<String, Object>();
-        for (Property property : entity.getProperties())
+        for (DataElement property : entity.getProperties())
             if (!property.isDerived() && !property.isMultiple())
                 instanceMap.put(property.getName(), instance.getValue(property.getName()));
         for (Relationship relationship : entity.getRelationships())

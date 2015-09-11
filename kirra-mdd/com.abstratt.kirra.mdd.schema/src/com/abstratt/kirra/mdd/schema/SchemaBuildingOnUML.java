@@ -6,9 +6,9 @@ import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Operation;
-import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.TupleType;
@@ -19,7 +19,7 @@ public interface SchemaBuildingOnUML {
 
     Operation getEntityOperation(org.eclipse.uml2.uml.Operation umlOperation);
 
-    Property getEntityProperty(org.eclipse.uml2.uml.Property umlAttribute);
+    DataElement getEntityProperty(org.eclipse.uml2.uml.Property umlAttribute);
 
     Relationship getEntityRelationship(org.eclipse.uml2.uml.Property umlAttribute);
 

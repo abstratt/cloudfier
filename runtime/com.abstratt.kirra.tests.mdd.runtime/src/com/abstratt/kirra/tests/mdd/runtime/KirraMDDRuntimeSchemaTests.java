@@ -11,6 +11,7 @@ import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Stereotype;
 import org.eclipse.uml2.uml.UMLPackage;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
@@ -125,7 +126,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass4", myClass3Relationships.get(0).getTypeRef().getTypeName());
         TestCase.assertFalse(myClass3Relationships.get(0).isRequired());
         TestCase.assertTrue(myClass3Relationships.get(0).isMultiple());
-        TestCase.assertTrue(myClass3Relationships.get(0).isVisible());
+		Relationship r = myClass3Relationships.get(0);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertTrue(myClass3Relationships.get(0).getStyle() == Relationship.Style.CHILD);
         TestCase.assertEquals("parent", myClass3Relationships.get(0).getOpposite());
 
@@ -136,7 +138,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass3", myClass4Relationships.get(0).getTypeRef().getTypeName());
         TestCase.assertTrue(myClass4Relationships.get(0).isRequired());
         TestCase.assertFalse(myClass4Relationships.get(0).isMultiple());
-        TestCase.assertFalse(myClass4Relationships.get(0).isVisible());
+		Relationship r1 = myClass4Relationships.get(0);
+        TestCase.assertFalse(super.isUserVisible());
     }
 
     public void testEntityAttributeIsReference() throws CoreException {
@@ -288,7 +291,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass2", myClass1Relationships.get(index).getTypeRef().getTypeName());
         TestCase.assertTrue(myClass1Relationships.get(index).isRequired());
         TestCase.assertFalse(myClass1Relationships.get(index).isMultiple());
-        TestCase.assertTrue(myClass1Relationships.get(index).isVisible());
+		Relationship r = myClass1Relationships.get(index);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass1Relationships.get(index).isDerived());
 
         index++;
@@ -296,7 +300,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass3", myClass1Relationships.get(index).getTypeRef().getTypeName());
         TestCase.assertFalse(myClass1Relationships.get(index).isRequired());
         TestCase.assertTrue(myClass1Relationships.get(index).isMultiple());
-        TestCase.assertTrue(myClass1Relationships.get(index).isVisible());
+		Relationship r1 = myClass1Relationships.get(index);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass1Relationships.get(index).isDerived());
 
         index++;
@@ -304,7 +309,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass3", myClass1Relationships.get(index).getTypeRef().getTypeName());
         TestCase.assertFalse(myClass1Relationships.get(index).isRequired());
         TestCase.assertTrue(myClass1Relationships.get(index).isMultiple());
-        TestCase.assertTrue(myClass1Relationships.get(index).isVisible());
+		Relationship r2 = myClass1Relationships.get(index);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertTrue(myClass1Relationships.get(index).isDerived());
 
         index++;
@@ -312,7 +318,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass4", myClass1Relationships.get(index).getTypeRef().getTypeName());
         TestCase.assertFalse(myClass1Relationships.get(index).isRequired());
         TestCase.assertFalse(myClass1Relationships.get(index).isMultiple());
-        TestCase.assertTrue(myClass1Relationships.get(index).isVisible());
+		Relationship r3 = myClass1Relationships.get(index);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass1Relationships.get(index).isDerived());
 
         index++;
@@ -320,7 +327,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass5", myClass1Relationships.get(index).getTypeRef().getTypeName());
         TestCase.assertTrue(myClass1Relationships.get(index).isRequired());
         TestCase.assertTrue(myClass1Relationships.get(index).isMultiple());
-        TestCase.assertTrue(myClass1Relationships.get(index).isVisible());
+		Relationship r4 = myClass1Relationships.get(index);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass1Relationships.get(index).isDerived());
 
         index++;
@@ -328,7 +336,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass6", myClass1Relationships.get(index).getTypeRef().getTypeName());
         TestCase.assertTrue(myClass1Relationships.get(index).isRequired());
         TestCase.assertFalse(myClass1Relationships.get(index).isMultiple());
-        TestCase.assertTrue(myClass1Relationships.get(index).isVisible());
+		Relationship r5 = myClass1Relationships.get(index);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass1Relationships.get(index).isDerived());
 
         Entity myClass3 = kirra.getEntity("mypackage", "MyClass3");
@@ -339,7 +348,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertTrue(myClass3Relationships.get(0).isPrimary());
         TestCase.assertTrue(myClass3Relationships.get(0).isRequired());
         TestCase.assertTrue(myClass3Relationships.get(0).isMultiple());
-        TestCase.assertTrue(myClass3Relationships.get(0).isVisible());
+		Relationship r6 = myClass3Relationships.get(0);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass3Relationships.get(0).isDerived());
 
         Entity myClass4 = kirra.getEntity("mypackage", "MyClass4");
@@ -352,13 +362,15 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         TestCase.assertTrue(myClass4Relationships.get(0).isRequired());
         TestCase.assertFalse(myClass4Relationships.get(0).isMultiple());
-        TestCase.assertFalse(myClass4Relationships.get(0).isVisible());
+		Relationship r7 = myClass4Relationships.get(0);
+        TestCase.assertFalse(super.isUserVisible());
         TestCase.assertFalse(myClass4Relationships.get(0).isDerived());
         TestCase.assertFalse(myClass4Relationships.get(0).isNavigable());
 
         TestCase.assertFalse(myClass4Relationships.get(1).isRequired());
         TestCase.assertTrue(myClass4Relationships.get(1).isMultiple());
-        TestCase.assertTrue(myClass4Relationships.get(1).isVisible());
+		Relationship r8 = myClass4Relationships.get(1);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass4Relationships.get(1).isDerived());
         TestCase.assertTrue(myClass4Relationships.get(1).isNavigable());
 
@@ -372,12 +384,14 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         TestCase.assertTrue(myClass5Relationships.get(0).isRequired());
         TestCase.assertFalse(myClass5Relationships.get(0).isMultiple());
-        TestCase.assertFalse(myClass5Relationships.get(0).isVisible());
+		Relationship r9 = myClass5Relationships.get(0);
+        TestCase.assertFalse(super.isUserVisible());
         TestCase.assertFalse(myClass5Relationships.get(0).isDerived());
 
         TestCase.assertFalse(myClass5Relationships.get(1).isRequired());
         TestCase.assertTrue(myClass5Relationships.get(1).isMultiple());
-        TestCase.assertTrue(myClass5Relationships.get(1).isVisible());
+		Relationship r10 = myClass5Relationships.get(1);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass5Relationships.get(1).isDerived());
 
         index++;
@@ -389,7 +403,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertTrue(myClass7Relationships.get(0).isPrimary());
         TestCase.assertTrue(myClass7Relationships.get(0).isRequired());
         TestCase.assertTrue(myClass7Relationships.get(0).isMultiple());
-        TestCase.assertTrue(myClass7Relationships.get(0).isVisible());
+		Relationship r11 = myClass7Relationships.get(0);
+        TestCase.assertTrue(super.isUserVisible());
         TestCase.assertFalse(myClass7Relationships.get(0).isDerived());
 
         Entity myClass2 = kirra.getEntity("mypackage", "MyClass2");
@@ -402,14 +417,16 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         TestCase.assertTrue(myClass2Relationships.get(0).isRequired());
         TestCase.assertFalse(myClass2Relationships.get(0).isMultiple());
-        TestCase.assertFalse(myClass2Relationships.get(0).isVisible());
+		Relationship r12 = myClass2Relationships.get(0);
+        TestCase.assertFalse(super.isUserVisible());
         TestCase.assertFalse(myClass2Relationships.get(0).isDerived());
         TestCase.assertFalse(myClass2Relationships.get(0).isNavigable());
         TestCase.assertFalse(myClass2Relationships.get(0).isPrimary());
 
         TestCase.assertTrue(myClass2Relationships.get(1).isRequired());
         TestCase.assertFalse(myClass2Relationships.get(1).isMultiple());
-        TestCase.assertFalse(myClass2Relationships.get(1).isVisible());
+		Relationship r13 = myClass2Relationships.get(1);
+        TestCase.assertFalse(super.isUserVisible());
         TestCase.assertFalse(myClass2Relationships.get(1).isDerived());
         TestCase.assertFalse(myClass2Relationships.get(1).isNavigable());
         TestCase.assertFalse(myClass2Relationships.get(1).isPrimary());
@@ -498,7 +515,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         Repository kirra = getKirra();
 
         Entity entity = kirra.getEntity("mypackage", "MyClass");
-        Property attr1 = findNamedElement(entity.getProperties(), "attr1");
+        DataElement attr1 = findNamedElement(entity.getProperties(), "attr1");
         TestCase.assertEquals("Enum1", attr1.getTypeRef().getTypeName());
         TestCase.assertEquals(TypeKind.Enumeration, attr1.getTypeRef().getKind());
         TestCase.assertEquals(3, attr1.getEnumerationLiterals().size());

@@ -11,6 +11,7 @@ import org.restlet.security.Authenticator;
 import org.restlet.service.LogService;
 
 import com.abstratt.kirra.mdd.rest.KirraAuthenticator;
+import com.abstratt.kirra.mdd.rest.KirraCORSFilter;
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
 import com.abstratt.kirra.mdd.rest.KirraSetExpirationFilter;
 import com.abstratt.kirra.mdd.rest.KirraStatusService;
@@ -124,6 +125,7 @@ public class LegacyKirraMDDRestletApplication extends Application {
         if (LegacyKirraMDDRestletApplication.SHOW_TIMING) {
             created = KirraTimingFilter.monitor(created);
         }
+        created = new KirraCORSFilter(created);
         return created;
     }
 

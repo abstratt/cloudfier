@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
@@ -139,7 +140,7 @@ public class DataPopulator {
             newInstance.setRelated(relationship.getName(), allRelated);
         }
 
-        private void setProperty(Instance newInstance, JsonNode propertyValue, Property property) {
+        private void setProperty(Instance newInstance, JsonNode propertyValue, DataElement property) {
             String propertyTypeName = property.getTypeRef().getTypeName();
             Object value = null;
             switch (propertyValue.asToken()) {

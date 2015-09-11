@@ -23,7 +23,6 @@ import org.apache.commons.lang.Validate;
 
 import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
-import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.TypeRef;
@@ -66,7 +65,7 @@ public class JDBCNodeStore implements INodeStore {
         @Override
         public INode handle(ResultSet rs) throws SQLException {
             Map<String, Object> properties = new HashMap<String, Object>();
-            for (Property property : clazz.getProperties()) {
+            for (DataElement property : clazz.getProperties()) {
                 if (isPersistable(property)) {
                     Object value = getValue(property, rs);
                     if (value != null)
@@ -374,7 +373,7 @@ public class JDBCNodeStore implements INodeStore {
         return clazz;
     }
 
-    private Object getValue(Property property, ResultSet rs) throws SQLException {
+    private Object getValue(DataElement property, ResultSet rs) throws SQLException {
         String columnName = getGenerator().modelToSchemaName(property, false);
         int jdbcType = getGenerator().getJDBCType(property.getTypeRef());
         switch (jdbcType) {
@@ -394,7 +393,7 @@ public class JDBCNodeStore implements INodeStore {
         }
     }
 
-    private boolean isPersistable(Property property) {
+    private boolean isPersistable(DataElement property) {
         return isPersistableElement(property);
     }
 

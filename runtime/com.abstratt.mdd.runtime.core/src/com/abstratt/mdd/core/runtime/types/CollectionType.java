@@ -97,6 +97,17 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     }
     
     public BasicType max(ExecutionContext context, ElementReferenceType reference) {
+        NumberType<?> maxValue = null;
+        for (BasicType current : backEnd) {
+            NumberType<?> currentValue = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
+            if (maxValue == null || maxValue.lowerThan(context, currentValue).isTrue()) {
+                maxValue = currentValue;
+            }
+        }
+        return maxValue;
+    }
+    
+    public BasicType maxElement(ExecutionContext context, ElementReferenceType reference) {
         BasicType max = null;
         NumberType<?> maxValue = null;
         for (BasicType current : backEnd) {
@@ -107,19 +118,30 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
             }
         }
         return max;
-    }
+    }    
     
     public BasicType min(ExecutionContext context, ElementReferenceType reference) {
-        BasicType min = null;
         NumberType<?> minValue = null;
         for (BasicType current : backEnd) {
             NumberType<?> currentValue = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
-            if (min == null || minValue.greaterThan(context, currentValue).isTrue()) {
-                min = current;
+            if (minValue == null || minValue.greaterThan(context, currentValue).isTrue()) {
                 minValue = currentValue;
             }
         }
-        return min;
+        return minValue;
+    }
+
+    public BasicType minElement(ExecutionContext context, ElementReferenceType reference) {
+    	BasicType min = null;
+    	NumberType<?> minValue = null;
+    	for (BasicType current : backEnd) {
+    		NumberType<?> currentValue = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
+    		if (min == null || minValue.greaterThan(context, currentValue).isTrue()) {
+    			min = current;
+    			minValue = currentValue;
+    		}
+    	}
+    	return min;
     }
 
     public CollectionType collect(ExecutionContext context, ElementReferenceType reference) {

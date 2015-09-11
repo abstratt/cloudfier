@@ -614,6 +614,8 @@ public class KirraHelper {
         return get(umlClass, "isTopLevel", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
+            	if (!isConcrete(umlClass))
+            		return false;
                 for (Operation operation : umlClass.getAllOperations())
                     if (isFinder(operation))
                         return true;

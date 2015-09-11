@@ -36,6 +36,7 @@ import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.Vertex;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.ExternalService;
 import com.abstratt.kirra.Instance;
@@ -774,7 +775,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             final RuntimeClass runtimeClass = getRuntimeClass(instance);
             RuntimeObject target;
             if (instance.isNew())
-                target = runtimeClass.newInstance(true, false);
+            	// assign defaults as not all values may be provided
+                target = runtimeClass.newInstance(true, true);
             else {
                 target = findRuntimeObject(runtimeClass, instance.getObjectId());
                 if (target == null)
@@ -956,7 +958,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             if (property.getAssociation() == null) {
                 if (!KirraHelper.isProperty(property) || KirraHelper.isReadOnly(property) || !KirraHelper.isRequired(property))
                     continue;
-                Property entityProperty = entity.getProperty(property.getName());
+                DataElement entityProperty = entity.getProperty(property.getName());
                 BasicType value = this.convertToBasicType(kirraInstance.getValue(KirraHelper.getName(property)), property);
                 if (value == null || value.isEmpty())
                     throw new KirraException("A value is required for " + entityProperty.getLabel(), null, Kind.VALIDATION);
