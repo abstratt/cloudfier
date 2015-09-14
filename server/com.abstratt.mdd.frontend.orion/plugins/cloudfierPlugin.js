@@ -466,12 +466,14 @@ var showLinks = function(projectPath, packages) {
     packages = packages || [];
     var uiUrl = "http:/services/ui/" + applicationName + "/";
     var mobileUiUrl = "http:/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
+    var newUiUrl = "http:/kirra-api/kirra-ng/?app-path=/services/api-v2/" + applicationName + "/";
     var apiUrl = "http:/services/api/" + applicationName + "/";
     var api2Url = "http:/services/api-v2/" + applicationName + "/";
-    var appInfo = "\nStart [desktop UI](" + uiUrl + ")" +
-        "\nStart [mobile UI](" + mobileUiUrl + ") (experimental)" +
-        "\nBrowse [REST API](" + apiUrl + ") (make sure to log in via a UI first)" +
-        "\nBrowse [REST API (v2 - experimental)](" + api2Url + ") (make sure to log in via a UI first)";
+    var appInfo = "\nStart [desktop UI (legacy)](" + uiUrl + ")" +
+        "\nStart [new desktop UI (work in progress)](" + newUiUrl + ")" +
+        "\nStart [mobile UI (work in progress)](" + mobileUiUrl + ")" +        
+        "\nBrowse [REST API (legacy)](" + apiUrl + ")  (make sure to log in via a UI first)" +
+        "\nBrowse [REST API (v2 - work in progress)](" + api2Url + ") (make sure to log in via a UI first)";
     for (var i in packages) {
         appInfo += "\nClass diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showClasses=true&showOperations=true&showAttributes=true&showEnumerations=true&showDataTypes=true&showSignals=true)"; 
         appInfo += "\nStatechart diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showStateMachines=true)";
