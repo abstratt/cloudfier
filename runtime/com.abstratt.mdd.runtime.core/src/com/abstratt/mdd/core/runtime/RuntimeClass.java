@@ -146,7 +146,11 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         IntegerKey key = objectIdToKey(objectId);
         if (!getNodeStore().containsNode(key))
             return CollectionType.createCollection(property.getType(), true, false);
-        return CollectionType.createCollection(property.getType(), true, false, getOrLoadInstance(key).getPropertyDomain(property));
+        RuntimeObject instance = getOrLoadInstance(key);
+		Collection<RuntimeObject> propertyDomain = instance.getPropertyDomain(property);
+		Collection<RuntimeObject> alreadyRelated = instance.getRelated(property);
+		propertyDomain.removeAll(alreadyRelated);
+		return CollectionType.createCollection(property.getType(), true, false, propertyDomain);
     }
 
     public CollectionType getRelatedInstances(String objectId, Property property) {

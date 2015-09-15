@@ -443,8 +443,10 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     @Override
     public void linkInstances(Relationship relationship, String sourceId, String destinationId) {
-        // TODO Auto-generated method stub
-
+    	RuntimeObject source = findRuntimeObject(relationship.getOwner().getEntityNamespace(), relationship.getOwner().getTypeName(), sourceId);
+    	RuntimeObject target = findRuntimeObject(relationship.getTypeRef().getEntityNamespace(), relationship.getTypeRef().getTypeName(), destinationId);
+        org.eclipse.uml2.uml.Property property = AssociationUtils.findMemberEnd(source.getRuntimeClass().getModelClassifier(), relationship.getName());
+    	source.link(property, target);
     }
 
     @Override
