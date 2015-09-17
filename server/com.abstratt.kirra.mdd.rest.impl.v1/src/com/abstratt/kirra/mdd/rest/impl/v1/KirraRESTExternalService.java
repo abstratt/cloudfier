@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -36,6 +38,8 @@ import com.abstratt.pluginutils.LogUtils;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class KirraRESTExternalService implements ExternalService {
+	
+	private Executor executor = Executors.newFixedThreadPool(1);
 
     @Override
     public List<?> executeOperation(String namespace, String classifierName, String operationName, Map<String, Object> arguments) {
@@ -103,13 +107,17 @@ public class KirraRESTExternalService implements ExternalService {
 
     private void pushEvent(Repository repository, Service service, Operation operation, Map<String, Object> argumentMap) {
         Tuple event = (Tuple) argumentMap.values().iterator().next();
-        TupleType eventType = repository.getTupleType(event.getScopeNamespace(), event.getScopeName());
         URI uri = getOperationURI(service, operation, Collections.<String, Object> emptyMap());
+        TupleType eventType = repository.getTupleType(event.getScopeNamespace(), event.getScopeName());
+        executor.execute(() -> sendEvent(event, uri, eventType)); 
+    }
+
+	private void sendEvent(Tuple event, URI uri, TupleType eventType) {
+		TupleJSONRepresentation representation = new TupleJSONRepresentation();
+        new TupleJSONRepresentationBuilder().build(representation, null, eventType, event);
         PostMethod method = new PostMethod(uri.toString());
         HttpClient httpClient = new HttpClient();
         try {
-            TupleJSONRepresentation representation = new TupleJSONRepresentation();
-            new TupleJSONRepresentationBuilder().build(representation, null, eventType, event);
             String jsonRequest = JsonHelper.renderAsJson(representation);
             method.setRequestEntity(new StringRequestEntity(jsonRequest, "application/json", "UTF-8"));
             int response = httpClient.executeMethod(method);
@@ -117,13 +125,13 @@ public class KirraRESTExternalService implements ExternalService {
                 LogUtils.logError(LegacyKirraMDDRestletApplication.ID,
                         "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(), null);
             // no use for response, not expected
-        } catch (IOException e) {
-            throw new KirraException("Error publishing event: " + argumentMap, e, KirraException.Kind.EXTERNAL);
+        } catch (Exception e) {
+        	LogUtils.logError(LegacyKirraMDDRestletApplication.ID,
+                    "Exception sending event to " + uri, e);
         } finally {
             method.releaseConnection();
         }
-
-    }
+	}
 
     private List<?> retrieveData(Repository repository, Service service, Operation operation, Map<String, Object> argumentMap) {
         URI uri = getOperationURI(service, operation, argumentMap);
