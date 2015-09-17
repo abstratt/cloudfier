@@ -8,6 +8,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -36,7 +40,7 @@ import com.fasterxml.jackson.databind.node.TextNode;
 
 public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntimeTests {
 
-    private static final int TEST_SERVER_PORT = 38080;
+    private static final int TEST_SERVER_PORT = 48080;
     private Server server;
     private Handler delegate;
 
@@ -85,6 +89,7 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
         final String[] requestQuery = { null };
         final String[] requestMethod = { null };
         final String[] requestEntity = { null };
+        CyclicBarrier barrier = new CyclicBarrier(2);
         delegate = new AbstractHandler() {
             @Override
             public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
@@ -96,6 +101,12 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
                 requestPath[0] = URI.create(request.getRequestURI()).getPath();
                 requestQuery[0] = request.getQueryString();
                 requestEntity[0] = IOUtils.toString(request.getInputStream());
+                try {
+					barrier.await(10, TimeUnit.SECONDS);
+				} catch (InterruptedException | BrokenBarrierException
+						| TimeoutException e) {
+					throw new RuntimeException(e);
+				}
             }
         };
 
@@ -109,6 +120,8 @@ public class KirraMDDRuntimeExternalServiceTests extends AbstractKirraMDDRuntime
         event.setValue("newStatus", "Resolved");
 
         executeKirraOperation("tests", "EmailService", null, "issueChanged", Arrays.asList(event));
+        
+        barrier.await(10, TimeUnit.SECONDS);
         TestCase.assertNotNull(requestPath[0]);
         TestCase.assertEquals(null, requestQuery[0]);
         TestCase.assertEquals("POST", requestMethod[0]);
