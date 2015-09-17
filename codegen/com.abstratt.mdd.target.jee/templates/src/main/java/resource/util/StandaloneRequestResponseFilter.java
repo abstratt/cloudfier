@@ -25,15 +25,30 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
     }
     @Override
     public void filter(ContainerRequestContext request) throws IOException {
-        EntityManager entityManager = entityManagerFactory.createEntityManager();
-        if (MUTATION_METHODS.contains(request.getMethod())) {
-            entityManager.getTransaction().begin();
-        }
-        PersistenceHelper.setEntityManager(entityManager);
+        beginTransaction(request);
     }
 
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
+        enableCORS(response);
+        endTransaction(response);
+    }
+    
+    private void enableCORS(ContainerResponseContext response) {
+        response.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
+        response.getHeaders().putSingle("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
+        response.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type");
+    }
+    
+    private void beginTransaction(ContainerRequestContext request) {
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        if (MUTATION_METHODS.contains(request.getMethod())) {
+            entityManager.getTransaction().begin();
+        }
+        PersistenceHelper.setEntityManager(entityManager);        
+    }
+    
+    private void endTransaction(ContainerResponseContext response) {
         EntityManager entityManager = PersistenceHelper.getEntityManager();
         if (entityManager != null) {
             try {
@@ -46,12 +61,8 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
                 }
             } finally {
                 entityManager.close();
+                PersistenceHelper.setEntityManager(null);
             }
         }
-        PersistenceHelper.setEntityManager(null);
-        response.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
-        response.getHeaders().putSingle("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
-        response.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type");
-        
     }
 }
