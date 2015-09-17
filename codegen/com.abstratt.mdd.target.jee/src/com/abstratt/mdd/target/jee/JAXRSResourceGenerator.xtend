@@ -30,10 +30,12 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         package resource.«entity.packagePrefix»;
         
         import «entity.packagePrefix».*;
+        import resource.util.EntityResourceHelper;
         
         import java.util.*;
         import java.util.stream.*;
         import java.text.*;
+        import java.io.IOException;
         
         import javax.ws.rs.core.Context;
         import javax.ws.rs.core.MediaType;
@@ -63,6 +65,19 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             UriInfo uri;
         
             private «entity.name»Service service = new «entity.name»Service();
+            
+            @GET
+            public Response getEntity() {
+                try {
+                    String contents = EntityResourceHelper.getEntityRepresentation("«entityFullName»", uri.getRequestUri().resolve("..").toString());
+                    if (contents == null) {
+                        return Response.status(404).build();
+                    }
+                    return Response.ok(contents, MediaType.APPLICATION_JSON).build();
+                } catch (IOException e) {
+                    return Response.status(500).build();
+                }
+            }
             
             @GET
             @Path("instances/{id}")
@@ -130,7 +145,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("instances/{id}/actions/«action.name»")
             public Response execute«action.name.toFirstUpper»(@PathParam("id") Long id, Map<String, Object> representation) {
-            	«action.generateArgumentMatching»
+                «action.generateArgumentMatching»
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
@@ -139,30 +154,30 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 service.update(found);
                 return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(".."), true)).build();
             }
-        	«ENDFOR»
-        	
-        	«FOR action : entity.entityActions»
+            «ENDFOR»
+            
+            «FOR action : entity.entityActions»
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("actions/«action.name»")
             public Response execute«action.name.toFirstUpper»(@PathParam("id") Long id, Map<String, Object> representation) {
-            	«action.generateArgumentMatching»
+                «action.generateArgumentMatching»
                 service.«action.name»(«action.parameters.map[name].join(', ')»);
                 return status(Status.OK).entity(Collections.emptyMap()).build();
             }
-        	«ENDFOR»
-        	
-        	«FOR query : entity.queries.filter[getReturnResult().multiple && getReturnResult().type == entity]»
+            «ENDFOR»
+            
+            «FOR query : entity.queries.filter[getReturnResult().multiple && getReturnResult().type == entity]»
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("finders/«query.name»")
             public Response execute«query.name.toFirstUpper»(Map<String, Object> representation) {
-            	«query.generateArgumentMatching»
+                «query.generateArgumentMatching»
                 Collection<«entity.name»> models = service.«query.name»(«query.parameters.map[name].join(', ')»);
                 return toExternalList(models).build();
             }
-        	«ENDFOR»
-        	
+            «ENDFOR»
+            
             private Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
                 Map<String, Object> result = new LinkedHashMap<>();
                 Map<String, Object> values = new LinkedHashMap<>();
@@ -213,17 +228,17 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
                 «ENDIF»
                 «entity.properties.filter[property | !KirraHelper.isReadOnly(property, true)].map[ property | 
-                	val core = '''«setModelValue(property, "values", "toUpdate")»;'''
-                	if (property.type.name == 'Date')
-                    	'''
-						try {
-							«core»
-						} catch (ParseException e) {
-							throw new ConversionException("Invalid format for date in '«property.name»': " + values.get("«property.name»"));
-						}
-                    	'''
-                	else
-                		core
+                    val core = '''«setModelValue(property, "values", "toUpdate")»;'''
+                    if (property.type.name == 'Date')
+                        '''
+                        try {
+                            «core»
+                        } catch (ParseException e) {
+                            throw new ConversionException("Invalid format for date in '«property.name»': " + values.get("«property.name»"));
+                        }
+                        '''
+                    else
+                        core
                     
                 ].join('\n')»
             }
@@ -251,39 +266,39 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         }
         '''
     }
-	
-	def CharSequence generateArgumentMatching(Operation operation) {
-		'''
+    
+    def CharSequence generateArgumentMatching(Operation operation) {
+        '''
         «IF (operation.parameters.exists[type.name == 'Date'])»
             DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
         «ENDIF»
         «operation.parameters.map[
-        	'''
-        	«it.type.toJavaType» «it.name»«IF !it.required» = null«ENDIF»;
-        	if (representation.get("«it.name»") != null)
-        	    «parseIntoLocalVar(it, '''representation.get("«it.name»")''')»
-        	«IF required»
-	        else
-	            return errorStatus(Status.BAD_REQUEST, "Missing argument for required parameter '«it.name»'").build();
-    	    «ENDIF» 
-        	'''
+            '''
+            «it.type.toJavaType» «it.name»«IF !it.required» = null«ENDIF»;
+            if (representation.get("«it.name»") != null)
+                «parseIntoLocalVar(it, '''representation.get("«it.name»")''')»
+            «IF required»
+            else
+                return errorStatus(Status.BAD_REQUEST, "Missing argument for required parameter '«it.name»'").build();
+            «ENDIF» 
+            '''
         ].join('\n')»
-		'''
-	}
-	
-	def CharSequence parseIntoLocalVar(Parameter parameter, String string) {
-		val core = '''«parameter.name» = «convertToInternal(parameter, '''representation.get("«parameter.name»")''')»;'''
-		if (parameter.type.name == 'Date')
-        	'''
-			try {
-				«core»
-			} catch (ParseException e) {
-				throw new ConversionException("Invalid format for date in '«parameter.name»': " + representation.get("«parameter.name»"));
-			}
-        	'''
-    	else
-    		core
-	}
+        '''
+    }
+    
+    def CharSequence parseIntoLocalVar(Parameter parameter, String string) {
+        val core = '''«parameter.name» = «convertToInternal(parameter, '''representation.get("«parameter.name»")''')»;'''
+        if (parameter.type.name == 'Date')
+            '''
+            try {
+                «core»
+            } catch (ParseException e) {
+                throw new ConversionException("Invalid format for date in '«parameter.name»': " + representation.get("«parameter.name»"));
+            }
+            '''
+        else
+            core
+    }
     
     def getModelValue(Property property, String varName) {
         val core = '''«varName».«property.generateAccessorName»()'''

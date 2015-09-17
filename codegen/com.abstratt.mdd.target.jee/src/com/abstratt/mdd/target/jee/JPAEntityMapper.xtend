@@ -48,22 +48,12 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
 					TargetUtils.merge(class.getResourceAsStream(sourcePath), 
 	                #{ 
 	                    "entityNameList" -> entityNames.map['''"«it»"'''].join(', '),
-	                    "applicationName" -> applicationName
+	                    "applicationName" -> applicationName,
+	                    "applicationLabel" -> applicationLabel
 	                }
 	            )
     		)	
     	]
-        mappings.put(
-            '''src/main/java/resource/«applicationName»/EntityResource.java'''.toString, 
-            TargetUtils.merge(
-                class.getResourceAsStream("/templates/src/main/java/resource/EntityResource.java"), 
-                #{ 
-                    "entityNameList" -> entityNames.map['''"«it»"'''].join(', '),
-                    "applicationName" -> applicationName,
-                    "applicationLabel" -> applicationLabel
-                }
-            )
-        )        
         return mappings 
     }
     

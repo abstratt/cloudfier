@@ -20,7 +20,8 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
             'src/main/java/util/PersistenceHelper.java',
             'src/main/java/resource/util/StandaloneRequestResponseFilter.java',
             'src/main/java/resource/util/ContainerRequestResponseFilter.java',            
-            'src/main/java/resource/util/EntityManagerProvider.java'            
+            'src/main/java/resource/util/EntityManagerProvider.java',
+            'src/main/java/resource/util/EntityResourceHelper.java'            
         ]
 		val replacements = newLinkedHashMap(
             'applicationName' -> applicationName,
