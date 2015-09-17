@@ -71,7 +71,7 @@ public class EntityResource {
     @GET
     public Response getIndex() {
         Map<String, String> index = new LinkedHashMap<>();
-        index.put("applicationName", "{applicationName}");
+        index.put("applicationName", "{applicationLabel}");
         index.put("entities", uri.getBaseUri().resolve("entities/").toString());
         index.put("services", uri.getBaseUri().resolve("services/").toString());
         index.put("uri", uri.getRequestUri().toString());

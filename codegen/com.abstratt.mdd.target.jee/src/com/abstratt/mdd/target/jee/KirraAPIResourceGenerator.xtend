@@ -10,6 +10,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import com.abstratt.kirra.mdd.core.KirraHelper
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Parameter
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
     
@@ -27,6 +28,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         val typeRef = entity.convertType
         '''
         {
+        	"mnemonicProperty": "«entity.mnemonic.name»",
             "concrete": «entity.concrete»,
             "instantiable": «entity.instantiable»,
             "standalone": «entity.standalone»,
@@ -40,12 +42,16 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "uri": "${baseUri}entities/«typeRef.fullName»",
             "fullName": "«typeRef.fullName»",
             "extentUri": "${baseUri}entities/«typeRef.fullName»/instances/",
+            "entityActionUriTemplate": "${baseUri}entities/«typeRef.fullName»/actions/(actionName)",
             "instanceUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)",
             "instanceActionUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)",
             "relationshipDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/relationships/(relationshipName)/domain",
-            "instanceActionParameterDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)/parameters/(parameterName)/domain",            
+            "relatedInstancesUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/relationships/(relationshipName)",
+            "relatedInstanceUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/relationships/(relationshipName)/(relatedObjectId)",
+            "instanceActionParameterDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)/parameters/(parameterName)/domain",
+            "finderUriTemplate": "${baseUri}entities/«typeRef.fullName»/finders/(finderName)",
             "operations" : {
-                «entity.actions.map[operationRepresentation].join(',\n')»
+                «(entity.actions+entity.queries).map[operationRepresentation].join(',\n')»
             },
             "properties" : {
                 «entity.properties.map[propertyRepresentation].join(',\n')»
@@ -57,7 +63,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
     def CharSequence getPropertyRepresentation(Property property) {
         '''
         "«property.name»" : {
-            "unique": «property.unique»,
+            "unique": «KirraHelper.isUnique(property)»,
             "userVisible": «property.userVisible»,
             "derived": «property.derived»,
             "editable": «property.editable»,
@@ -83,10 +89,17 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
     def CharSequence getOperationRepresentation(Operation operation) {
         '''
         "«operation.name»" : {
-            "enabled": false,
+            "enabled": true,
             "instanceOperation": «!operation.static»,
-            "kind": "Action",
-            "parameters": [],
+            "kind": "«if (operation.isAction) 'Action' else 'Finder'»",
+            "parameters": [
+            	«operation.parameters.map[parameterRepresentation].join(',\n')»
+            ],
+            «IF operation.getReturnResult() != null»
+            "multiple": «operation.getReturnResult().multiple»,
+            "required": «operation.getReturnResult().required»,
+            "typeRef": «getTypeRefRepresentation(operation.getReturnResult().type)»,
+            «ENDIF»
             "owner": «operation.owningClassifier.typeRefRepresentation»,
             "description": "«operation.description»",
             "label": "«KirraHelper.getLabel(operation)»",
@@ -94,7 +107,28 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "symbol": "«operation.symbol»"
         }
         '''
-    }    
+    }
+	
+	def CharSequence getParameterRepresentation(Parameter parameter) {
+		'''
+        {
+            "hasDefault": «KirraHelper.hasDefault(parameter)»,
+            «IF parameter.type.enumeration»
+            "enumerationLiterals": [
+                «parameter.type.enumerationLiterals.map['''"«it»"'''].join(',\n')»
+            ],
+            «ENDIF»
+            "multiple": «KirraHelper.isMultiple(parameter)»,
+            "required": «KirraHelper.isRequired(parameter)»,
+            "typeRef": «getTypeRefRepresentation(parameter.type)»,
+            "owner": «parameter.operation.owningClassifier.typeRefRepresentation»,
+            "description": "«parameter.description»",
+            "label": "«KirraHelper.getLabel(parameter)»",
+            "name": "«parameter.name»",
+            "symbol": "«parameter.symbol»"
+        }
+        '''
+	}
     
     def getTypeRefRepresentation(Type type) {
         val typeRef = type.convertType
