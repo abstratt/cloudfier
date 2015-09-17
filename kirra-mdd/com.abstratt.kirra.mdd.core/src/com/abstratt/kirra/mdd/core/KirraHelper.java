@@ -948,4 +948,20 @@ public class KirraHelper {
     private static String mapToClientType(String typeName) {
         return TypeRef.sanitize(typeName);
     }
+
+	public static boolean hasDefault(Property umlAttribute) {
+		return umlAttribute.getDefaultValue() != null;
+	}
+	
+	public static boolean hasDefault(Parameter umlParameter) {
+		return umlParameter.getDefaultValue() != null;
+	}
+
+	public static boolean isMultiple(Parameter umlParameter) {
+		return umlParameter.isMultivalued();
+	}
+	
+	public static boolean isMultiple(Property umlAttribute) {
+		return umlAttribute.isMultivalued();
+	}
 }
