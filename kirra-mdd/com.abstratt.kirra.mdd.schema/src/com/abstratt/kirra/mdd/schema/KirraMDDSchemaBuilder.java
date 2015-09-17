@@ -108,6 +108,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         Operation entityOperation = basicGetOperation(umlOperation);
         entityOperation.setKind(KirraHelper.isFinder(umlOperation) ? Operation.OperationKind.Finder : Operation.OperationKind.Action);
         entityOperation.setInstanceOperation(entityOperation.getKind() == OperationKind.Action && !umlOperation.isStatic());
+        entityOperation.setMultiple(umlOperation.getReturnResult() != null && umlOperation.getReturnResult().isMultivalued());
         return entityOperation;
     }
 
@@ -116,7 +117,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         Property entityProperty = new Property();
         setName(umlAttribute, entityProperty);
         entityProperty.setMultiple(umlAttribute.isMultivalued());
-        entityProperty.setHasDefault(umlAttribute.getDefaultValue() != null);
+        entityProperty.setHasDefault(KirraHelper.hasDefault(umlAttribute));
         entityProperty.setInitializable(KirraHelper.isInitializable(umlAttribute));
         entityProperty.setEditable(KirraHelper.isEditable(umlAttribute));
         entityProperty.setRequired(KirraHelper.isRequired(umlAttribute, !entityProperty.isEditable() && entityProperty.isInitializable()));
@@ -153,7 +154,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entityRelationship.setPrimary(KirraHelper.isPrimary(umlAttribute));
         entityRelationship.setNavigable(umlAttribute.isNavigable());
         entityRelationship.setRequired(!umlAttribute.isDerived() && umlAttribute.getLower() > 0);
-        entityRelationship.setHasDefault(umlAttribute.getDefaultValue() != null);
+        entityRelationship.setHasDefault(KirraHelper.hasDefault(umlAttribute));
         entityRelationship.setInitializable(KirraHelper.isInitializable(umlAttribute));
         entityRelationship.setEditable(KirraHelper.isEditable(umlAttribute));
         entityRelationship.setMultiple(umlAttribute.isMultivalued());
@@ -255,8 +256,9 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
             final Parameter entityOperationParameter = new Parameter();
             entityOperationParameter.setOwner(basicOperation.getOwner());
             setName(parameter, entityOperationParameter);
-            entityOperationParameter.setRequired(parameter.getLower() > 0);
-            entityOperationParameter.setMultiple(parameter.isMultivalued());
+            entityOperationParameter.setRequired(KirraHelper.isRequired(parameter));
+            entityOperationParameter.setHasDefault(KirraHelper.hasDefault(parameter));
+            entityOperationParameter.setMultiple(KirraHelper.isMultiple(parameter));
             setTypeInfo(entityOperationParameter, parameter.getType());
             entityOperationParameters.add(entityOperationParameter);
         }
