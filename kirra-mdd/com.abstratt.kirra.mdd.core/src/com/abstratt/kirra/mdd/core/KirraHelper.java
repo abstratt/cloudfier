@@ -267,7 +267,7 @@ public class KirraHelper {
         });
     }
 
-    private static boolean isBasicallyRequired(final Property property) {
+    public static boolean isBasicallyRequired(final Property property) {
         return get(property, "isBasicallyRequiredProperty", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {

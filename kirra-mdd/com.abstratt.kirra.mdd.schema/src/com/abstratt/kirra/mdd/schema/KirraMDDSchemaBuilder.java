@@ -138,6 +138,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         if (otherEnd != null && KirraHelper.isRelationship(otherEnd)) {
             entityRelationship.setOpposite(otherEnd.getName());
             entityRelationship.setOppositeRequired(KirraHelper.isRequired(otherEnd));
+            entityRelationship.setOppositeReadOnly(KirraHelper.isReadOnly(otherEnd));
         }
 
         Style style;

@@ -445,8 +445,21 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     public void linkInstances(Relationship relationship, String sourceId, String destinationId) {
     	RuntimeObject source = findRuntimeObject(relationship.getOwner().getEntityNamespace(), relationship.getOwner().getTypeName(), sourceId);
     	RuntimeObject target = findRuntimeObject(relationship.getTypeRef().getEntityNamespace(), relationship.getTypeRef().getTypeName(), destinationId);
-        org.eclipse.uml2.uml.Property property = AssociationUtils.findMemberEnd(source.getRuntimeClass().getModelClassifier(), relationship.getName());
-    	source.link(property, target);
+        org.eclipse.uml2.uml.Property attribute = AssociationUtils.findMemberEnd(source.getRuntimeClass().getModelClassifier(), relationship.getName());
+        if (attribute == null)
+            throw new KirraException("Attribute " + relationship.getName() + " does not exist", null, Kind.SCHEMA);
+        org.eclipse.uml2.uml.Property otherEnd = attribute.getOtherEnd();
+        if (attribute.getAssociation() == null)
+            throw new KirraException("Attribute " + attribute.getQualifiedName() + " is not an association end", null, Kind.SCHEMA);
+        if (KirraHelper.isDerived(attribute)) 
+        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is derived", null, Kind.SCHEMA);
+        if (KirraHelper.isReadOnly(attribute)) 
+        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is read-only", null, Kind.SCHEMA);
+        if (otherEnd != null && KirraHelper.isReadOnly(otherEnd)) 
+        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, the other end ("+ otherEnd.getQualifiedName() + ") is read-only", null, Kind.SCHEMA);
+        if (!attribute.isNavigable()) 
+        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is not navigable", null, Kind.SCHEMA);
+    	source.link(attribute, target);
     }
 
     @Override
@@ -512,6 +525,17 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 relationship.getName());
         if (end == null)
             throw new KirraException("Unknown end: " + relationship.getName(), null, Kind.SCHEMA);
+        if (KirraHelper.isRequired(end))
+        	throw new KirraException("Cannot unlink: " + relationship.getName() + ", it is required", null, Kind.SCHEMA);
+        if (KirraHelper.isReadOnly(end))
+        	throw new KirraException("Cannot unlink: " + relationship.getName() + ", it is read-only", null, Kind.SCHEMA);        
+        org.eclipse.uml2.uml.Property otherEnd = end.getOtherEnd();
+        if (otherEnd != null) {
+        	if (KirraHelper.isReadOnly(otherEnd))
+        		throw new KirraException("Cannot unlink: " + relationship.getName() + ", the other end (" + otherEnd.getQualifiedName() + ") is read-only", null, Kind.SCHEMA);
+        	if (KirraHelper.isRequired(otherEnd) && !KirraHelper.isMultiple(otherEnd))
+        		throw new KirraException("Cannot unlink: " + relationship.getName() + ", the other end (" + otherEnd.getQualifiedName() + ") is required", null, Kind.SCHEMA);
+        }
         source.unlink(end, destination);
     }
 
@@ -785,6 +809,9 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     throw new KirraException(instance.getEntityName() + " id " + instance.getObjectId() + " not found", null, Kind.ENTITY);
             }
             KirraOnMDDRuntime.convertedToRuntimeObject.put(instance, target);
+            
+            // note that below we ignore attempts to modify read only properties/links
+            // but allow them to be set on creation to support data snapshot loading 
             Classifier clazz = target.getRuntimeClass().getModelClassifier();
             for (Entry<String, Object> entry : instance.getValues().entrySet()) {
                 org.eclipse.uml2.uml.Property attribute = FeatureUtils.findAttribute(clazz, entry.getKey(), false, true);
@@ -804,13 +831,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 org.eclipse.uml2.uml.Property attribute = AssociationUtils.findMemberEnd(clazz, entry.getKey());
                 if (attribute == null)
                     throw new KirraException("Attribute " + entry.getKey() + " does not exist", null, Kind.SCHEMA);
-                if (attribute.isDerived())
-                    continue;
+                org.eclipse.uml2.uml.Property otherEnd = attribute.getOtherEnd();
                 if (attribute.getAssociation() == null)
                     throw new KirraException("Attribute " + attribute.getQualifiedName() + " is not an association end", null, Kind.SCHEMA);
-                if (!attribute.isNavigable())
-                    // just ignore
-                    continue;
+                if (KirraHelper.isDerived(attribute) || !instance.isNew() && (KirraHelper.isReadOnly(attribute) || (otherEnd != null && KirraHelper.isReadOnly(otherEnd)) || !attribute.isNavigable())) 
+                	// just ignore
+                	continue;
                 target.setValue(attribute, convertToBasicType(entry.getValue(), attribute));
             }
             if (instance.isNew())
