@@ -653,10 +653,10 @@ provider.registerServiceProvider("orion.core.contenttype", {}, {
 });
     
 provider.registerServiceProvider("orion.core.contenttype", {}, {
-    contentTypes: [{  id: "application/vnd-json-data",
-             name: "JSON-encoded dataset",
+    contentTypes: [{  id: "cloudfier/data-snapshot",
+             name: "Cloudfier JSON-encoded dataset",
              filename: ["data.json"],
-             extends: "application/javascript"
+             extends: "application/json"
     }] 
 });
 
@@ -690,7 +690,7 @@ provider.registerServiceProvider("orion.page.link.related", {}, {
     uriTemplate: "http://doc.cloudfier.com/"
 });
 
-provider.registerServiceProvider("orion.edit.validator", { checkSyntax: checkSyntax }, { contentType: ["text/uml", "application/vnd-json-data"] });
+provider.registerServiceProvider("orion.edit.validator", { checkSyntax: checkSyntax }, { contentType: ["text/uml", "cloudfier/data-snapshot"] });
 
 provider.registerServiceProvider("orion.edit.outliner", { computeOutline: computeOutline }, { contentType: ["text/uml"], id: "com.abstratt.textuml.outliner", name: "TextUML outliner" });
 
@@ -707,7 +707,7 @@ provider.registerServiceProvider("orion.edit.command", {
 }, {
     name : "Load database (^B)",
     key : [ "b", true ],
-    contentType: ["application/vnd-json-data"]
+    contentType: ["cloudfier/data-snapshot"]
 });
 
 /* Registers a highlighter service. */    
