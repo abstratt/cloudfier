@@ -531,7 +531,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         	throw new KirraException("Cannot unlink: " + relationship.getName() + ", it is read-only", null, Kind.SCHEMA);        
         org.eclipse.uml2.uml.Property otherEnd = end.getOtherEnd();
         if (otherEnd != null) {
-        	if (KirraHelper.isReadOnly(otherEnd))
+        	if (KirraHelper.isEditable(otherEnd))
         		throw new KirraException("Cannot unlink: " + relationship.getName() + ", the other end (" + otherEnd.getQualifiedName() + ") is read-only", null, Kind.SCHEMA);
         	if (KirraHelper.isRequired(otherEnd) && !KirraHelper.isMultiple(otherEnd))
         		throw new KirraException("Cannot unlink: " + relationship.getName() + ", the other end (" + otherEnd.getQualifiedName() + ") is required", null, Kind.SCHEMA);
