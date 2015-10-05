@@ -101,7 +101,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     static KirraException convertModelExecutionException(ModelExecutionException rre, Kind kind) {
         String symbol = (rre instanceof RuntimeRaisedException) ? ((RuntimeRaisedException) rre).getExceptionType().getName() : null;
-        String message = rre.getUserFacingMessage() == null && symbol != null ? KirraHelper.getLabelFromSymbol(symbol) : rre.getMessage();
+        String message = rre.getMessage() == null && symbol != null ? KirraHelper.getLabelFromSymbol(symbol) : rre.getMessage();
         String context = rre.getContext() != null ? rre.getContext().getQualifiedName() : null;
         return new KirraException(message, rre, kind, context, symbol);
     }
