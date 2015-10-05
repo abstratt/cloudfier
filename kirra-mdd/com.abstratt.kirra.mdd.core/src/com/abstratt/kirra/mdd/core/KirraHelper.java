@@ -629,15 +629,15 @@ public class KirraHelper {
                     if (isFinder(operation))
                         return true;
                 int parentCount = 0;
-                int otherRefs = 0;
                 for (Property attribute : getRelationships(umlClass))
                     if (attribute.getOtherEnd() != null)
                         if (attribute.getOtherEnd().isComposite())
                             parentCount++;
-                        else if (attribute.getOtherEnd().isNavigable())
-                            otherRefs++;
-                // if has exactly one parent and no incoming references, it is not top-level
-                boolean isTopLevel = parentCount != 1 || otherRefs > 0;
+                // If has exactly one parent, it is not top-level.
+                // We used to care about whether there were references from other (non-parent) entities
+                // but since we could tell whether that was required, and that is not what the UI needed, 
+                // we no longer do that
+                boolean isTopLevel = parentCount != 1;
 				return isTopLevel;
             }
         });
