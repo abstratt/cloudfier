@@ -108,8 +108,17 @@ public class StormpathAuthenticationService implements AuthenticationService {
     private boolean sendRequest(String path, Map<String, Object> request, int expected) {
         try {
             HttpClient client = new HttpClient();
-            client.getState().setCredentials(new AuthScope("api.stormpath.com", 443),
-                    new UsernamePasswordCredentials(ConfigUtils.get("KIRRA_STORMPATH_API_USER"), ConfigUtils.get("KIRRA_STORMPATH_API_PASSWORD")));
+            
+            String stormpathUser = ConfigUtils.get("KIRRA_STORMPATH_API_USER");
+            if (stormpathUser == null)
+            	throw new IllegalStateException("KIRRA_STORMPATH_API_USER must be set");
+            
+			String stormpathPassword = ConfigUtils.get("KIRRA_STORMPATH_API_PASSWORD");
+			if (stormpathPassword == null)
+				throw new IllegalStateException("KIRRA_STORMPATH_API_PASSWORD must be set");
+			
+			client.getState().setCredentials(new AuthScope("api.stormpath.com", 443),
+                    new UsernamePasswordCredentials(stormpathUser, stormpathPassword));
             PostMethod send = new PostMethod("https://api.stormpath.com/v1/" + path);
             String requestAsJson = toJSON(request);
             System.out.println(requestAsJson);
