@@ -128,11 +128,12 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         
         // making an exception for username properties as they may not be necessarily filled in (unprovisioned user)
         val nullable = property.lower == 0 || property.userNameProperty
+        val length = if (property.type.name == 'Memo') 16*1024 else 255 
         val unique = property.ID
         val insertable = true /* the back-end can anything) */ // !property.readOnly || !nullable
         val updatable = true /* the back-end can anything) */ // !property.readOnly || !insertable
-        val values = #{'nullable' -> (nullable), 'updatable' -> (updatable), 'insertable' -> (insertable), 'unique' -> unique }
-        val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'insertable' -> true, 'unique' -> false }
+        val values = #{'nullable' -> (nullable), 'updatable' -> (updatable), 'insertable' -> (insertable), 'unique' -> unique, 'length' -> length }
+        val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'insertable' -> true, 'unique' -> false, 'length' -> 255 }
         val nonDefaults = values.filter[ key, value | value != defaultValues.get(key) ]
         val pairs = nonDefaults.entrySet.map['''«key»=«value»''']
         '''
