@@ -65,13 +65,13 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
         val mapping = action.arguments.head.sourceClosure
         val sourceType = mapping.closureInputParameter.type
         val targetType = mapping.closureReturnParameter.type
-        if (targetType.entity)
-        ''' 
-            «action.target.sourceAction.generateAction».join(
-                «mapping.generateJoin»
-            )
-        '''
-        else
+//        if (targetType.entity)
+//        ''' 
+//            «action.target.sourceAction.generateAction».join(
+//                «mapping.generateJoin»
+//            )
+//        '''
+//        else
         '''
             «action.target.sourceAction.generateAction».multiselect(
                 «mapping.generateProjection»

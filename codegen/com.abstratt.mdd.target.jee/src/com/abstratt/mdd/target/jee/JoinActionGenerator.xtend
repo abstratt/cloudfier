@@ -35,17 +35,21 @@ class JoinActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateStructuredActivityNode(StructuredActivityNode action) {
         if (action.objectInitialization) {
-        	val tupleInstance = action.structuredNodeOutputs.head
-            val outputType = tupleInstance.type as Classifier
-            val List<CharSequence> projections = newLinkedList()
-            outputType.getAllAttributes().forEach[attribute, i |
-                projections.add('''«alias(action.structuredNodeInputs.head)».get("«action.structuredNodeInputs.get(i).name»")''')
-            ]
-            '''cq.multiselect(«projections.join(', ')»)'''
+        	generateObjectInitialization(action)
         } else if (isCast(action)) {
             action.inputs.head.sourceAction.generateAction
         } else
             unsupportedElement(action)
+    }
+    
+    def CharSequence generateObjectInitialization(StructuredActivityNode action) {
+    	val tupleInstance = action.structuredNodeOutputs.head
+        val outputType = tupleInstance.type as Classifier
+        val List<CharSequence> projections = newLinkedList()
+        outputType.getAllAttributes().forEach[attribute, i |
+            projections.add('''«alias(action.structuredNodeInputs.head)».get("«action.structuredNodeInputs.get(i).name»")''')
+        ]
+        '''cq.multiselect(«projections.join(', ')»)'''
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
