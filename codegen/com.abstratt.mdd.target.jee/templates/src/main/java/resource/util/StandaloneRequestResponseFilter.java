@@ -31,7 +31,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
         enableCORS(response);
-        endTransaction(response);
+        endTransaction(request, response);
     }
     
     private void enableCORS(ContainerResponseContext response) {
@@ -48,7 +48,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
         PersistenceHelper.setEntityManager(entityManager);        
     }
     
-    private void endTransaction(ContainerResponseContext response) {
+    private void endTransaction(ContainerRequestContext request, ContainerResponseContext response) {
         EntityManager entityManager = PersistenceHelper.getEntityManager();
         if (entityManager != null) {
             try {
