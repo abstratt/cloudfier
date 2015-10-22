@@ -35,6 +35,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import java.util.*;
         import java.util.stream.*;
         import java.text.*;
+        import java.util.function.Function;
         import java.io.IOException;
         
         import javax.ws.rs.core.Context;
@@ -185,6 +186,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 «IF (properties.exists[type.name == 'Date'])»
                 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
                 «ENDIF»
+                Function<String, String> stringEncoder = (it) -> it == null ? null : it.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"");
                 «dataProperties.map[
                     '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
                 ].join('\n')»
@@ -308,6 +310,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     def getValueExpression(CharSequence core, TypedElement element) {
         if (element.type.enumeration) 
             '''«core».name()'''
+        else if (element.type.name == 'String' || element.type.name == 'Memo') 
+            '''stringEncoder.apply(«core»)'''            
         else if (element.type.name == 'Date') 
             '''«core» == null ? null : dateFormat.format(«core»)'''            
         else
