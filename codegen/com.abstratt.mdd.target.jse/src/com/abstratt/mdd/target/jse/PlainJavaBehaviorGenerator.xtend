@@ -94,7 +94,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def generateAddVariableValueActionAsAssignment(AddVariableValueAction action) {
-        '''«action.variable.name» = «generateAddVariableValueActionCore(action)»'''
+        '''«action.variable.toJavaType» «action.variable.name» = «generateAddVariableValueActionCore(action)»'''
     }    
 
     def override generateTestIdentityAction(TestIdentityAction action) {
@@ -544,7 +544,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def generateVariableBlock(Iterable<Variable> variables) {
-        if(variables.empty) '' else variables.map['''«toJavaType» «name»;'''].join('\n') + '\n'
+        // we are generating variables when they are assigned to
+        // if(variables.empty) '' else variables.map['''«toJavaType» «name»;'''].join('\n') + '\n'
     }
 
     def CharSequence generateStructuredActivityNodeObjectInitialization(StructuredActivityNode node) {
