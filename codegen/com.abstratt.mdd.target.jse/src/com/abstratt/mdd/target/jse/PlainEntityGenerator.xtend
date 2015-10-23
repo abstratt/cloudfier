@@ -34,6 +34,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
 import com.abstratt.kirra.mdd.core.KirraHelper
+import org.eclipse.uml2.uml.VisibilityKind
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -265,7 +266,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
     def generatePrivateOperation(Operation operation) {
         // for now...
-        operation.generateActionOperation
+        operation.generateActionOperation(VisibilityKind.PACKAGE_LITERAL)
     }
 
     def generateDerivedRelationships(Iterable<Property> properties) {
@@ -423,8 +424,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateActionOperation(Operation action) {
+    	generateActionOperation(action, action.visibility)
+    }
+    
+    def generateActionOperation(Operation action, VisibilityKind visibility) {
         '''
-        «action.generateJavaMethodSignature(action.visibility, action.static)» {
+        «action.generateJavaMethodSignature(visibility, action.static)» {
             «action.generateActionOperationBody»
         }'''
     }
