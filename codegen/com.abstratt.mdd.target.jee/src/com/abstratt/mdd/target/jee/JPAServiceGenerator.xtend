@@ -143,7 +143,7 @@ class JPAServiceGenerator extends ServiceGenerator {
             public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«relationship.type.name»> cq = cb.createQuery(«relationship.type.name».class);
-                Root<«relationship.type.name» root = cq.from(«relationship.type.name».class);
+                Root<«relationship.type.name»> root = cq.from(«relationship.type.name».class);
                 return getEntityManager().createQuery(cq.select(root).where(cb.equal(root.get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList();
             }
         '''
