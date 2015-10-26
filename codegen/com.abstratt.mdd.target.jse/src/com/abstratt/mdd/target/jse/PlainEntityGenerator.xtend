@@ -265,8 +265,8 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
 
     def generatePrivateOperation(Operation operation) {
-        // for now...
-        operation.generateActionOperation(VisibilityKind.PACKAGE_LITERAL)
+        // for now, we do not honor visibility (it is really meant for the API)
+        operation.generateActionOperation(VisibilityKind.PUBLIC_LITERAL)
     }
 
     def generateDerivedRelationships(Iterable<Property> properties) {
