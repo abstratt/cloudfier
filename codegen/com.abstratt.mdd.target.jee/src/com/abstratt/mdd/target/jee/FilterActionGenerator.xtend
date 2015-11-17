@@ -86,10 +86,7 @@ class FilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def toQueryOperator(CallOperationAction action) {
-    	if (action.target.sourceAction.collectionOperation) {
-    	    // looks like a subquery 
-            return null 
-		}
+    	val sourceIsCollectionOperation = action.target.sourceAction.collectionOperation
     	
     	val operation = action.operation
         switch (operation.name) {
@@ -103,13 +100,11 @@ class FilterActionGenerator extends QueryFragmentGenerator {
             case 'lowerOrEquals': 'lessThanOrEqualTo'
             case 'greaterOrEquals': 'greaterThanOrEqualTo'
             case 'equals': 'equal'
-            case 'isEmpty': 'isEmpty' 
-            case 'size': 'size'
+            case 'isEmpty': if (sourceIsCollectionOperation) null else 'isEmpty' 
+            case 'size': 'count'
             default: null
         }
     }
-    
-    
     
     def override CharSequence generateTestIdentityAction(TestIdentityAction action) {
         val left = generateAction(action.first.sourceAction)
@@ -127,6 +122,7 @@ class FilterActionGenerator extends QueryFragmentGenerator {
             LiteralString:
                 '''cb.literal(«switch (value.type.name) {
                     case 'String': '''"«value.stringValue»"'''
+                    case 'Integer': '''«value.stringValue»L'''
                     default:
                         value.stringValue
                 }»)'''
