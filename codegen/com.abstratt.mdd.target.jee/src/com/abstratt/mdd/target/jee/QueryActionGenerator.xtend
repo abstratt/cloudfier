@@ -34,17 +34,25 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
 
     override unsupported(CharSequence message) {
         '''«super.unsupported(message)» - «class.simpleName»'''
-    }  
+    }
     
     override generateCollectionOperationCall(CallOperationAction action) {
         val operation = action.operation
         val core = switch (operation.name) {
+            case 'max':
+                generateCollectionMax(action)
+			case 'min':
+                generateCollectionMin(action)                
             case 'size':
                 generateCollectionSize(action)
             case 'select':
                 generateCollectionSelect(action)
             case 'exists':
                 generateCollectionExists(action)
+            case 'count':
+                generateCollectionCount(action)
+            case 'isEmpty':
+                generateCollectionIsEmpty(action)
             case 'collect':
                 generateCollectionCollect(action)                
             case 'any':
@@ -57,7 +65,7 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
         }
         core
     }
-
+    
     override generateCollectionCollect(CallOperationAction action) {
         // if the mapping returns a tuple, this is a projection
         // if the mapping returns an entity, this is a join, as defined by the traversal in the mapping
@@ -86,8 +94,37 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
                 «predicate.generateHavingPredicate(action)» 
             )«ELSE»where(
                 «predicate.generateSelectPredicate»
-            )«ENDIF»
+            ).multiselect(
+				cb.selectCase()
+					.when(cb.gt(cb.count(«action.target.alias»), cb.literal(0)), true)
+					.otherwise(false)
+			)«ENDIF»
         '''
+    }
+    
+    override generateCollectionCount(CallOperationAction action) {
+        val predicate = action.arguments.head.sourceClosure
+        ''' 
+            «action.target.sourceAction.generateAction».«IF action.target.sourceAction.groupedUpstream»having(
+                «predicate.generateHavingPredicate(action)» 
+            )«ELSE»where(
+                «predicate.generateSelectPredicate»
+            ).select(cb.count(«action.target.alias»))«ENDIF»
+        '''
+    }
+    
+    override generateCollectionIsEmpty(CallOperationAction action) {
+    	/*
+    	 * Two cases supported:
+    	 * - checking the availability of elements in a stream or collection (!Stream#findAny().isPresent() or Collection#isEmpty())
+    	 * - filtering based on the size of a related collection (JPA's isEmpty())
+    	 * 
+    	 * There is also a third case: we are downstream from a filter so we are basically doing an exists, but we won't support
+    	 * that for now. Also, grouping may be its own case.
+    	 */
+ 		'''
+		(«action.target.sourceAction.generateAction».select(cb.count(«action.target.alias»)) == 0)
+		'''
     }
     
     override generateCollectionSelect(CallOperationAction action) {
@@ -104,6 +141,20 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
 	override generateCollectionSize(CallOperationAction action) {
 		'''
 		«action.target.sourceAction.generateAction».select(cb.count(«action.target.alias»))
+		'''
+	}
+	
+	override generateCollectionMax(CallOperationAction action) {
+		val projection = action.arguments.head.sourceClosure
+		'''
+		«action.target.sourceAction.generateAction».select(cb.max(«projection.generateProjection»))
+		'''
+	}
+	
+	override generateCollectionMin(CallOperationAction action) {
+		val projection = action.arguments.head.sourceClosure
+		'''
+		«action.target.sourceAction.generateAction».select(cb.min(«projection.generateProjection»))
 		'''
 	}
     

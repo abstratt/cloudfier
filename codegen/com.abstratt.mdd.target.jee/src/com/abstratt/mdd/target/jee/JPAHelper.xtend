@@ -26,7 +26,7 @@ class JPAHelper {
         
     def static CharSequence generateQueryExecutionMethod(MultiplicityElement element) {
         if (element != null) {
-            if (element.multivalued) 'getResultList()' else 'getResultList().stream().findAny().orElse(null)'
+            if (element.multivalued) 'getResultList()' else 'getSingleResult()'
         } else {
             'executeUpdate()'
         }

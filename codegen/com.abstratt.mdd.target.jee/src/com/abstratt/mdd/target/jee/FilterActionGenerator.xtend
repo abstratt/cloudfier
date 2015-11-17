@@ -72,11 +72,11 @@ class FilterActionGenerator extends QueryFragmentGenerator {
             }
         }
         
-        val asQueryOperator = action.operation.toQueryOperator
+        val asQueryOperator = action.toQueryOperator
         if (asQueryOperator != null) {
             val operands = #[action.target] + action.arguments 
             return '''
-            cb.«action.operation.toQueryOperator»(
+            cb.«asQueryOperator»(
                 «operands.map[sourceAction.generateAction].join(',\n')»
             )'''
         } else if (action.collectionOperation)
@@ -85,7 +85,13 @@ class FilterActionGenerator extends QueryFragmentGenerator {
             super.generateCallOperationAction(action)
     }
     
-    def toQueryOperator(Operation operation) {
+    def toQueryOperator(CallOperationAction action) {
+    	if (action.target.sourceAction.collectionOperation) {
+    	    // looks like a subquery 
+            return null 
+		}
+    	
+    	val operation = action.operation
         switch (operation.name) {
             case 'and': 'and'
             case 'or': 'or'
@@ -97,7 +103,7 @@ class FilterActionGenerator extends QueryFragmentGenerator {
             case 'lowerOrEquals': 'lessThanOrEqualTo'
             case 'greaterOrEquals': 'greaterThanOrEqualTo'
             case 'equals': 'equal'
-            case 'same': 'equal'
+            case 'isEmpty': 'isEmpty' 
             case 'size': 'size'
             default: null
         }

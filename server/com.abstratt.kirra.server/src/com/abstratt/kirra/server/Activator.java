@@ -1,9 +1,9 @@
 package com.abstratt.kirra.server;
 
 import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleException;
 import org.osgi.framework.Constants;
 
@@ -39,6 +39,9 @@ public class Activator implements BundleActivator {
                 System.setProperty("org.eclipse.equinox.http.jetty.http.port", defaultPort);
             }
         LogUtils.logInfo(getClass().getPackage().getName(), "Instance location: " + Platform.getInstanceLocation().getURL(), null);
+        LogUtils.logInfo(getClass().getPackage().getName(), 
+                "Internal port: " + System.getProperty("cloudfier.api.port"), null);
+        
     }
 
     @Override

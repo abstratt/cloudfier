@@ -12,8 +12,7 @@ public class Activator implements BundleActivator {
         LogUtils.logInfo(WebFrontEnd.ID, 
                 "Started endpoint\n" 
                         + "\tExternal: " + ReferenceUtils.EXTERNAL_BASE + "\n" 
-                        + "\tInternal: " + ReferenceUtils.INTERNAL_BASE + "\n"
-                        + "\tInternal port: " + System.getProperty("cloudfier.api.port"), null);
+                        + "\tInternal: " + ReferenceUtils.INTERNAL_BASE + "\n", null);
     }
 
     @Override

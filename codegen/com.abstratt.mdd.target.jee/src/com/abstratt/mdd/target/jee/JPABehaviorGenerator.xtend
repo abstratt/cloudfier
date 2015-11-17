@@ -2,31 +2,20 @@ package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.jse.PlainJavaBehaviorGenerator
+import org.eclipse.uml2.uml.Action
+import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.CreateObjectAction
+import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.ReadExtentAction
+import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.StructuredActivityNode
+import org.eclipse.uml2.uml.TestIdentityAction
+import org.eclipse.uml2.uml.UMLPackage
+import org.eclipse.uml2.uml.UMLPackage.Literals
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import org.eclipse.uml2.uml.ReadLinkAction
-import org.eclipse.uml2.uml.InputPin
-import org.eclipse.uml2.uml.Property
-import org.eclipse.uml2.uml.UMLPackage
-import org.eclipse.uml2.uml.CallOperationAction
-import org.eclipse.uml2.uml.AddVariableValueAction
-import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
-import org.eclipse.uml2.uml.ReadVariableAction
-import java.util.Set
-import org.eclipse.uml2.uml.Type
-import org.eclipse.uml2.uml.Action
-import org.eclipse.uml2.uml.TestIdentityAction
-
-import org.eclipse.uml2.uml.UMLPackage.Literals
-import org.eclipse.uml2.uml.LinkAction
-import org.eclipse.uml2.uml.Activity
-import org.eclipse.uml2.uml.Operation
 
 class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     PlainJavaBehaviorGenerator plainJavaBehaviorGenerator
@@ -66,6 +55,11 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         val core = super.generateCreateObjectAction(action)
         core
     }
+    
+	override generateDestroyObjectAction(DestroyObjectAction action) {
+		val providerReference = generateProviderReference(action.actionActivity.behaviorContext, action.target.type as Classifier)
+        '''«providerReference».delete(«action.target.sourceAction.generateAction».getId())'''
+	}
     
     override generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
         val core = super.generateStructuredActivityNodeAsBlock(node)

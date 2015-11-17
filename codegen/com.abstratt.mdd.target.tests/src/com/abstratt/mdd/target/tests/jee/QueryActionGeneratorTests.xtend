@@ -11,7 +11,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         super(name)
     }
     
-    def void testExists() throws CoreException, IOException {
+    def void testSubQueryExists() throws CoreException, IOException {
         var source = '''
             model crm;
             class Company
@@ -41,18 +41,152 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         // (I don't really know which cases I am talking about here)  
         AssertHelper.assertStringsEqual(
             '''
-                cq.distinct(true)
-                    .where(cb.exists(
+                cq.distinct(true).where(
+                	cb.exists(
                         customerSubquery
                             .select(customers)
                             .where(
                                 cb.equal(customers.get("company"), company_), 
                                 cb.isTrue(customers.get("vip"))
                             )
-                    ))
-                            
+                    )
+                )
             ''', generated.toString)
     }
+
+    def void testSelectByRelatedIsEmpty() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithoutCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.isEmpty()
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithoutCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                cq.distinct(true).where(
+                	cb.isEmpty(company_.get("customers"))
+                )
+            ''', generated.toString)
+    }
+
+    def void testSubQuerySelectIsEmpty() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithVipCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.select((customer : Customer) : Boolean {
+                            customer.vip
+                        }).isEmpty()
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;              
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        // we want to issue the exists function the same way for whichever case we are handling here
+        // so we will always add a criteria for relating the child object to the parent object
+        // (I don't really know which cases I am talking about here)  
+        AssertHelper.assertStringsEqual(
+            '''
+                cq.distinct(true).where(
+                	cb.exists(customerSubquery
+                        .select(customers)
+                        .where(
+                            cb.equal(customers.get("company"), company_), 
+                            cb.isTrue(customers.get("vip"))
+                        )
+                ).not())
+            ''', generated.toString)
+    }
+
+
+    def void testIsEmpty() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;
+                static query anyVipCustomers() : Boolean;
+                begin
+                    return not Customer extent.select((customer : Customer) : Boolean {
+                        customer.vip
+                    }).isEmpty();
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::anyVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                !(cq.distinct(true)
+                    .where(
+                        cb.isTrue(customer_.get("vip"))
+                    )
+					.select(cb.count(customer_)) == 0)
+            ''', generated.toString)
+    }
+    
+    def void testExists() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;
+                static query anyVipCustomers() : Boolean;
+                begin
+                    return Customer extent.exists((customer : Customer) : Boolean {
+                        customer.vip
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::anyVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+				cq.distinct(true)
+					.where(
+						cb.isTrue(customer_.get("vip"))
+					).multiselect(
+						cb.selectCase()
+							.when(cb.gt(cb.count(customer_), cb.literal(0)), true)
+							.otherwise(false)
+					)
+            ''', generated.toString)
+    }
+    
     
     
     def void testExtent() throws CoreException, IOException {
@@ -131,6 +265,34 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq.distinct(true).multiselect(
         	        customer_.get("name"), customer_.get("vip")
                 )
+            ''', generated.toString)
+    }
+
+
+    def void testMax() throws CoreException, IOException {
+        var source = '''
+        model crm;
+            class Company
+                attribute revenue : Double;
+                query highestRevenue() : Double;
+                begin
+                    return Company extent.max((c : Company) : Double {
+                        c.revenue
+                    });
+                end;
+                
+            end;
+	    end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::highestRevenue')
+        val root = getStatementSourceAction(op)
+        val generated = new QueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+	            cq
+	            	.distinct(true)
+	            	.select(cb.max(company_.get("revenue")))
             ''', generated.toString)
     }
     

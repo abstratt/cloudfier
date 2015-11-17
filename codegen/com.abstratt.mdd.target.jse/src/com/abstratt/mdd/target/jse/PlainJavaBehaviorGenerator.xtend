@@ -368,6 +368,12 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         switch (operation.name) {
             case 'size':
                 generateCollectionSize(action)
+            case 'max':
+                generateCollectionMax(action)
+			case 'min':
+                generateCollectionMin(action)
+            case 'count':
+                generateCollectionCount(action)                
             case 'exists':
                 generateCollectionExists(action)                
             case 'includes':
@@ -410,6 +416,16 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         '''«generateAction(action.target)».size()'''.parenthesize(action)
     }
     
+    def CharSequence generateCollectionMax(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure
+        '''«action.target.generateAction».stream().max(«closure.generateActivityAsExpression(true)»)'''
+    }
+    
+    def CharSequence generateCollectionMin(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure
+        '''«action.target.generateAction».stream().min(«closure.generateActivityAsExpression(true)»)'''
+    }
+    
     def CharSequence generateCollectionIncludes(CallOperationAction action) {
         '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
     }
@@ -434,19 +450,32 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
     def CharSequence generateCollectionForEach(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
-        '''«action.target.generateAction».forEach(«closure.generateActivityAsExpression(true)»)'''
+        val statements = closure.findStatements
+        if (statements.size() == 1)
+        	'''«action.target.generateAction».forEach(«closure.generateActivityAsExpression(true)»)'''
+    	else {
+            val variable = closure.closureInputParameters.head()    		
+    		'''
+    		for («variable.type.toJavaType» «variable.name» : «action.target.generateAction») {
+    			«closure.generateActivityRootAction»
+    		}
+    		'''
+    	}
     }
 
     def CharSequence generateCollectionCollect(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
-        val collectionGeneralType = action.operation.getReturnResult().toJavaGeneralCollection
         '''«action.target.generateAction».stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
 
     def CharSequence generateCollectionSelect(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
-        val collectionGeneralType = action.operation.getReturnResult().toJavaGeneralCollection
         '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
+    }
+    
+    def CharSequence generateCollectionCount(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure
+        '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).count()'''
     }
     
     def CharSequence generateCollectionExists(CallOperationAction action) {
