@@ -123,9 +123,9 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
 	public def Map<Activity, Collection<OutputPin>> collectEntityProducingOutputs(
 		Map<Activity, Collection<OutputPin>> collected, Activity activity) {
 		val context = if (activity.closure) activity else null 
-		collected.put(context, JPAHelper.findInstanceProducingActions(activity).map[outputs.head].filter [
-			it.type.entity || it.type.tupleType
-		].toList)
+		collected.put(context, JPAHelper.findInstanceProducingActions(activity)
+			.map[outputs.findFirst[type.entity || type.tupleType]]
+			.filter[it != null].toList)
 		// now recurse into closures    
 		activity.rootAction.findMatchingActions(Literals.VALUE_SPECIFICATION_ACTION).
 			map[it as ValueSpecificationAction].map[value].filter[behaviorReference].map [

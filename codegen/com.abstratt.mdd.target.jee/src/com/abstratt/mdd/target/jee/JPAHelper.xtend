@@ -10,7 +10,6 @@ import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
-import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.UMLPackage
 import org.eclipse.uml2.uml.UMLPackage.Literals
@@ -26,7 +25,7 @@ class JPAHelper {
         
     def static CharSequence generateQueryExecutionMethod(MultiplicityElement element) {
         if (element != null) {
-            if (element.multivalued) 'getResultList()' else 'getSingleResult()'
+            if (element.multivalued) 'getResultList()' else 'getResultList().stream().findAny().orElse(null)'
         } else {
             'executeUpdate()'
         }
@@ -59,11 +58,7 @@ class JPAHelper {
 		action.structuralFeature.name	
 	}
 	def dispatch static CharSequence generateAlias(ReadSelfAction action, OutputPin pin) {
-		val self = ActivityContext.current.self
-		if (self != null)
-		    self.alias
-	    else
-	    	'NO SELF'
+		return ActivityContext.current.self?.alias ?: 'NO SELF!'
 	}
 	
 	def static Collection<Action> findInstanceProducingActions(Activity activity) {

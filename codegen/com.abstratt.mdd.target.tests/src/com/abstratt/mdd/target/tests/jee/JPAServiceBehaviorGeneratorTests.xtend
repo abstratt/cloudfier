@@ -135,4 +135,36 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
         assertEquals(1, entitiesUsed.size())
         assertSame(myEntity, entitiesUsed.head)
     }
+    
+    def testSelectByRelatedEntityAttribute() {
+        var source = '''
+            model car_rental;
+                class CarModel
+                	attribute name : String;
+                	attribute make : String;
+                end;
+                class Car
+                    attribute name : String;
+                    attribute carModel : CarModel;  
+				    static query byMake(make : String) : Car[*];
+				    begin
+				        return Car extent.select((c : Car) : Boolean { c.carModel.make == make });
+				    end;
+	            end;
+            end.
+         '''
+        parseAndCheck(source)
+        val activity = getActivity('car_rental::Car::byMake')
+        val generated = new JPAServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
+        AssertHelper.assertStringMatches( 
+	        '''
+	        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+	        CriteriaQuery<Car> cq = cb.createQuery(Car.class);
+	        Root<Car> car_ = cq.from(Car.class);
+	        Path<CarModel> carModel = car_.get("carModel");
+	        return getEntityManager().createQuery(
+	            ...
+	        ).setParameter("make", make).getResultList();
+	        ''', generated.toString)
+    }
 }
