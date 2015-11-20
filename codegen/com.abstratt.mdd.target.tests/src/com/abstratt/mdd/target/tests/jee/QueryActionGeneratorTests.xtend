@@ -513,7 +513,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
                 cq
                     .groupBy(customer_.get("title"))
                     .multiselect(customer_.get("title"), cb.count(customer_))
-                    .having(cb.greaterThan(cb.count(customer_), cb.literal(100)))
+                    .having(cb.greaterThan(cb.count(customer_), cb.literal(100L)))
             ''', generated.toString)
     }
     
