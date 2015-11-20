@@ -67,7 +67,6 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         if (node == node.owningActivity.rootAction || node.shouldIsolate) {
             val nonQueryOperation = node == node.owningActivity.rootAction && node.owningActivity.operation != null && !node.owningActivity.operation.query
             val nonQueryOperationWithResult = nonQueryOperation && node.findStatements.last?.returnAction
-            val currentEntity = node.owningActivity.behaviorContext
 
             // objects created are hopefully assigned to a local variable - gotta persist those objects via their corresponding vars
             val creationVars = node.findMatchingActions(Literals.CREATE_OBJECT_ACTION)
