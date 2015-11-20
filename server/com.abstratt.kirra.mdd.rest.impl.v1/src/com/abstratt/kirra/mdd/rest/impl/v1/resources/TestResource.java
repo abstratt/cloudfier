@@ -80,9 +80,6 @@ public class TestResource extends AbstractTestRunnerResource {
         return KirraRESTUtils.runInKirraRepository(getRequest(), new ISharedContextRunnable<IRepository, List<TestCase>>() {
             @Override
             public List<TestCase> runInContext(IRepository context) {
-                boolean testsEnabled = Boolean.parseBoolean(context.getProperties().getProperty(IRepository.TESTS_ENABLED));
-                ResourceUtils.ensure(testsEnabled, "Testing not enabled, please set property " + IRepository.TESTS_ENABLED
-                        + " to true, redeploy and try again", null);
                 List<Operation> testCaseOperations = context.findAll(new EObjectCondition() {
                     @Override
                     public boolean isSatisfied(EObject eObject) {
