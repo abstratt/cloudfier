@@ -23,7 +23,7 @@ import org.eclipse.uml2.uml.InputPin
 /**
  * Builds up a query based on a (non-group) projection closure.
  */
-class ProjectionActionGenerator extends QueryFragmentGenerator {
+class CriteriaProjectionActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)

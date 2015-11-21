@@ -25,7 +25,7 @@ import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.OutputPin
 
 /** Builds a query based on a filter closure. */
-class FilterActionGenerator extends QueryFragmentGenerator {
+class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -80,7 +80,7 @@ class FilterActionGenerator extends QueryFragmentGenerator {
                 «operands.map[sourceAction.generateAction].join(',\n')»
             )'''
         } else if (action.collectionOperation)
-            return new SubQueryActionGenerator(repository).generateSubQuery(action)
+            return new CriteriaSubQueryActionGenerator(repository).generateSubQuery(action)
         else
             super.generateCallOperationAction(action)
     }

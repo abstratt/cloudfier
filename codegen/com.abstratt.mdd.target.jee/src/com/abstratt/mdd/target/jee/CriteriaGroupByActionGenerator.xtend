@@ -14,7 +14,7 @@ import org.eclipse.uml2.uml.Classifier
 import java.util.List
 import org.eclipse.uml2.uml.InputPin
 
-class GroupByActionGenerator extends QueryFragmentGenerator {
+class CriteriaGroupByActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -38,7 +38,7 @@ class GroupByActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateStructuredActivityNode(StructuredActivityNode action) {
         if (action.objectInitialization) {
-            new GroupProjectionActionGenerator(repository).generateAction(action)
+            new CriteriaGroupProjectionActionGenerator(repository).generateAction(action)
         } else
             unsupportedElement(action)
     }

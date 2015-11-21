@@ -19,7 +19,7 @@ import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.Property
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 	
-class JoinActionGenerator extends QueryFragmentGenerator {
+class CriteriaJoinActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)

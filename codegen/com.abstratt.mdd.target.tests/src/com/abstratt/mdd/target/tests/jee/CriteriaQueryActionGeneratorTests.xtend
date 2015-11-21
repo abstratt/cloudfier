@@ -1,12 +1,12 @@
 package com.abstratt.mdd.target.tests.jee
 
 import com.abstratt.mdd.core.tests.harness.AssertHelper
-import com.abstratt.mdd.target.jee.QueryActionGenerator
 import com.abstratt.mdd.target.tests.AbstractGeneratorTest
 import java.io.IOException
 import org.eclipse.core.runtime.CoreException
+import com.abstratt.mdd.target.jee.CriteriaQueryActionGenerator
 
-class QueryActionGeneratorTests extends AbstractGeneratorTest {
+class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
@@ -35,7 +35,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Company::companiesWithVipCustomers')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         // we want to issue the exists function the same way for whichever case we are handling here
         // so we will always add a criteria for relating the child object to the parent object
         // (I don't really know which cases I am talking about here)  
@@ -75,7 +75,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Company::companiesWithoutCustomers')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq.distinct(true).where(
@@ -108,7 +108,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Company::companiesWithVipCustomers')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         // we want to issue the exists function the same way for whichever case we are handling here
         // so we will always add a criteria for relating the child object to the parent object
         // (I don't really know which cases I am talking about here)  
@@ -144,7 +144,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::anyVipCustomers')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 !(cq.distinct(true)
@@ -173,7 +173,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::anyVipCustomers')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
 				cq.distinct(true)
@@ -205,7 +205,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         val op = getOperation('crm::Customer::findAll')
 
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq.distinct(true)
@@ -230,7 +230,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::findVip')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq.distinct(true)
@@ -259,7 +259,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::customerDetails')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq.distinct(true).multiselect(
@@ -287,7 +287,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Company::highestRevenue')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
 	            cq
@@ -317,7 +317,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('car_rental::Rental::countRentalsInProgress')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
 	            cq.distinct(true).where(
@@ -344,7 +344,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('car_rental::Rental::countRentalsInProgress')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
 	            cq.distinct(true).where(
@@ -375,7 +375,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::findByCompanyRevenue')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq
@@ -408,7 +408,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::getCompanyRevenueWithCustomerName')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq
@@ -439,7 +439,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::findByCompany')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq.distinct(true)
@@ -470,7 +470,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::findHighestGrossing')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq
@@ -507,7 +507,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::countByTitle')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq
@@ -540,7 +540,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::countByTitle')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq
@@ -576,7 +576,7 @@ class QueryActionGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val op = getOperation('crm::Customer::sumSalaryByTitle')
         val root = getStatementSourceAction(op)
-        val generated = new QueryActionGenerator(repository).generateAction(root)
+        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
                 cq

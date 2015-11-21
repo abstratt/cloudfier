@@ -25,7 +25,7 @@ import org.eclipse.uml2.uml.InputPin
 /**
  * Builds up a query having filter based on a filter closure.
  */
-class GroupProjectionFilterActionGenerator extends FilterActionGenerator {
+class CriteriaGroupProjectionFilterActionGenerator extends CriteriaFilterActionGenerator {
     
     StructuredActivityNode projectingAction
     
@@ -46,6 +46,6 @@ class GroupProjectionFilterActionGenerator extends FilterActionGenerator {
         val attributeIndex = outputTypeAttributes.indexOf(property)
         val attributeSource = projectingAction.structuredNodeInputs.get(attributeIndex)
         // delegate to projection generator as we want the exact same thing it was generated when projecting 
-        new GroupProjectionActionGenerator(repository).generateAction(attributeSource)
+        new CriteriaGroupProjectionActionGenerator(repository).generateAction(attributeSource)
     }
 }

@@ -15,7 +15,7 @@ import org.eclipse.uml2.uml.ReadLinkAction
 /**
  * Builds up a query based on a group projection closure.
  */
-class SubQueryActionGenerator extends QueryFragmentGenerator {
+class CriteriaSubQueryActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -36,7 +36,7 @@ class SubQueryActionGenerator extends QueryFragmentGenerator {
         cb.exists(
             «action.target.type.name.toFirstLower»Subquery.select(«action.target.alias»).where(
                 «action.target.generateAction»,
-                «new FilterActionGenerator(repository).generateFilter(subPredicate, true)»)
+                «new CriteriaFilterActionGenerator(repository).generateFilter(subPredicate, true)»)
         )
         '''
 	}
@@ -49,7 +49,7 @@ class SubQueryActionGenerator extends QueryFragmentGenerator {
         cb.exists(
             «selectAction.target.type.name.toFirstLower»Subquery.select(«selectAction.target.alias»).where(
                 «selectAction.target.generateAction»,
-                «new FilterActionGenerator(repository).generateFilter(subPredicate, true)»)
+                «new CriteriaFilterActionGenerator(repository).generateFilter(subPredicate, true)»)
         ).not()
         '''
 	}

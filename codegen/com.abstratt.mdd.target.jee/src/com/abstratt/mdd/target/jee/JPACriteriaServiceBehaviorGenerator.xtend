@@ -36,7 +36,7 @@ import java.util.LinkedHashSet
 import java.util.Map
 import java.util.LinkedHashMap
 
-class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
+class JPACriteriaServiceBehaviorGenerator extends JPABehaviorGenerator {
 	PlainJavaBehaviorGenerator plainJavaBehaviorGenerator
 
 	new(IRepository repository) {
@@ -72,7 +72,7 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
 		val classifier = action.classifier
 		if (!classifier.entity)
 			return super.generateReadExtentAction(action)
-		new QueryActionGenerator(repository).generateReadExtentAction(action)
+		new CriteriaQueryActionGenerator(repository).generateReadExtentAction(action)
 	}
 
 	override generateActivityRootAction(Activity activity) {
@@ -182,11 +182,11 @@ class JPAServiceBehaviorGenerator extends JPABehaviorGenerator {
 		if (action.plainCollectionOperation) {
 			return plainJavaBehaviorGenerator.generateCollectionOperationCall(action)
 		}
-		new QueryActionGenerator(repository).generateCollectionOperationCall(action)
+		new CriteriaQueryActionGenerator(repository).generateCollectionOperationCall(action)
 	}
 
 	override generateGroupingOperationCall(CallOperationAction action) {
-		new QueryActionGenerator(repository).generateGroupingOperationCall(action)
+		new CriteriaQueryActionGenerator(repository).generateGroupingOperationCall(action)
 	}
 
 	override CharSequence generateJavaMethodParameter(Parameter parameter) {

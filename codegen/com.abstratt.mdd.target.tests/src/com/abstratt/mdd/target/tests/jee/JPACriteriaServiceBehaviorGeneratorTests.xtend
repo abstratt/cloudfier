@@ -1,11 +1,11 @@
 package com.abstratt.mdd.target.tests.jee
 
 import com.abstratt.mdd.core.tests.harness.AssertHelper
-import com.abstratt.mdd.target.jee.JPAServiceBehaviorGenerator
 import com.abstratt.mdd.target.tests.AbstractGeneratorTest
 import java.util.LinkedHashMap
+import com.abstratt.mdd.target.jee.JPACriteriaServiceBehaviorGenerator
 
-class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
+class JPACriteriaServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
 
     new(String name) {
         super(name)
@@ -30,7 +30,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
          '''
         parseAndCheck(source)
         val activity = getActivity('car_rental::Rental::countRentalsInProgress')
-        val generated = new JPAServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
+        val generated = new JPACriteriaServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
         AssertHelper.assertStringMatches(
             '''
             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
@@ -65,7 +65,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
         '''
         parseAndCheck(source)
         val activity = getActivity('crm::Company::companiesWithVipCustomers')
-        val generated = new JPAServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
+        val generated = new JPACriteriaServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
         AssertHelper.assertStringMatches(
             '''
 	        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
@@ -100,7 +100,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
         '''
         parseAndCheck(source)
         val activity = getActivity('crm::Customer::customerDetails')
-        val generated = new JPAServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
+        val generated = new JPACriteriaServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
         AssertHelper.assertStringMatches( 
             '''
             CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
@@ -128,7 +128,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
         val myEntity = getClass("mypackage::MyEntity")
         val activity = getActivity('mypackage::MyEntity::countInstances')
         val collected = new LinkedHashMap
-        new JPAServiceBehaviorGenerator(repository).collectUsedEntities(collected, activity)
+        new JPACriteriaServiceBehaviorGenerator(repository).collectUsedEntities(collected, activity)
         assertEquals(1, collected.size())
         val entitiesUsed = collected.get(null)
         assertNotNull(entitiesUsed)
@@ -155,7 +155,7 @@ class JPAServiceBehaviorGeneratorTests extends AbstractGeneratorTest {
          '''
         parseAndCheck(source)
         val activity = getActivity('car_rental::Car::byMake')
-        val generated = new JPAServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
+        val generated = new JPACriteriaServiceBehaviorGenerator(repository).generateJavaMethodBody(activity)
         AssertHelper.assertStringMatches( 
 	        '''
 	        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();

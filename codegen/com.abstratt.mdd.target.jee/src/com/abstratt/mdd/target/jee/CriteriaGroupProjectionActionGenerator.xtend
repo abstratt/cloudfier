@@ -9,7 +9,7 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 /**
  * Builds up a query based on a group projection closure.
  */
-class GroupProjectionActionGenerator extends ProjectionActionGenerator {
+class CriteriaGroupProjectionActionGenerator extends CriteriaProjectionActionGenerator {
     
     new(IRepository repository) {
         super(repository)

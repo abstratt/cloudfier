@@ -26,7 +26,7 @@ import org.eclipse.uml2.uml.CallAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 
-final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
+final class CriteriaQueryActionGenerator extends PlainJavaBehaviorGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -214,19 +214,19 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
     }
     
     def generateJoin(Activity predicate) {
-        new JoinActionGenerator(repository).generateAction(predicate.findSingleStatement)
+        new CriteriaJoinActionGenerator(repository).generateAction(predicate.findSingleStatement)
     }
     
     def generateProjection(Activity mapping) {
-        new ProjectionActionGenerator(repository).generateAction(mapping.findSingleStatement)
+        new CriteriaProjectionActionGenerator(repository).generateAction(mapping.findSingleStatement)
     }
 
     def generateGroupByMapping(Activity mapping) {
-        new GroupByActionGenerator(repository).generateAction(mapping.findSingleStatement)
+        new CriteriaGroupByActionGenerator(repository).generateAction(mapping.findSingleStatement)
     }
 
     def generateSelectPredicate(Activity predicate) {
-        new FilterActionGenerator(repository).generateFilter(predicate, true)
+        new CriteriaFilterActionGenerator(repository).generateFilter(predicate, true)
     }
     
     def generateHavingPredicate(Activity predicate, CallOperationAction action) {
@@ -237,6 +237,6 @@ final class QueryActionGenerator extends PlainJavaBehaviorGenerator {
         val projectingAction = projector.findSingleStatement.findUpstreamAction(
             [upstream | upstream instanceof StructuredActivityNode && (upstream as StructuredActivityNode).objectInitialization]
         ) as StructuredActivityNode
-        new GroupProjectionFilterActionGenerator(repository, projectingAction).generateAction(predicate.findSingleStatement)
+        new CriteriaGroupProjectionFilterActionGenerator(repository, projectingAction).generateAction(predicate.findSingleStatement)
     }
 }

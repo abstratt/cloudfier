@@ -15,7 +15,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 
-class JPAServiceGenerator extends ServiceGenerator {
+class JPACriteriaServiceGenerator extends ServiceGenerator {
 
     JPABehaviorGenerator behaviorGenerator
 
@@ -28,10 +28,10 @@ class JPAServiceGenerator extends ServiceGenerator {
         super.isServiceOperation(op) || op.activity?.queryPerformingActivity
     }
     
-    static class CustomJPABehaviorGenerator extends JPAServiceBehaviorGenerator {
-        JPAServiceGenerator parent
+    static class CustomJPABehaviorGenerator extends JPACriteriaServiceBehaviorGenerator {
+        JPACriteriaServiceGenerator parent
 
-        new(JPAServiceGenerator parent, IRepository repository) {
+        new(JPACriteriaServiceGenerator parent, IRepository repository) {
             super(repository)
             this.parent = parent
         }
