@@ -75,8 +75,7 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
             else
             	return '''«action.target.sourceAction.generateAction»'''
         } else if (action.collectionOperation)
-            //TODO JPQLSubQueryActionGenerator
-            return new CriteriaSubQueryActionGenerator(repository).generateSubQuery(action)
+            return new JPQLSubQueryActionGenerator(repository).generateSubQuery(action)
         else
             super.generateCallOperationAction(action)
     }
@@ -110,7 +109,6 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
 		} else {
 	        '''«source.alias»'''
 		}
-		
     }
     
     def generateFilterValue(ValueSpecification value) {

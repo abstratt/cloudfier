@@ -91,7 +91,34 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 SELECT DISTINCT customer_ FROM Customer customer_ WHERE customer_.company = :toMatch
             ''', generated.toString)
     }
-
+    
+    def void testSelectByRelatedIsEmpty() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithoutCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.isEmpty()
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithoutCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT company_ FROM Company company_ WHERE company_.customers IS EMPTY
+            ''', generated.toString)
+    }
     
     def void testSelectByDoubleComparison() throws CoreException, IOException {
         var source = '''
