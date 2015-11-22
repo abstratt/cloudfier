@@ -36,7 +36,7 @@ class CriteriaSubQueryActionGenerator extends QueryFragmentGenerator {
         cb.exists(
             «action.target.type.name.toFirstLower»Subquery.select(«action.target.alias»).where(
                 «action.target.generateAction»,
-                «new CriteriaFilterActionGenerator(repository).generateFilter(subPredicate, true)»)
+                «new CriteriaFilterActionGenerator(repository).generateAction(subPredicate.findSingleStatement)»)
         )
         '''
 	}
@@ -49,7 +49,7 @@ class CriteriaSubQueryActionGenerator extends QueryFragmentGenerator {
         cb.exists(
             «selectAction.target.type.name.toFirstLower»Subquery.select(«selectAction.target.alias»).where(
                 «selectAction.target.generateAction»,
-                «new CriteriaFilterActionGenerator(repository).generateFilter(subPredicate, true)»)
+                «new CriteriaFilterActionGenerator(repository).generateAction(subPredicate.findSingleStatement)»)
         ).not()
         '''
 	}

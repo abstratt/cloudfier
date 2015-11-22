@@ -9,6 +9,7 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import org.eclipse.uml2.uml.Activity
 
 class DataFlowAnalyzer {
 
@@ -43,6 +44,10 @@ class DataFlowAnalyzer {
 		if (!action.actionActivity.closure) {
 			return null
 		}
+	    val isOperationParameter = (parameter.namespace as Activity).specification != null
+	    if (isOperationParameter) {
+	    	return null
+	    }
 		val closureSite = action.actionActivity.closureContext.findFirstMatchingAction( a |
 			a instanceof ValueSpecificationAction && (a as ValueSpecificationAction).value.behaviorReference
 		) as ValueSpecificationAction

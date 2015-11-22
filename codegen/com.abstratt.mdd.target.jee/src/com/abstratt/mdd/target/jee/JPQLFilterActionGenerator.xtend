@@ -23,14 +23,14 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 
 /** Builds a query based on a filter closure. */
-class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
+class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)
     }
     
     def override generateTraverseRelationshipAction(InputPin target, Property end) {
-        '''«target.alias».get("«end.name»")'''
+        '''«target.generateAction».«end.name»'''
     }
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
@@ -42,9 +42,9 @@ class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
                 ActivityContext.generateInNewContext(derivation, action.object.source as OutputPin, [
 					generateAction(derivation.findSingleStatement)
 				])
-            } else '''cb.isTrue(«action.object.alias».get("«property.name»"))'''
+            } else '''«action.object.generateAction».«property.name» = TRUE'''
         } else
-            '''«action.object.alias».get("«property.name»")'''
+            '''«action.object.generateAction».«property.name»'''
     }
     
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
@@ -58,8 +58,8 @@ class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
         if (action.operation.static) {
             return switch (action.operation.owningClassifier.name) {
                 case 'Date' : switch (action.operation.name) {
-                    case 'today' : 'cb.currentDate()'
-                    case 'now' : 'cb.currentTime()'
+                    case 'today' : 'CURRENT_DATE'
+                    case 'now' : 'CURRENT_TIME'
                     default : unsupportedElement(action, action.operation.name)    
                 }
                 default : unsupportedElement(action, action.operation.name)
@@ -68,34 +68,31 @@ class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
         
         val asQueryOperator = action.toQueryOperator
         if (asQueryOperator != null) {
-            val operands = #[action.target] + action.arguments 
-            return '''
-            cb.«asQueryOperator»(
-                «operands.map[sourceAction.generateAction].join(',\n')»
-            )'''
+            if (!action.arguments.empty) {
+	            val operands = #[action.target] + action.arguments 
+            	return '''«operands.map[sourceAction.generateAction].join(asQueryOperator)»'''
+            } 
+            else
+            	return '''«action.target.sourceAction.generateAction»'''
         } else if (action.collectionOperation)
+            //TODO JPQLSubQueryActionGenerator
             return new CriteriaSubQueryActionGenerator(repository).generateSubQuery(action)
         else
             super.generateCallOperationAction(action)
     }
     
     def toQueryOperator(CallOperationAction action) {
-    	val sourceIsCollectionOperation = action.target.sourceAction.collectionOperation
-    	
     	val operation = action.operation
         switch (operation.name) {
-            case 'and': 'and'
-            case 'or': 'or'
-            // workaround - not is mapped to ne(true)
-            case 'not': 'not'
-            case 'notEquals': 'notEqual'
-            case 'lowerThan': 'lessThan'
-            case 'greaterThan': 'greaterThan'
-            case 'lowerOrEquals': 'lessThanOrEqualTo'
-            case 'greaterOrEquals': 'greaterThanOrEqualTo'
-            case 'equals': 'equal'
-            case 'isEmpty': if (sourceIsCollectionOperation) null else 'isEmpty' 
-            case 'size': 'count'
+            case 'and': 'AND'
+            case 'or': 'OR'
+            case 'not': 'NOT'
+            case 'notEquals': '<>'
+            case 'lowerThan': '<'
+            case 'greaterThan': '>'
+            case 'lowerOrEquals': '<='
+            case 'greaterOrEquals': '>='
+            case 'equals': '='
             default: null
         }
     }
@@ -103,32 +100,34 @@ class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
     def override CharSequence generateTestIdentityAction(TestIdentityAction action) {
         val left = generateAction(action.first.sourceAction)
         val right = generateAction(action.second.sourceAction)
-        '''cb.equal(«left», «right»)'''
+        '''«left» = «right»'''
     }
     
     def override CharSequence generateReadVariableAction(ReadVariableAction action) {
-        '''cb.parameter(«action.variable.type.toJavaType».class, "«action.variable.name»")'''
+		val source = new DataFlowAnalyzer().findSource(action.result)
+		if (source == action || source == null) {
+        	''':«action.variable.name»'''
+		} else {
+	        '''«source.alias»'''
+		}
+		
     }
     
     def generateFilterValue(ValueSpecification value) {
         switch (value) {
             // the TextUML compiler maps all primitive values to LiteralString
             LiteralString:
-                '''cb.literal(«switch (value.type.name) {
+                '''«switch (value.type.name) {
                     case 'String': '''"«value.stringValue»"'''
-                    case 'Integer': '''«value.stringValue»L'''
                     default:
                         value.stringValue
-                }»)'''
+                }»'''
             LiteralNull:
                 switch (value) {
                     case value.isVertexLiteral : 
-                        '''«value.toJavaType».«value.resolveVertexLiteral.name»'''
+                        ''' '«value.resolveVertexLiteral.name»' '''.toString.trim
                     case (value.eContainer instanceof Action) && (value.eContainer as Action).nullValue : {
-                        val targetPin = (value.eContainer as Action).outputs.head.target
-                        val expectedType = targetPin.type
-                        val expectedJavaType = if (expectedType.name == 'NullType') 'null' else '''«expectedType.toJavaType».class''' 
-                        '''cb.nullLiteral(«expectedJavaType»)'''
+                        '''NULL'''
                     }
                     default : unsupportedElement(value)
                 }
@@ -143,8 +142,6 @@ class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override CharSequence generateReadSelfAction(ReadSelfAction action) {
-        '''«context.generateCurrentReference».getId()'''
+        '''«context.generateCurrentReference».id'''
     }
-    
-    
 }

@@ -26,7 +26,7 @@ import org.eclipse.uml2.uml.CallAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 
-final class CriteriaQueryActionGenerator extends PlainJavaBehaviorGenerator {
+final class CriteriaQueryActionGenerator extends AbstractQueryActionGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -177,15 +177,6 @@ final class CriteriaQueryActionGenerator extends PlainJavaBehaviorGenerator {
         }
     }
     
-    def private boolean isGroupedUpstream(Action action) {
-        if (!(action instanceof CallOperationAction))
-            false
-        else {
-            val callOpAction = action as CallOperationAction
-            callOpAction.operation.name == 'groupBy' || callOpAction.target.sourceAction.groupedUpstream
-        }
-    }
-    
     override generateReadExtentAction(ReadExtentAction action) {
         val isGrouped = action.result.targetAction.groupedDownstream
         // we do not issue a select here as it should only be done in some cases
@@ -209,34 +200,24 @@ final class CriteriaQueryActionGenerator extends PlainJavaBehaviorGenerator {
         '''«action.target.generateAction».multiselect(«collector.generateGroupProjection»)'''
     }
     
-    def generateGroupProjection(Activity predicate) {
-        generateGroupByMapping(predicate)
-    }
+	override createJoinActionGenerator(IRepository repository) {
+		new CriteriaJoinActionGenerator(repository)
+	}
     
-    def generateJoin(Activity predicate) {
-        new CriteriaJoinActionGenerator(repository).generateAction(predicate.findSingleStatement)
-    }
-    
-    def generateProjection(Activity mapping) {
-        new CriteriaProjectionActionGenerator(repository).generateAction(mapping.findSingleStatement)
-    }
+	override createProjectionActionGenerator(IRepository repository) {
+		new CriteriaProjectionActionGenerator(repository)
+	}
 
-    def generateGroupByMapping(Activity mapping) {
-        new CriteriaGroupByActionGenerator(repository).generateAction(mapping.findSingleStatement)
-    }
+	override createGroupByActionGenerator(IRepository repository) {
+		new CriteriaGroupByActionGenerator(repository)
+	}
 
-    def generateSelectPredicate(Activity predicate) {
-        new CriteriaFilterActionGenerator(repository).generateFilter(predicate, true)
-    }
-    
-    def generateHavingPredicate(Activity predicate, CallOperationAction action) {
-        val upstreamGroupCollect = action.target.sourceAction.findUpstreamAction(
-            [upstream | upstream instanceof CallOperationAction && (upstream as CallOperationAction).getOperation().getName().equals("groupCollect")]
-        ) as CallOperationAction;
-        val projector = upstreamGroupCollect.arguments.head.sourceAction.resolveBehaviorReference as Activity
-        val projectingAction = projector.findSingleStatement.findUpstreamAction(
-            [upstream | upstream instanceof StructuredActivityNode && (upstream as StructuredActivityNode).objectInitialization]
-        ) as StructuredActivityNode
-        new CriteriaGroupProjectionFilterActionGenerator(repository, projectingAction).generateAction(predicate.findSingleStatement)
-    }
+	override createFilterActionGenerator(IRepository repository) {
+		new CriteriaFilterActionGenerator(repository)
+	}
+
+	override createGroupProjectionFilterActionGenerator(IRepository repository, StructuredActivityNode projectingAction) {
+		new CriteriaGroupProjectionFilterActionGenerator(repository, projectingAction)
+	}
+				
 }
