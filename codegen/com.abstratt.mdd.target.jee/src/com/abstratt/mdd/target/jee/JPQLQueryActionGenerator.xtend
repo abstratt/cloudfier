@@ -35,6 +35,11 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 		'''SELECT COUNT(«action.target.alias») «action.target.generateAction»'''
 	}
 	
+	override generateCollectionMax(CallOperationAction action) {
+		val projection = action.arguments.head.sourceClosure
+		'''SELECT MAX(«projection.generateProjection») «action.target.generateAction»'''
+	}
+	
 	override createFilterActionGenerator(IRepository repository) {
 		new JPQLFilterActionGenerator(repository)
 	}
@@ -52,7 +57,7 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 	}
 	
 	override createProjectionActionGenerator(IRepository repository) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		new JPQLProjectionActionGenerator(repository)
 	}
 	
 }

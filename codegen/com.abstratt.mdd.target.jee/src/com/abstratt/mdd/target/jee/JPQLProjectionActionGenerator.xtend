@@ -22,7 +22,7 @@ import org.eclipse.uml2.uml.InputPin
 /**
  * Builds up a query based on a (non-group) projection closure.
  */
-class CriteriaProjectionActionGenerator extends QueryFragmentGenerator {
+class JPQLProjectionActionGenerator extends QueryFragmentGenerator {
     
     new(IRepository repository) {
         super(repository)
@@ -50,11 +50,11 @@ class CriteriaProjectionActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
-        '''«action.object.generateAction».get("«property.name»")'''
+        '''«action.object.generateAction».«property.name»'''
     }
     
     override generateTraverseRelationshipAction(InputPin target, Property end) {
-        '''«target.generateAction».get("«end.name»")'''
+        '''«target.generateAction».«end.name»s'''
     }
         
     override generateReadVariableAction(ReadVariableAction action) {

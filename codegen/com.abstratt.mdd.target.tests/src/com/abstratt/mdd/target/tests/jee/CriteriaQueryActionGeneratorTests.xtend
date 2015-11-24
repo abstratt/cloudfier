@@ -282,7 +282,7 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
                 end;
                 
             end;
-	    end.
+        end.
         '''
         parseAndCheck(source)
         val op = getOperation('crm::Company::highestRevenue')

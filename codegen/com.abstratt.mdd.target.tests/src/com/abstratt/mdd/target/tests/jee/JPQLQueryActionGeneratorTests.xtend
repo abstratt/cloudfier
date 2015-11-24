@@ -36,20 +36,20 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
     
     def void testCount() throws CoreException, IOException {
         var source = '''
-	    model car_rental;
-		    class Rental
-			    attribute returnDate : Date[0,1];  
-			    derived readonly attribute inProgress : Boolean := {
-			        self.returnDate == null
-			    };
-			    static query countRentalsInProgress() : Integer;
-			    begin
-			        return Rental extent.select((l : Rental) : Boolean {
-			            l.inProgress
-			        }).size();
-			    end;
-		    end;
-	    end.
+        model car_rental;
+            class Rental
+                attribute returnDate : Date[0,1];  
+                derived readonly attribute inProgress : Boolean := {
+                    self.returnDate == null
+                };
+                static query countRentalsInProgress() : Integer;
+                begin
+                    return Rental extent.select((l : Rental) : Boolean {
+                        l.inProgress
+                    }).size();
+                end;
+            end;
+        end.
         '''
         parseAndCheck(source)
         val op = getOperation('car_rental::Rental::countRentalsInProgress')
@@ -61,6 +61,30 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
+    def void testMax() throws CoreException, IOException {
+        var source = '''
+        model crm;
+            class Company
+                attribute revenue : Double;
+                query highestRevenue() : Double;
+                begin
+                    return Company extent.max((c : Company) : Double {
+                        c.revenue
+                    });
+                end;
+                
+            end;
+        end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::highestRevenue')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+	            SELECT MAX(company_.revenue) FROM Company company_
+            ''', generated.toString)
+    }
 
 
     def void testSelectByBooleanValue() throws CoreException, IOException {
