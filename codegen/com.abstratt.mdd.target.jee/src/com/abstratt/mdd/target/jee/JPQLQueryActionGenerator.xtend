@@ -51,13 +51,42 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 
 	}
 	
+    override generateCollectionExists(CallOperationAction action) {
+        val predicate = action.arguments.head.sourceClosure
+        ''' 
+            SELECT CASE WHEN COUNT(«action.target.alias») > 0 THEN TRUE ELSE FALSE END «action.target.generateAction» WHERE «predicate.generateSelectPredicate»
+        '''
+    }
+    
+    override generateCollectionIsEmpty(CallOperationAction action) {
+        ''' 
+            SELECT COUNT(«action.target.alias») = 0 «action.target.generateAction»
+        '''
+    }	
+	
 	override generateCollectionSize(CallOperationAction action) {
 		'''SELECT COUNT(«action.target.alias») «action.target.generateAction»'''
 	}
 	
 	override generateCollectionMax(CallOperationAction action) {
+		generateAggregatorFunction(action, "MAX")
+	}
+	
+	override generateCollectionMin(CallOperationAction action) {
+		generateAggregatorFunction(action, "MIN")
+	}
+
+	override generateCollectionSum(CallOperationAction action) {
+		generateAggregatorFunction(action, "SUM")
+	}
+	
+	override generateCollectionAverage(CallOperationAction action) {
+		generateAggregatorFunction(action, "AVG")
+	}
+	
+	private def CharSequence generateAggregatorFunction(CallOperationAction action, String jpqlFunction) {
 		val projection = action.arguments.head.sourceClosure
-		'''SELECT MAX(«projection.generateProjection») «action.target.generateAction»'''
+		'''SELECT «jpqlFunction»(«projection.generateProjection») «action.target.generateAction»'''
 	}
 	
 	override createFilterActionGenerator(IRepository repository) {

@@ -275,4 +275,55 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 SELECT DISTINCT customer_ FROM Customer customer_ WHERE customer_.salary >= :threshold
             ''', generated.toString)
     }
+    
+    def void testExists() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;
+                static query anyVipCustomers() : Boolean;
+                begin
+                    return Customer extent.exists((customer : Customer) : Boolean {
+                        customer.vip
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::anyVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+				SELECT CASE WHEN COUNT(customer_) > 0 THEN TRUE ELSE FALSE END FROM Customer customer_ WHERE customer_.vip = TRUE
+            ''', generated.toString)
+    }
+    
+    def void testIsEmpty() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;
+                static query anyVipCustomers() : Boolean;
+                begin
+                    return Customer extent.select((customer : Customer) : Boolean {
+                        customer.vip
+                    }).isEmpty();
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::anyVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+				SELECT COUNT(customer_) = 0 FROM Customer customer_ WHERE customer_.vip = TRUE
+            ''', generated.toString)
+    }
+    
 }

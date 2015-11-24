@@ -425,6 +425,11 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val closure = action.arguments.get(0).sourceClosure
         '''«action.target.generateAction».stream().min(«closure.generateActivityAsExpression(true)»)'''
     }
+
+    def CharSequence generateCollectionAverage(CallOperationAction action) {
+        val closure = action.arguments.get(0).sourceClosure
+        '''«action.target.generateAction».stream().average(«closure.generateActivityAsExpression(true)»)'''
+    }
     
     def CharSequence generateCollectionIncludes(CallOperationAction action) {
         '''«generateAction(action.target)».contains(«action.arguments.head.generateAction»)'''
