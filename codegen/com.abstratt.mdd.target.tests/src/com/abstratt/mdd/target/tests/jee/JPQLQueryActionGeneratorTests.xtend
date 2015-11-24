@@ -10,7 +10,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
-	
+    
     def void testExtent() throws CoreException, IOException {
         var source = '''
             model crm;
@@ -34,7 +34,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
-    def void testCount() throws CoreException, IOException {
+    def void testCount_InlinedCondition() throws CoreException, IOException {
         var source = '''
         model car_rental;
             class Rental
@@ -57,9 +57,34 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-	            SELECT COUNT(rental_) FROM Rental rental_ WHERE rental_.returnDate IS NULL
+                SELECT COUNT(rental_) FROM Rental rental_ WHERE rental_.returnDate IS NULL
             ''', generated.toString)
     }
+    
+    def void testCount() throws CoreException, IOException {
+        var source = '''
+            model car_rental;
+            class Rental
+                attribute returnDate : Date[0,1];  
+                static query countRentalsInProgress() : Integer;
+                begin
+                    return Rental extent.select((l : Rental) : Boolean {
+                        l.returnDate == null
+                    }).size();
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('car_rental::Rental::countRentalsInProgress')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+            SELECT COUNT(rental_) FROM Rental rental_ WHERE rental_.returnDate IS NULL
+            ''', generated.toString)
+    }
+    
     
     def void testMax() throws CoreException, IOException {
         var source = '''
@@ -82,7 +107,35 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-	            SELECT MAX(company_.revenue) FROM Company company_
+                SELECT MAX(company_.revenue) FROM Company company_
+            ''', generated.toString)
+    }
+
+    def void testCollectAttributes() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute revenue : Double;
+            end;            
+            class Customer
+                attribute name : String;
+                attribute company : Company;                              
+                static query getCompanyRevenueWithCustomerName() : { customerName : String, companyRevenue : Double}[*];
+                begin
+                    return Customer extent.collect((c : Customer) : { : String, : Double} {
+                        { cName := c.name, cRevenue := c.company.revenue }
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::getCompanyRevenueWithCustomerName')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT customer_.name AS cName, customer_.company.revenue AS cRevenue FROM Customer customer_
             ''', generated.toString)
     }
 
@@ -222,6 +275,4 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 SELECT DISTINCT customer_ FROM Customer customer_ WHERE customer_.salary >= :threshold
             ''', generated.toString)
     }
-    
-		
 }

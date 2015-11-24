@@ -31,6 +31,26 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
         '''
 	}
 	
+	override generateCollectionCollect(CallOperationAction action) {
+        // if the mapping returns a tuple, this is a projection
+        // if the mapping returns an entity, this is a join, as defined by the traversal in the mapping
+        // what other cases are there?
+        val mapping = action.arguments.head.sourceClosure
+        val sourceType = mapping.closureInputParameter.type
+        val targetType = mapping.closureReturnParameter.type
+//        if (targetType.entity)
+//        ''' 
+//            «action.target.sourceAction.generateAction».join(
+//                «mapping.generateJoin»
+//            )
+//        '''
+//        else
+        '''
+            SELECT «mapping.generateProjection» «action.target.sourceAction.generateAction»
+        '''
+
+	}
+	
 	override generateCollectionSize(CallOperationAction action) {
 		'''SELECT COUNT(«action.target.alias») «action.target.generateAction»'''
 	}

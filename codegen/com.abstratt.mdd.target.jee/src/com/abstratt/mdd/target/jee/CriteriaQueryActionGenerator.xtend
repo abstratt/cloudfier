@@ -37,6 +37,7 @@ final class CriteriaQueryActionGenerator extends AbstractQueryActionGenerator {
     }
     
     override generateCollectionOperationCall(CallOperationAction action) {
+    	//TODO: why do we override this method? Couldn't we rely on the base one?
         val operation = action.operation
         val core = switch (operation.name) {
             case 'max':

@@ -33,8 +33,7 @@ class JPQLProjectionActionGenerator extends QueryFragmentGenerator {
             val outputType = action.structuredNodeOutputs.head.type as Classifier
             val List<CharSequence> projections = newLinkedList()
             outputType.getAllAttributes().forEach[attribute, i |
-                //projections.add('''«attribute.type.alias».alias("«action.structuredNodeInputs.get(i).name»")''')
-                projections.add('''«action.structuredNodeInputs.get(i).generateAction»''')
+                projections.add('''«action.structuredNodeInputs.get(i).generateAction» AS «action.structuredNodeInputs.get(i).name»''')
             ]
             '''«projections.join(', ')»'''
         } else if (isCast(action)) {
@@ -54,7 +53,7 @@ class JPQLProjectionActionGenerator extends QueryFragmentGenerator {
     }
     
     override generateTraverseRelationshipAction(InputPin target, Property end) {
-        '''«target.generateAction».«end.name»s'''
+        '''«target.generateAction».«end.name»'''
     }
         
     override generateReadVariableAction(ReadVariableAction action) {

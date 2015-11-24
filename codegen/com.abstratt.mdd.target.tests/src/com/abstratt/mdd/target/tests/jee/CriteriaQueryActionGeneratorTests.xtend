@@ -238,36 +238,36 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
-    def void testCollectTuples() throws CoreException, IOException {
+    def void testCollectAttributes() throws CoreException, IOException {
+    	// What is the difference between this test and testCollectTuples? 
         var source = '''
             model crm;
+            class Company
+                attribute revenue : Double;
+            end;            
             class Customer
                 attribute name : String;
-                attribute vip : Boolean;              
-                static query customerDetails() : {customerName : String, isVip : Boolean}[*];
+                attribute company : Company;                              
+                query getCompanyRevenueWithCustomerName() : { customerName : String, companyRevenue : Double}[*];
                 begin
-                    return Customer extent.collect((c : Customer) : {customerName : String, isVip : Boolean} {
-                    	{
-	                        customerName := c.name,
-	                        isVip := c.vip
-                        }
+                    return Customer extent.collect((c : Customer) : { : String, : Double} {
+                        { cName := c.name, cRevenue := c.company.revenue }
                     });
                 end;
             end;
             end.
         '''
         parseAndCheck(source)
-        val op = getOperation('crm::Customer::customerDetails')
+        val op = getOperation('crm::Customer::getCompanyRevenueWithCustomerName')
         val root = getStatementSourceAction(op)
         val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                cq.distinct(true).multiselect(
-        	        customer_.get("name"), customer_.get("vip")
-                )
+                cq
+                    .distinct(true)
+                    .multiselect(customer_.get("name"), customer_.get("company").get("revenue"))
             ''', generated.toString)
     }
-
 
     def void testMax() throws CoreException, IOException {
         var source = '''
@@ -384,36 +384,6 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
                         employer.get("revenue"),
                         cb.parameter(Double.class,"threshold")
                     ))
-            ''', generated.toString)
-    }
-
-    def void testCollectAttributes() throws CoreException, IOException {
-        var source = '''
-            model crm;
-            class Company
-                attribute revenue : Double;
-            end;            
-            class Customer
-                attribute name : String;
-                attribute company : Company;                              
-                query getCompanyRevenueWithCustomerName() : { customerName : String, companyRevenue : Double}[*];
-                begin
-                    return Customer extent.collect((c : Customer) : { : String, : Double} {
-                        { cName := c.name, cRevenue := c.company.revenue }
-                    });
-                end;
-            end;
-            end.
-        '''
-        parseAndCheck(source)
-        val op = getOperation('crm::Customer::getCompanyRevenueWithCustomerName')
-        val root = getStatementSourceAction(op)
-        val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
-        AssertHelper.assertStringsEqual(
-            '''
-                cq
-                    .distinct(true)
-                    .multiselect(customer_.get("name"), customer_.get("company").get("revenue"))
             ''', generated.toString)
     }
 
