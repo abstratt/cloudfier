@@ -85,4 +85,15 @@ abstract class AbstractQueryActionGenerator extends PlainJavaBehaviorGenerator {
 	
 	def IBasicBehaviorGenerator createFilterActionGenerator(IRepository repository)
 	
+		
+	override generateGroupingOperationCall(CallOperationAction action) {
+        val operation = action.operation
+        val core = switch (operation.name) {
+            case 'groupCollect':
+                generateGroupingGroupCollect(action)                
+            default: '''«if(operation.getReturnResult != null) 'null' else ''» /*Unsupported Grouping operation: «operation.
+                name»*/'''
+        }
+        core
+    }
 }

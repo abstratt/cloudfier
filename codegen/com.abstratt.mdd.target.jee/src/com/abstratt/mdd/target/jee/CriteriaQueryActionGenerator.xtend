@@ -166,7 +166,6 @@ final class CriteriaQueryActionGenerator extends AbstractQueryActionGenerator {
                 «mapping.generateGroupByMapping»
             )
         '''
-        
     }
 
     override generateReadExtentAction(ReadExtentAction action) {
@@ -174,17 +173,6 @@ final class CriteriaQueryActionGenerator extends AbstractQueryActionGenerator {
         // we do not issue a select here as it should only be done in some cases
         // and leaving it out seems to work 
         if (isGrouped) 'cq' else '''cq.distinct(true)'''
-    }
-    
-    override generateGroupingOperationCall(CallOperationAction action) {
-        val operation = action.operation
-        val core = switch (operation.name) {
-            case 'groupCollect':
-                generateGroupingGroupCollect(action)                
-            default: '''«if(operation.getReturnResult != null) 'null' else ''» /*Unsupported Grouping operation: «operation.
-                name»*/'''
-        }
-        core
     }
     
     override generateGroupingGroupCollect(CallOperationAction action) {

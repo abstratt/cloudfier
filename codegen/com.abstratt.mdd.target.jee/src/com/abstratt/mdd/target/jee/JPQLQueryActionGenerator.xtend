@@ -48,8 +48,15 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
         '''
             SELECT «mapping.generateProjection» «action.target.sourceAction.generateAction»
         '''
-
 	}
+	
+    override generateCollectionGroupBy(CallOperationAction action) {
+        val mapping = action.arguments.head.sourceClosure
+        ''' 
+            «action.target.sourceAction.generateAction» GROUP BY
+                «mapping.generateGroupByMapping»
+        '''
+    }
 	
     override generateCollectionExists(CallOperationAction action) {
         val predicate = action.arguments.head.sourceClosure
@@ -83,6 +90,11 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 	override generateCollectionAverage(CallOperationAction action) {
 		generateAggregatorFunction(action, "AVG")
 	}
+    
+    override generateGroupingGroupCollect(CallOperationAction action) {
+        val collector = action.arguments.head.sourceClosure
+        '''SELECT «collector.generateGroupProjection» «action.target.generateAction»'''
+    }
 	
 	private def CharSequence generateAggregatorFunction(CallOperationAction action, String jpqlFunction) {
 		val projection = action.arguments.head.sourceClosure
@@ -94,7 +106,7 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 	}
 	
 	override createGroupByActionGenerator(IRepository repository) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		new JPQLGroupByActionGenerator(repository)
 	}
 	
 	override createGroupProjectionFilterActionGenerator(IRepository repository, StructuredActivityNode node) {

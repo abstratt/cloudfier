@@ -391,6 +391,39 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 )
             ''', generated.toString)
     }
-    
+
+    def void testGroupByAttributeIntoSum() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute title : String;
+                attribute salary : Double;              
+                query sumSalaryByTitle() : {title : String, totalSalary : Double} [*];
+                begin
+                    return Customer extent.groupBy((c : Customer) : String {
+                        c.title
+                    }).groupCollect((grouped : Customer[*]) : {title : String, totalSalary : Double} {
+                        { 
+                            title := grouped.one().title,
+                            totalSalary := grouped.sum((c : Customer) : Double {
+                                c.salary
+                            })
+                        }   
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::sumSalaryByTitle')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT customer_.title AS title, SUM(customer_.salary) AS totalSalary 
+                    FROM Customer customer_ GROUP BY customer_.title
+            ''', generated.toString)
+    }
     
 }
