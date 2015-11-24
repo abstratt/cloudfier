@@ -25,7 +25,9 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 /** Builds a query based on a filter closure. */
 class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     
-    new(IRepository repository) {
+	ValueSpecification value
+	
+	new(IRepository repository) {
         super(repository)
     }
     
@@ -91,15 +93,24 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
             case 'greaterThan': '>'
             case 'lowerOrEquals': '<='
             case 'greaterOrEquals': '>='
-            case 'equals': '='
+            case 'equals': if (action.arguments.head.nullValue) 'IS' else '='
+            case 'same': if (action.arguments.head.nullValue) 'IS' else '=' 
             default: null
         }
     }
     
     def override CharSequence generateTestIdentityAction(TestIdentityAction action) {
-        val left = generateAction(action.first.sourceAction)
-        val right = generateAction(action.second.sourceAction)
-        '''«left» = «right»'''
+        var left = generateAction(action.first.sourceAction)
+        var right = generateAction(action.second.sourceAction)
+        if ('NULL'.equals(left.toString)) {
+        	val aux = right
+        	right = left
+        	left = aux
+        }
+        if ('NULL'.equals(right.toString)) {
+        	if ('NULL'.equals(right)) 'TRUE' else '''«left» IS NULL''' 
+        } else
+        	'''«left» = «right»'''
     }
     
     def override CharSequence generateReadVariableAction(ReadVariableAction action) {
@@ -134,12 +145,11 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
         }
     }
     
-    
     def override generateValueSpecificationAction(ValueSpecificationAction action) {
         '''«generateFilterValue(action.value)»'''
     }
     
     def override CharSequence generateReadSelfAction(ReadSelfAction action) {
-        '''«context.generateCurrentReference».id'''
+        '''«action.result.alias»'''
     }
 }

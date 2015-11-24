@@ -1,6 +1,7 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
 import com.abstratt.mdd.target.jse.PlainJavaBehaviorGenerator
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
@@ -8,15 +9,30 @@ import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
-import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
 
 abstract class AbstractQueryActionGenerator extends PlainJavaBehaviorGenerator {
 	new(IRepository repository) {
         super(repository)
     }
+    
+    def protected boolean isTrivialFlowDownstream(Action action) {
+        if (!action.collectionOperation)
+            true
+        else {
+            val callOpAction = action as CallOperationAction
+            callOpAction.operation.name == 'select' && callOpAction.results.head.targetAction.trivialFlowDownstream
+        }
+    }	   
+    
+    def protected boolean isGroupedDownstream(Action action) {
+        if (!action.collectionOperation)
+            false
+        else {
+            val callOpAction = action as CallOperationAction
+            callOpAction.operation.name == 'groupBy' || callOpAction.results.head.targetAction.groupedDownstream
+        }
+    }	    
 	    
     def protected boolean isGroupedUpstream(Action action) {
         if (!(action instanceof CallOperationAction))

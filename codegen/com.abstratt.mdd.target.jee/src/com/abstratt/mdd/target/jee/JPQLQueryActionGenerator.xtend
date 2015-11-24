@@ -14,7 +14,10 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
     }
 
 	override generateReadExtentAction(ReadExtentAction action) {
-		'''SELECT DISTINCT «action.result.alias» FROM «action.classifier.toJavaType» «action.result.alias»'''
+         if (action.result.targetAction.trivialFlowDownstream) 
+        	'''SELECT DISTINCT «action.result.alias» FROM «action.classifier.toJavaType» «action.result.alias»'''
+    	 else
+    	     '''FROM «action.classifier.toJavaType» «action.result.alias»'''		
 	}
 	
 	override generateCollectionSelect(CallOperationAction action) {
@@ -26,6 +29,10 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
                 «predicate.generateSelectPredicate»
             «ENDIF»
         '''
+	}
+	
+	override generateCollectionSize(CallOperationAction action) {
+		'''SELECT COUNT(«action.target.alias») «action.target.generateAction»'''
 	}
 	
 	override createFilterActionGenerator(IRepository repository) {

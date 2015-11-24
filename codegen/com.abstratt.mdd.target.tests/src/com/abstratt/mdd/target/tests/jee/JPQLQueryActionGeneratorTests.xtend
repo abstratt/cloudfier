@@ -11,6 +11,58 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         super(name)
     }
 	
+    def void testExtent() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;  
+                query findAll() : Customer[*];
+                begin
+                    return Customer extent;
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::findAll')
+
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT customer_ FROM Customer customer_
+            ''', generated.toString)
+    }
+    
+    def void testCount() throws CoreException, IOException {
+        var source = '''
+	    model car_rental;
+		    class Rental
+			    attribute returnDate : Date[0,1];  
+			    derived readonly attribute inProgress : Boolean := {
+			        self.returnDate == null
+			    };
+			    static query countRentalsInProgress() : Integer;
+			    begin
+			        return Rental extent.select((l : Rental) : Boolean {
+			            l.inProgress
+			        }).size();
+			    end;
+		    end;
+	    end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('car_rental::Rental::countRentalsInProgress')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+	            SELECT COUNT(rental_) FROM Rental rental_ WHERE rental_.returnDate IS NULL
+            ''', generated.toString)
+    }
+    
+
+
     def void testSelectByBooleanValue() throws CoreException, IOException {
         var source = '''
             model crm;
@@ -119,6 +171,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 SELECT DISTINCT company_ FROM Company company_ WHERE company_.customers IS EMPTY
             ''', generated.toString)
     }
+    
     
     def void testSelectByDoubleComparison() throws CoreException, IOException {
         var source = '''

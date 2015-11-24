@@ -167,16 +167,7 @@ final class CriteriaQueryActionGenerator extends AbstractQueryActionGenerator {
         '''
         
     }
-    
-    def private boolean isGroupedDownstream(Action action) {
-        if (!action.collectionOperation)
-            false
-        else {
-            val callOpAction = action as CallOperationAction
-            callOpAction.operation.name == 'groupBy' || callOpAction.results.head.targetAction.groupedDownstream
-        }
-    }
-    
+
     override generateReadExtentAction(ReadExtentAction action) {
         val isGrouped = action.result.targetAction.groupedDownstream
         // we do not issue a select here as it should only be done in some cases
