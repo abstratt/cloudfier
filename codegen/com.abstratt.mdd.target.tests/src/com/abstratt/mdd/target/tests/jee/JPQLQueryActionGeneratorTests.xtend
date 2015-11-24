@@ -325,5 +325,72 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
 				SELECT COUNT(customer_) = 0 FROM Customer customer_ WHERE customer_.vip = TRUE
             ''', generated.toString)
     }
+
+    def void testSubQueryExists() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithVipCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.exists((customer : Customer) : Boolean {
+                            customer.vip
+                        })
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;              
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT company_ FROM Company company_ WHERE EXISTS(
+                    SELECT customers FROM Customer customers WHERE customers.company = company_ AND customers.vip = TRUE
+                )
+            ''', generated.toString)
+    }
+    
+    def void testSubQuerySelectIsEmpty() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithVipCustomers() : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.select((customer : Customer) : Boolean {
+                            customer.vip
+                        }).isEmpty()
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;              
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithVipCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT company_ FROM Company company_ WHERE NOT EXISTS(
+                    SELECT customers FROM Customer customers WHERE customers.company = company_ AND customers.vip = TRUE
+                )
+            ''', generated.toString)
+    }
+    
     
 }

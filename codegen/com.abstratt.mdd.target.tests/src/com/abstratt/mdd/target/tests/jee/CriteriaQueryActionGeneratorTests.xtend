@@ -111,7 +111,7 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         // we want to issue the exists function the same way for whichever case we are handling here
         // so we will always add a criteria for relating the child object to the parent object
-        // (I don't really know which cases I am talking about here)  
+        // (even if we could have navigated from the parent to the child)  
         AssertHelper.assertStringsEqual(
             '''
                 cq.distinct(true).where(

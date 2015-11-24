@@ -66,6 +66,7 @@ class CriteriaSubQueryActionGenerator extends QueryFragmentGenerator {
 	}
 
     override generateTraverseRelationshipAction(InputPin target, Property end) {
+    	// this adds the criteria for relating the inner query entity to the outer query entity
         val otherEnd = end.otherEnd
         // in case the other end is unnamed, name after the type
         val otherEndName = if (StringUtils.isBlank(otherEnd.name)) otherEnd.type.name.toFirstLower else otherEnd.name
