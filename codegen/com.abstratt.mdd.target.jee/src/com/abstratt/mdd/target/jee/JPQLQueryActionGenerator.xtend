@@ -110,7 +110,7 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 	}
 	
 	override createGroupProjectionFilterActionGenerator(IRepository repository, StructuredActivityNode node) {
-		throw new UnsupportedOperationException("TODO: auto-generated method stub")
+		new JPQLGroupProjectionFilterActionGenerator(repository, node)
 	}
 	
 	override createJoinActionGenerator(IRepository repository) {

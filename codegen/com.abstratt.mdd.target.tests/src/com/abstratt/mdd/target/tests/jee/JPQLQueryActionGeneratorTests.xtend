@@ -426,4 +426,68 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
+    def void testGroupByAttributeIntoCount() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute title : String;              
+                query countByTitle() : {title : String, customerCount : Integer} [*];
+                begin
+                    return Customer extent.groupBy((c : Customer) : String {
+                        c.title
+                    }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
+                        { 
+                            title := group.one().title,
+                            customerCount := group.size()
+                        }   
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::countByTitle')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT customer_.title AS title, COUNT(customer_) AS customerCount 
+                    FROM Customer customer_ GROUP BY customer_.title
+            ''', generated.toString)
+    }
+    
+    def void testGroupByAttributeIntoCountWithFilter() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute title : String;              
+                query countByTitle() : {title : String, customerCount : Integer} [*];
+                begin
+                    return Customer extent.groupBy((c : Customer) : String {
+                        c.title
+                    }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
+                        { 
+                            title := group.one().title,
+                            customerCount := group.size()
+                        }   
+                    }).select((counted : {title:String, customerCount : Integer}) : Boolean {
+                        counted.customerCount > 100
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::countByTitle')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT customer_.title AS title, COUNT(customer_) AS customerCount 
+                    FROM Customer customer_ GROUP BY customer_.title HAVING COUNT(customer_) > 100 
+            ''', generated.toString)
+    }
+    
 }
