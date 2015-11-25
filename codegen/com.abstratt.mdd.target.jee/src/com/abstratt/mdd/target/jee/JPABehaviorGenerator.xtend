@@ -33,8 +33,11 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         if (action.first.type.entity) {
             if (action.second.nullValue)
                 '''(«action.first.generateAction» == null)'''
-            else
-                '''«action.first.generateAction».getId().equals(«action.second.generateAction».getId())'''
+            else {
+            	val first = action.first
+            	val second = action.second
+                '''«IF first.lowerBound == 0»«first.generateAction» != null && «ENDIF»«IF second.lowerBound == 0»«second.generateAction» != null && «ENDIF»«first.generateAction».getId().equals(«second.generateAction».getId())'''
+            }
         } else
             super.generateTestIdentityAction(action)
         
