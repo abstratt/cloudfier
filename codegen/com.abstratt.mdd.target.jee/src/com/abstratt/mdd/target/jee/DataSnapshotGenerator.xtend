@@ -144,7 +144,8 @@ class DataSnapshotGenerator extends AbstractGenerator {
             case VALUE_FALSE:
                 'false'
             case VALUE_STRING: {
-            	var value = ''' '«(propertyValue as TextNode).textValue»' '''.toString.trim()
+            	val baseValue = (propertyValue as TextNode).textValue.replace("'", "''").replace("'", "''")
+            	var value = ''' '«baseValue»' '''.toString.trim()
 		        if ("Date" == property.type.name) {
 		            value = value.replace("/", "-")	
 		        }
