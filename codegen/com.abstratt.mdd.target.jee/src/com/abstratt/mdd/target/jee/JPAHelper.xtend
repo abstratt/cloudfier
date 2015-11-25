@@ -25,7 +25,7 @@ class JPAHelper {
         
     def static CharSequence generateQueryExecutionMethod(MultiplicityElement element) {
         if (element != null) {
-            if (element.multivalued) 'getResultList()' else 'getResultList().stream().findAny().orElse(null)'
+            if (element.multivalued) 'getResultList()' else 'setMaxResults(1).getResultList().stream().findAny().orElse(null)'
         } else {
             'executeUpdate()'
         }
@@ -58,7 +58,7 @@ class JPAHelper {
 		action.structuralFeature.name	
 	}
 	def dispatch static CharSequence generateAlias(ReadSelfAction action, OutputPin pin) {
-		return ActivityContext.current.self?.alias ?: 'NO SELF!'
+		return ActivityContext.generateSelf
 	}
 	
 	def static Collection<Action> findInstanceProducingActions(Activity activity) {

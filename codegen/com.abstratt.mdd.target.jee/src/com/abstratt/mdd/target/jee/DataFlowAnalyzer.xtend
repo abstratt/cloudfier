@@ -16,7 +16,11 @@ class DataFlowAnalyzer {
 	def OutputPin findSource(InputPin pin) {
 		return findSource(pin.source as OutputPin)
 	}
-
+	
+	def InputPin findTarget(OutputPin pin) {
+		return findTarget(pin.target as InputPin)
+	}
+	
 	def OutputPin findSource(OutputPin pin) {
 		if (pin == null) {
 			return null
@@ -25,17 +29,37 @@ class DataFlowAnalyzer {
 		return source
 	}
 
+	def InputPin findTarget(InputPin pin) {
+		if (pin == null) {
+			return null
+		}
+		val target = findTarget(pin.owningAction, pin)
+		return target
+	}
+
 	private def OutputPin internalFindSource(InputPin pin) {
 		if (pin == null) {
 			return null
 		}
 		return findSource(pin.sourceAction, pin.source as OutputPin)
 	}
+	
+	private def InputPin internalFindTarget(OutputPin pin) {
+		if (pin == null) {
+			return null
+		}
+		return findTarget(pin.targetAction, pin.target as InputPin)
+	}
+	
 
 	private def dispatch OutputPin findSource(Action action, OutputPin pin) {
 		return if(pin.owningAction == action) pin else null
 	}
-
+	
+	private def InputPin findTarget(Action action, InputPin pin) {
+		return if(pin.owningAction == action) pin else null
+	}
+	
 	private def dispatch OutputPin findSource(ReadVariableAction action, OutputPin pin) {
 		val parameter = action.variable.parameter
 		if (parameter == null) {
@@ -76,5 +100,4 @@ class DataFlowAnalyzer {
 		}
 		return pin
 	}
-
 }

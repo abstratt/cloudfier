@@ -72,10 +72,10 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
         if (asQueryOperator != null) {
             if (!action.arguments.empty) {
 	            val operands = #[action.target] + action.arguments 
-            	return '''«operands.map[sourceAction.generateAction].join(asQueryOperator)»'''
+            	return '''«operands.map[sourceAction.generateAction].join(''' «asQueryOperator» ''')»'''
             } 
             else
-            	return '''«action.target.sourceAction.generateAction»'''
+            	return '''«asQueryOperator» «action.target.sourceAction.generateAction»'''
         } else if (action.collectionOperation)
             return new JPQLSubQueryActionGenerator(repository).generateSubQuery(action)
         else
@@ -150,6 +150,9 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override CharSequence generateReadSelfAction(ReadSelfAction action) {
-        '''«action.result.alias»'''
+    	// this may map to a self reference (usually a :context parameter)
+    	// or map to something else if we are inlining a derived property in the context 
+    	// of query  
+        action.result.alias
     }
 }

@@ -28,6 +28,6 @@ abstract class AbstractGeneratorTest extends AbstractRepositoryBuildingTests {
     }
     
     def getStatementSourceAction(Operation op) {
-        op.activity.rootAction.findStatements.last.sourceAction
+        op.activity.findSingleStatement.sourceAction
     }
 }

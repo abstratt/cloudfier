@@ -76,19 +76,13 @@ class JPACriteriaServiceBehaviorGenerator extends JPABehaviorGenerator {
 	}
 
 	override generateActivityRootAction(Activity activity) {
-		ActivityContext.generateInNewContext(activity, null, [
+		ActivityContext.generateInNewContext(activity, [null], [
 			super.generateActivityRootAction(activity)
 		])
 	}
 
 	override generateJavaMethodBody(Activity activity) {
-		val context = new SimpleContext("context")
-		enterContext(context)
-		try {
-			return doGenerateJavaMethodBody(activity)
-		} finally {
-			leaveContext(context)
-		}
+		return runInContext(new SimpleContext("context"),[ doGenerateJavaMethodBody(activity) ])
 	}
 
 	/**

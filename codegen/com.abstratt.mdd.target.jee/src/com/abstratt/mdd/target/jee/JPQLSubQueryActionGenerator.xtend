@@ -12,6 +12,7 @@ import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.ReadExtentAction
 
 /**
  * Builds up a query based on a group projection closure.
@@ -38,8 +39,10 @@ class JPQLSubQueryActionGenerator extends QueryFragmentGenerator {
         EXISTS(
             SELECT «action.target.alias» FROM «action.target.type.toJavaType» «action.target.alias»
             WHERE
+            «IF !(action.target.sourceAction instanceof ReadExtentAction)»
                 «action.target.generateAction»
             AND
+            «ENDIF»
                 «new JPQLFilterActionGenerator(repository).generateAction(subPredicate.findSingleStatement)»
         )
         '''

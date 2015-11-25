@@ -9,6 +9,7 @@ import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
@@ -18,6 +19,7 @@ import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.Operation
 
 /**
  * Builds up a query based on a (non-group) projection closure.
@@ -33,9 +35,13 @@ class JPQLProjectionActionGenerator extends QueryFragmentGenerator {
             val outputType = action.structuredNodeOutputs.head.type as Classifier
             val List<CharSequence> projections = newLinkedList()
             outputType.getAllAttributes().forEach[attribute, i |
-                projections.add('''«action.structuredNodeInputs.get(i).generateAction» AS «action.structuredNodeInputs.get(i).name»''')
+                projections.add('''«action.structuredNodeInputs.get(i).generateAction»''')
             ]
-            '''«projections.join(', ')»'''
+            val operation = action.actionActivity.closureContext.owningActivity.specification as Operation
+            val queryResultType = if (operation.query && operation.type instanceof Classifier) operation.type as Classifier else outputType
+            val dtoClassName = if (queryResultType.anonymousDataType) '''«operation.owningClassifier.toJavaType»Service$«queryResultType.toJavaType»''' else queryResultType.toJavaType
+            val packageName = queryResultType.package.toJavaPackage
+            '''NEW «packageName».«dtoClassName»(«projections.join(', ')»)'''
         } else if (isCast(action)) {
             action.inputs.head.sourceAction.generateAction
         } else if (action.rootAction) {

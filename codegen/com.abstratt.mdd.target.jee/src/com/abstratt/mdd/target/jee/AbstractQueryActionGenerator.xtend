@@ -21,7 +21,7 @@ abstract class AbstractQueryActionGenerator extends PlainJavaBehaviorGenerator {
             true
         else {
             val callOpAction = action as CallOperationAction
-            callOpAction.operation.name == 'select' && callOpAction.results.head.targetAction.trivialFlowDownstream
+            #{'select', 'any'}.contains(callOpAction.operation.name) && callOpAction.results.head.targetAction.trivialFlowDownstream
         }
     }	   
     

@@ -1,10 +1,14 @@
 package com.abstratt.mdd.target.tests.jee
 
 import com.abstratt.mdd.core.tests.harness.AssertHelper
+import com.abstratt.mdd.target.jee.ActivityContext
 import com.abstratt.mdd.target.jee.JPQLQueryActionGenerator
 import com.abstratt.mdd.target.tests.AbstractGeneratorTest
 import java.io.IOException
 import org.eclipse.core.runtime.CoreException
+
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import com.abstratt.mdd.target.base.IBehaviorGenerator.SimpleContext
 
 class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
@@ -135,7 +139,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                SELECT customer_.name AS cName, customer_.company.revenue AS cRevenue FROM Customer customer_
+                SELECT NEW crm.CustomerService$CustomerNameCompanyRevenueTuple(customer_.name, customer_.company.revenue) FROM Customer customer_
             ''', generated.toString)
     }
 
@@ -275,6 +279,90 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 SELECT DISTINCT customer_ FROM Customer customer_ WHERE customer_.salary >= :threshold
             ''', generated.toString)
     }
+    
+    def void testAny() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Customer
+                attribute name : String;
+                attribute vip : Boolean;
+                query findAnyVIP() : Customer[0,1];
+                begin
+                    return Customer extent.\any((c : Customer) : Boolean {
+                        c.vip
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Customer::findAnyVIP')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT customer_ FROM Customer customer_ WHERE customer_.vip = TRUE
+            ''', generated.toString)
+    }
+    
+    def void testSelf_SubQuery() throws CoreException, IOException {
+        var source = '''
+            model rental;
+            class Car
+                attribute name : String;
+                attribute driver : Customer[0,1];
+            end;
+            class Customer
+                attribute name : String;
+                derived attribute renting : Boolean := {
+                	Car extent.exists((c : Car) : Boolean { c.driver == self })
+                };
+                static query anyRentingCustomer() : Customer[0,1];
+                begin
+                    return Customer extent.\any((c : Customer) : Boolean { c.renting });
+                end; 
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('rental::Customer::anyRentingCustomer')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT customer_ FROM Customer customer_ WHERE EXISTS(SELECT car_ FROM Car car_ WHERE car_.driver=customer_)
+            ''', generated.toString)
+    }    
+    
+    def void testSelf() throws CoreException, IOException {
+        var source = '''
+            model rental;
+            class Car
+                attribute name : String;
+                attribute driver : Customer[0,1];
+            end;
+            class Customer
+                attribute name : String;
+                query getRentalCar() : Car[0,1];
+                begin
+                    return Car extent.\any((c : Car) : Boolean { c.driver == self });
+                end; 
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('rental::Customer::getRentalCar')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT car_ FROM Car car_ WHERE car_.driver = :context
+            ''', generated.toString)
+    }    
+    
+        
     
     def void testExists() throws CoreException, IOException {
         var source = '''
@@ -421,7 +509,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                SELECT customer_.title AS title, SUM(customer_.salary) AS totalSalary 
+                SELECT NEW crm.CustomerService$TitleTotalSalaryTuple(customer_.title, SUM(customer_.salary))
                     FROM Customer customer_ GROUP BY customer_.title
             ''', generated.toString)
     }
@@ -452,7 +540,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                SELECT customer_.title AS title, COUNT(customer_) AS customerCount 
+                SELECT NEW crm.CustomerService$TitleCustomerCountTuple(customer_.title, COUNT(customer_)) 
                     FROM Customer customer_ GROUP BY customer_.title
             ''', generated.toString)
     }
@@ -485,7 +573,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                SELECT customer_.title AS title, COUNT(customer_) AS customerCount 
+                SELECT NEW crm.CustomerService$TitleCustomerCountTuple(customer_.title, COUNT(customer_))
                     FROM Customer customer_ GROUP BY customer_.title HAVING COUNT(customer_) > 100 
             ''', generated.toString)
     }

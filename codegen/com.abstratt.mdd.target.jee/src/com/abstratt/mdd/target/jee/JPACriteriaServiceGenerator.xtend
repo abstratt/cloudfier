@@ -28,7 +28,7 @@ class JPACriteriaServiceGenerator extends ServiceGenerator {
         super.isServiceOperation(op) || op.activity?.queryPerformingActivity
     }
     
-    static class CustomJPABehaviorGenerator extends JPACriteriaServiceBehaviorGenerator {
+    static class CustomJPABehaviorGenerator extends JPAJPQLServiceBehaviorGenerator {
         JPACriteriaServiceGenerator parent
 
         new(JPACriteriaServiceGenerator parent, IRepository repository) {

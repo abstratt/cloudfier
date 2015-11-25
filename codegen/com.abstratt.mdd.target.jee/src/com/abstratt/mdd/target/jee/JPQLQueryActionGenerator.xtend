@@ -3,16 +3,28 @@ package com.abstratt.mdd.target.jee
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.ReadExtentAction
+import org.eclipse.uml2.uml.StructuredActivityNode
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
-import org.eclipse.uml2.uml.StructuredActivityNode
+import java.util.function.Supplier
+import org.eclipse.uml2.uml.Property
 
 class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 	new(IRepository repository) {
         super(repository)
     }
-
+    
+	override generateCollectionOperationCall(CallOperationAction action) {
+		val activity = action.actionActivity
+		val hasSelf = (activity.specification != null && !activity.specification.static) || (activity.derivation && activity.derivationContext instanceof Property && !(activity.derivationContext as Property).static)
+		val CharSequence self = if (hasSelf) ':context' else null
+		ActivityContext.generateInNewContext(activity, [ self ] as Supplier<CharSequence>, [
+			super.generateCollectionOperationCall(action)
+		])
+	}
+    
 	override generateReadExtentAction(ReadExtentAction action) {
          if (action.result.targetAction.trivialFlowDownstream) 
         	'''SELECT DISTINCT «action.result.alias» FROM «action.classifier.toJavaType» «action.result.alias»'''
@@ -29,6 +41,10 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
                 «predicate.generateSelectPredicate»
             «ENDIF»
         '''
+	}
+	
+	override generateCollectionAny(CallOperationAction action) {
+		return generateCollectionSelect(action)
 	}
 	
 	override generateCollectionCollect(CallOperationAction action) {
@@ -114,6 +130,7 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 	}
 	
 	override createJoinActionGenerator(IRepository repository) {
+		// TODO: determine what is the purpose for this...
 		throw new UnsupportedOperationException("TODO: auto-generated method stub")
 	}
 	
