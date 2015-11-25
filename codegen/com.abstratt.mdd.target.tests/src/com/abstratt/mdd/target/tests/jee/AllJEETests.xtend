@@ -6,7 +6,7 @@ import junit.framework.TestSuite
 class AllJEETests {
     def static Test suite() {
         val suite = new TestSuite(AllJEETests.getName())
-        suite.addTestSuite(CriteriaQueryActionGeneratorTests)
+        suite.addTestSuite(JPQLQueryActionGeneratorTests)
 		suite.addTestSuite(JPACriteriaServiceBehaviorGeneratorTests)
         return suite
     }     
