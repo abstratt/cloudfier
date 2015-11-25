@@ -606,6 +606,33 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
+    def void testLiterals() throws CoreException, IOException {
+        var source = '''
+            model mypackage;
+            class MyClass
+                attribute attr1 : String;
+                attribute attr2 : Boolean;
+                attribute attr3 : Boolean;
+                attribute attr4 : Integer;
+                attribute attr5 : Double;
+                query query1() : MyClass[*];
+                begin
+                    return MyClass extent.select((c : MyClass) : Boolean {
+                        (c.attr1 > "stringValue") and (c.attr2 and (not c.attr3)) and (c.attr4 > 10) and (c.attr5 > 42.3)
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('mypackage::MyClass::query1')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT myClass_ FROM MyClass myClass_ WHERE myClass_.attr1 > 'stringValue' AND myClass_.attr2 = TRUE AND NOT myClass_.attr3 = TRUE AND myClass_.attr4 > 10 AND myClass_.attr5 > 42.3 
+            ''', generated.toString)
+    }
     
     
 }

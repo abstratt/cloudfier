@@ -25,8 +25,6 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 /** Builds a query based on a filter closure. */
 class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     
-	ValueSpecification value
-	
 	new(IRepository repository) {
         super(repository)
     }
@@ -127,7 +125,7 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
             // the TextUML compiler maps all primitive values to LiteralString
             LiteralString:
                 '''«switch (value.type.name) {
-                    case 'String': '''"«value.stringValue»"'''
+                    case 'String': ''' '«value.stringValue»' '''.toString.trim
                     default:
                         value.stringValue
                 }»'''
