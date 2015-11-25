@@ -253,6 +253,34 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
+    def void testSelectByRelatedSize() throws CoreException, IOException {
+        var source = '''
+            model crm;
+            class Company
+                attribute name : String;
+                attribute customers : Customer[*];              
+                static query companiesWithCustomers(threshold : Integer) : Company[*];
+                begin
+                    return Company extent.select((company : Company) : Boolean {
+                        company.customers.size() >= threshold
+                    });
+                end;
+            end;
+            class Customer
+                attribute name : String;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('crm::Company::companiesWithCustomers')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT company_ FROM Company company_ WHERE SIZE(company_.customers) >= : threshold
+            ''', generated.toString)
+    }
+
     
     def void testSelectByDoubleComparison() throws CoreException, IOException {
         var source = '''
@@ -577,5 +605,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                     FROM Customer customer_ GROUP BY customer_.title HAVING COUNT(customer_) > 100 
             ''', generated.toString)
     }
+    
+    
     
 }

@@ -15,7 +15,7 @@ import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.ReadExtentAction
 
 /**
- * Builds up a query based on a group projection closure.
+ * Builds up a subquery, which is different from building top queries.
  */
 class JPQLSubQueryActionGenerator extends QueryFragmentGenerator {
     
@@ -28,37 +28,59 @@ class JPQLSubQueryActionGenerator extends QueryFragmentGenerator {
         switch (operationName) {
         	case 'exists' : return generateExistsSubQuery(action)
         	case 'isEmpty' : return generateIsEmptySubQuery(action)
+        	case 'size' : return generateSizeSubQuery(action)
 			default: unsupportedElement(action, action.operation.name)
         } 
     }
 	
-	def generateExistsSubQuery(CallOperationAction action) {
-		//TODO
-		val subPredicate = action.arguments.head.sourceAction.resolveBehaviorReference as Activity
+	def private generateExistsSubQuery(CallOperationAction action) {
         '''
         EXISTS(
-            SELECT «action.target.alias» FROM «action.target.type.toJavaType» «action.target.alias»
-            WHERE
-            «IF !(action.target.sourceAction instanceof ReadExtentAction)»
-                «action.target.generateAction»
-            AND
-            «ENDIF»
-                «new JPQLFilterActionGenerator(repository).generateAction(subPredicate.findSingleStatement)»
+            «generateSubQueryFilter(action, action)»
         )
         '''
 	}
 	
+	private def CharSequence generateSubQueryFilter(CallOperationAction currentAction, CallOperationAction selectionAction) {
+		val subPredicate = selectionAction.arguments.head.sourceAction.resolveBehaviorReference as Activity
+		'''
+        SELECT «selectionAction.target.alias» FROM «currentAction.target.type.toJavaType» «currentAction.target.alias»
+            WHERE
+            «IF !(selectionAction.target.sourceAction instanceof ReadExtentAction)»
+                «selectionAction.target.generateAction»
+            AND
+            «ENDIF»
+                «new JPQLFilterActionGenerator(repository).generateAction(subPredicate.findSingleStatement)»
+        '''
+	}
+	
+	private def generateSizeSubQueryOnSelect(CallOperationAction action) {
+		val selectAction = action.target.sourceAction as CallOperationAction
+        '''
+        COUNT(
+            «generateSubQueryFilter(action, selectAction)»
+        )
+        '''
+	}
+	
+	
+	def generateSizeSubQuery(CallOperationAction action) {
+        val sourceAction = action.target.sourceAction
+		if (sourceAction instanceof CallOperationAction) {
+			val sourceCallOperationAction = sourceAction as CallOperationAction
+			if (#['select', 'one'].contains(sourceCallOperationAction.operation.name) && sourceCallOperationAction.operation.owningClassifier.name == 'Collection') {
+				return generateSizeSubQueryOnSelect(action)
+			}
+		}
+		return '''SIZE(«new JPQLFilterActionGenerator(repository).generateAction(sourceAction)»)'''
+	}	
+	
 	private def generateIsEmptySubQueryOnSelect(CallOperationAction action) {
 		val selectAction = action.target.sourceAction as CallOperationAction
 		// in this case, isEmpty is just as an exists().not()
-		val subPredicate = selectAction.arguments.head.sourceAction.resolveBehaviorReference as Activity  
         '''
         NOT EXISTS(
-            SELECT «selectAction.target.alias» FROM «action.target.type.toJavaType» «action.target.alias»
-            WHERE
-                «selectAction.target.generateAction»
-            AND
-                «new JPQLFilterActionGenerator(repository).generateAction(subPredicate.findSingleStatement)»
+            «generateSubQueryFilter(action, selectAction)»
         )
         '''
 	}
@@ -67,7 +89,7 @@ class JPQLSubQueryActionGenerator extends QueryFragmentGenerator {
 		val sourceAction = action.target.sourceAction
 		if (sourceAction instanceof CallOperationAction) {
 			val sourceCallOperationAction = sourceAction as CallOperationAction
-			if (sourceCallOperationAction.operation.name == 'select' && sourceCallOperationAction.operation.owningClassifier.name == 'Collection') {
+			if (#['select', 'one'].contains(sourceCallOperationAction.operation.name) && sourceCallOperationAction.operation.owningClassifier.name == 'Collection') {
 				return generateIsEmptySubQueryOnSelect(action)
 			}
 		}

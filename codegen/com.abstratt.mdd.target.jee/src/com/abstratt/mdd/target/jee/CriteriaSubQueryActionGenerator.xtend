@@ -13,7 +13,7 @@ import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import org.eclipse.uml2.uml.ReadLinkAction
 
 /**
- * Builds up a query based on a group projection closure.
+ * Builds up a subquery.
  */
 class CriteriaSubQueryActionGenerator extends QueryFragmentGenerator {
     
