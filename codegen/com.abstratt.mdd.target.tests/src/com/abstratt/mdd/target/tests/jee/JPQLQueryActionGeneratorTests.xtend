@@ -169,6 +169,38 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
 
+    def void testSelectChainedDerivation() throws CoreException, IOException {
+        var source = '''
+            model taxifleet;
+            class Driver
+                attribute name : String;
+            end;
+            class Taxi
+                attribute number : String;
+                attribute capacity : Integer;
+                attribute drivers : Driver[*];
+                derived attribute driverCount : Integer := { self.drivers.size() };
+                derived attribute full : Boolean := {
+                    self.driverCount >= self.capacity
+                };              
+                static query full() : Taxi[*];
+                begin
+                    return Taxi extent.select((t : Taxi) : Boolean { t.full });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('taxifleet::Taxi::full')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT DISTINCT taxi_ FROM Taxi taxi_ WHERE SIZE(taxi_.drivers) >= taxi_.capacity
+            ''', generated.toString)
+    }
+
+
     def void testSelectByAttributeInRelatedEntity() throws CoreException, IOException {
         var source = '''
             model crm;

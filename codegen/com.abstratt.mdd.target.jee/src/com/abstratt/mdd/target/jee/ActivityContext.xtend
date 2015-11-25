@@ -46,7 +46,8 @@ class ActivityContext {
     }
     
     def static CharSequence generateInNewContext(Activity activity, OutputPin self, Supplier<CharSequence> generator) {
-    	generateInNewContext(activity, [ JPAHelper.alias(self) ] as Supplier, generator)
+    	val context = JPAHelper.alias(self)
+    	generateInNewContext(activity, [ context ] as Supplier, generator)
     }
 	
 	def static CharSequence generateSelf() {
