@@ -72,6 +72,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             .flatten
             .filter[providerOperation]
             .map[class_]
+            .filter[it.isProviderFor(entity)]
             .toSet
         
         if (!providers.empty)
@@ -81,6 +82,10 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         «generateMany(providers, [generateProvider])»
         '''    
         
+    }
+    
+    def boolean isProviderFor(Class candidate, Class entity) {
+    	true
     }
     
     override generateAction(Action action) {

@@ -47,7 +47,7 @@ class JPACriteriaServiceBehaviorGenerator extends JPABehaviorGenerator {
 	override CharSequence generateProviderReference(Classifier context, Classifier provider) {
 		if (context == provider)
 			'this'
-		else '''new «provider.name.toFirstLower»Service'''
+		else '''new «provider.name.toFirstUpper»Service()'''
 	}
 
 	override generateAddVariableValueActionCore(AddVariableValueAction action) {

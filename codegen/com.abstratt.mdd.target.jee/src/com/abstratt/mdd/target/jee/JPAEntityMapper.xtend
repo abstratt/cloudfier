@@ -9,14 +9,14 @@ import com.abstratt.mdd.core.target.spi.TargetUtils
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.core.KirraHelper
 
-class JPACriteriaEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
+class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     
     override JPAEntityGenerator createEntityGenerator(IRepository repository) {
         new JPAEntityGenerator(repository)
     }
     
-    override JPACriteriaServiceGenerator createServiceGenerator(IRepository repository) {
-        new JPACriteriaServiceGenerator(repository)
+    override JPAServiceGenerator createServiceGenerator(IRepository repository) {
+        new JPAServiceGenerator(repository)
     }
     
     override mapAll(IRepository repository) {

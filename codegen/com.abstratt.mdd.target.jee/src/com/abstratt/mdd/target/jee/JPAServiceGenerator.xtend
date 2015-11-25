@@ -15,7 +15,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 
-class JPACriteriaServiceGenerator extends ServiceGenerator {
+class JPAServiceGenerator extends ServiceGenerator {
 
     JPABehaviorGenerator behaviorGenerator
 
@@ -29,9 +29,9 @@ class JPACriteriaServiceGenerator extends ServiceGenerator {
     }
     
     static class CustomJPABehaviorGenerator extends JPAJPQLServiceBehaviorGenerator {
-        JPACriteriaServiceGenerator parent
+        JPAServiceGenerator parent
 
-        new(JPACriteriaServiceGenerator parent, IRepository repository) {
+        new(JPAServiceGenerator parent, IRepository repository) {
             super(repository)
             this.parent = parent
         }
@@ -58,6 +58,11 @@ class JPACriteriaServiceGenerator extends ServiceGenerator {
             «entity.generateDelete»
         '''
     }
+    
+    def override boolean isProviderFor(Class candidate, Class entity) {
+    	entity != candidate
+    }
+    
     
     def CharSequence generateDerivedRelationshipAccessors(Class entity) {
         val derivedRelationships = getRelationships(entity).filter[derived]
