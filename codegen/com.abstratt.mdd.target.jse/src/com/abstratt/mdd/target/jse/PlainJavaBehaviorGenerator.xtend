@@ -110,23 +110,50 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val otherEnd = sides.get(1).end
         val thisEndAction = sides.get(0).value
         val otherEndAction = sides.get(1).value
+        generateLinkDestruction(thisEndAction, otherEnd, otherEndAction, thisEnd)
+    }
+
+    def generateLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd) {
+    	generateLinkDestruction(otherEndAction.generateAction, thisEnd, thisEndAction.generateAction, otherEnd)
+    }
+
+    def generateLinkDestruction(CharSequence otherEndAction, Property thisEnd, CharSequence thisEndAction, Property otherEnd) {
+    	val bothNavigable = thisEnd.navigable && otherEnd.navigable
+    	val tmpVarRequired = bothNavigable && thisEnd.lowerBound == 1
+    	'''
+    	«IF thisEnd.navigable»
+    	«IF tmpVarRequired»
+    	«otherEnd.type.toJavaType» tmp«thisEnd.name.toFirstUpper» = «otherEndAction».get«thisEnd.name.toFirstUpper»(); 
+    	«ENDIF»
+    	«generateLinkDestructionForOneEnd(otherEndAction, thisEnd, thisEndAction, otherEnd, bothNavigable)»
+    	«ENDIF»
+    	«IF otherEnd.navigable»
+    	«generateLinkDestructionForOneEnd(if (tmpVarRequired) '''tmp«thisEnd.name.toFirstUpper»''' else thisEndAction, otherEnd, otherEndAction, thisEnd, false)»
+    	«ENDIF»
+    	'''
+    }
+    
+    def generateLinkDestructionForOneEnd(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd, boolean addSemiColon) {
         '''
-        «generateLinkDestruction(otherEndAction, thisEnd, thisEndAction, otherEnd, true)»
-        «generateLinkDestruction(thisEndAction, otherEnd, otherEndAction, thisEnd, false)»'''
+        	«targetObject».«IF thisEnd.multivalued»removeFrom«thisEnd.name.toFirstUpper»(«otherObject»)«ELSE»set«thisEnd.name.toFirstUpper»(null)«ENDIF»«IF addSemiColon &&
+            otherEnd.navigable»;«ENDIF»
+        '''
+    }
+    
+    def CharSequence generatePreparationForLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd) {
+    	generatePreparationForLinkDestruction(otherEndAction.generateAction, thisEnd, generateAction(thisEndAction), otherEnd)
     }
 
-    def generateLinkDestruction(InputPin otherEndAction, Property thisEnd, InputPin thisEndAction, Property otherEnd,
-        boolean addSemiColon) {
+    def CharSequence generatePreparationForLinkDestruction(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd) {
         if(!thisEnd.navigable) return ''
-        generateLinkDestruction(otherEndAction.generateAction, thisEnd, generateAction(thisEndAction), otherEnd,
-            addSemiColon)
-    }
-
-    def generateLinkDestruction(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd,
-        boolean addSemiColon) {
-        if(!thisEnd.navigable) return ''
-        '''«targetObject».«IF thisEnd.multivalued»removeFrom«thisEnd.name.toFirstUpper»(«otherObject»)«ELSE»set«thisEnd.name.toFirstUpper»(null)«ENDIF»«IF addSemiColon &&
-            otherEnd.navigable»;«ENDIF»'''
+        '''
+        «IF !thisEnd.multivalued»
+        «thisEnd.type.toJavaType» «thisEnd.name»ToRemove = «targetObject».get«thisEnd.name.toFirstUpper»();
+        «ENDIF»
+        «IF !thisEnd.multivalued»
+        «thisEnd.type.toJavaType» «thisEnd.name»ToRemove = «targetObject».get«thisEnd.name.toFirstUpper»();
+        «ENDIF»
+        '''
     }
 
     def override generateCreateLinkAction(CreateLinkAction action) {
@@ -659,13 +686,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val asProperty = action.structuralFeature as Property
         val thisEnd = asProperty
         val otherEnd = asProperty.otherEnd
-        val thisEndAction = action.value
-        val otherEndAction = action.object
-        '''
-            «generateLinkDestruction('''«otherEndAction.generateAction».«thisEnd.name»''', otherEnd,
-                otherEndAction.generateAction, thisEnd, true)»
-            «generateLinkDestruction(otherEndAction.generateAction, thisEnd, thisEndAction.generateAction, otherEnd, false)»
-        '''.toString.trim
+        val otherEndAction = action.object.sourceAction
+        val otherEndActionGenerated = otherEndAction.generateAction
+		generateLinkDestruction('''«otherEndActionGenerated».«thisEnd.name»''', otherEnd,
+                '''«otherEndActionGenerated»''', thisEnd)
     }
 
     
