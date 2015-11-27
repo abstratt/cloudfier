@@ -1,6 +1,7 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.base.IBehaviorGenerator
 import java.util.List
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
@@ -14,6 +15,7 @@ import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.OutputPin
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadExtentAction
@@ -26,7 +28,6 @@ import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.ValueSpecificationAction
 
-import com.abstratt.mdd.target.base.IBehaviorGenerator
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 
@@ -44,10 +45,15 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
     }
     
     override generateAction(Action node, boolean delegate) {
-        if (delegate && context.delegate != null)
-            context.delegate.generateAction(node, false)
-        else
-            generateActionProper(node)
+    	currentActionStack.get().push(node)
+    	try {
+	        if (delegate && context.delegate != null)
+	            context.delegate.generateAction(node, false)
+	        else
+	            generateActionProper(node)
+        } finally {
+            currentActionStack.get().pop()	
+        }
     }
 
     def CharSequence generateActionProper(Action toGenerate) {
@@ -220,5 +226,4 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
     override generateActivity(Activity activity) {
         throw new UnsupportedOperationException("TODO: auto-generated method stub")
     }
-
 }

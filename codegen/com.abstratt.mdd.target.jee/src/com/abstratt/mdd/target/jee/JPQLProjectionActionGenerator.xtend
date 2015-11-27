@@ -32,12 +32,9 @@ class JPQLProjectionActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateStructuredActivityNode(StructuredActivityNode action) {
         if (action.objectInitialization) {
-            val outputType = action.structuredNodeOutputs.head.type as Classifier
-            val List<CharSequence> projections = newLinkedList()
-            outputType.getAllAttributes().forEach[attribute, i |
-                projections.add('''«action.structuredNodeInputs.get(i).generateAction»''')
-            ]
+            val List<CharSequence> projections = generateProjections(action)
             val operation = action.actionActivity.closureContext.owningActivity.specification as Operation
+            val outputType = action.structuredNodeOutputs.head.type as Classifier
             val queryResultType = if (operation.query && operation.type instanceof Classifier) operation.type as Classifier else outputType
             val dtoClassName = if (queryResultType.anonymousDataType) '''«operation.owningClassifier.toJavaType»Service$«queryResultType.toJavaType»''' else queryResultType.toJavaType
             val packageName = queryResultType.package.toJavaPackage
@@ -52,10 +49,22 @@ class JPQLProjectionActionGenerator extends QueryFragmentGenerator {
         } else
             unsupportedElement(action)
     }
+	
+	def generateProjections(StructuredActivityNode action) {
+        val outputType = action.structuredNodeOutputs.head.type as Classifier
+        val List<CharSequence> projections = newLinkedList()
+        outputType.getAllAttributes().forEach[attribute, i |
+            projections.add('''«action.structuredNodeInputs.get(i).generateAction»''')
+        ]
+        return projections
+	}
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
-        '''«action.object.generateAction».«property.name»'''
+        if (property.derived)
+        	action.generateReadPropertyActionViaDerivation
+    	else
+        	'''«action.object.generateAction».«property.name»'''
     }
     
     override generateTraverseRelationshipAction(InputPin target, Property end) {

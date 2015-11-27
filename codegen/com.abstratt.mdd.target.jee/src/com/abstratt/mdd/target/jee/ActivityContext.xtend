@@ -1,6 +1,5 @@
 package com.abstratt.mdd.target.jee
 
-import com.google.common.base.Function
 import java.util.List
 import java.util.function.Supplier
 import org.eclipse.uml2.uml.Activity

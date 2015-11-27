@@ -38,10 +38,7 @@ class CriteriaFilterActionGenerator extends QueryFragmentGenerator {
         val property = action.structuralFeature as Property
         if (isCondition) {
             if (property.derived) {
-                val derivation = property.defaultValue.resolveBehaviorReference as Activity
-                ActivityContext.generateInNewContext(derivation, action.object.source as OutputPin, [
-					generateAction(derivation.findSingleStatement)
-				])
+            	action.generateReadPropertyActionViaDerivation
             } else '''cb.isTrue(«action.object.alias».get("«property.name»"))'''
         } else
             '''«action.object.alias».get("«property.name»")'''

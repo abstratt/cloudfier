@@ -7,6 +7,7 @@ class AllJEETests {
     def static Test suite() {
         val suite = new TestSuite(AllJEETests.getName())
         suite.addTestSuite(JPQLQueryActionGeneratorTests)
+		suite.addTestSuite(CriteriaQueryActionGeneratorTests)
 		suite.addTestSuite(JPACriteriaServiceBehaviorGeneratorTests)
         return suite
     }     

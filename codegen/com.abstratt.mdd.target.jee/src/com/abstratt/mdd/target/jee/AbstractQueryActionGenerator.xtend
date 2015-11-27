@@ -57,8 +57,8 @@ abstract class AbstractQueryActionGenerator extends PlainJavaBehaviorGenerator {
 	def abstract IBasicBehaviorGenerator createGroupProjectionFilterActionGenerator(IRepository repository, StructuredActivityNode node)
 
 
-    def generateGroupProjection(Activity predicate) {
-        generateGroupByMapping(predicate)
+    def generateGroupProjection(Activity projection) {
+        generateGroupCollectMapping(projection)
     }
     
     def generateJoin(Activity predicate) {
@@ -76,8 +76,12 @@ abstract class AbstractQueryActionGenerator extends PlainJavaBehaviorGenerator {
     def generateGroupByMapping(Activity mapping) {
         createGroupByActionGenerator(repository).generateAction(mapping.findSingleStatement)
     }
+    def generateGroupCollectMapping(Activity projection) {
+        createGroupCollectActionGenerator(repository).generateAction(projection.findSingleStatement)
+    }
 	
 	def IBasicBehaviorGenerator createGroupByActionGenerator(IRepository repository)
+	def IBasicBehaviorGenerator createGroupCollectActionGenerator(IRepository repository)
 
     def generateSelectPredicate(Activity predicate) {
         createFilterActionGenerator(repository).generateAction(predicate.findSingleStatement)

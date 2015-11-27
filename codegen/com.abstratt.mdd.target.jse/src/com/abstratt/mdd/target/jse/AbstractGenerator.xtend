@@ -10,8 +10,9 @@ import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 
-import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+
 abstract class AbstractGenerator {
     protected IRepository repository
 
@@ -38,6 +39,12 @@ abstract class AbstractGenerator {
     def boolean isCollectionOperation(Action toCheck) {
         if (toCheck instanceof CallOperationAction)
             return toCheck.target != null && toCheck.target.multivalued
+        return false
+    }
+    
+    def boolean isOperation(Action toCheck, String typeName, String... operationNames) {
+        if (toCheck instanceof CallOperationAction)
+        	return operationNames.contains(toCheck.operation.name)
         return false
     } 
     

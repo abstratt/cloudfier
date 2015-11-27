@@ -5,6 +5,13 @@ import org.eclipse.uml2.uml.CallOperationAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import org.eclipse.uml2.uml.StructuredActivityNode
+import java.util.List
+import org.eclipse.uml2.uml.Classifier
+import java.util.stream.Collectors
+import java.util.LinkedHashMap
+import java.util.LinkedList
+import org.eclipse.uml2.uml.Activity
 
 /**
  * Builds up a query based on a group projection closure.

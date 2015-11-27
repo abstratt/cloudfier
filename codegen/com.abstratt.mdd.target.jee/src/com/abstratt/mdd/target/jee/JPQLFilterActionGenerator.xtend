@@ -35,12 +35,9 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
-        val core = if (property.derived) {
-            val derivation = property.defaultValue.resolveBehaviorReference as Activity
-            ActivityContext.generateInNewContext(derivation, action.object.source as OutputPin, [
-				generateAction(derivation.findSingleStatement)
-			])
-        } else 
+        val core = if (property.derived)
+        	action.generateReadPropertyActionViaDerivation
+        else 
             '''«action.object.generateAction».«property.name»'''
             
         val isCondition = action.result.type.name == 'Boolean'

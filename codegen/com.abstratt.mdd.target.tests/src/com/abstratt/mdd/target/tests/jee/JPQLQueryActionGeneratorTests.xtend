@@ -375,7 +375,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             class Customer
                 attribute name : String;
                 derived attribute renting : Boolean := {
-                	Car extent.exists((c : Car) : Boolean { c.driver == self })
+                    Car extent.exists((c : Car) : Boolean { c.driver == self })
                 };
                 static query anyRentingCustomer() : Customer[0,1];
                 begin
@@ -445,7 +445,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-				SELECT CASE WHEN COUNT(customer_) > 0 THEN TRUE ELSE FALSE END FROM Customer customer_ WHERE customer_.vip = TRUE
+                SELECT CASE WHEN COUNT(customer_) > 0 THEN TRUE ELSE FALSE END FROM Customer customer_ WHERE customer_.vip = TRUE
             ''', generated.toString)
     }
     
@@ -470,7 +470,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-				SELECT COUNT(customer_) = 0 FROM Customer customer_ WHERE customer_.vip = TRUE
+                SELECT COUNT(customer_) = 0 FROM Customer customer_ WHERE customer_.vip = TRUE
             ''', generated.toString)
     }
 
@@ -666,5 +666,55 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
             ''', generated.toString)
     }
     
-    
+    def void testCollect_Tuple() {
+        var source = '''
+            model cities;
+            
+            datatype StatePopulation
+                attribute abbreviation : String;
+                attribute population : Integer;
+            end;
+            
+            class City
+                attribute name : String;
+                attribute population : Integer;
+                attribute cityState : State;
+            end;            
+            
+            class State
+                attribute abbreviation : String;
+                attribute cities : City[*];
+                derived attribute population : Integer := {
+                    self.cities.sum((c : City) : Integer { c.population })
+                };
+                static query statePopulationsViaCities() : StatePopulation[*];
+                begin
+                    return City extent.groupBy((c : City) : State {
+                        c.cityState
+                    }).groupCollect((cities : City[*]) : StatePopulation {
+                        {
+                            abbreviation := cities.one().cityState.abbreviation, 
+                            population := cities.sum((c : City) : Integer { c.population })
+                        }
+                    });
+                end;
+            end;
+                
+            aggregation CityStates
+                role City.cityState;
+                role State.cities;
+            end;
+                
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('cities::State::statePopulationsViaCities')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+                SELECT NEW cities.StatePopulation(city_.cityState.abbreviation, SUM(city_.population)) FROM City city_ GROUP BY city_.cityState, city_.cityState.abbreviation
+            ''', generated.toString)
+        
+    }
 }

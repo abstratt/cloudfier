@@ -191,6 +191,11 @@ final class CriteriaQueryActionGenerator extends AbstractQueryActionGenerator {
 	override createGroupByActionGenerator(IRepository repository) {
 		new CriteriaGroupByActionGenerator(repository)
 	}
+	
+	override createGroupCollectActionGenerator(IRepository repository) {
+		//TODO this is probably wrong (was for JPQL), consider implementing a group collect action generator
+		new CriteriaGroupByActionGenerator(repository)
+	}
 
 	override createFilterActionGenerator(IRepository repository) {
 		new CriteriaFilterActionGenerator(repository)

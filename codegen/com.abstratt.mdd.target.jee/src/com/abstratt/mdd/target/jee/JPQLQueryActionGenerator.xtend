@@ -125,6 +125,10 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 		new JPQLGroupByActionGenerator(repository)
 	}
 	
+	override createGroupCollectActionGenerator(IRepository repository) {
+		new JPQLGroupCollectActionGenerator(repository)
+	}
+	
 	override createGroupProjectionFilterActionGenerator(IRepository repository, StructuredActivityNode node) {
 		new JPQLGroupProjectionFilterActionGenerator(repository, node)
 	}
