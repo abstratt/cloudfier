@@ -302,7 +302,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     @Override
     public List<Instance> getInstances(String namespace, String name, boolean full) {
         Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
-        return filterValidInstances(getRuntime().getAllInstances(umlClass));
+        return filterValidInstances(getRuntime().getAllInstances(umlClass, true));
     }
     
     @Override
@@ -339,6 +339,17 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     public Relationship getOpposite(Relationship relationship) {
         return getSchemaManagement().getOpposite(relationship);
     }
+    
+    @Override
+    public List<Instance> getRelationshipDomain(Entity entity, String objectId, Relationship relationship) {
+        Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), UMLPackage.Literals.CLASS);
+        org.eclipse.uml2.uml.Property property = AssociationUtils.findMemberEnd(umlClass, relationship.getName());
+        if (!KirraHelper.isRelationship(property))
+            throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);
+        if ("_template".equals(objectId))
+            return getInstances(relationship.getTypeRef().getNamespace(), relationship.getTypeRef().getTypeName(), false);
+        return filterValidInstances(getRuntime().getPropertyDomain(umlClass, objectId, property, true));
+    }
 
     @Override
     public List<Instance> getParameterDomain(Entity entity, String externalId, com.abstratt.kirra.Operation action, Parameter parameter) {
@@ -347,7 +358,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), UMLPackage.Literals.CLASS);
         org.eclipse.uml2.uml.Operation operation = FeatureUtils.findOperation(getRepository(), umlClass, action.getName(), null);
         org.eclipse.uml2.uml.Parameter umlParameter = operation.getOwnedParameter(parameter.getName(), null);
-        return filterValidInstances(getRuntime().getParameterDomain(umlClass, externalId, umlParameter));
+        return filterValidInstances(getRuntime().getParameterDomain(umlClass, externalId, umlParameter, true));
     }
 
     @Override
@@ -362,17 +373,6 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         if (!KirraHelper.isRelationship(property))
             throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);
         return filterValidInstances(getRuntime().getRelatedInstances(umlClass, externalId, property));
-    }
-
-    @Override
-    public List<Instance> getRelationshipDomain(Entity entity, String objectId, Relationship relationship) {
-        Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), UMLPackage.Literals.CLASS);
-        org.eclipse.uml2.uml.Property property = AssociationUtils.findMemberEnd(umlClass, relationship.getName());
-        if (!KirraHelper.isRelationship(property))
-            throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);
-        if ("_template".equals(objectId))
-            return getInstances(relationship.getTypeRef().getNamespace(), relationship.getTypeRef().getTypeName(), false);
-        return filterValidInstances(getRuntime().getPropertyDomain(umlClass, objectId, property));
     }
 
     @Override

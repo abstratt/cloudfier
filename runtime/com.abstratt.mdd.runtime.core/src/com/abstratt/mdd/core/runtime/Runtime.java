@@ -2,9 +2,10 @@ package com.abstratt.mdd.core.runtime;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.Action;
@@ -27,7 +28,6 @@ import com.abstratt.mdd.core.runtime.external.ExternalObject;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BuiltInMetaClass;
-import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
@@ -84,18 +84,42 @@ public class Runtime {
         context.enter(readOnly);
     }
 
-    public List<BasicType> getAllInstances(final Classifier baseClass) {
-        RuntimeClass runtimeClass = getRuntimeClass(baseClass);
-        return new ArrayList<BasicType>(runtimeClass.getAllInstances().getBackEnd());
+    public List<BasicType> getAllInstances(final Classifier baseClass, boolean includeSubclasses) {
+        return collectInstancesFromHierarchy((Classifier) baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).getAllInstances().getBackEnd());
+    }
+    
+    public Collection<BasicType> getParameterDomain(Class baseClass, String externalId, org.eclipse.uml2.uml.Parameter parameter, boolean includeSubclasses) {
+    	RuntimeClass targetClass = getRuntimeClass(baseClass);
+    	return collectInstancesFromHierarchy((Classifier) parameter.getType(), includeSubclasses, currentClass -> targetClass.getParameterDomain(externalId, parameter, currentClass).getBackEnd());
+    }
+    
+    public Collection<BasicType> getPropertyDomain(Class baseClass, String objectId, org.eclipse.uml2.uml.Property property, boolean includeSubclasses) {
+    	RuntimeClass targetClass = getRuntimeClass(baseClass);    	
+    	return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> targetClass.getPropertyDomain(objectId, property, currentClass).getBackEnd());
+    }
+    
+    /**
+     * Applies the given collector in the context of the given base class, and optionally in the context of all subclasses.
+     * @param baseClass
+     * @param includeSubclasses
+     * @param collector
+     * @return the collected objects
+     */
+    private List<BasicType> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<BasicType>> collector) {
+    	BiConsumer<Classifier, List<BasicType>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
+    	return ClassifierUtils.collectFromHierarchy(getRepository(), baseClass, includeSubclasses, new ArrayList<BasicType>(), consumer);
+    }
+
+    public Collection<BasicType> getRelatedInstances(Class umlClass, String externalId, org.eclipse.uml2.uml.Property property) {
+        return getRuntimeClass(umlClass).getRelatedInstances(externalId, property).getBackEnd();
     }
 
     public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
         if (criteria.isEmpty())
-            return getAllInstances(baseClass);
+            return getAllInstances(baseClass, false);
         RuntimeClass runtimeClass = getRuntimeClass(baseClass);
         return new ArrayList<BasicType>(runtimeClass.filterInstances(criteria).getBackEnd());
     }
-    
 
     public RuntimeObject findOneInstance(Class baseClass, Map<Property, List<BasicType>> criteria) {
         RuntimeClass runtimeClass = getRuntimeClass(baseClass);
@@ -128,20 +152,8 @@ public class Runtime {
         return nodeStoreCatalog;
     }
 
-    public Collection<BasicType> getParameterDomain(Class umlClass, String externalId, org.eclipse.uml2.uml.Parameter parameter) {
-        return getRuntimeClass(umlClass).getParameterDomain(externalId, parameter).getBackEnd();
-    }
-
-    public Collection<BasicType> getPropertyDomain(Class umlClass, String objectId, org.eclipse.uml2.uml.Property property) {
-        return getRuntimeClass(umlClass).getPropertyDomain(objectId, property).getBackEnd();
-    }
-
     public BasicType getProviderInstance(Port port) {
         return getInstance(ConnectorUtils.findProvidingClassifier(port));
-    }
-
-    public Collection<BasicType> getRelatedInstances(Class umlClass, String externalId, org.eclipse.uml2.uml.Property property) {
-        return getRuntimeClass(umlClass).getRelatedInstances(externalId, property).getBackEnd();
     }
 
     public IRepository getRepository() {

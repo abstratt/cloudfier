@@ -1,11 +1,12 @@
 package com.abstratt.mdd.core.tests.runtime;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Properties;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.util.function.BiConsumer;
+import java.util.function.BiPredicate;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Enumeration;
@@ -23,6 +24,10 @@ import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.StringType;
 
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
+
 public class RuntimeObjectTests extends AbstractRuntimeTests {
 
     public static Test suite() {
@@ -38,8 +43,23 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "  interface Named\n";
         RuntimeObjectTests.model += "    operation getName() : String;\n";
         RuntimeObjectTests.model += "  end;\n";
-        RuntimeObjectTests.model += "  class Person implements Named\n";
+        RuntimeObjectTests.model += "  abstract class Party implements Named\n";
         RuntimeObjectTests.model += "    attribute name : String[0,1];\n";
+        RuntimeObjectTests.model += "    operation getName() : String;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      return self.name;\n";
+        RuntimeObjectTests.model += "    end;\n";        
+        RuntimeObjectTests.model += "  end;\n";
+        RuntimeObjectTests.model += "  class Thing implements Named\n";
+        RuntimeObjectTests.model += "    attribute name : String[0,1];\n";        
+        RuntimeObjectTests.model += "    operation getName() : String;\n";
+        RuntimeObjectTests.model += "    begin\n";
+        RuntimeObjectTests.model += "      return self.name;\n";
+        RuntimeObjectTests.model += "    end;\n";
+        RuntimeObjectTests.model += "  end;\n";        
+        RuntimeObjectTests.model += "  class Company specializes Party\n";
+        RuntimeObjectTests.model += "  end;\n";
+        RuntimeObjectTests.model += "  class Person specializes Party\n";
         RuntimeObjectTests.model += "    attribute active : Boolean := true;\n";
         RuntimeObjectTests.model += "    attribute personRole : Role[0,1] := EMPLOYEE;\n";
         RuntimeObjectTests.model += "    static operation newPerson(name : String) : Person;\n";
@@ -48,10 +68,6 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "      newPerson := new Person;\n";
         RuntimeObjectTests.model += "      newPerson.name := name;\n";
         RuntimeObjectTests.model += "      return newPerson;\n";
-        RuntimeObjectTests.model += "    end;\n";
-        RuntimeObjectTests.model += "    operation getName() : String;\n";
-        RuntimeObjectTests.model += "    begin\n";
-        RuntimeObjectTests.model += "      return self.name;\n";
         RuntimeObjectTests.model += "    end;\n";
         RuntimeObjectTests.model += "    operation setName(name : String);\n";
         RuntimeObjectTests.model += "    begin\n";
@@ -198,6 +214,30 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         runOperation(person, "setName", new StringType("Foo"));
         TestCase.assertEquals(new StringType("Foo"), runOperation(person, "getName"));
     }
+    
+    public void testGetAllInstances() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        RuntimeClass companyClass = getRuntimeClass("tests::Company");
+        RuntimeClass thingClass = getRuntimeClass("tests::Thing");
+        RuntimeClass namedInterface = getRuntimeClass("tests::Named");
+        RuntimeClass partyClass = getRuntimeClass("tests::Party");
+        RuntimeObject person = personClass.newInstance();
+        RuntimeObject company = companyClass.newInstance();
+        RuntimeObject thing = thingClass.newInstance();
+        person.save();
+        company.save();
+        thing.save();
+        
+		BiConsumer<Collection<BasicType>, RuntimeClass> assertEquals = (expected, runtimeClass) -> assertEquals(
+				new HashSet<>(expected), new HashSet<>(getRuntime().getAllInstances(runtimeClass.getModelClassifier(), true)));
+        assertEquals.accept(Arrays.asList(person), personClass);
+        assertEquals.accept(Arrays.asList(company), companyClass);
+        assertEquals.accept(Arrays.asList(person, company), partyClass);
+        assertEquals.accept(Arrays.asList(person, company, thing), namedInterface);
+    }
+
     
     
     public void testRunOperationWithDefaultValueForParameter() throws CoreException {

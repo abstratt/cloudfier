@@ -467,9 +467,9 @@ public class ExecutionContext {
     }
 
     /**
+     * Commits all objects in the current working set.
      * 
-     * @param preserve
-     *            WTF does this mean?
+     * @param preserve whether objects currently in the context should be in the new working set
      */
     public void saveContext(boolean preserve) {
         boolean originalSaveChanges = saveChanges;

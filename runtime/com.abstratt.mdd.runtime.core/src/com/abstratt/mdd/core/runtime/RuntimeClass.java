@@ -1,7 +1,6 @@
 package com.abstratt.mdd.core.runtime;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -10,14 +9,15 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Classifier;
+import org.eclipse.uml2.uml.Interface;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.Property;
+import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Vertex;
 
 import com.abstratt.mdd.core.runtime.types.BasicType;
@@ -82,13 +82,19 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     public final CollectionType getAllInstances() {
+    	if (!this.isPersistable())
+    		return CollectionType.createCollection(classifier, true, false, Collections.emptySet());
         Collection<RuntimeObject> fromDB = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().getNodeKeys()));
         fromDB.addAll(getRuntime().getCurrentContext().getWorkingObjects(this));
         Collection<RuntimeObject> allInstances = fromDB;
         return CollectionType.createCollection(classifier, true, false, allInstances);
     }
     
-    public final CollectionType filterInstances(Map<Property, List<BasicType>> criteria) {
+    private boolean isPersistable() {
+		return !classifier.isAbstract() && classifier.eClass() == UMLPackage.Literals.CLASS;
+	}
+
+	public final CollectionType filterInstances(Map<Property, List<BasicType>> criteria) {
         Collection<RuntimeObject> runtimeObjects = findInstances(criteria, null);
         return CollectionType.createCollection(classifier, true, false, new LinkedHashSet<RuntimeObject>(runtimeObjects));
     }
@@ -135,22 +141,22 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         return nodeStore;
     }
 
-    public CollectionType getParameterDomain(String externalId, Parameter parameter) {
+    public CollectionType getParameterDomain(String externalId, Parameter parameter, Classifier parameterType) {
         IntegerKey key = objectIdToKey(externalId);
         if (!getNodeStore().containsNode(key))
-            return CollectionType.createCollection(parameter.getType(), true, false);
-        return CollectionType.createCollection(parameter.getType(), true, false, getOrLoadInstance(key).getParameterDomain(parameter));
+            return CollectionType.createCollection(parameterType, true, false);
+        return CollectionType.createCollection(parameterType, true, false, getOrLoadInstance(key).getParameterDomain(parameter, parameterType));
     }
 
-    public CollectionType getPropertyDomain(String objectId, Property property) {
+    public CollectionType getPropertyDomain(String objectId, Property property, Classifier propertyType) {
         IntegerKey key = objectIdToKey(objectId);
         if (!getNodeStore().containsNode(key))
-            return CollectionType.createCollection(property.getType(), true, false);
+            return CollectionType.createCollection(propertyType, true, false);
         RuntimeObject instance = getOrLoadInstance(key);
-		Collection<RuntimeObject> propertyDomain = instance.getPropertyDomain(property);
+		Collection<RuntimeObject> propertyDomain = instance.getPropertyDomain(property, propertyType);
 		Collection<RuntimeObject> alreadyRelated = instance.getRelated(property);
 		propertyDomain.removeAll(alreadyRelated);
-		return CollectionType.createCollection(property.getType(), true, false, propertyDomain);
+		return CollectionType.createCollection(propertyType, true, false, propertyDomain);
     }
 
     public CollectionType getRelatedInstances(String objectId, Property property) {

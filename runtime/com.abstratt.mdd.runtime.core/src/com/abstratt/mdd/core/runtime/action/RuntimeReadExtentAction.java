@@ -22,7 +22,7 @@ public class RuntimeReadExtentAction extends RuntimeAction implements Constants 
     public void executeBehavior(ExecutionContext context) {
         ReadExtentAction instance = (ReadExtentAction) getInstance();
         Classifier classifier = instance.getClassifier();
-        List<BasicType> allInstances = context.getRuntime().getAllInstances(classifier);
+        List<BasicType> allInstances = context.getRuntime().getAllInstances(classifier, false);
         addResultValue(instance.getResult(), CollectionType.createCollectionFor(instance.getResult(), allInstances));
     }
 }

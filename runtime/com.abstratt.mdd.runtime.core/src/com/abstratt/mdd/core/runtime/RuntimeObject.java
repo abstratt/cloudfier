@@ -44,7 +44,6 @@ import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
 import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
-import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.DataTypeUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
@@ -263,10 +262,11 @@ public class RuntimeObject extends BasicType {
      * Returns all instances that satisfy this parameter's constraints.
      * 
      * @param parameter
-     * @return
+     * @param parameterType the type of instances we are interested in (could be the parameter type or a subclass)
+     * @return the matching instances
      */
-    public Collection<RuntimeObject> getParameterDomain(Parameter parameter) {
-        RuntimeClass parameterRuntimeClass = getRuntime().getRuntimeClass((Classifier) parameter.getType());
+    public Collection<RuntimeObject> getParameterDomain(Parameter parameter, Classifier parameterType) {
+        RuntimeClass parameterRuntimeClass = getRuntime().getRuntimeClass(parameterType);
         Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
         List<Constraint> constraints = parameter.getOperation().getPreconditions();
         Collection<BasicType> candidates = parameterRuntimeClass.getAllInstances().getBackEnd();
@@ -295,8 +295,8 @@ public class RuntimeObject extends BasicType {
         return result;
     }
 
-    public Collection<RuntimeObject> getPropertyDomain(Property property) {
-        RuntimeClass propertyRuntimeClass = getRuntime().getRuntimeClass((Classifier) property.getType());
+    public Collection<RuntimeObject> getPropertyDomain(Property property, Classifier propertyType) {
+        RuntimeClass propertyRuntimeClass = getRuntime().getRuntimeClass((Classifier) propertyType);
         Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
         List<Constraint> constraints = MDDExtensionUtils.findInvariantConstraints(property);
         Collection<BasicType> candidates = propertyRuntimeClass.getAllInstances().getBackEnd();
@@ -348,7 +348,7 @@ public class RuntimeObject extends BasicType {
     public void handleEvent(RuntimeEvent runtimeEvent) {
         INode node = getNode();
         Map<String, Object> nodeProperties = node.getProperties();
-        if (runtimeEvent instanceof RuntimeMessageEvent<?> && ((RuntimeMessageEvent) runtimeEvent).getMessage() instanceof Signal) {
+        if (runtimeEvent instanceof RuntimeMessageEvent<?> && ((RuntimeMessageEvent<?>) runtimeEvent).getMessage() instanceof Signal) {
             RuntimeMessageEvent<Signal> runtimeMessageEvent = (RuntimeMessageEvent<Signal>) runtimeEvent;
             Signal signal = runtimeMessageEvent.getMessage();
             Reception reception = ReceptionUtils.findBySignal(this.getRuntimeClass().getModelClassifier(), signal);
