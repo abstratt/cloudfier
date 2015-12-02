@@ -113,12 +113,15 @@ public class Runtime {
     public Collection<BasicType> getRelatedInstances(Class umlClass, String externalId, org.eclipse.uml2.uml.Property property) {
         return getRuntimeClass(umlClass).getRelatedInstances(externalId, property).getBackEnd();
     }
-
+    
     public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
+    	return findInstances(baseClass, criteria, false);
+    }
+
+    public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria, boolean includeSubclasses) {
         if (criteria.isEmpty())
-            return getAllInstances(baseClass, false);
-        RuntimeClass runtimeClass = getRuntimeClass(baseClass);
-        return new ArrayList<BasicType>(runtimeClass.filterInstances(criteria).getBackEnd());
+            return getAllInstances(baseClass, includeSubclasses);
+        return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).filterInstances(criteria).getBackEnd());
     }
 
     public RuntimeObject findOneInstance(Class baseClass, Map<Property, List<BasicType>> criteria) {

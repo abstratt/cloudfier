@@ -56,7 +56,7 @@ public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
 
     public BasicType readAttribute(RuntimeObject target, String name) {
         Classifier classInstance = target.getRuntimeClass().getModelClassifier();
-        Property attribute = classInstance.getAttribute(name, null);
+        Property attribute = FeatureUtils.findAttribute(classInstance, name, false, true);
         TestCase.assertNotNull(classInstance.getQualifiedName() + NamedElement.SEPARATOR + name, attribute);
         return target.getValue(attribute);
     }
@@ -100,7 +100,7 @@ public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
 
     public void writeAttribute(final RuntimeObject target, String name, final BasicType value) {
         Classifier classInstance = target.getRuntimeClass().getModelClassifier();
-        final Property property = classInstance.getAttribute(name, null);
+        final Property property = FeatureUtils.findAttribute(classInstance, name, false, true);
         TestCase.assertNotNull(classInstance.getQualifiedName() + NamedElement.SEPARATOR + name, property);
         getRuntime().runSession(new Runtime.Session<Object>() {
             @Override

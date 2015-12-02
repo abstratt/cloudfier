@@ -298,15 +298,25 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         RuntimeObject found = findRuntimeObject(namespace, name, externalId);
         return (Instance) (found == null ? null : convertFromRuntimeObject(found));
     }
+    
+    public List<Instance> getInstances(String namespace, String name, boolean full) {
+    	return getInstances(namespace, name, full, false);
+    }
 
     @Override
-    public List<Instance> getInstances(String namespace, String name, boolean full) {
+    public List<Instance> getInstances(String namespace, String name, boolean full, boolean includeSubclasses) {
         Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
-        return filterValidInstances(getRuntime().getAllInstances(umlClass, true));
+        return filterValidInstances(getRuntime().getAllInstances(umlClass, includeSubclasses));
     }
     
     @Override
-    public List<Instance> filterInstances(Map<String, List<Object>> kirraCriteria, String namespace, String name, boolean full) {
+    public List<Instance> filterInstances(Map<String, List<Object>> criteria, String namespace, String name,
+    		boolean full) {
+    	return filterInstances(criteria, namespace, name, full, false);
+    }
+    
+    @Override
+    public List<Instance> filterInstances(Map<String, List<Object>> kirraCriteria, String namespace, String name, boolean full, boolean includeSubClasses) {
         Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
         Map<org.eclipse.uml2.uml.Property, List<BasicType>> runtimeCriteria = new LinkedHashMap<org.eclipse.uml2.uml.Property, List<BasicType>>();
         for (Entry<String, List<Object>> entry : kirraCriteria.entrySet()) {
@@ -318,7 +328,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 convertedValues.add(convertToBasicType(kirraValue, attribute));
             runtimeCriteria.put(attribute, convertedValues);
         }
-        return filterValidInstances(getRuntime().findInstances(umlClass, runtimeCriteria));
+        return filterValidInstances(getRuntime().findInstances(umlClass, runtimeCriteria, includeSubClasses));
     }
 
     public <NE extends org.eclipse.uml2.uml.NamedElement> NE getModelElement(String namespace, String name, EClass elementClass) {
