@@ -43,20 +43,12 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
     def dispatch CharSequence generateAction(InputPin input) {
         generateAction(input.sourceAction, true)
     }
-    
-    override generateAction(Action node, boolean delegate) {
-    	currentActionStack.get().push(node)
-    	try {
-	        if (delegate && context.delegate != null)
-	            context.delegate.generateAction(node, false)
-	        else
-	            generateActionProper(node)
-        } finally {
-            currentActionStack.get().pop()	
-        }
-    }
 
-    def CharSequence generateActionProper(Action toGenerate) {
+	override generateAction(Action action, boolean delegate) {
+		IBehaviorGenerator.super.generateAction(action, delegate)
+	}
+
+    override CharSequence generateActionProper(Action toGenerate) {
         doGenerateAction(toGenerate)
     }
 
