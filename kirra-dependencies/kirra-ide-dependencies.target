@@ -19,7 +19,7 @@
 		<location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
     		<unit id="org.eclipse.xtext.xbase.lib.feature.group" version="0.0.0" />
-			<repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/releases/head/R201409090713/" />
+			<repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.8.4/" />
 		</location>
 		
 		<location includeAllPlatforms="false" includeMode="planner"
