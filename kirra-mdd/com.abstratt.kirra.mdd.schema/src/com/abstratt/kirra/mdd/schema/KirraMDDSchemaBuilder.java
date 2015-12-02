@@ -3,8 +3,9 @@ package com.abstratt.kirra.mdd.schema;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
@@ -29,7 +30,6 @@ import com.abstratt.kirra.SchemaBuilder;
 import com.abstratt.kirra.Service;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
-import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
@@ -96,6 +96,9 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setTopLevel(KirraHelper.isTopLevel(umlClass));
         entity.setStandalone(KirraHelper.isStandalone(umlClass));
         entity.setUser(KirraHelper.isUser(umlClass));
+        Stream<Classifier> superEntities = umlClass.getGenerals().stream().filter(g -> KirraHelper.isEntity(g)); 
+        List<TypeRef> superTypes = superEntities.map(superEntity -> KirraHelper.convertType(superEntity)).collect(Collectors.toList());
+        entity.setSuperTypes(superTypes);
         return entity;
     }
 
