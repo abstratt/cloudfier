@@ -312,20 +312,24 @@ public class RuntimeObject extends BasicType {
         return result;
     }
 
+    
+    public Collection<RuntimeObject> getRelated(Property property) {
+    	return getRelated(property, (Classifier) property.getType());
+    }
     /**
      * Returns the objects related via the given property.
      * 
      * @param property
      * @return
      */
-    public Collection<RuntimeObject> getRelated(Property property) {
+    public Collection<RuntimeObject> getRelated(Property property, Classifier relatedType) {
         prepareForLinking();
         ensureValidEnd(property);
         if (property.isDerived())
             return deriveRelated(property);
         if (property.isMultivalued())
-            return getMultipleRelated(property);
-        return getSingleRelated(property);
+            return getMultipleRelated(property, relatedType);
+        return getSingleRelated(property, relatedType);
     }
 
     public RuntimeClass getRuntimeClass() {
@@ -639,10 +643,10 @@ public class RuntimeObject extends BasicType {
         return new EnumerationType(literal);
     }
 
-    protected Collection<RuntimeObject> getSingleRelated(Property property) {
+    protected Collection<RuntimeObject> getSingleRelated(Property property, Classifier relatedType) {
         Assert.isLegal(!property.isMultivalued());
         Assert.isLegal(!property.isDerived());
-        return getMultipleRelated(property);
+        return getMultipleRelated(property, relatedType);
     }
 
     protected EAnnotation getSourceInfo(NamedElement scope) {
@@ -681,12 +685,17 @@ public class RuntimeObject extends BasicType {
         return new NodeReference(this.storeName(), this.nodeKey());
     }
 
+    /**
+     * A generic traversal operation that will return a single RuntimeObject or a collection of runtime objects
+     * depending on the multiplicity of the property.
+     */
     protected BasicType traverse(Property property) {
+    	Classifier relatedType = (Classifier) property.getType();
         if (property.isMultivalued()) {
             Assert.isTrue(property.isMultivalued());
-            return CollectionType.createCollectionFor(property, this.getRelated(property));
+			return CollectionType.createCollectionFor(property, this.getRelated(property, relatedType));
         }
-        Collection<RuntimeObject> related = this.getRelated(property);
+        Collection<RuntimeObject> related = this.getRelated(property, relatedType);
         return related.isEmpty() ? null : related.iterator().next();
     }
 
@@ -762,10 +771,11 @@ public class RuntimeObject extends BasicType {
                 + property.getOtherEnd().getType().getQualifiedName());
     }
 
-    private Collection<RuntimeObject> getMultipleRelated(Property property) {
+    private Collection<RuntimeObject> getMultipleRelated(Property property, Classifier relatedInstanceType) {
         Assert.isLegal(!property.isDerived());
-        Collection<INodeKey> relatedNodeKeys = getNodeStore().getRelatedNodeKeys(getKey(), property.getName());
-        RuntimeClass relatedEntity = getRuntimeClass().getRuntime().getRuntimeClass((Classifier) property.getType());
+        RuntimeClass relatedEntity = getRuntime().getRuntimeClass(relatedInstanceType);
+        String relatedStoreNodeName = relatedEntity.getNodeStore().getName();
+		Collection<INodeKey> relatedNodeKeys = getNodeStore().getRelatedNodeKeys(getKey(), property.getName(), relatedStoreNodeName);
         return relatedEntity.nodesToRuntimeObjects(relatedNodeKeys);
     }
 

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.Validate;
@@ -83,14 +84,15 @@ public class SQLGenerator {
                         + generateSelfToOppositeFK(relationship) + ") references "
                         + modelToSchemaName(metadata.getEntity(relationship.getTypeRef())) + " (id)";
                 stmt += " on delete";
-                if (!relationship.isRequired())
-                    stmt += " set null";
-                else {
-                    if (relationship.getStyle() == Style.PARENT)
-                        stmt += " cascade";
+                if (relationship.getStyle() == Style.PARENT)
+                	// if you have a parent you should be deleted as well
+                    stmt += " cascade";
+                else
+                	if (!relationship.isRequired())
+                		stmt += " set null";
                     else
+                    	// let it blow into the user's face
                         stmt += " no action";
-                }
                 stmt += " deferrable initially deferred;";
                 statements.add(stmt);
             }
@@ -138,8 +140,9 @@ public class SQLGenerator {
 
 
     public List<String> generateDelete(Entity clazz, long id) {
-        String stmt = "delete from " + modelToSchemaName(clazz) + " where id = " + id + ";";
-        return Arrays.asList(stmt);
+    	List<String> statements = new ArrayList<>();
+    	statements.add("delete from " + modelToSchemaName(clazz) + " where id = " + id + ";");
+		return statements;
     }
 
     public List<String> generateDropSchema(boolean required) {
@@ -259,11 +262,26 @@ public class SQLGenerator {
         stmt += " where id = " + key + ";";
         return Arrays.asList(stmt);
     }
+    
+    /**
+     * A convenience method that assumes the relationship is not polymorphic.
+     */
+    public List<String> generateSelectRelatedKeys(Relationship myRelationship, long key) { 
+    	return generateSelectRelatedKeys(myRelationship, myRelationship.getTypeRef(), key);
+    }
 
-    public List<String> generateSelectRelatedKeys(Relationship myRelationship, long key) {
+    /**
+     * Generates a SQL query that returns the related keys from the context object through the given relationship, where all
+     * keys identify object of the given other entity.
+     * 
+     * @param myRelationship the relationship to traverse
+     * @param otherEntity the type of the related objects (useful in polymorphic associations)
+     * @param key the id of the current object
+     */
+    public List<String> generateSelectRelatedKeys(Relationship myRelationship, TypeRef otherEntityRef, long key) {
         Relationship otherEnd = metadata.getOpposite(myRelationship);
-        Entity otherEntity = metadata.getEntity(myRelationship.getTypeRef());
         Entity contextEntity = metadata.getEntity(myRelationship.getOwner());
+        Entity otherEntity = metadata.getEntity(otherEntityRef);
         if (otherEnd == null) {
             if (myRelationship.isMultiple())
                 return generateSelectManyRelatedKeysViaMappingTable(myRelationship, key, otherEnd, contextEntity);
@@ -456,9 +474,8 @@ public class SQLGenerator {
     }
 
     public String modelToSchemaName(DataElement property, boolean escape) {
-        if (!escape)
-            return basicModelToSchemaName(property);
-        return escape(basicModelToSchemaName(property));
+        String basic = basicModelToSchemaName(property);
+        return escape ? escape(basic) : basic;
     }
 
     protected String asAlias(String alias) {

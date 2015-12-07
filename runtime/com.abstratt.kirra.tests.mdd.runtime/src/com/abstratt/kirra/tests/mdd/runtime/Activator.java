@@ -13,6 +13,8 @@ public class Activator implements BundleActivator {
 
     @Override
     public void start(BundleContext context) throws BundleException {
+    	// some tests in this suite depend on the REST API
+    	
         ensureBundleStarted(context, Activator.HTTP_SERVICE_BUNDLE);
         ensureBundleStarted(context, Activator.HTTP_REGISTRY_BUNDLE);
         Activator.bundleContext = context;

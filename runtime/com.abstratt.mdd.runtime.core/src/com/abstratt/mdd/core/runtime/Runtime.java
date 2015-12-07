@@ -97,21 +97,10 @@ public class Runtime {
     	RuntimeClass targetClass = getRuntimeClass(baseClass);    	
     	return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> targetClass.getPropertyDomain(objectId, property, currentClass).getBackEnd());
     }
-    
-    /**
-     * Applies the given collector in the context of the given base class, and optionally in the context of all subclasses.
-     * @param baseClass
-     * @param includeSubclasses
-     * @param collector
-     * @return the collected objects
-     */
-    private List<BasicType> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<BasicType>> collector) {
-    	BiConsumer<Classifier, List<BasicType>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
-    	return ClassifierUtils.collectFromHierarchy(getRepository(), baseClass, includeSubclasses, new ArrayList<BasicType>(), consumer);
-    }
 
-    public Collection<BasicType> getRelatedInstances(Class umlClass, String externalId, org.eclipse.uml2.uml.Property property) {
-        return getRuntimeClass(umlClass).getRelatedInstances(externalId, property).getBackEnd();
+    public Collection<BasicType> getRelatedInstances(Class umlClass, String objectId, org.eclipse.uml2.uml.Property property) {
+    	RuntimeClass targetClass = getRuntimeClass(umlClass);
+    	return targetClass.getRelatedInstances(objectId, property);
     }
     
     public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
@@ -123,6 +112,11 @@ public class Runtime {
             return getAllInstances(baseClass, includeSubclasses);
         return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).filterInstances(criteria).getBackEnd());
     }
+
+    private List<BasicType> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<BasicType>> collector) {
+    	return RuntimeUtils.collectInstancesFromHierarchy(getRepository(), baseClass, includeSubclasses, collector);
+    }
+    
 
     public RuntimeObject findOneInstance(Class baseClass, Map<Property, List<BasicType>> criteria) {
         RuntimeClass runtimeClass = getRuntimeClass(baseClass);

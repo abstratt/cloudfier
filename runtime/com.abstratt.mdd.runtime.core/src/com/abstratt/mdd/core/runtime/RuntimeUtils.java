@@ -1,6 +1,10 @@
 package com.abstratt.mdd.core.runtime;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,6 +20,7 @@ import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Stereotype;
 import org.eclipse.uml2.uml.ValueSpecification;
 
+import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.runtime.types.ElementReferenceType;
@@ -23,10 +28,25 @@ import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
 import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 
 public class RuntimeUtils {
+	
+    /**
+     * Applies the given collector in the context of the given base class, and optionally in the context of all subclasses.
+     * @param baseClass
+     * @param includeSubclasses
+     * @param collector
+     * @return the collected objects
+     */
+    public static List<BasicType> collectInstancesFromHierarchy(IRepository repository, Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<BasicType>> collector) {
+    	BiConsumer<Classifier, List<BasicType>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
+    	return ClassifierUtils.collectFromHierarchy(repository, baseClass, includeSubclasses, new ArrayList<BasicType>(), consumer);
+    }
+
+	
 
     public static BasicType extractValueFromSpecification(RuntimeObject self, ValueSpecification valueSpec) {
         if (MDDExtensionUtils.isBasicValue(valueSpec))

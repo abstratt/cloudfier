@@ -33,7 +33,7 @@ public interface INodeStoreCatalog {
 
     Collection<String> listStores();
 
-    INode newNode();
+    INode newNode(String nodeStoreName);
 
     void prime();
 

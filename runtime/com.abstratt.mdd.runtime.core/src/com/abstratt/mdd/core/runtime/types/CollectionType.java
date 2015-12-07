@@ -37,9 +37,13 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     }
 
     public static <E extends BasicType, T extends Collection<E>> CollectionType createCollectionFor(MultiplicityElement element, T backEnd) {
+    	return createCollectionFor(element, ((TypedElement) element).getType(), backEnd);
+    }
+    
+    public static <E extends BasicType, T extends Collection<E>> CollectionType createCollectionFor(MultiplicityElement element, Type targetType, T backEnd) {
         Assert.isTrue(element.isMultivalued());
         Assert.isTrue(element instanceof TypedElement);
-        return CollectionType.createCollection(((TypedElement) element).getType(), element.isUnique(), element.isOrdered(), backEnd);
+        return CollectionType.createCollection(targetType, element.isUnique(), element.isOrdered(), backEnd);
     }
 
     protected static Object runClosureBehavior(ExecutionContext context, ElementReferenceType reference, Object... arguments) {

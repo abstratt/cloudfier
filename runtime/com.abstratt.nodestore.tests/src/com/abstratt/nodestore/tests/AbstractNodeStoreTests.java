@@ -102,7 +102,7 @@ public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
 
     public void testCreateAndRetrieveNode() {
         INodeStore store = getCatalog().createStore("mypackage.MyClass1");
-        INode node = getCatalog().newNode();
+        INode node = getCatalog().newNode("mypackage.MyClass1");
         Map<String, Object> values = new HashMap<String, Object>();
         values.put("attr2", "bar");
         values.put("attr3", today());
@@ -116,7 +116,7 @@ public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
 
     public void testDeleteNode() {
         INodeStore store = getCatalog().createStore("mypackage.MyClass1");
-        INode node = getCatalog().newNode();
+        INode node = getCatalog().newNode("mypackage.MyClass1");
         INodeKey key = store.createNode(node);
         TestCase.assertNotNull(store.getNode(key));
         store.deleteNode(key);
@@ -128,7 +128,7 @@ public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
         TestCase.assertNotNull(created);
         TestCase.assertEquals("mypackage.MyClass1", created.getName());
         TestCase.assertNotNull(getCatalog().getStore("mypackage.MyClass1"));
-        Object key = created.createNode(getCatalog().newNode());
+        Object key = created.createNode(getCatalog().newNode("mypackage.MyClass1"));
         TestCase.assertTrue("" + key, created.getNodeKeys().contains(key));
         INodeStore recreated = getCatalog().createStore("mypackage.MyClass1");
         TestCase.assertTrue(recreated.getNodeKeys().contains(key));
@@ -140,8 +140,8 @@ public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
 
     public void testListNodes() {
         INodeStore store = getCatalog().createStore("mypackage.MyClass1");
-        INode node1 = getCatalog().newNode();
-        INode node2 = getCatalog().newNode();
+        INode node1 = getCatalog().newNode("mypackage.MyClass1");
+        INode node2 = getCatalog().newNode("mypackage.MyClass1");
         Collection<INode> loaded = store.getNodes();
         // nothing persisted yet
         TestCase.assertEquals(0, loaded.size());
@@ -166,7 +166,7 @@ public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
     }
 
     public void testNodeIsolation() {
-        INode node = getCatalog().newNode();
+        INode node = getCatalog().newNode("mypackage.MyClass1");
         Map<String, Object> values = new HashMap<String, Object>();
         values.put("name", "bar");
         node.setProperties(values);
@@ -181,7 +181,7 @@ public abstract class AbstractNodeStoreTests extends AbstractRuntimeTests {
 
     public void testUpdateNode() {
         INodeStore store = getCatalog().createStore("mypackage.MyClass1");
-        INode node = getCatalog().newNode();
+        INode node = getCatalog().newNode("mypackage.MyClass1");
         Map<String, Object> values = new HashMap<String, Object>();
         values.put("attr2", "foo");
         node.setProperties(values);

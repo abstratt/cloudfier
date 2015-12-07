@@ -26,6 +26,7 @@ import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.TypeRef;
+import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.nodestore.BasicNode;
 import com.abstratt.nodestore.INode;
 import com.abstratt.nodestore.INodeKey;
@@ -213,6 +214,8 @@ public class JDBCNodeStore implements INodeStore {
     private Entity clazz;
 
     private JDBCNodeStoreCatalog catalog;
+    
+    private LoadKeyHandler loadKeyHandler;
 
     private ConnectionProvider connectionProvider;
 
@@ -225,6 +228,7 @@ public class JDBCNodeStore implements INodeStore {
         Validate.isTrue(catalog != null);
         this.catalog = catalog;
         this.clazz = schema.getEntity(typeRef);
+        this.loadKeyHandler = new LoadKeyHandler();
         Validate.isTrue(clazz != null, typeRef.toString());
         this.connectionProvider = connectionProvider;
     }
@@ -235,7 +239,7 @@ public class JDBCNodeStore implements INodeStore {
 
     @Override
     public boolean containsNode(INodeKey key) {
-        return !loadMany(new LoadKeyHandler(), getGenerator().generateSelectOne(getStoreClass(), keyToId(key))).isEmpty();
+        return !loadMany(loadKeyHandler, getGenerator().generateSelectOne(getStoreClass(), keyToId(key))).isEmpty();
     }
 
     @Override
@@ -253,7 +257,7 @@ public class JDBCNodeStore implements INodeStore {
 
     @Override
     public INodeKey generateKey() {
-        return this.basicGetCatalog().generateKey();
+        return this.basicGetCatalog().generateKey(getName());
     }
 
     @Override
@@ -273,12 +277,12 @@ public class JDBCNodeStore implements INodeStore {
 
     @Override
     public Collection<INodeKey> getNodeKeys() {
-        return loadMany(new LoadKeyHandler(), getGenerator().generateSelectAll(getStoreClass()));
+        return loadMany(loadKeyHandler, getGenerator().generateSelectAll(getStoreClass()));
     }
     
     @Override
     public Collection<INodeKey> filter(Map<String, Collection<Object>> criteria, Integer limit) {
-        return loadMany(new LoadKeyHandler(), getGenerator().generateSelectSome(getStoreClass(), criteria, limit));
+        return loadMany(loadKeyHandler, getGenerator().generateSelectSome(getStoreClass(), criteria, limit));
     }
     
     @Override
@@ -287,7 +291,7 @@ public class JDBCNodeStore implements INodeStore {
     }
 
     @Override
-    public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship) {
+    public java.util.Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship, String relatedNodeStoreName) {
 //        Map<INodeKey, List<INodeKey>> relationshipCache = relatedNodeKeys.get(relationship);
 //        if (relationshipCache == null)
 //            relatedNodeKeys.put(relationship, relationshipCache = new LinkedHashMap<INodeKey, List<INodeKey>>());
@@ -295,13 +299,14 @@ public class JDBCNodeStore implements INodeStore {
 //        if (nodeRelationshipCache != null)
 //            return nodeRelationshipCache;
         Relationship attribute = clazz.getRelationship(relationship);
-        List<INodeKey> relatedNodeKeys = loadMany(new LoadKeyHandler(), getGenerator().generateSelectRelatedKeys(attribute, keyToId(key)));
+        TypeRef otherEntityTypeRef = new TypeRef(relatedNodeStoreName, TypeKind.Entity);
+        List<INodeKey> relatedNodeKeys = loadMany(loadKeyHandler, getGenerator().generateSelectRelatedKeys(attribute, otherEntityTypeRef, keyToId(key)));
         //relationshipCache.put(key, relatedNodeKeys);
         return relatedNodeKeys;
     }
 
-    @Override
-    public Collection<INode> getRelatedNodes(INodeKey key, String relationship) {
+	@Override
+	public java.util.Collection<INode> getRelatedNodes(INodeKey key, String relationship, String relatedNodeStoreName) {
         throw new UnsupportedOperationException();
     }
 

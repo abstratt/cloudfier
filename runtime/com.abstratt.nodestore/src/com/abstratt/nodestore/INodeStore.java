@@ -68,12 +68,12 @@ public interface INodeStore {
     /**
      * Returns the keys of all related nodes.
      */
-    public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship);
+    public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship, String relatedNodeStoreName);
 
     /**
      * Returns all related nodes.
      */
-    public Collection<INode> getRelatedNodes(INodeKey key, String relationship);
+    public Collection<INode> getRelatedNodes(INodeKey key, String relationship, String relatedNodeStoreName);
 
     /**
      * Sets multiple related nodes.

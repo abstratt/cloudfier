@@ -310,7 +310,7 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 
         check(false, generator.generateConstraints(schema.getEntity(ref(myClass7))), "alter table " + tablePrefix("custom", "MyClass7")
                 + " " + "add constraint \"roleOne\" " + "foreign key (\"roleOne\") references " + tablePrefix("custom", "MyClass6")
-                + " (id) on delete set null deferrable initially deferred;");
+                + " (id) on delete cascade deferrable initially deferred;");
 
         check(false, generator.generateSelectRelatedKeys(schema.getEntity(ref(myClass6)).getRelationship("myClass7s"), 17),
                 "select id from " + tablePrefix("custom", "MyClass7") + " where \"roleOne\" = 17;");

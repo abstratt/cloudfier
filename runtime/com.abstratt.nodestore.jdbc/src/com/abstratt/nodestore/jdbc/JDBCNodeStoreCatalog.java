@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -110,7 +109,7 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
         return getStore(ref.getStoreName()).getNode(ref.getKey()) != null;
     }
 
-    public INodeKey generateKey() {
+    public INodeKey generateKey(String storeName) {
         return JDBCNodeStore.loadOne(connectionProvider, new JDBCNodeStore.LoadKeyHandler(), generator.generateGetSequence());
     }
 
@@ -169,8 +168,8 @@ public class JDBCNodeStoreCatalog implements INodeStoreCatalog {
     }
 
     @Override
-    public INode newNode() {
-        return new BasicNode(generateKey());
+    public INode newNode(String nodeStoreName) {
+        return new BasicNode(generateKey(nodeStoreName));
     }
 
     @Override

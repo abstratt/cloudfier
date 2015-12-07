@@ -17,6 +17,7 @@ import org.eclipse.uml2.uml.Interface;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.Property;
+import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Vertex;
 
@@ -134,12 +135,16 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     public INodeStore getNodeStore() {
-        String storeName = getModelClassifier().getQualifiedName();
+        String storeName = getNodeStoreName();
         INodeStore nodeStore = getNodeStoreCatalog().getStore(storeName);
         if (nodeStore == null)
             nodeStore = getNodeStoreCatalog().createStore(storeName);
         return nodeStore;
     }
+
+	private String getNodeStoreName() {
+		return getModelClassifier().getQualifiedName();
+	}
 
     public CollectionType getParameterDomain(String externalId, Parameter parameter, Classifier parameterType) {
         IntegerKey key = objectIdToKey(externalId);
@@ -154,19 +159,32 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
             return CollectionType.createCollection(propertyType, true, false);
         RuntimeObject instance = getOrLoadInstance(key);
 		Collection<RuntimeObject> propertyDomain = instance.getPropertyDomain(property, propertyType);
-		Collection<RuntimeObject> alreadyRelated = instance.getRelated(property);
+		Collection<BasicType> alreadyRelated = getRelatedInstances(objectId, property);
 		propertyDomain.removeAll(alreadyRelated);
 		return CollectionType.createCollection(propertyType, true, false, propertyDomain);
     }
+    
+    /**
+     * Returns the related instances via the given property, even if the association is polymorphic. 
+     */
+	public Collection<BasicType> getRelatedInstances(String objectId, Property property) {
+        Classifier baseClass = (Classifier) property.getType();
+		return RuntimeUtils.collectInstancesFromHierarchy(getRuntime().getRepository(), baseClass, true, currentClass -> getRelatedInstancesOfTheExactType(objectId, property, currentClass).getBackEnd());
+	}
 
-    public CollectionType getRelatedInstances(String objectId, Property property) {
+	/**
+	 * This helper method will traverse the relationship looking for related instances of the exact type requested,
+	 * which is required given that in a polymorphic relationship, we will find related instances on different
+	 * node stores (one node store per concrete object type).
+	 */
+    private CollectionType getRelatedInstancesOfTheExactType(String objectId, Property property, Classifier propertyType) {
         IntegerKey key = objectIdToKey(objectId);
         if (!getNodeStore().containsNode(key))
-            return CollectionType.createCollectionFor(property);
+            return CollectionType.createCollection(propertyType, true, false);
         RuntimeObject loaded = getOrLoadInstance(key);
         if (loaded == null)
-            return CollectionType.createCollectionFor(property);
-        return CollectionType.createCollectionFor(property, loaded.getRelated(property));
+            return CollectionType.createCollection(propertyType, true, false);
+        return CollectionType.createCollectionFor(property, loaded.getRelated(property, propertyType));
     }
 
     public Runtime getRuntime() {
@@ -212,7 +230,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         RuntimeObject newObject;
 
         if (persistent && !runtime.getCurrentContext().isReadOnly()) {
-            newObject = new RuntimeObject(this, getNodeStoreCatalog().newNode());
+            newObject = new RuntimeObject(this, getNodeStoreCatalog().newNode(getNodeStoreName()));
         } else
             newObject = new RuntimeObject(this);
         if (initDefaults)

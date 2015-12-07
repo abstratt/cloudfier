@@ -188,16 +188,18 @@ public class KirraHelper {
     }
 
     /**
-     * Tests whether a type is an entity type. A type is an entity type if: - it
-     * is a classifier - it is marked with the Entity stereotype - it has at
-     * least a property, even if derived - OR ELSE USERS CAN'T MAKE SENSE OF
-     * IT!!!
+     * Tests whether a type is an entity type. A type is an entity type if: 
+     * 
+     * - it is a classifier 
+     * - it is marked with the Entity stereotype 
+     * - it is virtual or has at least a property, even if derived - OR ELSE USERS CAN'T MAKE SENSE OF IT!!!
      */
     public static boolean isEntity(final Type type) {
         return get(type, "isEntity", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return isBasicallyAnEntity(type) && !isService(type) && hasProperties((Classifier) type);
+                Classifier asClassifier = (Classifier) type;
+				return isBasicallyAnEntity(type) && !isService(type) && (asClassifier.isAbstract() || hasProperties(asClassifier));
             }
         });
     }
