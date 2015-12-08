@@ -31,29 +31,28 @@
 			<unit id="org.apache.commons.fileupload" version="0.0.0" />
             <unit id="org.apache.commons.collections" version="0.0.0" />	
             <unit id="org.apache.commons.httpclient" version="0.0.0" />			
-			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20140525021250/repository/" />
+			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/" />
 		</location>
 				
-		<location includeAllPlatforms="false" includeMode="planner"
-			includeSource="true" type="InstallableUnit">
-			<unit id="org.restlet" version="2.2.0.v20140327-1540" />
-			<unit id="org.restlet.ext.servlet" version="2.2.0.v20140327-1540" />
-			<unit id="org.restlet.ext.xml" version="2.2.0.v20140327-1540" />
-			<unit id="org.restlet.ext.fileupload" version="2.2.0.v20140327-1540" />
-			<unit id="org.restlet.ext.crypto" version="2.2.0.v20140327-1540" />
-			<unit id="org.restlet.ext.jaxrs" version="2.2.0.v20140327-1540" />
-			<unit id="org.restlet.ext.jackson" version="2.2.0.v20140327-1540" />
+        <location includeAllPlatforms="false" includeMode="planner"
+            includeSource="true" type="InstallableUnit">		
+			<unit id="org.restlet" version="0.0.0" />
+			<unit id="org.restlet.ext.servlet" version="0.0.0" />
+			<unit id="org.restlet.ext.xml" version="0.0.0" />
+			<unit id="org.restlet.ext.fileupload" version="0.0.0" />
+			<unit id="org.restlet.ext.crypto" version="0.0.0" />
+			<unit id="org.restlet.ext.jaxrs" version="0.0.0" />
+			<unit id="org.restlet.ext.jackson" version="0.0.0" />
 			
             <!-- piggybacking on Restlet's repo while we can for these. -->
-            <unit id="javax.ws.rs.jsr311-api" version="0.0.0" />
-            <unit id="com.fasterxml.jackson.core.jackson-annotations" version="2.1.0" />
-            <unit id="com.fasterxml.jackson.core.jackson-core" version="2.1.0" />
-            <unit id="com.fasterxml.jackson.core.jackson-databind" version="2.1.0" />
-
-            <unit id="com.google.gson" version="2.2.4" />
+			<unit id="javax.ws.rs.jsr311-api" version="0.0.0" />
+            <unit id="com.google.gson" version="0.0.0" />
+            <unit id="com.fasterxml.jackson.core.jackson-annotations" version="0.0.0" />
+            <unit id="com.fasterxml.jackson.core.jackson-core" version="0.0.0" />
+            <unit id="com.fasterxml.jackson.core.jackson-databind" version="0.0.0" />
             
             <repository location="http://p2.restlet.org/2.2/" />
-		</location>
+        </location>
 
 		<location includeAllPlatforms="false" includeMode="planner"
 			includeSource="true" type="InstallableUnit">
