@@ -15,6 +15,7 @@ import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.StructuredActivityNode;
 import org.eclipse.uml2.uml.Variable;
 
+import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.nodestore.INodeKey;
@@ -218,14 +219,14 @@ public class ExecutionContext {
             return variables.values();
         }
 
-        public Object getVariableValue(Variable variable) {
+        public BasicType getVariableValue(Variable variable) {
             final RuntimeVariable runtimeVariable = getVariable(variable);
             if (runtimeVariable == null)
                 throw new IllegalArgumentException("Unknown variable " + variable.getName());
             return runtimeVariable.getValue();
         }
 
-        public void setVariableValue(Variable variable, Object value) {
+        public void setVariableValue(Variable variable, BasicType value) {
             final RuntimeVariable runtimeVariable = getVariable(variable);
             if (runtimeVariable == null)
                 throw new IllegalArgumentException("Unknown variable '" + variable.getName() + "'");
@@ -366,7 +367,7 @@ public class ExecutionContext {
      * @param attribute
      * @return
      */
-    public Object getVariableValue(Variable variable) {
+    public BasicType getVariableValue(Variable variable) {
         return currentFrame().currentScope().getVariableValue(variable);
     }
 
@@ -498,7 +499,7 @@ public class ExecutionContext {
         }
     }
 
-    public void setVariableValue(Variable variable, Object value) {
+    public void setVariableValue(Variable variable, BasicType value) {
         currentFrame().currentScope().setVariableValue(variable, value);
     }
 

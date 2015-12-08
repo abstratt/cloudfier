@@ -6,7 +6,6 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Properties;
 import java.util.function.BiConsumer;
-import java.util.function.BiPredicate;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Enumeration;
@@ -252,10 +251,10 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         source += "  end;\n";
         source += "end.";
         parseAndCheck(source);
-        IntegerType result1 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] {null} );
+        IntegerType result1 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new BasicType[] {null} );
         assertEquals((Long) (new Date().getYear() + 1900L), result1.primitiveValue());
         
-        IntegerType result2 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new Object[] { DateType.fromValue(new Date(1974 - 1900, 0, 1))});
+        IntegerType result2 = (IntegerType) runStaticOperation("someModel::Helper", "getYear", new BasicType[] { DateType.fromValue(new Date(1974 - 1900, 0, 1))});
         assertEquals((Long) (1974L), result2.primitiveValue());
     }
 

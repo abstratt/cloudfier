@@ -84,36 +84,36 @@ public class Runtime {
         context.enter(readOnly);
     }
 
-    public List<BasicType> getAllInstances(final Classifier baseClass, boolean includeSubclasses) {
-        return collectInstancesFromHierarchy((Classifier) baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).getAllInstances().getBackEnd());
+    public List<RuntimeObject> getAllInstances(final Classifier baseClass, boolean includeSubclasses) {
+        return collectInstancesFromHierarchy((Classifier) baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).getAllInstances());
     }
     
-    public Collection<BasicType> getParameterDomain(Class baseClass, String externalId, org.eclipse.uml2.uml.Parameter parameter, boolean includeSubclasses) {
+    public Collection<RuntimeObject> getParameterDomain(Class baseClass, String externalId, org.eclipse.uml2.uml.Parameter parameter, boolean includeSubclasses) {
     	RuntimeClass targetClass = getRuntimeClass(baseClass);
-    	return collectInstancesFromHierarchy((Classifier) parameter.getType(), includeSubclasses, currentClass -> targetClass.getParameterDomain(externalId, parameter, currentClass).getBackEnd());
+    	return collectInstancesFromHierarchy((Classifier) parameter.getType(), includeSubclasses, currentClass -> targetClass.getParameterDomain(externalId, parameter, currentClass));
     }
     
-    public Collection<BasicType> getPropertyDomain(Class baseClass, String objectId, org.eclipse.uml2.uml.Property property, boolean includeSubclasses) {
+    public Collection<RuntimeObject> getPropertyDomain(Class baseClass, String objectId, org.eclipse.uml2.uml.Property property, boolean includeSubclasses) {
     	RuntimeClass targetClass = getRuntimeClass(baseClass);    	
-    	return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> targetClass.getPropertyDomain(objectId, property, currentClass).getBackEnd());
+    	return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> targetClass.getPropertyDomain(objectId, property, currentClass));
     }
 
-    public Collection<BasicType> getRelatedInstances(Class umlClass, String objectId, org.eclipse.uml2.uml.Property property) {
+    public Collection<RuntimeObject> getRelatedInstances(Class umlClass, String objectId, org.eclipse.uml2.uml.Property property) {
     	RuntimeClass targetClass = getRuntimeClass(umlClass);
     	return targetClass.getRelatedInstances(objectId, property);
     }
     
-    public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
+    public List<RuntimeObject> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
     	return findInstances(baseClass, criteria, false);
     }
 
-    public List<BasicType> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria, boolean includeSubclasses) {
+    public List<RuntimeObject> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria, boolean includeSubclasses) {
         if (criteria.isEmpty())
             return getAllInstances(baseClass, includeSubclasses);
-        return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).filterInstances(criteria).getBackEnd());
+        return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).filterInstances(criteria));
     }
 
-    private List<BasicType> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<BasicType>> collector) {
+    private List<RuntimeObject> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {
     	return RuntimeUtils.collectInstancesFromHierarchy(getRepository(), baseClass, includeSubclasses, collector);
     }
     
@@ -202,7 +202,7 @@ public class Runtime {
         this.externalMetaClass.register(externalDelegate);
     }
 
-    public Object runBehavior(RuntimeObject target, String frameName, Activity behavior, Object... arguments) {
+    public BasicType runBehavior(RuntimeObject target, String frameName, Activity behavior, BasicType... arguments) {
         final StructuredActivityNode main = ActivityUtils.getBodyNode(behavior);
         context.newFrame(behavior, target, frameName);
         try {
@@ -234,17 +234,17 @@ public class Runtime {
     /**
      * Runs an operation against an object.
      */
-    public Object runOperation(ActorSelector currentActor, final BasicType target, final Operation operation, final Object... arguments) {
+    public BasicType runOperation(ActorSelector currentActor, final BasicType target, final Operation operation, final BasicType... arguments) {
         Assert.isNotNull(operation);
-        return runSession(new Session<Object>() {
+        return runSession(new Session<BasicType>() {
             @Override
-            public Object run() {
+            public BasicType run() {
                 return basicRunOperation(target, operation, arguments);
             }
         });
     }
 
-    public Object runOperation(BasicType target, Operation operation, Object... arguments) {
+    public BasicType runOperation(BasicType target, Operation operation, BasicType... arguments) {
         return runOperation(null, target, operation, arguments);
     }
 
@@ -273,7 +273,7 @@ public class Runtime {
         nodeStoreCatalog.zap();
     }
 
-    private Object basicRunOperation(BasicType target, Operation operation, Object... arguments) {
+    private BasicType basicRunOperation(BasicType target, Operation operation, BasicType... arguments) {
         MetaClass<?> metaClass;
         String className = target == null ? operation.getClass_().getQualifiedName() : target.getClassifierName();
         if (target != null)
@@ -286,7 +286,7 @@ public class Runtime {
             Assert.isLegal(target == null, "operation '" + operation.getQualifiedName() + "' is static, wrong target");
         else
             Assert.isLegal(target != null, "operation '" + operation.getQualifiedName() + "' is not static, wrong target");
-        Object result = metaClass.runOperation(context, target, operation, arguments);
+        BasicType result = metaClass.runOperation(context, target, operation, arguments);
         return result;
     }
 

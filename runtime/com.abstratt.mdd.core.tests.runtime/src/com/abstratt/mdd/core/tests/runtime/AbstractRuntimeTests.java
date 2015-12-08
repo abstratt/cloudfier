@@ -64,7 +64,7 @@ public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
     /**
      * This convenience method does NOT do parameter-based matching.
      */
-    public Object runOperation(BasicType target, String operationName, Object... arguments) {
+    public BasicType runOperation(BasicType target, String operationName, BasicType... arguments) {
         Classifier classifier = (Classifier) getRepository().findNamedElement(target.getClassifierName(),
                 IRepository.PACKAGE.getClassifier(), null);
         TestCase.assertNotNull(target.getClassifierName(), classifier);
@@ -76,7 +76,7 @@ public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
     /**
      * This convenience method does NOT do parameter-based matching.
      */
-    public Object runStaticOperation(String className, String operationName, Object... arguments) {
+    public Object runStaticOperation(String className, String operationName, BasicType... arguments) {
         Class classifier = (Class) getRepository().findNamedElement(className, IRepository.PACKAGE.getClass_(), null);
         TestCase.assertNotNull("Not found: " + className, classifier);
         Operation operation = FeatureUtils.findOperation(getRepository(), classifier, operationName, null);

@@ -32,7 +32,7 @@ public class ExternalMetaClass implements MetaClass<ExternalObject> {
 
     }
 
-    public void processSignal(BasicType target, Signal signal, Object... arguments) {
+    public void processSignal(BasicType target, Signal signal, BasicType... arguments) {
         delegate.receiveSignal(getClassifier((ExternalObject) target), signal, arguments);
     }
 
@@ -41,7 +41,7 @@ public class ExternalMetaClass implements MetaClass<ExternalObject> {
     }
 
     @Override
-    public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+    public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
         return delegate.getData(getClassifier((ExternalObject) target), operation, arguments);
     }
 

@@ -10,7 +10,7 @@ import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.Constants;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
-import com.abstratt.mdd.core.runtime.types.BasicType;
+import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 
 public class RuntimeReadExtentAction extends RuntimeAction implements Constants {
@@ -22,7 +22,7 @@ public class RuntimeReadExtentAction extends RuntimeAction implements Constants 
     public void executeBehavior(ExecutionContext context) {
         ReadExtentAction instance = (ReadExtentAction) getInstance();
         Classifier classifier = instance.getClassifier();
-        List<BasicType> allInstances = context.getRuntime().getAllInstances(classifier, false);
+        List<RuntimeObject> allInstances = context.getRuntime().getAllInstances(classifier, false);
         addResultValue(instance.getResult(), CollectionType.createCollectionFor(instance.getResult(), allInstances));
     }
 }

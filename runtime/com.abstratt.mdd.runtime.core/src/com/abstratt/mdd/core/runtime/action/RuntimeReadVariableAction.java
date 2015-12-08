@@ -19,6 +19,6 @@ public class RuntimeReadVariableAction extends RuntimeAction implements Constant
     @Override
     public void executeBehavior(ExecutionContext context) {
         ReadVariableAction instance = (ReadVariableAction) this.getInstance();
-        addResultValue(instance.getResult(), (BasicType) context.getVariableValue(instance.getVariable()));
+        addResultValue(instance.getResult(), context.getVariableValue(instance.getVariable()));
     }
 }

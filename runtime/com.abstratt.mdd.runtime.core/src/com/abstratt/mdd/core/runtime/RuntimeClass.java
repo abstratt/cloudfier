@@ -82,22 +82,24 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         return StateMachineUtils.findStateSpecificOperations((BehavioredClassifier) getModelClassifier());
     }
 
-    public final CollectionType getAllInstances() {
+    public final Collection<RuntimeObject> getAllInstances() {
     	if (!this.isPersistable())
-    		return CollectionType.createCollection(classifier, true, false, Collections.emptySet());
+    		return Collections.emptySet();
         Collection<RuntimeObject> fromDB = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().getNodeKeys()));
         fromDB.addAll(getRuntime().getCurrentContext().getWorkingObjects(this));
-        Collection<RuntimeObject> allInstances = fromDB;
-        return CollectionType.createCollection(classifier, true, false, allInstances);
+        return fromDB;
+    }
+    
+    public final CollectionType getExtent() {
+    	return CollectionType.createCollection(getModelClassifier(), getAllInstances());
     }
     
     private boolean isPersistable() {
 		return !classifier.isAbstract() && classifier.eClass() == UMLPackage.Literals.CLASS;
 	}
 
-	public final CollectionType filterInstances(Map<Property, List<BasicType>> criteria) {
-        Collection<RuntimeObject> runtimeObjects = findInstances(criteria, null);
-        return CollectionType.createCollection(classifier, true, false, new LinkedHashSet<RuntimeObject>(runtimeObjects));
+	public final Collection<RuntimeObject> filterInstances(Map<Property, List<BasicType>> criteria) {
+        return findInstances(criteria, null);
     }
 
     private Collection<RuntimeObject> findInstances(Map<Property, List<BasicType>> criteria, Integer limit) {
@@ -146,30 +148,30 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
 		return getModelClassifier().getQualifiedName();
 	}
 
-    public CollectionType getParameterDomain(String externalId, Parameter parameter, Classifier parameterType) {
+    public Collection<RuntimeObject> getParameterDomain(String externalId, Parameter parameter, Classifier parameterType) {
         IntegerKey key = objectIdToKey(externalId);
         if (!getNodeStore().containsNode(key))
-            return CollectionType.createCollection(parameterType, true, false);
-        return CollectionType.createCollection(parameterType, true, false, getOrLoadInstance(key).getParameterDomain(parameter, parameterType));
+            return Collections.emptySet();
+        return getOrLoadInstance(key).getParameterDomain(parameter, parameterType);
     }
 
-    public CollectionType getPropertyDomain(String objectId, Property property, Classifier propertyType) {
+    public Collection<RuntimeObject> getPropertyDomain(String objectId, Property property, Classifier propertyType) {
         IntegerKey key = objectIdToKey(objectId);
         if (!getNodeStore().containsNode(key))
-            return CollectionType.createCollection(propertyType, true, false);
+            return Collections.emptySet();
         RuntimeObject instance = getOrLoadInstance(key);
 		Collection<RuntimeObject> propertyDomain = instance.getPropertyDomain(property, propertyType);
-		Collection<BasicType> alreadyRelated = getRelatedInstances(objectId, property);
+		Collection<RuntimeObject> alreadyRelated = getRelatedInstances(objectId, property);
 		propertyDomain.removeAll(alreadyRelated);
-		return CollectionType.createCollection(propertyType, true, false, propertyDomain);
+		return propertyDomain;
     }
     
     /**
      * Returns the related instances via the given property, even if the association is polymorphic. 
      */
-	public Collection<BasicType> getRelatedInstances(String objectId, Property property) {
+	public Collection<RuntimeObject> getRelatedInstances(String objectId, Property property) {
         Classifier baseClass = (Classifier) property.getType();
-		return RuntimeUtils.collectInstancesFromHierarchy(getRuntime().getRepository(), baseClass, true, currentClass -> getRelatedInstancesOfTheExactType(objectId, property, currentClass).getBackEnd());
+		return RuntimeUtils.collectInstancesFromHierarchy(getRuntime().getRepository(), baseClass, true, currentClass -> getRelatedInstancesOfTheExactType(objectId, property, currentClass));
 	}
 
 	/**
@@ -177,14 +179,14 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
 	 * which is required given that in a polymorphic relationship, we will find related instances on different
 	 * node stores (one node store per concrete object type).
 	 */
-    private CollectionType getRelatedInstancesOfTheExactType(String objectId, Property property, Classifier propertyType) {
+    private Collection<RuntimeObject> getRelatedInstancesOfTheExactType(String objectId, Property property, Classifier propertyType) {
         IntegerKey key = objectIdToKey(objectId);
         if (!getNodeStore().containsNode(key))
-            return CollectionType.createCollection(propertyType, true, false);
+            return Collections.emptyList();
         RuntimeObject loaded = getOrLoadInstance(key);
         if (loaded == null)
-            return CollectionType.createCollection(propertyType, true, false);
-        return CollectionType.createCollectionFor(property, loaded.getRelated(property, propertyType));
+            return Collections.emptyList();
+        return loaded.getRelated(property, propertyType);
     }
 
     public Runtime getRuntime() {
@@ -239,7 +241,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     @Override
-    public final Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+    public final BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
         if (operation.isStatic())
             return getClassObject().runBehavioralFeature(operation, arguments);
         return ((RuntimeObject) target).runBehavioralFeature(operation, arguments);
@@ -263,7 +265,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     protected Collection<RuntimeObject> nodesToRuntimeObjects(Collection<INodeKey> keys) {
-        Collection<RuntimeObject> result = new HashSet<RuntimeObject>();
+        Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
         for (INodeKey key : keys) {
             RuntimeObject related = getInstance(key);
             if (related != null)

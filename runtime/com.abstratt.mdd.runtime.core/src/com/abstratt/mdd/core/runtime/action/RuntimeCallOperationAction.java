@@ -49,9 +49,9 @@ public class RuntimeCallOperationAction extends RuntimeAction {
             }
         }
 
-        Object result = context.getRuntime().runOperation(target, operation, arguments.toArray());
+        BasicType result = context.getRuntime().runOperation(target, operation, arguments.toArray(new BasicType[0]));
         if (resultPin != null)
-            addResultValue(resultPin, (BasicType) result);
+            addResultValue(resultPin, result);
     }
 
     @Override

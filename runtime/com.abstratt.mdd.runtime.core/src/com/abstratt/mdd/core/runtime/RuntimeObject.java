@@ -139,8 +139,8 @@ public class RuntimeObject extends BasicType {
         getCurrentContext().addToWorkingSet(this);
     }
 
-    public Map<String, Object> buildArgumentMap(BehavioralFeature behavioralFeature, Object... arguments) {
-        Map<String, Object> argumentsPerParameter = new HashMap<String, Object>();
+    public Map<String, BasicType> buildArgumentMap(BehavioralFeature behavioralFeature, BasicType... arguments) {
+        Map<String, BasicType> argumentsPerParameter = new HashMap<String, BasicType>();
         List<Parameter> inParameters = FeatureUtils.filterParameters(behavioralFeature.getOwnedParameters(),
                 ParameterDirectionKind.IN_LITERAL);
         Assert.isLegal(arguments.length == inParameters.size(), "parameter and argument counts don't match: " + arguments.length + " != "
@@ -155,7 +155,7 @@ public class RuntimeObject extends BasicType {
 
     public Constraint checkConstraints(Classifier scope, String kind) {
         List<Constraint> invariants = MDDExtensionUtils.findConstraints(scope, kind);
-        Constraint partial = checkConstraints(invariants, Collections.<String, Object> emptyMap());
+        Constraint partial = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
         if (partial != null)
             return partial;
         for (Classifier general : scope.getGenerals()) {
@@ -168,7 +168,7 @@ public class RuntimeObject extends BasicType {
 
     public Constraint checkConstraints(NamedElement scope, String kind) {
         List<Constraint> constraints = MDDExtensionUtils.findConstraints(scope, kind);
-        return checkConstraints(constraints, Collections.<String, Object> emptyMap());
+        return checkConstraints(constraints, Collections.<String, BasicType> emptyMap());
     }
 
     public Constraint checkConstraints(String kind) {
@@ -207,7 +207,7 @@ public class RuntimeObject extends BasicType {
         if (!isActive())
             return;
         List<Constraint> invariants = MDDExtensionUtils.findOwnedInvariantConstraints(getRuntimeClass().getModelClassifier());
-        Constraint violated = checkConstraints(invariants, Collections.<String, Object> emptyMap());
+        Constraint violated = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
         if (violated != null)
             constraintViolated(MDDExtensionUtils.getInvariantScope(violated), violated);
     }
@@ -269,7 +269,7 @@ public class RuntimeObject extends BasicType {
         RuntimeClass parameterRuntimeClass = getRuntime().getRuntimeClass(parameterType);
         Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
         List<Constraint> constraints = parameter.getOperation().getPreconditions();
-        Collection<BasicType> candidates = parameterRuntimeClass.getAllInstances().getBackEnd();
+        Collection<RuntimeObject> candidates = parameterRuntimeClass.getAllInstances();
         candidateLoop: for (BasicType candidate : candidates) {
             for (Constraint constraint : constraints) {
                 Behavior behavior = ActivityUtils.resolveBehaviorReference(constraint.getSpecification());
@@ -286,7 +286,7 @@ public class RuntimeObject extends BasicType {
                     // has one parameter but is for a different operation
                     // parameter
                     continue;
-                Map<String, Object> argumentsPerParameter = Collections.singletonMap(parameter.getName(), (Object) candidate);
+                Map<String, BasicType> argumentsPerParameter = Collections.singletonMap(parameter.getName(), candidate);
                 if (!isConstraintSatisfied(constraint, argumentsPerParameter))
                     continue candidateLoop;
             }
@@ -299,7 +299,7 @@ public class RuntimeObject extends BasicType {
         RuntimeClass propertyRuntimeClass = getRuntime().getRuntimeClass((Classifier) propertyType);
         Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
         List<Constraint> constraints = MDDExtensionUtils.findInvariantConstraints(property);
-        Collection<BasicType> candidates = propertyRuntimeClass.getAllInstances().getBackEnd();
+        Collection<RuntimeObject> candidates = propertyRuntimeClass.getAllInstances();
         candidateLoop: for (BasicType candidate : candidates) {
             for (Constraint constraint : constraints) {
                 Behavior behavior = ActivityUtils.resolveBehaviorReference(constraint.getSpecification());
@@ -357,7 +357,7 @@ public class RuntimeObject extends BasicType {
             Signal signal = runtimeMessageEvent.getMessage();
             Reception reception = ReceptionUtils.findBySignal(this.getRuntimeClass().getModelClassifier(), signal);
             if (reception != null)
-                runBehavioralFeature(reception, new Object[] { runtimeMessageEvent.getArguments() });
+                runBehavioralFeature(reception, runtimeMessageEvent.getArguments());
         }
         for (Property stateProperty : StateMachineUtils.findStateProperties(getRuntimeClass().getModelClassifier())) {
             StateMachine stateMachine = (StateMachine) stateProperty.getType();
@@ -404,10 +404,10 @@ public class RuntimeObject extends BasicType {
         return isConstraintSatisfied(constraint, null);
     }
 
-    public boolean isConstraintSatisfied(Constraint constraint, Map<String, Object> argumentsPerParameter) {
+    public boolean isConstraintSatisfied(Constraint constraint, Map<String, BasicType> argumentsPerParameter) {
         Activity toExecute = (Activity) ActivityUtils.resolveBehaviorReference(constraint.getSpecification());
 
-        List<Object> argumentValues = new ArrayList<Object>();
+        List<BasicType> argumentValues = new ArrayList<BasicType>();
         List<Parameter> constraintParameters = FeatureUtils.filterParameters(toExecute.getOwnedParameters(),
                 ParameterDirectionKind.IN_LITERAL, ParameterDirectionKind.INOUT_LITERAL);
         if (!constraintParameters.isEmpty()) {
@@ -416,11 +416,11 @@ public class RuntimeObject extends BasicType {
             for (Parameter inputParameters : constraintParameters)
                 argumentValues.add(argumentsPerParameter.get(inputParameters.getName()));
         }
-        Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute, argumentValues.toArray());
+        Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute, argumentValues.toArray(new BasicType[0]));
         return behaviorResult != null && ((BooleanType) behaviorResult).isTrue();
     }
 
-    public boolean isEnabledOperation(Operation operation, Map<String, Object> argumentsPerParameter) {
+    public boolean isEnabledOperation(Operation operation, Map<String, BasicType> argumentsPerParameter) {
         Map<Operation, List<Vertex>> stateSpecificOperations = getRuntimeClass().findStateSpecificOperations();
         if (stateSpecificOperations.containsKey(operation))
             if (!isInState(stateSpecificOperations.get(operation)))
@@ -487,12 +487,12 @@ public class RuntimeObject extends BasicType {
         markClear();
     }
 
-    public Object runBehavioralFeature(BehavioralFeature behavioralFeature, Object... arguments) {
+    public BasicType runBehavioralFeature(BehavioralFeature behavioralFeature, BasicType... arguments) {
         Operation asOperation = (Operation) (behavioralFeature instanceof Operation ? behavioralFeature : null);
         // try to run behavior defined for operation (if any)
         ensureActive();
         if (asOperation != null) {
-            Map<String, Object> argumentsPerParameter = buildArgumentMap(behavioralFeature, arguments);
+            Map<String, BasicType> argumentsPerParameter = buildArgumentMap(behavioralFeature, arguments);
             Constraint violated = this.checkConstraints(asOperation.getPreconditions(), argumentsPerParameter);
             if (violated != null)
                 constraintViolated(behavioralFeature, violated);
@@ -587,7 +587,7 @@ public class RuntimeObject extends BasicType {
         getNodeStore().unlinkNodes(getKey(), end.getName(), other.nodeReference());
     }
 
-    protected Constraint checkConstraints(List<Constraint> constraints, Map<String, Object> arguments) {
+    protected Constraint checkConstraints(List<Constraint> constraints, Map<String, BasicType> arguments) {
         try {
             getNode();
         } catch (NotFoundException e) {
@@ -677,7 +677,7 @@ public class RuntimeObject extends BasicType {
         }
     }
 
-    protected void publishEvent(Operation operation, Object... arguments) {
+    protected void publishEvent(Operation operation, BasicType... arguments) {
         getCurrentContext().publishEvent(RuntimeMessageEvent.build(operation, this, arguments));
     }
 
@@ -719,11 +719,11 @@ public class RuntimeObject extends BasicType {
         return runtimeObjectToNodeReference();
     }
 
-    Object runBehavior(ExecutionContext context, Behavior behavior, Object... arguments) {
-        return context.getRuntime().runBehavior(this, "", (Activity) behavior, Collections.emptyList(), arguments);
+    BasicType runBehavior(ExecutionContext context, Behavior behavior, BasicType... arguments) {
+        return context.getRuntime().runBehavior(this, "", (Activity) behavior, arguments);
     }
 
-    Object runBehavioralFeatureBehavior(BehavioralFeature operation, Object... arguments) {
+    BasicType runBehavioralFeatureBehavior(BehavioralFeature operation, BasicType... arguments) {
         final Runtime runtime = getRuntime();
         if (operation instanceof Operation && ((Operation) operation).getInterface() != null)
             operation = FeatureUtils.findCompatibleOperation(runtime.getRepository(), this.getRuntimeClass().getModelClassifier(),
@@ -890,11 +890,6 @@ public class RuntimeObject extends BasicType {
 
     private String storeName() {
         return this.getRuntimeClass().getModelClassifier().getQualifiedName();
-    }
-
-    private String storeNameToClassName(String storeName) {
-        // . is the Kirra separator, node stores rely on Kirra for metadata
-        return storeName.replace(".", NamedElement.SEPARATOR);
     }
 
     static Object toExternalValue(BasicType value) {

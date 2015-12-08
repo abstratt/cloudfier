@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.Assert;
 import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
@@ -16,6 +15,7 @@ import junit.framework.TestSuite;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Operation;
+import org.junit.Assert;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.RuntimeClass;
@@ -148,7 +148,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         parseAndCheck(RuntimeCollectionTests.simpleModel, behavior);
         // create accounts
         runStaticOperation("tests::TestDriver", "createAccounts");
-        CollectionType allInstances = getRuntimeClass("simple::Account").getAllInstances();
+        CollectionType allInstances = getRuntimeClass("simple::Account").getExtent();
         // obtain initial balances
         List<Double> initialBalances = new ArrayList<Double>();
         for (BasicType account : allInstances.getBackEnd()) {
@@ -202,7 +202,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         // create accounts
         runStaticOperation("tests::TestDriver", "createAccounts");
         RuntimeClass runtimeClass = getRuntimeClass("simple::Account");
-        CollectionType allInstances = runtimeClass.getAllInstances();
+        CollectionType allInstances = runtimeClass.getExtent();
         // obtain initial balances
         List<IntegerType> initialBalances = new ArrayList<IntegerType>();
         for (BasicType account : allInstances.getBackEnd()) {
@@ -241,16 +241,16 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         // create accounts
         runStaticOperation("tests::TestDriver", "createAccounts");
         RuntimeClass runtimeClass = getRuntimeClass("simple::Account");
-        CollectionType allInstances = runtimeClass.getAllInstances();
+        Collection<RuntimeObject> allInstances = runtimeClass.getAllInstances();
         // obtain initial balances
         Map<RuntimeObject, IntegerType> currentBalances = new HashMap<RuntimeObject, IntegerType>();
-        for (BasicType account : allInstances.getBackEnd())
+        for (BasicType account : allInstances)
             currentBalances.put((RuntimeObject) account, (IntegerType) readAttribute((RuntimeObject) account, "balance"));
         // adjust balances
         int depositedAmount = 50;
-        runStaticOperation("tests::TestDriver", "batchDeposit", allInstances, new IntegerType(depositedAmount));
+        runStaticOperation("tests::TestDriver", "batchDeposit", CollectionType.createCollection(runtimeClass.getModelClassifier(), allInstances), new IntegerType(depositedAmount));
         // compare balances after adjustment
-        for (BasicType account : allInstances.getBackEnd()) {
+        for (BasicType account : allInstances) {
             IntegerType newBalance = (IntegerType) readAttribute((RuntimeObject) account, "balance");
             IntegerType originalBalance = currentBalances.get(account);
             TestCase.assertEquals(new IntegerType((long) originalBalance.asDouble() + depositedAmount), newBalance);
@@ -281,7 +281,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         // create accounts
         runStaticOperation("tests::TestDriver", "createAccounts");
         RuntimeClass runtimeClass = getRuntimeClass("simple::Account");
-        CollectionType allInstances = runtimeClass.getAllInstances();
+        CollectionType allInstances = runtimeClass.getExtent();
         // obtain initial balances
         double expectedSum = 0;
         for (BasicType account : allInstances.getBackEnd()) {
@@ -315,7 +315,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         parseAndCheck(RuntimeCollectionTests.simpleModel, behavior);
         // create accounts
         runStaticOperation("tests::TestDriver", "createAccounts");
-        CollectionType allInstances = getRuntimeClass("simple::Account").getAllInstances();
+        CollectionType allInstances = getRuntimeClass("simple::Account").getExtent();
         // obtain initial balances
         List<Double> initialBalances = new ArrayList<Double>();
         for (BasicType account : allInstances.getBackEnd()) {
@@ -331,7 +331,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
             results.add(((NumberType<?>) readAttribute((RuntimeObject) value, "value")).asDouble());
         Collections.sort(initialBalances);
         Collections.sort(results);
-        Assert.assertEquals(initialBalances, results);
+        org.junit.Assert.assertEquals(initialBalances, results);
     }
 
     public void testNoExtent() throws CoreException {

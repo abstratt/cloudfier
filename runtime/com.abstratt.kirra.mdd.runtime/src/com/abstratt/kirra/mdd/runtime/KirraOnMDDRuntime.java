@@ -54,7 +54,6 @@ import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.mdd.core.KirraHelper;
-import com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder;
 import com.abstratt.kirra.mdd.schema.SchemaManagementOperations;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.NamedElementLookupCache;
@@ -237,7 +236,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     @Override
-    public BasicType getData(Classifier classifier, Operation operation, Object... arguments) {
+    public BasicType getData(Classifier classifier, Operation operation, BasicType... arguments) {
         String namespace = SchemaManagementOperations.getNamespace(classifier);
         List<?> result = getExternalService().executeOperation(namespace, classifier.getName(), operation.getName(),
                 convertArgumentsFromBasicType(operation, arguments));
@@ -300,7 +299,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
     
     public List<Instance> getInstances(String namespace, String name, boolean full) {
-    	return getInstances(namespace, name, full, false);
+    	return getInstances(namespace, name, full, true);
     }
 
     @Override
@@ -482,7 +481,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     @Override
-    public void receiveSignal(Classifier classifier, Signal signal, Object... arguments) {
+    public void receiveSignal(Classifier classifier, Signal signal, BasicType... arguments) {
         String namespace = SchemaManagementOperations.getNamespace(classifier);
         Reception reception = ReceptionUtils.findBySignal(classifier, signal);
         getExternalService().executeOperation(namespace, classifier.getName(), reception.getName(),
@@ -585,7 +584,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         return result;
     }
 
-    protected List<Instance> filterValidInstances(Collection<BasicType> allRuntimeObjects) {
+    protected List<Instance> filterValidInstances(Collection<? extends BasicType> allRuntimeObjects) {
         List<Instance> allInstances = new ArrayList<Instance>(allRuntimeObjects.size());
         for (BasicType current : allRuntimeObjects) {
             RuntimeObject currentRuntimeObject = (RuntimeObject) current;
@@ -621,8 +620,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         if (arguments.size() != inParameters.size())
             throw new KirraException("Operation '" + operation.getName() + "' requires " + inParameters.size() + " arguments, "
                     + arguments.size() + " were provided", null, Kind.ENTITY);
-        Map<String, Object> argumentsPerParameter = new HashMap<String, Object>();
-        Object[] convertedArguments = new Object[inParameters.size()];
+        Map<String, BasicType> argumentsPerParameter = new LinkedHashMap<String, BasicType>();
+        BasicType[] convertedArguments = new BasicType[inParameters.size()];
         for (int i = 0; i < inParameters.size(); i++)
             if (arguments.get(i) != null) {
                 convertedArguments[i] = convertToBasicType(arguments.get(i), inParameters.get(i));
@@ -633,7 +632,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Operation '" + operation.getName() + "' is not valid at this time", null, Kind.VALIDATION);
 
         try {
-            BasicType result = (BasicType) getRuntime().runOperation(null, target, operation, convertedArguments);
+            BasicType result = getRuntime().runOperation(null, target, operation, convertedArguments);
             if (result == null)
                 return Collections.emptyList();
             if (KirraHelper.isFinder(operation))
@@ -645,7 +644,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         }
     }
 
-    private Map<String, Object> convertArgumentsFromBasicType(BehavioralFeature behavioralFeature, Object... arguments) {
+    private Map<String, Object> convertArgumentsFromBasicType(BehavioralFeature behavioralFeature, BasicType... arguments) {
         List<org.eclipse.uml2.uml.Parameter> parameters = FeatureUtils.filterParameters(behavioralFeature.getOwnedParameters(),
                 ParameterDirectionKind.IN_LITERAL, ParameterDirectionKind.INOUT_LITERAL);
         int required = parameters.size();
@@ -655,7 +654,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         Map<String, Object> argumentMap = new LinkedHashMap<String, Object>();
         for (int i = 0; i < arguments.length; i++)
             argumentMap.put(parameters.get(i).getName(),
-                    convertFromBasicType((BasicType) arguments[i], (Classifier) parameters.get(i).getType()));
+                    convertFromBasicType(arguments[i], (Classifier) parameters.get(i).getType()));
         return argumentMap;
     }
 

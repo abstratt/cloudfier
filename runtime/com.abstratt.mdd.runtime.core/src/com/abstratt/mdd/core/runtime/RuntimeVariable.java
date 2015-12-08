@@ -2,9 +2,11 @@ package com.abstratt.mdd.core.runtime;
 
 import org.eclipse.uml2.uml.Variable;
 
+import com.abstratt.mdd.core.runtime.types.BasicType;
+
 public class RuntimeVariable {
 
-    private Object value;
+    private BasicType value;
 
     private Variable variable;
 
@@ -16,11 +18,11 @@ public class RuntimeVariable {
         return variable;
     }
 
-    public Object getValue() {
+    public BasicType getValue() {
         return value;
     }
 
-    public void setValue(Object value) {
+    public void setValue(BasicType value) {
         this.value = value;
     }
 

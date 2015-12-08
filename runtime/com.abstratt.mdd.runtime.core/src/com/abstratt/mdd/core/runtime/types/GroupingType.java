@@ -19,7 +19,7 @@ public class GroupingType extends BuiltInClass {
     public CollectionType groupCollect(ExecutionContext context, ElementReferenceType reference) {
         CollectionType result = CollectionType.createCollection(valueType, true, false);
         for (CollectionType currentGroup : groups.values()) {
-            BasicType mappedGroup = (BasicType) CollectionType.runClosureBehavior(context, reference, currentGroup);
+            BasicType mappedGroup = CollectionType.runClosureBehavior(context, reference, currentGroup);
             result.add(mappedGroup);
         }
         return result;
@@ -38,7 +38,7 @@ public class GroupingType extends BuiltInClass {
     public BasicType groupReduce(ExecutionContext context, ElementReferenceType reference, BasicType initial) {
         BasicType partial = initial;
         for (CollectionType currentGroup : groups.values())
-            partial = (BasicType) CollectionType.runClosureBehavior(context, reference, currentGroup, partial);
+            partial = CollectionType.runClosureBehavior(context, reference, currentGroup, partial);
         return partial;
     }
 

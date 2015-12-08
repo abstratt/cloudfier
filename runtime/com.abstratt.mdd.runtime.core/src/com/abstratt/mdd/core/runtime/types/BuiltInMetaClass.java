@@ -41,7 +41,7 @@ public enum BuiltInMetaClass implements MetaClass<BuiltInClass> {
     }
 
     @Override
-    public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+    public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
         return BasicType.runNativeOperation(context, javaClass, target, operation, arguments);
     }
 }

@@ -39,14 +39,14 @@ public class RuntimeExternalTests extends AbstractRuntimeTests {
         final Operation externalOperation = get("tests::ExternalService::someOperation", UMLPackage.Literals.OPERATION);
         getRuntime().registerExternalDelegate(new ExternalObjectDelegate() {
             @Override
-            public BasicType getData(Classifier classifier, Operation operation, Object... arguments) {
+            public BasicType getData(Classifier classifier, Operation operation, BasicType... arguments) {
                 TestCase.assertSame(externalClass, classifier);
                 TestCase.assertSame(externalOperation, operation);
                 return ((IntegerType) arguments[0]).add(null, (IntegerType) arguments[1]);
             }
 
             @Override
-            public void receiveSignal(Classifier classifier, Signal signal, Object... arguments) {
+            public void receiveSignal(Classifier classifier, Signal signal, BasicType... arguments) {
             }
         });
         IntegerType result = (IntegerType) runOperation(getRuntime().getInstance(externalClass), "someOperation", new IntegerType(30),
@@ -70,12 +70,12 @@ public class RuntimeExternalTests extends AbstractRuntimeTests {
         final RuntimeObject[] eventReceived = { null };
         getRuntime().registerExternalDelegate(new ExternalObjectDelegate() {
             @Override
-            public BasicType getData(Classifier classifier, Operation operation, Object... arguments) {
+            public BasicType getData(Classifier classifier, Operation operation, BasicType... arguments) {
                 throw new UnsupportedOperationException();
             }
 
             @Override
-            public void receiveSignal(Classifier classifier, Signal received, Object... arguments) {
+            public void receiveSignal(Classifier classifier, Signal received, BasicType... arguments) {
                 TestCase.assertSame(externalClass, classifier);
                 TestCase.assertSame(signal, received);
                 TestCase.assertEquals(1, arguments.length);
@@ -85,7 +85,7 @@ public class RuntimeExternalTests extends AbstractRuntimeTests {
             }
         });
         sendSignal(getRuntime().getInstance(externalClass), "tests::ASignal",
-                Collections.singletonMap("aValue", (BasicType) IntegerType.fromValue(10)));
+                Collections.singletonMap("aValue", IntegerType.fromValue(10)));
         getRuntime().getCurrentContext().processPendingEvents();
         TestCase.assertNotNull(eventReceived[0]);
         BasicType valueReceived = eventReceived[0].getValue(getProperty("tests::ASignal::aValue"));

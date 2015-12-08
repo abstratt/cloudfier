@@ -15,7 +15,6 @@ import org.eclipse.uml2.uml.TypedElement;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.util.ActivityUtils;
-import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 
 public abstract class CollectionType extends BuiltInClass implements Serializable {
@@ -29,6 +28,11 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return ordered ? unique ? new OrderedSetType(baseType, backEnd) : new SequenceType(baseType, backEnd) : unique ? new SetType(
                 baseType, backEnd) : new BagType(baseType, backEnd);
     }
+    
+    public static <E extends BasicType, T extends Collection<E>> CollectionType createCollection(Type baseType, T backEnd) {
+    	return createCollection(baseType, true, false, backEnd);
+    }
+    
 
     public static CollectionType createCollectionFor(MultiplicityElement element) {
         Assert.isTrue(element.isMultivalued(), element.toString());
@@ -46,7 +50,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return CollectionType.createCollection(targetType, element.isUnique(), element.isOrdered(), backEnd);
     }
 
-    protected static Object runClosureBehavior(ExecutionContext context, ElementReferenceType reference, Object... arguments) {
+    protected static BasicType runClosureBehavior(ExecutionContext context, ElementReferenceType reference, BasicType... arguments) {
         Activity closure = (Activity) reference.getElement();
         Assert.isTrue(MDDExtensionUtils.isClosure(closure));
         return context.getRuntime()
@@ -152,7 +156,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         Parameter closureReturnParameter = ActivityUtils.getClosureReturnParameter((Activity) reference.getElement());
         CollectionType result = CollectionType.createCollection(closureReturnParameter.getType(), isUnique(), isOrdered());
         for (BasicType current : backEnd) {
-            BasicType mapped = (BasicType) CollectionType.runClosureBehavior(context, reference, current);
+            BasicType mapped = CollectionType.runClosureBehavior(context, reference, current);
             result.add(mapped);
         }
         return result;
@@ -197,7 +201,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         Map<BasicType, CollectionType> groups = new HashMap<BasicType, CollectionType>();
         Parameter closureReturnParameter = ActivityUtils.getClosureReturnParameter((Activity) reference.getElement());
         for (BasicType current : backEnd) {
-            BasicType groupKey = (BasicType) CollectionType.runClosureBehavior(context, reference, current);
+            BasicType groupKey = CollectionType.runClosureBehavior(context, reference, current);
             CollectionType group = groups.get(groupKey);
             if (group == null)
                 groups.put(groupKey, group = CollectionType.createCollection(closureReturnParameter.getType(), isUnique(), isOrdered()));
@@ -237,7 +241,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     public BasicType reduce(ExecutionContext context, ElementReferenceType reference, BasicType initial) {
         BasicType partial = initial;
         for (BasicType current : backEnd)
-            partial = (BasicType) CollectionType.runClosureBehavior(context, reference, current, partial);
+            partial = CollectionType.runClosureBehavior(context, reference, current, partial);
         return partial;
     }
     

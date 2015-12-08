@@ -14,7 +14,7 @@ public interface MetaClass<T> {
         }
 
         @Override
-        public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+        public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
             throw new UnsupportedOperationException();
         }
     };
@@ -33,5 +33,5 @@ public interface MetaClass<T> {
      * @throws UnsupportedOperationException
      *             if this invokable is not a class object
      */
-    public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments);
+    public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments);
 }

@@ -45,7 +45,7 @@ public class EnumerationType extends BasicType implements Serializable {
             }
 
             @Override
-            public Object runOperation(ExecutionContext context, BasicType target, Operation operation, Object... arguments) {
+            public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
                 return BasicType.runNativeOperation(context, EnumerationType.class, target, operation, arguments);
             }
         };

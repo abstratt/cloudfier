@@ -41,12 +41,10 @@ public class RuntimeUtils {
      * @param collector
      * @return the collected objects
      */
-    public static List<BasicType> collectInstancesFromHierarchy(IRepository repository, Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<BasicType>> collector) {
-    	BiConsumer<Classifier, List<BasicType>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
-    	return ClassifierUtils.collectFromHierarchy(repository, baseClass, includeSubclasses, new ArrayList<BasicType>(), consumer);
+    public static List<RuntimeObject> collectInstancesFromHierarchy(IRepository repository, Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {
+    	BiConsumer<Classifier, List<RuntimeObject>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
+    	return ClassifierUtils.collectFromHierarchy(repository, baseClass, includeSubclasses, new ArrayList<RuntimeObject>(), consumer);
     }
-
-	
 
     public static BasicType extractValueFromSpecification(RuntimeObject self, ValueSpecification valueSpec) {
         if (MDDExtensionUtils.isBasicValue(valueSpec))
@@ -56,7 +54,7 @@ public class RuntimeUtils {
             if (ActivityUtils.getClosureInputParameters(behavior).size() == 0) {
                 // no parameters, evaluate on the spot
                 Runtime runtime = Runtime.get();
-                return (BasicType) runtime.runBehavior(self, behavior.getName(), behavior);
+                return runtime.runBehavior(self, behavior.getName(), behavior);
             }
             return new ElementReferenceType(behavior);
         }
