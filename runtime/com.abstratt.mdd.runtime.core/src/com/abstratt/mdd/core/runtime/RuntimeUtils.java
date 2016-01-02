@@ -1,8 +1,9 @@
 package com.abstratt.mdd.core.runtime;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -41,9 +42,10 @@ public class RuntimeUtils {
      * @param collector
      * @return the collected objects
      */
-    public static List<RuntimeObject> collectInstancesFromHierarchy(IRepository repository, Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {
-    	BiConsumer<Classifier, List<RuntimeObject>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
-    	return ClassifierUtils.collectFromHierarchy(repository, baseClass, includeSubclasses, new ArrayList<RuntimeObject>(), consumer);
+    public static <T extends Collection<RuntimeObject>> T collectInstancesFromHierarchy(IRepository repository, T allCollected, Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {
+    	BiConsumer<Classifier, Collection<RuntimeObject>> consumer = (classifier, collected) -> collected.addAll(collector.apply(classifier));
+    	ClassifierUtils.collectFromHierarchy(repository, baseClass, includeSubclasses, allCollected, consumer);
+    	return allCollected;
     }
 
     public static BasicType extractValueFromSpecification(RuntimeObject self, ValueSpecification valueSpec) {

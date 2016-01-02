@@ -621,11 +621,8 @@ public class RuntimeObject extends BasicType {
             return Collections.singleton(singleReference);
         }
         CollectionType derivedCollection = (CollectionType) derivedValue(property);
-        Collection<BasicType> backEnd = derivedCollection.getBackEnd();
-        ArrayList<RuntimeObject> result = new ArrayList<RuntimeObject>(backEnd.size());
-        for (BasicType basicType : backEnd)
-            result.add((RuntimeObject) basicType);
-        return result;
+        Collection<BasicType> existing = derivedCollection.getBackEnd();
+        return CollectionType.createCollectionBackEndFor(property, existing);
     }
 
     protected ExecutionContext getCurrentContext() {

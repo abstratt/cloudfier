@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import org.eclipse.core.runtime.Assert;
@@ -29,7 +28,6 @@ import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BuiltInMetaClass;
 import com.abstratt.mdd.core.util.ActivityUtils;
-import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.nodestore.INodeKey;
@@ -114,9 +112,8 @@ public class Runtime {
     }
 
     private List<RuntimeObject> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {
-    	return RuntimeUtils.collectInstancesFromHierarchy(getRepository(), baseClass, includeSubclasses, collector);
+    	return RuntimeUtils.collectInstancesFromHierarchy(getRepository(), new ArrayList<RuntimeObject>(), baseClass, includeSubclasses, collector);
     }
-    
 
     public RuntimeObject findOneInstance(Class baseClass, Map<Property, List<BasicType>> criteria) {
         RuntimeClass runtimeClass = getRuntimeClass(baseClass);

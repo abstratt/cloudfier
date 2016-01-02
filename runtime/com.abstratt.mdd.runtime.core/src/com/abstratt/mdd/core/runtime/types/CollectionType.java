@@ -1,9 +1,12 @@
 package com.abstratt.mdd.core.runtime.types;
 
 import java.io.Serializable;
+import java.util.AbstractCollection;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 import org.eclipse.core.runtime.Assert;
@@ -19,7 +22,7 @@ import com.abstratt.mdd.core.util.MDDExtensionUtils;
 
 public abstract class CollectionType extends BuiltInClass implements Serializable {
     public static CollectionType createCollection(Type baseType, boolean unique, boolean ordered) {
-        return CollectionType.createCollection(baseType, unique, ordered, new HashSet<BasicType>());
+        return CollectionType.createCollection(baseType, unique, ordered, Collections.emptyList());
     }
 
     public static <E extends BasicType, T extends Collection<E>> CollectionType createCollection(Type baseType, boolean unique,
@@ -27,6 +30,19 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         assert baseType != null;
         return ordered ? unique ? new OrderedSetType(baseType, backEnd) : new SequenceType(baseType, backEnd) : unique ? new SetType(
                 baseType, backEnd) : new BagType(baseType, backEnd);
+    }
+    
+    public static <E extends BasicType, T extends Collection<E>> T createCollectionBackEndFor(MultiplicityElement element, Collection<? extends BasicType> existing) {
+    	return createCollectionBackEndFor(((TypedElement) element).getType(), element.isUnique(), element.isOrdered(), existing);
+    }
+    
+    public static <E extends BasicType, F extends BasicType, T extends Collection<E>> T createCollectionBackEndFor(Type baseType, boolean unique,
+            boolean ordered, Collection<? extends BasicType> existing) {
+        assert baseType != null;
+        Collection<E> backEnd = !ordered && unique ? new LinkedHashSet<E>() : new ArrayList<E>();
+        for (BasicType e : existing) 
+			backEnd.add((E) e);
+		return (T) backEnd;
     }
     
     public static <E extends BasicType, T extends Collection<E>> CollectionType createCollection(Type baseType, T backEnd) {

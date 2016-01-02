@@ -21,6 +21,7 @@ import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Vertex;
 
+import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.util.StateMachineUtils;
@@ -85,7 +86,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     public final Collection<RuntimeObject> getAllInstances() {
     	if (!this.isPersistable())
     		return Collections.emptySet();
-        Collection<RuntimeObject> fromDB = new LinkedHashSet<RuntimeObject>(nodesToRuntimeObjects(getNodeStore().getNodeKeys()));
+        Collection<RuntimeObject> fromDB = nodesToRuntimeObjects(getNodeStore().getNodeKeys());
         fromDB.addAll(getRuntime().getCurrentContext().getWorkingObjects(this));
         return fromDB;
     }
@@ -105,7 +106,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     private Collection<RuntimeObject> findInstances(Map<Property, List<BasicType>> criteria, Integer limit) {
         Map<String, Collection<Object>> nodeCriteria = new LinkedHashMap<String, Collection<Object>>();
         for (Entry<Property, List<BasicType>> entry : criteria.entrySet()) {
-            List<Object> values = new ArrayList<Object>();
+            Collection<Object> values = new LinkedHashSet<Object>();
             for (BasicType basicType : entry.getValue())
                 values.add(RuntimeObject.toExternalValue(basicType));
             nodeCriteria.put(entry.getKey().getName(), values);
@@ -171,7 +172,9 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
      */
 	public Collection<RuntimeObject> getRelatedInstances(String objectId, Property property) {
         Classifier baseClass = (Classifier) property.getType();
-		return RuntimeUtils.collectInstancesFromHierarchy(getRuntime().getRepository(), baseClass, true, currentClass -> getRelatedInstancesOfTheExactType(objectId, property, currentClass));
+		IRepository repository = getRuntime().getRepository();
+		Collection<RuntimeObject> collected = CollectionType.createCollectionBackEndFor(property, Collections.emptyList());
+		return RuntimeUtils.collectInstancesFromHierarchy(repository, collected, baseClass, true, currentClass -> getRelatedInstancesOfTheExactType(objectId, property, currentClass));
 	}
 
 	/**
@@ -186,7 +189,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         RuntimeObject loaded = getOrLoadInstance(key);
         if (loaded == null)
             return Collections.emptyList();
-        return loaded.getRelated(property, propertyType);
+        return CollectionType.createCollectionBackEndFor(property, loaded.getRelated(property, propertyType));
     }
 
     public Runtime getRuntime() {

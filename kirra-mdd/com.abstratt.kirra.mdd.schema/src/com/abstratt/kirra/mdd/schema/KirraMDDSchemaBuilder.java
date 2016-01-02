@@ -2,7 +2,10 @@ package com.abstratt.kirra.mdd.schema;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,13 +61,29 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
             if (!entities.isEmpty() || !services.isEmpty() || !tupleTypes.isEmpty())
                 namespaces.add(buildNamespace(current, entities, services, tupleTypes));
         }
+        Map<TypeRef, Collection<TypeRef>> subTypes = collectSubtypes(namespaces);
         Schema schema = new Schema();
         schema.setNamespaces(namespaces);
+        applySubtypes(schema, subTypes);
         schema.setApplicationName(KirraHelper.getApplicationName(repository, applicationPackages));
         if (!namespaces.isEmpty())
             schema.setBuild(namespaces.get(0).getTimestamp());
         return schema;
     }
+
+	private void applySubtypes(Schema schema, Map<TypeRef, Collection<TypeRef>> subTypesPerSuperType) {
+		subTypesPerSuperType.forEach((superType, subTypes) -> schema.findNamespace(superType.getEntityNamespace()).findEntity(superType.getTypeName()).setSubTypes(subTypes));
+	}
+
+	private Map<TypeRef, Collection<TypeRef>> collectSubtypes(List<Namespace> namespaces) {
+		Map<TypeRef, Collection<TypeRef>> subTypesPerSuperType = new LinkedHashMap<>(); 
+        namespaces.forEach(namespace ->
+        	namespace.getEntities().forEach(subType -> subType.getSuperTypes().forEach( superType ->
+        		subTypesPerSuperType.computeIfAbsent(superType, s -> new LinkedHashSet<TypeRef>()).add(subType.getTypeRef())
+			))
+        );
+        return subTypesPerSuperType;
+	}
 
     private Namespace buildNamespace(Package umlPackage, List<Entity> entities, List<Service> services, List<TupleType> tupleTypes) {
         Namespace namespace = new Namespace(KirraHelper.getName(umlPackage));
@@ -102,7 +121,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setSuperTypes(superTypes);
         return entity;
     }
-
+    
     @Override
     public Operation getEntityOperation(org.eclipse.uml2.uml.Operation umlOperation) {
         if (!KirraHelper.isEntityOperation(umlOperation))
