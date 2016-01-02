@@ -3,7 +3,6 @@ package com.abstratt.mdd.frontend.web;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -12,7 +11,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 
-import org.apache.commons.collections.MapUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -154,7 +152,7 @@ public class PublisherResource extends AbstractWorkspaceResource {
         int packageCount = 0;
         long timestamp = Long.MAX_VALUE;
         List<String> fileElements = new ArrayList<String>();
-        Reference baseReference = ReferenceUtils.getExternal(getReference());
+        Reference baseReference = ReferenceUtils.mapToExternal(getRequest(), getReference());
         String secret = getSecret();
         if (!secret.isEmpty()) {
             baseReference.setQuery(AbstractWorkspaceResource.SECRET_PARAMETER + "=" + getSecret());

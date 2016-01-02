@@ -46,7 +46,7 @@ public class KirraRepositoryFilter extends Filter {
                     KirraContext.setInstanceManagement(kirraRepository);
                     KirraContext.setSchemaManagement(kirraRepository);
                     KirraContext.setBaseURI(KirraReferenceUtils.getBaseReference(request, request.getResourceRef(),
-                            com.abstratt.mdd.frontend.web.Paths.API_V2).toUri());
+                            Paths.API_V2).toUri());
                     try {
                         int result = KirraRepositoryFilter.super.doHandle(request, response);
                         return result;

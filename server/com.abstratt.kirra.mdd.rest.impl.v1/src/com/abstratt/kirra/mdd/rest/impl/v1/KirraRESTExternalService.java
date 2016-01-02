@@ -78,7 +78,7 @@ public class KirraRESTExternalService implements ExternalService {
                     .getRepository()
                     .getProperties()
                     .getProperty(KirraMDDConstants.EXTERNAL_CONNECTOR_URI,
-                            URI.create(ReferenceUtils.INTERNAL_BASE).resolve("/external/").toString());
+                            URI.create(System.getProperty("mdd.external.connector.baseUri", "http://localhost")).resolve("external/").toString());
 
             URI connectorURI = URI.create(uriBase);
             String endpointType = operation.getKind() == OperationKind.Event ? "events" : "retrievers";
