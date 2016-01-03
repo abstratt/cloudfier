@@ -25,6 +25,7 @@ import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Package;
 
 import com.abstratt.kirra.Entity;
+import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.SchemaManagementSnapshot;
 import com.abstratt.kirra.TypeRef;
@@ -402,7 +403,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 
     public void testGenerateRemoveRelated() throws CoreException {
         Class myClass = getClass("mypackage::MyClass6");
-        List<String> stmts = generator.generateRemoveRelated(schema.getEntity(ref(myClass)).getRelationship("myClass7s"), 1L, 2L);
+        Relationship relationship = schema.getEntity(ref(myClass)).getRelationship("myClass7s");
+		List<String> stmts = generator.generateRemoveRelated(relationship, ref(myClass), 1L, relationship.getTypeRef(), 2L);
         check(stmts, "delete from " + tablePrefix("mypackage") + "ManyToManyNavigableAssociation where myClass6s = 1 and myClass7s = 2;");
     }
 
@@ -411,7 +413,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
 
         Class associated1 = getClass("custom::Associated1");
 
-        List<String> stmts = generator.generateRemoveRelated(schema.getEntity(ref(associated1)).getRelationship("end2"), 1L, 2L);
+        Relationship relationship = schema.getEntity(ref(associated1)).getRelationship("end2");
+		List<String> stmts = generator.generateRemoveRelated(relationship, ref(associated1), 1L, relationship.getTypeRef(), 2L);
         check(stmts, "delete from " + tablePrefix("custom") + "OneToOne where end1 = 1 and end2 = 2;");
     }
 
