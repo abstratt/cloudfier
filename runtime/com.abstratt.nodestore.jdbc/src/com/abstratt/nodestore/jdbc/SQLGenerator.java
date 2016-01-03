@@ -189,16 +189,16 @@ public class SQLGenerator {
         return Arrays.asList(stmt);
     }
 
-    public List<String> generateRemoveRelated(Relationship myRelationship, Long thisId, Long otherId) {
-        Entity otherEntity = metadata.getEntity(myRelationship.getTypeRef());
-        Entity thisEntity = metadata.getEntity(myRelationship.getOwner());
+    public List<String> generateRemoveRelated(Relationship myRelationship, TypeRef thisType, Long thisId, TypeRef relatedType, Long otherId) {
+        Entity otherEntity = metadata.getEntity(relatedType);
+        Entity thisEntity = metadata.getEntity(thisType);
         Relationship otherEnd = metadata.getOpposite(myRelationship);
 
         if (myRelationship.isMultiple()) {
             if (otherEnd != null) {
                 if (!otherEnd.isMultiple())
                     // go the other way
-                    return generateRemoveRelated(otherEnd, otherId, thisId);
+                    return generateRemoveRelated(otherEnd, relatedType, otherId, thisType, thisId);
                 return generateRemoveRelatedViaMappingTable(thisEntity, myRelationship, thisId, otherEnd, otherId);
             } else
                 // on a relational DB, we can only traverse from the N side

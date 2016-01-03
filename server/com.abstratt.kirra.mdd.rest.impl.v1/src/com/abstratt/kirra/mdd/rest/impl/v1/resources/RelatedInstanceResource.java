@@ -8,6 +8,7 @@ import org.restlet.resource.Delete;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.InstanceRef;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.mdd.rest.KirraReferenceBuilder;
 import com.abstratt.kirra.mdd.rest.impl.v1.representation.InstanceJSONRepresentation;
@@ -34,7 +35,7 @@ public class RelatedInstanceResource extends InstanceResource {
         Entity entity = getRepository().getEntity(getEntityNamespace(), getEntityName());
         Relationship relationship = entity.getRelationship(relationshipName);
         ResourceUtils.ensure(relationship != null, "Relationship not found: " + relationshipName, Status.CLIENT_ERROR_NOT_FOUND);
-        getRepository().unlinkInstances(relationship, objectId, relatedId);
+        getRepository().unlinkInstances(relationship, objectId, new InstanceRef(relationship.getTypeRef().getEntityNamespace(), relationship.getTypeRef().getTypeName(), relatedId));
         return new EmptyRepresentation();
     }
 

@@ -40,6 +40,7 @@ import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.ExternalService;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.InstanceRef;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
 import com.abstratt.kirra.Namespace;
@@ -521,13 +522,13 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     @Override
-    public void unlinkInstances(Relationship relationship, String sourceId, String destinationId) {
+    public void unlinkInstances(Relationship relationship, String sourceId, InstanceRef destinationRef) {
         Entity sourceEntity = getEntity(relationship.getOwner());
-        Entity targetEntity = getEntity(relationship.getTypeRef());
+        Entity targetEntity = getEntity(destinationRef.getEntityNamespace(), destinationRef.getEntityName());
         RuntimeObject source = findRuntimeObject(sourceEntity.getEntityNamespace(), sourceEntity.getName(), sourceId);
         if (source == null)
             throw new KirraException("Source object does not exist", null, Kind.OBJECT_NOT_FOUND);
-        RuntimeObject destination = findRuntimeObject(targetEntity.getEntityNamespace(), targetEntity.getName(), destinationId);
+        RuntimeObject destination = findRuntimeObject(targetEntity.getEntityNamespace(), targetEntity.getName(), destinationRef.getObjectId());
         if (destination == null)
             throw new KirraException("Destination object does not exist", null, Kind.OBJECT_NOT_FOUND);
         org.eclipse.uml2.uml.Property end = AssociationUtils.findMemberEnd(source.getRuntimeClass().getModelClassifier(),

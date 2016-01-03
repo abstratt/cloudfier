@@ -334,7 +334,9 @@ public class JDBCNodeStore implements INodeStore {
 
     @Override
     public void unlinkNodes(INodeKey key, String relationship, NodeReference related) {
-        perform(getGenerator().generateRemoveRelated(clazz.getRelationship(relationship), keyToId(key), keyToId(related.getKey())), false,
+    	TypeRef otherEntityTypeRef = new TypeRef(related.getStoreName(), TypeKind.Entity);
+        TypeRef thisTypeRef = new TypeRef(this.getName(), TypeKind.Entity);
+		perform(getGenerator().generateRemoveRelated(clazz.getRelationship(relationship), thisTypeRef, keyToId(key), otherEntityTypeRef, keyToId(related.getKey())), false,
                 true);
     }
 
