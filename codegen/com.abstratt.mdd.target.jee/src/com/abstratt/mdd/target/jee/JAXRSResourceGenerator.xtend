@@ -156,6 +156,17 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return «relationship.type.name»Resource.toExternalList(uri, related).build();
             }
             «ENDFOR»
+            «FOR relationship : entity.entityRelationships.filter[!multiple && !derived]»
+            @GET
+            @Path("instances/{id}/relationships/«relationship.name»/domain")
+            public Response list«relationship.name.toFirstUpper»Domain(@PathParam("id") Long id) {
+                «entity.name» found = service.find(id);
+                if (found == null)
+                    return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                Collection<«relationship.type.name»> domain = new «relationship.type.name»Service().findAll();
+                return «relationship.type.name»Resource.toExternalList(uri, domain).build();
+            }
+            «ENDFOR»
             
             «FOR action : entity.instanceActions»
             @POST
