@@ -141,8 +141,8 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
     
     override generateRelated(Classifier entity) {
-        val nonNavigableRelationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[!navigable]
-        nonNavigableRelationships.generateMany[ relationship |
+        val relationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[multiple && !navigable]
+        relationships.generateMany[ relationship |
             val otherEnd = relationship.otherEnd
         '''
             public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {

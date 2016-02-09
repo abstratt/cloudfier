@@ -9,6 +9,7 @@ import java.util.List
 import org.eclipse.uml2.uml.Class
 import java.io.InputStream
 import java.io.IOException
+import org.eclipse.uml2.uml.NamedElement
 
 class ApplicationMapper implements ITopLevelMapper<Class> {
     
@@ -42,8 +43,10 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
         val replacements = newLinkedHashMap(
             'applicationName' -> entityPackages.head.name,
             'applicationDescription' -> applicationDescription,
-            'groupId' -> (entityPackages.head?.namespace?.qualifiedName ?: 'undefined'),
-            'artifactId' -> entityPackages.head.name
+            'groupId' -> (entityPackages.head.qualifiedName.replace(NamedElement.SEPARATOR, ".")),
+            'groupPath' -> (entityPackages.head.qualifiedName.replace(NamedElement.SEPARATOR, "/")),
+            'artifactId' -> entityPackages.head.name,
+            'version' -> '1.0'
         )
         repository.properties.forEach[key, value| replacements.put(key.toString(), value.toString)]
         val result = new LinkedHashMap<String, CharSequence>()

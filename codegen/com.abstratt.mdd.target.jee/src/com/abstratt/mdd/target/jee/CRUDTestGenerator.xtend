@@ -1,13 +1,13 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
-import org.eclipse.uml2.uml.Class
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import org.eclipse.uml2.uml.Type
-import com.abstratt.kirra.TypeRef
-import org.eclipse.uml2.uml.Property
-import java.util.UUID
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
+import java.util.UUID
+import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.Type
+
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class CRUDTestGenerator extends PlainEntityGenerator {
 
@@ -16,7 +16,6 @@ class CRUDTestGenerator extends PlainEntityGenerator {
     }
     
     def CharSequence generateCRUDTestClass(Class entityClass) {
-    	val applicationName = entityClass.package.name
         '''
             package «entityClass.packagePrefix»;
             
@@ -45,7 +44,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             
                 @Before
                 public void initEM() {
-                    this.em = Persistence.createEntityManagerFactory("«applicationName»-local").createEntityManager();
+                    this.em = util.PersistenceHelper.createSchemaAndInitData();
                     util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();

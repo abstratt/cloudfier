@@ -1,6 +1,7 @@
 package util;
 
 import javax.persistence.EntityManager;
+import javax.persistence.Persistence;
 
 public class PersistenceHelper {
     public static ThreadLocal<EntityManager> entityManager = new ThreadLocal<>();
@@ -32,5 +33,15 @@ public class PersistenceHelper {
             getEntityManager().persist(object);
         }
     }
+    public static EntityManager createSchema() {
+        return Persistence.createEntityManagerFactory("{applicationName}-schema-init").createEntityManager();
+    }
 
+    public static EntityManager createSchemaAndInitData() {
+    	return Persistence.createEntityManagerFactory("{applicationName}-schema-data-init").createEntityManager();
+    }
+    
+    public static EntityManager openEntityManager() {
+    	return Persistence.createEntityManagerFactory("{applicationName}-local").createEntityManager();
+    }
 }

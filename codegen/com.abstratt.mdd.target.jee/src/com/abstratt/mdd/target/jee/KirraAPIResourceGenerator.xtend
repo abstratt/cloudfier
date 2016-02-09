@@ -1,16 +1,16 @@
 package com.abstratt.mdd.target.jee
 
+import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.jse.AbstractGenerator
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import com.abstratt.kirra.mdd.core.KirraHelper
-import org.eclipse.uml2.uml.Operation
-import org.eclipse.uml2.uml.Parameter
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
     
@@ -26,9 +26,12 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
     
     def CharSequence generateEntityRepresentation(Class entity) {
         val typeRef = entity.convertType
+        val mnemonicProperty = entity.mnemonic
+        val entityProperties = entity.properties
+        val entityRelationships = entity.entityRelationships
         '''
         {
-        	"mnemonicProperty": "«entity.mnemonic.name»",
+        	"mnemonicProperty": "«mnemonicProperty.name»",
             "concrete": «entity.concrete»,
             "instantiable": «entity.instantiable»,
             "standalone": «entity.standalone»,
@@ -54,18 +57,22 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
                 «(entity.actions+entity.queries).map[operationRepresentation].join(',\n')»
             },
             "properties" : {
-                «entity.properties.map[propertyRepresentation].join(',\n')»
+                «entity.properties.map[getPropertyRepresentation(it == mnemonicProperty)].join(',\n')»
+            },
+            "relationships" : {
+                «(entityRelationships).map[relationshipRepresentation].join(',\n')»
             }
         }
         '''
     }
     
-    def CharSequence getPropertyRepresentation(Property property) {
+    def CharSequence getPropertyRepresentation(Property property, boolean mnemonic) {
         '''
         "«property.name»" : {
             "unique": «KirraHelper.isUnique(property)»,
+            "mnemonic": «mnemonic»,
             "userVisible": «property.userVisible»,
-            "derived": «property.derived»,
+            "derived": «KirraHelper.isDerived(property)»,
             "editable": «property.editable»,
             "initializable": «property.initializable»,
             "hasDefault": «property.defaultValue != null»,
@@ -85,6 +92,39 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         }
         '''
     }
+    
+    def CharSequence getRelationshipRepresentation(Property property) {
+    	val associationName = property.associationName
+    	'''
+	    "«property.name»": {
+	      «IF associationName != null»	
+	      "associationName": "«associationName»",
+	      «ENDIF»
+	      "navigable": «property.navigable»,
+	      «IF property.opposite != null»	
+	      "opposite": "«property.opposite.name»",
+	      "oppositeRequired": «property.opposite.required»,
+	      "oppositeReadOnly": «property.opposite.readOnly»,
+	      «ENDIF»
+	      "primary": «property.primary»,
+	      "style": "«property.relationshipStyle»",
+	      "derived": «KirraHelper.isDerived(property)»,
+	      "editable": «property.editable»,
+	      "initializable": «property.initializable»,
+	      "userVisible": «property.userVisible»,
+	      "hasDefault": «property.hasDefault»,
+	      "multiple": «property.multiple»,
+	      "required": «property.required»,
+	      "typeRef": «getTypeRefRepresentation(property.type)»,
+	      "owner": «property.owningClassifier.typeRefRepresentation»,
+	      "description": "«property.description»",
+	      "label": "«KirraHelper.getLabel(property)»",
+	      "name": "«property.name»",
+	      "symbol": "«property.symbol»"
+	    }
+        '''
+    }
+    
     
     def CharSequence getOperationRepresentation(Operation operation) {
         '''

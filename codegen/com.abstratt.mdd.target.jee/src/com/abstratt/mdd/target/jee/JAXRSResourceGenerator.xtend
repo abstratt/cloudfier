@@ -10,6 +10,7 @@ import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import org.eclipse.uml2.uml.TypedElement
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Operation
+import com.abstratt.kirra.TypeRef
 
 class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
@@ -23,9 +24,6 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     def generateResource(Class entity) {
         val typeRef = entity.convertType
         val entityFullName = typeRef.fullName
-        val properties = entity.properties
-        val dataProperties = properties.filter[!derived]
-        val derivedProperties = properties.filter[derived]        
         '''
         package resource.«entity.packagePrefix»;
         
@@ -138,8 +136,26 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @Path("instances")
             public Response getList() {
                 Collection<«entity.name»> models = service.findAll();
-                return toExternalList(models).build();
+                return toExternalList(uri, models).build();
             }
+            
+            «FOR relationship : entity.entityRelationships.filter[multiple]»
+            @GET
+            @Path("instances/{id}/relationships/«relationship.name»")
+            public Response list«relationship.name.toFirstUpper»(@PathParam("id") Long id) {
+                «entity.name» found = service.find(id);
+                if (found == null)
+                    return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                Collection<«relationship.type.name»> related = «
+                (
+                	if (relationship.derived || relationship.opposite.navigable)
+                		'''found.«relationship.generateAccessorName»()'''
+            		else
+                		'''service.find«relationship.name.toFirstUpper»By«relationship.otherEnd.name.toFirstUpper»(found)'''
+            	).trim»;
+                return «relationship.type.name»Resource.toExternalList(uri, related).build();
+            }
+            «ENDFOR»
             
             «FOR action : entity.instanceActions»
             @POST
@@ -175,75 +191,9 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             public Response execute«query.name.toFirstUpper»(Map<String, Object> representation) {
                 «query.generateArgumentMatching»
                 Collection<«entity.name»> models = service.«query.name»(«query.parameters.map[name].join(', ')»);
-                return toExternalList(models).build();
+                return toExternalList(uri, models).build();
             }
             «ENDFOR»
-            
-            private Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
-                Map<String, Object> result = new LinkedHashMap<>();
-                Map<String, Object> values = new LinkedHashMap<>();
-                boolean persisted = toRender.getId() != null;
-                «IF (properties.exists[type.name == 'Date'])»
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-                «ENDIF»
-                Function<String, String> stringEncoder = (it) -> it == null ? null : it.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"");
-                «dataProperties.map[
-                    '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
-                ].join('\n')»
-                «if (!derivedProperties.empty)
-                '''
-                if (persisted) {
-                    «derivedProperties.map[
-                        '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
-                    ].join('\n')»
-                } else {
-                    «derivedProperties.map[
-                        '''values.put("«name»", «it.type.generateDefaultValue»);'''
-                    ].join('\n')»
-                }
-                '''»
-                result.put("values", values);
-                Map<String, Object> links = new LinkedHashMap<>();
-                result.put("links", links);
-                result.put("uri", instancesURI.resolve(persisted ? toRender.getId().toString() : "_template").toString());
-                result.put("entityUri", instancesURI.resolve("../..").resolve("«entityFullName»").toString());
-                if (persisted) {
-                    result.put("objectId", toRender.getId().toString());
-                    result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
-                }
-                result.put("full", full);
-                result.put("disabledActions", Collections.emptyMap());
-                result.put("scopeName", "«typeRef.typeName»");
-                result.put("scopeNamespace", "«typeRef.entityNamespace»");
-                Map<String, Object> typeRef = new LinkedHashMap<>();
-                typeRef.put("entityNamespace", "«typeRef.entityNamespace»");
-                typeRef.put("kind", "«typeRef.kind»");
-                typeRef.put("typeName", "«typeRef.typeName»");
-                typeRef.put("fullName", "«typeRef.fullName»");
-                result.put("typeRef", typeRef);   
-                return result;                    
-            }
-            
-            private void updateFromExternalRepresentation(«entity.name» toUpdate, Map<String, Object> external) {
-                Map<String, Object> values = (Map<String, Object>) external.get("values");
-                «IF (entity.properties.exists[type.name == 'Date'])»
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-                «ENDIF»
-                «entity.properties.filter[property | !KirraHelper.isReadOnly(property, true)].map[ property | 
-                    val core = '''«setModelValue(property, "values", "toUpdate")»;'''
-                    if (property.type.name == 'Date')
-                        '''
-                        try {
-                            «core»
-                        } catch (ParseException e) {
-                            throw new ConversionException("Invalid format for date in '«property.name»': " + values.get("«property.name»"));
-                        }
-                        '''
-                    else
-                        core
-                    
-                ].join('\n')»
-            }
         
             private static ResponseBuilder status(Status status) {
                 return Response.status(status).type(MediaType.APPLICATION_JSON);
@@ -253,8 +203,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return Response.status(status).type(MediaType.APPLICATION_JSON).entity(Collections.singletonMap("message", message));
             }
             
-            private ResponseBuilder toExternalList(Collection<«entity.name»> models) {
-                URI extentURI = uri.getRequestUri();
+            static ResponseBuilder toExternalList(UriInfo uriInfo, Collection<«entity.name»> models) {
+                URI extentURI = uriInfo.getRequestUri();
                 Collection<Map<String, Object>> items = models.stream().map(toMap -> {
                     return toExternalRepresentation(toMap, extentURI, true);
                 }).collect(Collectors.toList());
@@ -264,6 +214,14 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 result.put("offset", 0);
                 result.put("length", items.size());  
                 return status(Status.OK).entity(result);
+            }
+            
+            private static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
+            	return «entity.name»JAXBSerialization.toExternalRepresentation(toRender, instancesURI, full);
+            }
+            
+            private static void updateFromExternalRepresentation(«entity.name» toUpdate, Map<String, Object> external) {
+            	«entity.name»JAXBSerialization.updateFromExternalRepresentation(toUpdate, external);
             }
         }
         '''
@@ -298,23 +256,13 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 throw new ConversionException("Invalid format for date in '«parameter.name»': " + representation.get("«parameter.name»"));
             }
             '''
-        else
-            core
-    }
-    
-    def getModelValue(Property property, String varName) {
-        val core = '''«varName».«property.generateAccessorName»()'''
-        return getValueExpression(core, property)
-    }
-    
-    def getValueExpression(CharSequence core, TypedElement element) {
-        if (element.type.enumeration) 
-            '''«core».name()'''
-        else if (element.type.name == 'String' || element.type.name == 'Memo') 
-            '''stringEncoder.apply(«core»)'''            
-        else if (element.type.name == 'Date') 
-            '''«core» == null ? null : dateFormat.format(«core»)'''            
-        else
+        else if (parameter.type.entity) {
+        	// it is an entity, and the parameter is multivalued - need to map ids to POJOs
+        	'''
+        	«parameter.name» = ((Collection<Map<String, Object>>) representation.get("«parameter.name»")).stream().findAny().map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+        	'''
+        	
+        } else
             core
     }
     
@@ -323,23 +271,11 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             case 'Double' : '''Double.parseDouble((String) «expression»)'''
             case 'Integer' : '''Long.parseLong((String) «expression»)'''
             case 'Date' : '''dateFormat.parse((String) «expression»)'''
-            default: '''(«typedElement.toJavaType(true)») «expression»'''
+            default: if (typedElement.type.entity) convertIdToInternal(typedElement, expression) else '''(«typedElement.toJavaType(true)») «expression»'''
         }
     }
     
-    def setModelValue(Property property, String sourceVarName, String targetVarName) {
-        val generateStatement = [ CharSequence value | '''«targetVarName».«property.generateSetterName»(«value»)''' ]
-        val valueRetrieval = '''«sourceVarName».get("«property.name»")'''
-        val core = generateStatement.apply(convertToInternal(property, valueRetrieval))
-        return if (property.required)
-            '''
-            if («valueRetrieval» != null)
-                «core»;
-            else
-                «generateStatement.apply('''«entityGenerator.generateAttributeDefaultValue(property)»''')»
-            '''.toString.trim 
-        else
-            core
+    def convertIdToInternal(TypedElement typedElement, CharSequence expression) {
+    	'''((List<«typedElement.type.toJavaType»>) «expression»)'''
     }
-    
 }

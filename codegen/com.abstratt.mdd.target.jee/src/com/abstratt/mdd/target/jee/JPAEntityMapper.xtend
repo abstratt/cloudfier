@@ -27,12 +27,12 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         val entityNames = entities.map [ TypeRef.sanitize(qualifiedName) ]
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
-        val jaxbElementGenerator = new JAXBElementGenerator(repository)
+        val jaxbSerializationGenerator = new JAXBSerializationGenerator(repository)
         val apiSchemaGenerator = new KirraAPIResourceGenerator(repository)
         val mappings = super.mapAll(repository)
         mappings.putAll(entities.toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
         mappings.putAll(entities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
-        mappings.putAll(entities.toMap[generateJAXBElementFileName].mapValues[jaxbElementGenerator.generateElement(it)])
+        mappings.putAll(entities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
         mappings.put(generateJAXRSServerFileName(applicationName), new JAXRSServerGenerator(repository).generate())
         mappings.put('src/test/resources/META-INF/sql/data.sql', new DataSnapshotGenerator(repository).generate())
@@ -74,15 +74,15 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         '''src/main/java/resource/«entityClass.namespace.name»/«entityClass.name»Resource.java'''.toString
     }
     
+    def generateJAXBSerializationFileName(Classifier entityClass) {
+        '''src/main/java/resource/«entityClass.namespace.name»/«entityClass.name»JAXBSerialization.java'''.toString
+    }
+    
     def generateJAXRSApplicationFileName(String applicationName) {
         '''src/main/java/resource/«applicationName»/Application.java'''.toString
     }
     
     def generateJAXRSServerFileName(String applicationName) {
         '''src/main/java/resource/«applicationName»/RESTServer.java'''.toString
-    }
-    
-    def generateJAXBElementFileName(Classifier entityClass) {
-        '''src/main/java/resource/«entityClass.namespace.name»/«entityClass.name»Element.java'''.toString
     }
 }
