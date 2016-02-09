@@ -43,6 +43,7 @@ import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.VisibilityKind;
 
+import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.mdd.core.IRepository;
@@ -977,5 +978,20 @@ public class KirraHelper {
 	
 	public static boolean isMultiple(Property umlAttribute) {
 		return umlAttribute.isMultivalued();
+	}
+
+	public static String getAssociationName(org.eclipse.uml2.uml.Property umlAttribute) {
+		return umlAttribute.isDerived() ? null : umlAttribute.getAssociation().getName();
+	}
+
+	public static Style getRelationshipStyle(org.eclipse.uml2.uml.Property umlAttribute) {
+        Style style;
+		if (KirraHelper.isChildRelationship(umlAttribute))
+            style = Style.CHILD;
+        else if (KirraHelper.isParentRelationship(umlAttribute))
+            style = Style.PARENT;
+        else
+            style = Style.LINK;
+		return style;
 	}
 }

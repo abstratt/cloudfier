@@ -166,17 +166,8 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
             entityRelationship.setOppositeReadOnly(KirraHelper.isReadOnly(otherEnd));
         }
 
-        Style style;
-
-        if (KirraHelper.isChildRelationship(umlAttribute))
-            style = Style.CHILD;
-        else if (KirraHelper.isParentRelationship(umlAttribute))
-            style = Style.PARENT;
-        else
-            style = Style.LINK;
-
-        entityRelationship.setStyle(style);
-        entityRelationship.setAssociationName(umlAttribute.isDerived() ? null : umlAttribute.getAssociation().getName());
+        entityRelationship.setStyle(KirraHelper.getRelationshipStyle(umlAttribute));
+        entityRelationship.setAssociationName(KirraHelper.getAssociationName(umlAttribute));
         entityRelationship.setPrimary(KirraHelper.isPrimary(umlAttribute));
         entityRelationship.setNavigable(umlAttribute.isNavigable());
         entityRelationship.setRequired(!umlAttribute.isDerived() && umlAttribute.getLower() > 0);
