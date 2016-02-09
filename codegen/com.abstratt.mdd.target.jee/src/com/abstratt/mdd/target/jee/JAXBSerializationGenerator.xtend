@@ -111,6 +111,19 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                         core
                     
                 ].join('\n')»
+                
+                Map<String, List<Map<String, Object>>> links = (Map<String, List<Map<String, Object>>>) external.get("links");
+                «entity.entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true)].map[ relationship |
+                	'''
+            		List<Map<String, Object>> «relationship.name» = links.get("«relationship.name»");
+            		if («relationship.name» != null) {
+            		    «relationship.type.name» newValue = «relationship.name».stream().findAny().map(it -> new «relationship.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+            		    toUpdate.«relationship.generateSetterName»(newValue);
+            		} else {
+            			toUpdate.«relationship.generateSetterName»(null);
+            		}	
+                	'''
+                ].join»
             }
         }
         '''
