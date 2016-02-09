@@ -182,6 +182,18 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 service.update(found);
                 return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(".."), true)).build();
             }
+            «FOR parameter : action.parameters.filter[type.entity]»
+            @GET
+            @Path("instances/{id}/actions/«action.name»/parameters/«parameter.name»/domain")
+            public Response list«action.name.toFirstUpper»_«parameter.name»Domain(@PathParam("id") Long id) {
+                «entity.name» found = service.find(id);
+                if (found == null)
+                    return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                Collection<«parameter.type.name»> domain = new «parameter.type.name»Service().findAll();
+                return «parameter.type.name»Resource.toExternalList(uri, domain).build();
+            }
+            «ENDFOR»
+            
             «ENDFOR»
             
             «FOR action : entity.entityActions»
@@ -268,10 +280,16 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             }
             '''
         else if (parameter.type.entity) {
+        	if (parameter.multiple) {
         	// it is an entity, and the parameter is multivalued - need to map ids to POJOs
         	'''
         	«parameter.name» = ((Collection<Map<String, Object>>) representation.get("«parameter.name»")).stream().findAny().map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
         	'''
+        	} else {
+        	'''
+        	«parameter.name» = Optional.ofNullable((Map<String, Object>) representation.get("«parameter.name»")).map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+        	'''	
+        	}
         	
         } else
             core
