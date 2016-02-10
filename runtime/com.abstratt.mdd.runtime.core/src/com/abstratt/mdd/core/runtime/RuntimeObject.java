@@ -45,6 +45,7 @@ import com.abstratt.mdd.core.runtime.types.PrimitiveType;
 import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
+import com.abstratt.mdd.core.util.ConstraintUtils;
 import com.abstratt.mdd.core.util.DataTypeUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
@@ -268,24 +269,10 @@ public class RuntimeObject extends BasicType {
     public Collection<RuntimeObject> getParameterDomain(Parameter parameter, Classifier parameterType) {
         RuntimeClass parameterRuntimeClass = getRuntime().getRuntimeClass(parameterType);
         Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
-        List<Constraint> constraints = parameter.getOperation().getPreconditions();
+        List<Constraint> parameterConstraints = ConstraintUtils.getParameterConstraints(parameter);
         Collection<RuntimeObject> candidates = parameterRuntimeClass.getAllInstances();
         candidateLoop: for (BasicType candidate : candidates) {
-            for (Constraint constraint : constraints) {
-                Behavior behavior = ActivityUtils.resolveBehaviorReference(constraint.getSpecification());
-                EList<Parameter> constraintParameters = behavior.getOwnedParameters();
-                List<Parameter> constraintInputParameters = FeatureUtils.filterParameters(constraintParameters,
-                        ParameterDirectionKind.IN_LITERAL);
-                int inputParameterSize = constraintInputParameters.size();
-                if (inputParameterSize != 1)
-                    // has multiple parameters, can't use this constraint to
-                    // compute the domain in that case
-                    continue;
-                boolean onParameter = behavior.getOwnedParameter(parameter.getName(), parameter.getType()) != null;
-                if (!onParameter)
-                    // has one parameter but is for a different operation
-                    // parameter
-                    continue;
+            for (Constraint constraint : parameterConstraints) {
                 Map<String, BasicType> argumentsPerParameter = Collections.singletonMap(parameter.getName(), candidate);
                 if (!isConstraintSatisfied(constraint, argumentsPerParameter))
                     continue candidateLoop;

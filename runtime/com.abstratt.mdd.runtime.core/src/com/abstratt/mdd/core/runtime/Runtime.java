@@ -87,13 +87,13 @@ public class Runtime {
     }
     
     public Collection<RuntimeObject> getParameterDomain(Class baseClass, String externalId, org.eclipse.uml2.uml.Parameter parameter, boolean includeSubclasses) {
-    	RuntimeClass targetClass = getRuntimeClass(baseClass);
-    	return collectInstancesFromHierarchy((Classifier) parameter.getType(), includeSubclasses, currentClass -> targetClass.getParameterDomain(externalId, parameter, currentClass));
+    	RuntimeClass runtimeTargetClass = getRuntimeClass(baseClass);
+    	return collectInstancesFromHierarchy((Classifier) parameter.getType(), includeSubclasses, currentClass -> runtimeTargetClass.getParameterDomain(externalId, parameter, currentClass));
     }
     
-    public Collection<RuntimeObject> getPropertyDomain(Class baseClass, String objectId, org.eclipse.uml2.uml.Property property, boolean includeSubclasses) {
-    	RuntimeClass targetClass = getRuntimeClass(baseClass);    	
-    	return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> targetClass.getPropertyDomain(objectId, property, currentClass));
+    public Collection<RuntimeObject> getPropertyDomain(Class targetClass, String objectId, org.eclipse.uml2.uml.Property property, boolean includeSubclasses) {
+    	RuntimeClass runtimeTargetClass = getRuntimeClass(targetClass);
+    	return collectInstancesFromHierarchy((Classifier) property.getType(), includeSubclasses, currentClass -> runtimeTargetClass.getPropertyDomain(objectId, property, currentClass));
     }
 
     public Collection<RuntimeObject> getRelatedInstances(Class umlClass, String objectId, org.eclipse.uml2.uml.Property property) {
