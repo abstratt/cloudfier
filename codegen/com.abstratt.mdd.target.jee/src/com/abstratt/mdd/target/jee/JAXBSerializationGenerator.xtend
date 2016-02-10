@@ -44,11 +44,11 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 Map<String, Object> result = new LinkedHashMap<>();
                 boolean persisted = toRender.getId() != null;
                 Function<String, String> stringEncoder = (it) -> it == null ? null : it.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"");
+                «IF (properties.exists[type.name == 'Date'])»
+                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
+                «ENDIF»
                 if (full) {
                     Map<String, Object> values = new LinkedHashMap<>();
-                    «IF (properties.exists[type.name == 'Date'])»
-                    DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-                    «ENDIF»
                     «dataProperties.map[
                         '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
                     ].join('\n')»
