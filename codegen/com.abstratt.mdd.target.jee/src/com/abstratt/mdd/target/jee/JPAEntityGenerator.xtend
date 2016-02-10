@@ -69,8 +69,12 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     
     override generateSequenceAttribute(Property attribute) {
         '''
-        public Long «attribute.generateAccessorName»() {
-            return id;
+        public «attribute.toJavaType» «attribute.generateAccessorName»() {
+        	«IF attribute.type.name == 'String'»
+        	return id == null ? null : Long.toString(id);
+            «ELSE»
+        	return id;
+            «ENDIF»
         }
         '''
     }

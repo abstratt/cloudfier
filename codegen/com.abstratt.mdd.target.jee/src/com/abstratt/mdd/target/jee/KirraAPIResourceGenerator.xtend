@@ -116,7 +116,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
 	      "multiple": «property.multiple»,
 	      "required": «property.required»,
 	      "typeRef": «getTypeRefRepresentation(property.type)»,
-	      "owner": «property.owningClassifier.typeRefRepresentation»,
+	      "owner": «property.otherEnd.type.typeRefRepresentation»,
 	      "description": "«property.description»",
 	      "label": "«KirraHelper.getLabel(property)»",
 	      "name": "«property.name»",

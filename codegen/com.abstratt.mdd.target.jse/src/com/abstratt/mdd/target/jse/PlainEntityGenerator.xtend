@@ -326,8 +326,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     
     def generateSequenceAttribute(Property attribute) {
         '''
-        public Long «attribute.generateAccessorName»() {
-            return System.identityHashCode(this);
+        public «attribute.toJavaType» «attribute.generateAccessorName»() {
+        	«IF attribute.type.name == 'String'»
+        	return "" + System.identityHashCode(this);
+            «ELSE»
+        	return System.identityHashCode(this);
+            «ENDIF»
         }
         '''
     }

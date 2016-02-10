@@ -146,10 +146,10 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                     return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
                 Collection<«relationship.type.name»> related = «
                 (
-                	if (relationship.derived || relationship.opposite.navigable)
+                	if (relationship.derived || relationship.opposite?.navigable) 
                 		'''found.«relationship.generateAccessorName»()'''
             		else
-                		'''service.find«relationship.name.toFirstUpper»By«relationship.otherEnd.name.toFirstUpper»(found)'''
+                		'''new «relationship.type.name»Service().find«relationship.name.toFirstUpper»By«relationship.otherEnd.name.toFirstUpper»(found)'''
             	).trim»;
                 return «relationship.type.name»Resource.toExternalList(uri, related).build();
             }
