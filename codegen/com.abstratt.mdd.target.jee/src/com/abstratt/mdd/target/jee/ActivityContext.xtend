@@ -36,6 +36,7 @@ class ActivityContext {
     }
     
     def static CharSequence generateInNewContext(Activity activity, Supplier<CharSequence> self, Supplier<CharSequence> generator) {
+    	val selfOutput = self.get()
         newActivityContext(activity, self)
         try {
 			return generator.get()
@@ -50,7 +51,8 @@ class ActivityContext {
     }
 	
 	def static CharSequence generateSelf() {
-		val generatedSelf = current.self.get()
+		val selfSupplier = current.self
+		val generatedSelf = selfSupplier.get()
 		return generatedSelf ?:  'NO SELF!'
 	}
     

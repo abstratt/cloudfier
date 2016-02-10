@@ -113,12 +113,16 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateReadVariableAction(ReadVariableAction action) {
 		val source = new DataFlowAnalyzer().findSource(action.result)
-		if (source == action || source == null) {
+		generateVariableNameReplacement(source, action)
+    }
+				
+	def generateVariableNameReplacement(OutputPin source, ReadVariableAction action) {
+		if (source == action.result || source == null) {
         	''':«action.variable.name»'''
 		} else {
 	        '''«source.alias»'''
 		}
-    }
+	}
     
     def generateFilterValue(ValueSpecification value) {
         switch (value) {

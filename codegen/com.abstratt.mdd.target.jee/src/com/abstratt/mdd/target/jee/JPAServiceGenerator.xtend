@@ -14,6 +14,12 @@ import org.eclipse.uml2.uml.VisibilityKind
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
+import com.abstratt.mdd.core.util.ConstraintUtils
+import com.abstratt.mdd.core.util.ActivityUtils
+import org.eclipse.uml2.uml.OutputPin
+import org.eclipse.uml2.uml.ReadVariableAction
 
 class JPAServiceGenerator extends ServiceGenerator {
 
@@ -56,11 +62,14 @@ class JPAServiceGenerator extends ServiceGenerator {
             «entity.generateFindAll»
             «entity.generateUpdate»
             «entity.generateDelete»
+            «entity.generateRelationshipDomain»
+            «entity.generateActionParameterDomain»
+            
         '''
     }
     
     def override boolean isProviderFor(Class candidate, Class entity) {
-    	entity != candidate
+        entity != candidate
     }
     
     
@@ -129,9 +138,13 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
 
     def generateFindAll(Classifier entity) {
-    	val entityAlias = entity.name.toFirstLower
+        return generateFindAll("findAll", entity)
+    }
+    
+    def generateFindAll(String javaMethodName, Classifier entity) {
+        val entityAlias = entity.name.toFirstLower
         '''
-            public List<«entity.name»> findAll() {
+            public List<«entity.name»> «javaMethodName»() {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
                 Root<«entity.name»> «entityAlias» = cq.from(«entity.name».class);
@@ -153,6 +166,67 @@ class JPAServiceGenerator extends ServiceGenerator {
             }
         '''
         ]
+    }
+    
+    def CharSequence generateRelationshipDomain(Classifier entity) {
+        val relationships = getRelationships(entity).filter[!derived]
+        relationships.generateMany[ relationship |
+            val otherEnd = relationship.otherEnd
+            val constraints = relationship.findInvariantConstraints
+            val methodName = '''getRelationshipDomainFor«relationship.type.name»«otherEnd.name.toFirstUpper»'''
+            if (constraints.isEmpty)
+                generateFindAll(methodName, entity)
+            else
+                '''
+                public List<«otherEnd.type.name»> «methodName»(«relationship.type.name» context) {
+                    //TODO honor constraints
+                    return Collections.emptyList();
+                }
+                '''
+        ]
+    }    
+    
+    def CharSequence generateActionParameterDomain(Class entity) {
+        val actions = entity.instanceActions.filter[!parameters.empty]
+        val context = 'context'
+        actions.generateMany[ action |
+            action.parameters.filter[hasParameterConstraints].generateMany[ parameter |
+                '''
+                public List<«parameter.type.name»> getParameterDomainFor«parameter.name.toFirstUpper»To«action.name.toFirstUpper»(«entity.name» «context») {
+                    return getEntityManager().createQuery(
+                        "«generateActionParameterDomainQuery(entity, context, parameter)»", «parameter.type.name».class
+                    ).setParameter("«context»", «context»).getResultList(); 
+                }
+                '''
+            ]
+        ]
+    }
+    
+    def CharSequence generateActionParameterDomainQuery(Class contextEntity, String context, Parameter parameter) {
+        val predicateActivities = parameter.parameterConstraints.map[specification.resolveBehaviorReference as Activity]
+        val alias = '''«parameter.type.name.toFirstLower»_'''
+        val condition = predicateActivities.generateMany([
+        	'''(«generatePreconditionQuery(alias, context, it)»)'''
+        ], " AND ")
+    	'''SELECT DISTINCT «alias» FROM «parameter.type.name» «alias», «contextEntity.name» «context» WHERE «condition» AND («context» = :«context»)'''
+    }     
+    
+    def CharSequence generatePreconditionQuery(String alias, String context, Activity preconditionActivity) {
+    	val newContext = new SimpleContext(alias)
+        behaviorGenerator.runInContext(newContext, 
+        	[
+        		ActivityContext.generateInNewContext(preconditionActivity, [context], [
+					val filterGenerator = new JPQLFilterActionGenerator(repository) {
+						override generateVariableNameReplacement(OutputPin source, ReadVariableAction action) {
+							if (source == null)
+								return context.generateCurrentReference
+							return super.generateVariableNameReplacement(source, action)
+						}
+					}
+					filterGenerator.generateAction(preconditionActivity.rootAction.findSingleStatement.sourceAction)
+				])
+        	]
+    	)
     }
     
     def generateDerivedRelationshipAccessor(Class entity, Property derivedRelationship) {

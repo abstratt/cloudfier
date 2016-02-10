@@ -13,11 +13,11 @@ class ConstraintExceptionGenerator extends BehaviorlessClassGenerator {
         '''
         package «constraint.packagePrefix»;
         
-        public class «constraint.name»Exception extends RuntimeException {
+        public class «constraint.name»Exception extends ConstraintViolationException {
             private static final long serialVersionUID = 1L;
             public «constraint.name»Exception() {
                 //TODO support for message bundles 
-                super("«KirraHelper.getLabel(constraint)»");
+                super("«KirraHelper.getLabel(constraint).toLowerCase.toFirstUpper»");
             }
         }
         '''

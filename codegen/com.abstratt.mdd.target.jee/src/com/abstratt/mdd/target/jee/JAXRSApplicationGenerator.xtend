@@ -36,6 +36,9 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
                 '''].join()»
                 services.add(new resource.util.StandaloneRequestResponseFilter());
                 services.add(new EntityResource());
+                services.add(new ConstraintViolationExceptionMapper());
+                services.add(new RestEasyFailureMapper());
+                services.add(new ThrowableMapper());
             }
         
             @Override

@@ -67,6 +67,14 @@ class JPAEntityGenerator extends PlainEntityGenerator {
             super.generateRelationshipAccessorType(relationship)
     }
     
+    override generateSequenceAttribute(Property attribute) {
+        '''
+        public Long «attribute.generateAccessorName»() {
+            return id;
+        }
+        '''
+    }
+    
     override generateAttribute(Property attribute) {
         '''
         «attribute.toJpaPropertyAnnotation»
@@ -124,7 +132,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
 
     def toJpaPropertyAnnotation(Property property) {
-        // cannot (in general) use KirraHelper as this is about storing data, not user capabilities
+        // careful when using KirraHelper as this is about storing data, not user capabilities
         
         // making an exception for username properties as they may not be necessarily filled in (unprovisioned user)
         val nullable = property.lower == 0 || property.userNameProperty
@@ -140,6 +148,14 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         @Column«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»
         «IF property.type.enumeration»@Enumerated(EnumType.STRING)«ENDIF»
         ''' 
+    }
+    
+    def private String toSequenceName(Property property) {
+    	//XXX this is going to cause trouble when people start using inheritance 
+    	val entity = property.class_
+    	val columnName = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(property.name), '_')
+    	val tableName = StringUtils.join(StringUtils.splitByCharacterTypeCamelCase(entity.name), '_')
+    	return '''«tableName»_«columnName»_seq'''
     }
 
     override generateEntityId(Class entity) {

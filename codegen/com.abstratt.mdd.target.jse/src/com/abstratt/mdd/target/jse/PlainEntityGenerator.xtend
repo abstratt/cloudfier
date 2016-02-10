@@ -130,10 +130,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     
     def generateEntity(Class entity) {
         val actionOperations = entity.actions.filter[!static]
-        val relationships = entity.entityRelationships.filter[!derived && navigable]
-        val attributeInvariants = entity.properties.filter[!derived].map[findInvariantConstraints].flatten
-        val derivedAttributes = entity.properties.filter[derived]
-        val derivedRelationships = entity.entityRelationships.filter[derived]
+        val relationships = entity.entityRelationships.filter[!relationshipDerived && navigable]
+        val attributeInvariants = entity.properties.filter[!propertyDerived].map[findInvariantConstraints].flatten
+        val derivedAttributes = entity.properties.filter[propertyDerived]
+        val attributes = entity.properties.filter[!propertyDerived && !sequence]
+        val sequenceAttributes = entity.properties.filter[sequence]
+        val derivedRelationships = entity.entityRelationships.filter[relationshipDerived]
         val privateOperations = entity.operations.filter[!action && !finder]
         val stateProperty = entity.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
@@ -163,10 +165,19 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                 «ENDIF»
                 «IF !signals.empty»
                     /*************************** SIGNALS ***************************/
-                    
+
                     «generateMany(signals, [generateSignal])»
                 «ENDIF»
-                «entity.generateAttributes»
+                «IF !attributes.empty»
+                    /*************************** ATTRIBUTES ***************************/
+
+                    «generateMany(attributes, [generateAttribute])»
+        		«ENDIF»
+                «IF !sequenceAttributes.empty»
+                    /*************************** SEQUENCE ***************************/
+
+                    «generateMany(sequenceAttributes, [generateSequenceAttribute])»
+        		«ENDIF»        		
                 «IF !relationships.empty»
                     /*************************** RELATIONSHIPS ***************************/
                     
@@ -299,21 +310,26 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             
         }
         val newContext = new SimpleContext(behaviorGenerator.context.generateCurrentReference.toString, delegate)
-        behaviorGenerator.enterContext(newContext)
-        try {
-        '''
-        if («generatePredicate(constraint, true)») {
-            throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
-        }
-        '''
-        } finally {
-            behaviorGenerator.leaveContext(newContext)            
-        }
+        behaviorGenerator.runInContext(newContext, [
+	        '''
+	        if («generatePredicate(constraint, true)») {
+	            throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
+	        }
+	        '''
+        ])
     }
     
     
     def CharSequence generateSignal(Signal signal) {
         ''''''
+    }
+    
+    def generateSequenceAttribute(Property attribute) {
+        '''
+        public Long «attribute.generateAccessorName»() {
+            return System.identityHashCode(this);
+        }
+        '''
     }
 
     def generateDerivedAttribute(Property attribute) {
@@ -336,16 +352,6 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             '''return «attribute.defaultValue.generateValue»;'''
         else
             '''return «attribute.type.generateDefaultValue»;'''
-    }
-    
-    def generateAttributes(Class entity) {
-        val attributes = entity.properties.filter[!derived]
-        if (attributes.empty) return ''
-        '''
-            /*************************** ATTRIBUTES ***************************/
-            
-            «generateMany(attributes, [generateAttribute])»
-        '''
     }
     
     def generateAttributeDefaultValue(Property attribute) {

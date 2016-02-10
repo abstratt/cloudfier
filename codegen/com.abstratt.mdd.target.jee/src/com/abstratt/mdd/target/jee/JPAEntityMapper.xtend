@@ -40,12 +40,15 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         
         val templates = #{
         	'''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> "/templates/src/main/java/resource/EntityResource.java",
-        	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> "/templates/src/main/java/resource/ConversionException.java"
+        	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> "/templates/src/main/java/resource/ConversionException.java",
+        	'''src/main/java/resource/«applicationName»/ConstraintViolationExceptionMapper.java'''.toString -> "/templates/src/main/java/resource/ConstraintViolationExceptionMapper.java",
+        	'''src/main/java/resource/«applicationName»/ThrowableMapper.java'''.toString -> "/templates/src/main/java/resource/ThrowableMapper.java",
+        	'''src/main/java/resource/«applicationName»/RestEasyFailureMapper.java'''.toString -> "/templates/src/main/java/resource/RestEasyFailureMapper.java"
     	}
     	templates.forEach[targetPath, sourcePath|
     		mappings.put(
 				targetPath,
-					TargetUtils.merge(class.getResourceAsStream(sourcePath), 
+					TargetUtils.merge(JPAEntityMapper.getResourceAsStream(sourcePath), 
 	                #{ 
 	                    "entityNameList" -> entityNames.map['''"«it»"'''].join(', '),
 	                    "applicationName" -> applicationName,

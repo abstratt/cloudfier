@@ -10,6 +10,7 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.Parameter
 
 class DataFlowAnalyzer {
 
@@ -65,10 +66,16 @@ class DataFlowAnalyzer {
 		if (parameter == null) {
 			return null
 		}
-		if (!action.actionActivity.closure) {
-			return null
-		}
-	    val isOperationParameter = (parameter.namespace as Activity).specification != null
+		if (action.actionActivity.closure) {
+		    return findParameterSourceFromClosureContext(parameter, action, pin)
+		} else if (action.actionActivity.constraintBehavior) {
+		    return null
+	    }
+		return null
+	}
+	
+	def findParameterSourceFromClosureContext(Parameter parameter, ReadVariableAction action, OutputPin pin) {
+		val isOperationParameter = (parameter.namespace as Activity).specification != null
 	    if (isOperationParameter) {
 	    	return null
 	    }
@@ -81,7 +88,7 @@ class DataFlowAnalyzer {
 			return null
 		}
 		val asCallOp = closureConsumer.owningAction as CallOperationAction
-		return if(asCallOp.target.multivalued) asCallOp.target.internalFindSource else pin
+		return if(asCallOp.target.multivalued) asCallOp.target.internalFindSource else pin		
 	}
 
 	private def dispatch OutputPin findSource(CallOperationAction action, OutputPin pin) {

@@ -147,8 +147,8 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
     
     def convertToInternal(TypedElement typedElement, CharSequence expression) {
         switch (typedElement.type.name) {
-            case 'Double' : '''Double.parseDouble((String) «expression»)'''
-            case 'Integer' : '''Long.parseLong((String) «expression»)'''
+            case 'Double' : '''Double.parseDouble(«expression».toString())'''
+            case 'Integer' : '''Long.parseLong(«expression».toString())'''
             case 'Date' : '''dateFormat.parse((String) «expression»)'''
             default: if (typedElement.type.entity) convertIdToInternal(typedElement, expression) else '''(«typedElement.toJavaType(true)») «expression»'''
         }

@@ -29,6 +29,7 @@ class JPQLSubQueryActionGenerator extends QueryFragmentGenerator {
         	case 'exists' : return generateExistsSubQuery(action)
         	case 'isEmpty' : return generateIsEmptySubQuery(action)
         	case 'size' : return generateSizeSubQuery(action)
+        	case 'includes' : return generateSizeSubQuery(action)
 			default: unsupportedElement(action, action.operation.name)
         } 
     }

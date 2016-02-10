@@ -24,7 +24,7 @@ class JPQLQueryActionGenerator extends AbstractQueryActionGenerator {
 			super.generateCollectionOperationCall(action)
 		])
 	}
-    
+	
 	override generateReadExtentAction(ReadExtentAction action) {
          if (action.result.targetAction.trivialFlowDownstream) 
         	'''SELECT DISTINCT «action.result.alias» FROM «action.classifier.toJavaType» «action.result.alias»'''

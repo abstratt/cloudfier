@@ -4,13 +4,11 @@ import com.abstratt.mdd.target.jse.BehaviorlessClassGenerator
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Class
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import org.eclipse.uml2.uml.Property
-import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import org.eclipse.uml2.uml.TypedElement
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Operation
-import com.abstratt.kirra.TypeRef
+import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 
 class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
@@ -189,7 +187,10 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
-                Collection<«parameter.type.name»> domain = new «parameter.type.name»Service().findAll();
+                Collection<«parameter.type.name»> domain = «if (parameter.hasParameterConstraints)
+                	'''service.getParameterDomainFor«parameter.name.toFirstUpper»To«action.name.toFirstUpper»(found)'''
+                else
+                	'''new «parameter.type.name»Service().findAll()'''»;
                 return «parameter.type.name»Resource.toExternalList(uri, domain).build();
             }
             «ENDFOR»
@@ -297,8 +298,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
     def convertToInternal(TypedElement typedElement, CharSequence expression) {
         switch (typedElement.type.name) {
-            case 'Double' : '''Double.parseDouble((String) «expression»)'''
-            case 'Integer' : '''Long.parseLong((String) «expression»)'''
+            case 'Double' : '''Double.parseDouble(«expression».toString())'''
+            case 'Integer' : '''Long.parseLong(«expression».toString())'''
             case 'Date' : '''dateFormat.parse((String) «expression»)'''
             default: if (typedElement.type.entity) convertIdToInternal(typedElement, expression) else '''(«typedElement.toJavaType(true)») «expression»'''
         }

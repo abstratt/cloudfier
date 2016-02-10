@@ -18,6 +18,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Operation
+import com.abstratt.mdd.core.target.spi.TargetUtils
 
 class EntityMapper implements ITopLevelMapper<Classifier> {
     
@@ -79,9 +80,11 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
     
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
+        val entities = appPackages.entities
+    	val applicationName = entities.head.package.name
+    	
         val result = new LinkedHashMap<String, CharSequence>()
         
-        val entities = appPackages.entities
         val entityGenerator = createEntityGenerator(repository)
         result.putAll(entities.toMap[generateEntityFileName].mapValues[entityGenerator.generateEntity(it)])
 
@@ -110,6 +113,21 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         val constraints = invariants + preconditions
         val constraintExceptionGenerator = new ConstraintExceptionGenerator(repository)
         result.putAll(constraints.toMap[generateConstraintExceptionFileName].mapValues[constraintExceptionGenerator.generateConstraintException(it)])
+        
+        val templates = #{
+        	'''src/main/java/«applicationName»/ConstraintViolationException.java'''.toString -> "/templates/src/main/java/application/ConstraintViolationException.java"
+    	}
+    	templates.forEach[targetPath, sourcePath|
+    		result.put(
+				targetPath,
+					TargetUtils.merge(EntityMapper.getResourceAsStream(sourcePath), 
+	                #{ 
+	                    "applicationName" -> applicationName
+	                }
+	            )
+    		)	
+    	]
+        
         return result
     }
     

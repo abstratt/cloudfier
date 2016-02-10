@@ -10,6 +10,7 @@ import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.UMLPackage
 import org.eclipse.uml2.uml.UMLPackage.Literals
@@ -37,7 +38,8 @@ class JPAHelper {
         '''«classifier.name.toFirstLower»_'''
     }
     def dispatch static CharSequence alias(OutputPin pin) {
-    	generateAlias(new DataFlowAnalyzer().findSource(pin))
+    	val source = new DataFlowAnalyzer().findSource(pin)
+		return generateAlias(if (source == null) pin else source)
     }
 	
     def dispatch static CharSequence alias(InputPin pin) {
@@ -47,7 +49,10 @@ class JPAHelper {
 	def static CharSequence generateAlias(OutputPin pin) {
 		generateAlias(pin.owningAction, pin )	
 	}
-	
+
+	def dispatch static CharSequence generateAlias(ReadVariableAction action, OutputPin pin) {
+		'''«action.variable.name»_'''	
+	}
 	def dispatch static CharSequence generateAlias(ReadExtentAction action, OutputPin pin) {
 		'''«action.classifier.name.toFirstLower»_'''	
 	}
