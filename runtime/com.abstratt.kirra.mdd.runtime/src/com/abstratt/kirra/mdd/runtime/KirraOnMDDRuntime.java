@@ -452,9 +452,16 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     @Override
-    public void linkInstances(Relationship relationship, String sourceId, String destinationId) {
-    	RuntimeObject source = findRuntimeObject(relationship.getOwner().getEntityNamespace(), relationship.getOwner().getTypeName(), sourceId);
-    	RuntimeObject target = findRuntimeObject(relationship.getTypeRef().getEntityNamespace(), relationship.getTypeRef().getTypeName(), destinationId);
+    public void linkInstances(Relationship relationship, String sourceId, InstanceRef destinationRef) {
+        Entity sourceEntity = getEntity(relationship.getOwner());
+        Entity targetEntity = getEntity(destinationRef.getEntityNamespace(), destinationRef.getEntityName());
+        RuntimeObject source = findRuntimeObject(sourceEntity.getEntityNamespace(), sourceEntity.getName(), sourceId);
+        if (source == null)
+            throw new KirraException("Source object does not exist", null, Kind.OBJECT_NOT_FOUND);
+        RuntimeObject destination = findRuntimeObject(targetEntity.getEntityNamespace(), targetEntity.getName(), destinationRef.getObjectId());
+        if (destination == null)
+            throw new KirraException("Destination object does not exist", null,
+    	 Kind.OBJECT_NOT_FOUND);
         org.eclipse.uml2.uml.Property attribute = AssociationUtils.findMemberEnd(source.getRuntimeClass().getModelClassifier(), relationship.getName());
         if (attribute == null)
             throw new KirraException("Attribute " + relationship.getName() + " does not exist", null, Kind.SCHEMA);
@@ -469,7 +476,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, the other end ("+ otherEnd.getQualifiedName() + ") is read-only", null, Kind.SCHEMA);
         if (!attribute.isNavigable()) 
         	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is not navigable", null, Kind.SCHEMA);
-    	source.link(attribute, target);
+    	source.link(attribute, destination);
     }
 
     @Override
