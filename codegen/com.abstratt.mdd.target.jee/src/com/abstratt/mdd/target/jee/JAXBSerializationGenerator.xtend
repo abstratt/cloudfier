@@ -151,7 +151,13 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
             case 'Double' : '''Double.parseDouble(«expression».toString())'''
             case 'Integer' : '''Long.parseLong(«expression».toString())'''
             case 'Date' : '''DateUtils.parseDate((String) «expression», DATE_FORMATS)'''
-            default: if (typedElement.type.entity) convertIdToInternal(typedElement, expression) else '''(«typedElement.toJavaType(true)») «expression»'''
+            default: 
+            	if (typedElement.type.entity) 
+            		convertIdToInternal(typedElement, expression)
+                else if (typedElement.type.enumeration) 
+            		'''«typedElement.toJavaType()».valueOf((String) «expression»)'''
+            	else 
+            		'''(«typedElement.toJavaType(true)») «expression»'''
         }
     }
     
