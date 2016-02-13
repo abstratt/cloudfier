@@ -30,14 +30,24 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<groupId>postgresql</groupId>
+			<groupId>org.postgresql</groupId>
 			<artifactId>postgresql</artifactId>
-			<version>9.0-801.jdbc4</version>
+			<version>9.4.1207</version>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.derby</groupId>
+			<artifactId>derby</artifactId>
+			<version>10.11.1.1</version>
+		</dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <version>2.3.3</version>
+        </dependency>		
 		<dependency>
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
-			<version>5.0.2.Final</version>
+			<version>5.1.0.Final</version>
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
@@ -94,17 +104,17 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-            <groupId>com.fasterxml.jackson.jaxrs</groupId>
-            <artifactId>jackson-jaxrs-json-provider</artifactId>
-    		<version>2.4.1</version>
-    		<scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.jboss.resteasy</groupId>
-            <artifactId>resteasy-jackson2-provider</artifactId>
-            <version>3.0.9.Final</version>
-            <scope>provided</scope>
-        </dependency>
+			<groupId>com.fasterxml.jackson.jaxrs</groupId>
+			<artifactId>jackson-jaxrs-json-provider</artifactId>
+			<version>2.4.1</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-jackson2-provider</artifactId>
+			<version>3.0.9.Final</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>
@@ -120,12 +130,12 @@
 				<directory>src/main/webapp</directory>
 			</resource>
 		</resources>
-        <testResources>
-            <testResource>
-                <directory>src/test/resources</directory>
-                <filtering>true</filtering>
-            </testResource>
-        </testResources>		
+		<testResources>
+			<testResource>
+				<directory>src/test/resources</directory>
+				<filtering>true</filtering>
+			</testResource>
+		</testResources>
 		<plugins>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
@@ -157,34 +167,36 @@
 						<additionalClasspathElement>${project.build.directory}/${pom.name}-${project.version}</additionalClasspathElement>
 					</additionalClasspathElements>
 					<systemProperties>
-  					    <systemProperty>
-                            <key>http.port</key><value>${http.port}</value>
-  					    </systemProperty>
-  					    <systemProperty>
-                            <key>http.address</key><value>${http.address}</value>
-  					    </systemProperty>
+						<systemProperty>
+							<key>http.port</key>
+							<value>${http.port}</value>
+						</systemProperty>
+						<systemProperty>
+							<key>http.address</key>
+							<value>${http.address}</value>
+						</systemProperty>
 					</systemProperties>
 				</configuration>
 			</plugin>
-<!-- 			<plugin> -->
-<!-- 				<artifactId>maven-assembly-plugin</artifactId> -->
-<!-- 				<version>2.2</version> -->
-<!-- 				<executions> -->
-<!-- 					<execution> -->
-<!-- 						<phase>package</phase> -->
-<!-- 						<goals> -->
-<!-- 							<goal>attached</goal> -->
-<!-- 						</goals> -->
-<!-- 					</execution> -->
-<!-- 				</executions> -->
-<!-- 				<configuration> -->
-<!-- 					<descriptors> -->
-<!-- 						<descriptor> -->
-<!-- 							src/main/assemble/assembly.xml -->
-<!-- 						</descriptor> -->
-<!-- 					</descriptors> -->
-<!-- 				</configuration> -->
-<!-- 			</plugin>			 -->
+			<!-- <plugin> -->
+			<!-- <artifactId>maven-assembly-plugin</artifactId> -->
+			<!-- <version>2.2</version> -->
+			<!-- <executions> -->
+			<!-- <execution> -->
+			<!-- <phase>package</phase> -->
+			<!-- <goals> -->
+			<!-- <goal>attached</goal> -->
+			<!-- </goals> -->
+			<!-- </execution> -->
+			<!-- </executions> -->
+			<!-- <configuration> -->
+			<!-- <descriptors> -->
+			<!-- <descriptor> -->
+			<!-- src/main/assemble/assembly.xml -->
+			<!-- </descriptor> -->
+			<!-- </descriptors> -->
+			<!-- </configuration> -->
+			<!-- </plugin> -->
 		</plugins>
 	</build>
 </project>

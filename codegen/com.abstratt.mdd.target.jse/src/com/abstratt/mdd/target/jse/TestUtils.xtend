@@ -58,6 +58,11 @@ class TestUtils {
                     // default
                     '''assertEquals(«operands.get(0)», «operands.get(1)»)'''
             }
+            case 'areSame': {
+                val operands = action.arguments.map[actionGenerator.apply(it.sourceAction)]
+                // default
+                '''assertEquals(«operands.get(0)».getId(), «operands.get(1)».getId())'''
+            }
             default: '''Unsupported Assert operation: «operation.name»'''
         }
     }

@@ -21,7 +21,7 @@ public class DateType extends PrimitiveType<Date> {
         return new DateType(original);
     }
 
-    public static DateType make(@SuppressWarnings("unused") ExecutionContext context, IntegerType day, IntegerType month, IntegerType year) {
+    public static DateType make(@SuppressWarnings("unused") ExecutionContext context, IntegerType year, IntegerType month, IntegerType day) {
         return new DateType(new Date(year.primitiveValue().intValue() - 1900, month.primitiveValue().intValue() - 1, day.primitiveValue()
                 .intValue()));
     }

@@ -25,7 +25,8 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
         ]
 		val replacements = newLinkedHashMap(
             'applicationName' -> applicationName,
-            'jdbc.url' -> 'jdbc:postgresql://127.0.0.1:5432/cloudfier',
+            //'jdbc.url' -> 'jdbc:postgresql://127.0.0.1:5432/cloudfier',
+            'jdbc.url' -> '''jdbc:hsqldb:mem:«applicationName»;user=cloudfier;password=password''',
             'jdbc.user' -> 'cloudfier',
             'jdbc.password' -> 'password'
         )

@@ -70,7 +70,7 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
         if (asQueryOperator != null) {
             if (!action.arguments.empty) {
 	            val operands = #[action.target] + action.arguments 
-            	return '''«operands.map[sourceAction.generateAction].join(''' «asQueryOperator» ''')»'''
+            	return '''(«operands.map[sourceAction.generateAction].join(''' «asQueryOperator» ''')»)'''
             } 
             else
             	return '''«asQueryOperator» «action.target.sourceAction.generateAction»'''

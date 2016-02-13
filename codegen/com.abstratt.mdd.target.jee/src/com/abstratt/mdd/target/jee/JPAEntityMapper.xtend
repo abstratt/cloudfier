@@ -35,7 +35,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         mappings.putAll(entities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
         mappings.put(generateJAXRSServerFileName(applicationName), new JAXRSServerGenerator(repository).generate())
-        mappings.put('src/test/resources/META-INF/sql/data.sql', new DataSnapshotGenerator(repository).generate())
+        mappings.put('src/test/resources/META-INF/sql/data.sql', new HSQLDataSnapshotGenerator(repository).generate())
         mappings.putAll(entities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
         
         val templates = #{

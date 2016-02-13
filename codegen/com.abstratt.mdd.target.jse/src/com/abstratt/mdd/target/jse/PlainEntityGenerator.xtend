@@ -150,7 +150,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             
             «entity.generateComment»
             «entity.generateEntityAnnotations»public class «entity.name» «entity.generateEntityGenealogy»{
-                
+            	
                 «entity.generatePrefix»
                 
                 «entity.generateAnonymousDataTypes»
@@ -251,7 +251,11 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateEntityId(Class entity) {
-        ''
+        '''
+        public Integer getId() {
+            return System.identityHashCode(this);
+        }
+        '''
     }
     
     def Iterable<Signal> findTriggerableSignals(Iterable<Operation> operations) {

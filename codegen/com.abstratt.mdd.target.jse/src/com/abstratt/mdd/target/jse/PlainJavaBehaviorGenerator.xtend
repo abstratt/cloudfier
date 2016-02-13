@@ -309,10 +309,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 case 'Duration': {
                     if (operation.static) {
                         val period = switch (operation.name) {
-                            case 'days': ' / (1000 * 60 * 60 * 24)'
-                            case 'hours': ' / (1000 * 60 * 60)'
-                            case 'minutes': ' / (1000 * 60)'
-                            case 'seconds': ' / 1000'
+                            case 'days': ' * (1000 * 60 * 60 * 24)'
+                            case 'hours': ' * (1000 * 60 * 60)'
+                            case 'minutes': ' * (1000 * 60)'
+                            case 'seconds': ' * 1000'
                             case 'milliseconds': ''
                             default: unsupported('''Duration operation: «operation.name»''')
                         }
@@ -386,6 +386,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 action.arguments.head)»)'''
             case 'difference': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(
                 action.target)».getTime())'''
+            case 'make': '''new Date((int) «action.arguments.get(0).generateAction» - 1900, (int) «action.arguments.get(1).generateAction» - 1, (int) «action.arguments.get(2).generateAction»)'''    
             default: unsupported('''Date operation «operation.name»''')
         }
     }
@@ -523,12 +524,11 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
     def CharSequence generateCollectionAny(CallOperationAction action) {
         val closure = action.arguments.get(0).sourceClosure
-        '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).findFirst().«IF action.
-            operation.getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
+        '''«action.target.generateAction».stream().filter(«closure.generateActivityAsExpression(true)»).findFirst().orElse(null)'''
     }
 
     def CharSequence generateCollectionOne(CallOperationAction action) {
-        '''«action.target.generateAction».stream().findFirst().«IF action.operation.getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
+        '''«action.target.generateAction».stream().findFirst().orElse(null)'''
     }
 
     def CharSequence generateGroupingGroupCollect(CallOperationAction action) {

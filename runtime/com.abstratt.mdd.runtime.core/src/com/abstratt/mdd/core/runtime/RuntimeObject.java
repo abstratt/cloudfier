@@ -717,7 +717,8 @@ public class RuntimeObject extends BasicType {
             return null;
         String frameName = operation.getQualifiedName();
         Activity behavior = (Activity) operation.getMethods().get(0);
-        return runtime.runBehavior(this, frameName, behavior, arguments);
+        BasicType result = runtime.runBehavior(this, frameName, behavior, arguments);
+		return result;
     }
 
     private void commitAll() {
