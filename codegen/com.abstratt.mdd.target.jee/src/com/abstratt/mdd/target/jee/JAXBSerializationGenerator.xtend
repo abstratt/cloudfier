@@ -37,9 +37,13 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         import java.util.function.Function;
         import java.io.IOException;
         
+        import org.apache.commons.lang3.time.DateUtils;
+        
         import java.net.URI;
         
         public class «entity.name»JAXBSerialization {
+        	private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
+
             public static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
                 Map<String, Object> result = new LinkedHashMap<>();
                 boolean persisted = toRender.getId() != null;
@@ -94,9 +98,6 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
             
             public static void updateFromExternalRepresentation(«entity.name» toUpdate, Map<String, Object> external) {
                 Map<String, Object> values = (Map<String, Object>) external.get("values");
-                «IF (entity.properties.exists[type.name == 'Date'])»
-                DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-                «ENDIF»
                 «entity.properties.filter[property | !KirraHelper.isReadOnly(property, true)].map[ property | 
                     val core = '''«setModelValue(property, "values", "toUpdate")»;'''
                     if (property.type.name == 'Date')
@@ -149,7 +150,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         switch (typedElement.type.name) {
             case 'Double' : '''Double.parseDouble(«expression».toString())'''
             case 'Integer' : '''Long.parseLong(«expression».toString())'''
-            case 'Date' : '''dateFormat.parse((String) «expression»)'''
+            case 'Date' : '''DateUtils.parseDate((String) «expression», DATE_FORMATS)'''
             default: if (typedElement.type.entity) convertIdToInternal(typedElement, expression) else '''(«typedElement.toJavaType(true)») «expression»'''
         }
     }

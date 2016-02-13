@@ -33,6 +33,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import java.text.*;
         import java.util.function.Function;
         import java.io.IOException;
+
+        import org.apache.commons.lang3.time.DateUtils;
         
         import javax.ws.rs.core.Context;
         import javax.ws.rs.core.MediaType;
@@ -58,6 +60,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         @Path("entities/«entityFullName»/")
         @Produces(MediaType.APPLICATION_JSON)
         public class «entity.name»Resource {
+        	private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
+        	
             @Context
             UriInfo uri;
         
@@ -253,9 +257,6 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
     def CharSequence generateArgumentMatching(Operation operation) {
         '''
-        «IF (operation.parameters.exists[type.name == 'Date'])»
-            DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
-        «ENDIF»
         «operation.parameters.map[
             '''
             «it.type.toJavaType» «it.name»«IF !it.required» = null«ENDIF»;
@@ -300,7 +301,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         switch (typedElement.type.name) {
             case 'Double' : '''Double.parseDouble(«expression».toString())'''
             case 'Integer' : '''Long.parseLong(«expression».toString())'''
-            case 'Date' : '''dateFormat.parse((String) «expression»)'''
+            case 'Date' : '''DateUtils.parseDate((String) «expression», DATE_FORMATS)'''
             default: if (typedElement.type.entity) convertIdToInternal(typedElement, expression) else '''(«typedElement.toJavaType(true)») «expression»'''
         }
     }
