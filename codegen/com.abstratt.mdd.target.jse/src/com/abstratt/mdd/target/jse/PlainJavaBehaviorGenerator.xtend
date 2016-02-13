@@ -309,20 +309,20 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 case 'Duration': {
                     if (operation.static) {
                         val period = switch (operation.name) {
-                            case 'days': '* 1000 * 60 * 60 * 24'
-                            case 'hours': '* 1000 * 60 * 60'
-                            case 'minutes': '* 1000 * 60'
-                            case 'seconds': '* 1000'
+                            case 'days': ' / (1000 * 60 * 60 * 24)'
+                            case 'hours': ' / (1000 * 60 * 60)'
+                            case 'minutes': ' / (1000 * 60)'
+                            case 'seconds': ' / 1000'
                             case 'milliseconds': ''
                             default: unsupported('''Duration operation: «operation.name»''')
                         }
                         '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
                     } else {
                         val period = switch (operation.name) {
-                            case 'toDays': '* 1000 * 60 * 60 * 24'
-                            case 'toHours': '* 1000 * 60 * 60'
-                            case 'toMinutes': '* 1000 * 60'
-                            case 'toSeconds': '* 1000'
+                            case 'toDays': ' / (1000 * 60 * 60 * 24)'
+                            case 'toHours': ' / (1000 * 60 * 60)'
+                            case 'toMinutes': ' / (1000 * 60)'
+                            case 'toSeconds': ' / 1000'
                             case 'toMilliseconds': ''
                         }
                         if (period != null)
