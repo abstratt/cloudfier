@@ -38,7 +38,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "topLevel": «entity.topLevel»,
             "user": «entity.user»,
             "namespace": "«typeRef.namespace»",
-            "description": "«entity.description»",
+            "description": "«entity.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(entity)»",
             "name": "«entity.name»",
             "symbol": "«entity.symbol»",
@@ -85,7 +85,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "required": «property.required»,
             "typeRef": «getTypeRefRepresentation(property.type)»,
             "owner": «property.owningClassifier.typeRefRepresentation»,
-            "description": "«property.description»",
+            "description": "«property.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(property)»",
             "name": "«property.name»",
             "symbol": "«property.symbol»"
@@ -117,7 +117,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
 	      "required": «property.required»,
 	      "typeRef": «getTypeRefRepresentation(property.type)»,
 	      "owner": «property.otherEnd.type.typeRefRepresentation»,
-	      "description": "«property.description»",
+	      "description": "«property.description.removeNewLines»",
 	      "label": "«KirraHelper.getLabel(property)»",
 	      "name": "«property.name»",
 	      "symbol": "«property.symbol»"
@@ -141,7 +141,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "typeRef": «getTypeRefRepresentation(operation.getReturnResult().type)»,
             «ENDIF»
             "owner": «operation.owningClassifier.typeRefRepresentation»,
-            "description": "«operation.description»",
+            "description": "«operation.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(operation)»",
             "name": "«operation.name»",
             "symbol": "«operation.symbol»"
@@ -162,7 +162,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "required": «KirraHelper.isRequired(parameter)»,
             "typeRef": «getTypeRefRepresentation(parameter.type)»,
             "owner": «parameter.operation.owningClassifier.typeRefRepresentation»,
-            "description": "«parameter.description»",
+            "description": "«parameter.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(parameter)»",
             "name": "«parameter.name»",
             "symbol": "«parameter.symbol»"
@@ -179,5 +179,9 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "typeName": "«typeRef.typeName»",
             "fullName": "«typeRef.fullName»"
         }'''
+    }
+    
+    def String removeNewLines(String it) {
+    	return if (it == null) null else it.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"")
     }
 }
