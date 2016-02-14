@@ -268,10 +268,10 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         model += "class MyClass7\n";
         model += "attribute singleAttribute : Integer;\n";
         model += "end;\n";
-        model += "association role MyClass1.myClass4; role myClass1 : MyClass1; end;\n";
-        model += "association role MyClass1.myClass5; role myClass1 : MyClass1; end;\n";
-        model += "association role myRole3 : MyClass3; navigable role myRole2 : MyClass2[1,*]; end;\n";
-        model += "association navigable role myRole2 : MyClass2[1,*]; role myRole7 : MyClass7; end;\n";
+        model += "association !navigable role MyClass1.myClass4; !navigable role myClass1 : MyClass1; end;\n";
+        model += "association !navigable role MyClass1.myClass5; !navigable role myClass1 : MyClass1; end;\n";
+        model += "association !navigable role myRole3 : MyClass3; navigable role myRole2 : MyClass2[1,*]; end;\n";
+        model += "association navigable role myRole2 : MyClass2[1,*]; !navigable role myRole7 : MyClass7; end;\n";
         model += "association navigable role myRole4 : MyClass4[*]; navigable role myRole5 : MyClass5[*]; end;\n";
         model += "end.";
         parseAndCheck(KirraMDDRuntimeSchemaTests.library, model);
@@ -427,7 +427,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         source += "attribute make : Make;\n";
         source += "end;\n";
         source += "association\n";
-        source += "role models : Model[*];\n";
+        source += "!navigable role models : Model[*];\n";
         source += "role Model.make;\n";
         source += "end;\n";
         source += "end.";

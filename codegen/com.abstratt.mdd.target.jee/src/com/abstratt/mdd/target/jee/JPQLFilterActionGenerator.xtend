@@ -69,8 +69,11 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
         val asQueryOperator = action.toQueryOperator
         if (asQueryOperator != null) {
             if (!action.arguments.empty) {
+            	val needsParenthesis = #['OR'].contains(asQueryOperator)
+            	val leftBracket = if (needsParenthesis) '(' else ''
+            	val rightBracket = if (needsParenthesis) ')' else ''
 	            val operands = #[action.target] + action.arguments 
-            	return '''(«operands.map[sourceAction.generateAction].join(''' «asQueryOperator» ''')»)'''
+            	return '''«leftBracket»«operands.map[sourceAction.generateAction].join(''' «asQueryOperator» ''')»«rightBracket»'''
             } 
             else
             	return '''«asQueryOperator» «action.target.sourceAction.generateAction»'''
