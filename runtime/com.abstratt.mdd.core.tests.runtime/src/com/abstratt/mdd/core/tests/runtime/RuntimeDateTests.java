@@ -160,7 +160,7 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "class DateUtil\n";
         model += "static operation createDate() : Date;\n";
         model += "begin\n";
-        model += "  return Date#make(30, 08, 2011);\n";
+        model += "  return Date#make(2011, 08, 30);\n";
         model += "end;\n";
         model += "end;\n";
         model += "end.";
