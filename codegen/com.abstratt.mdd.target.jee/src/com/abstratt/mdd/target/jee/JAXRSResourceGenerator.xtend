@@ -151,8 +151,41 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 Collection<«relationship.type.name»> related = found.«relationship.generateAccessorName»();
                 return «relationship.type.name»Resource.toExternalList(uri, related).build();
             }
+            «IF !relationship.readOnly»
+            @PUT
+            @Path("instances/{id}/relationships/«relationship.name»/{toAttach}")
+            public Response attach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toAttach") Long toAttachId) {
+                «entity.name» found = service.find(id);
+                if (found == null)
+                    return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                    
+                «relationship.type.name» toAttach = new «relationship.type.name»Service().find(toAttachId);
+                if (toAttach == null)
+                    return status(Status.BAD_REQUEST).entity("«relationship.type.name» not found: " + toAttachId).build();    
+
+                Collection<«relationship.type.name»> related = found.«relationship.generateAccessorName»();                    
+                related.add(toAttach);
+                service.update(found);
+                return «relationship.type.name»Resource.toExternalList(uri, related).build();
+            }
+            @DELETE
+            @Path("instances/{id}/relationships/«relationship.name»/{toDetach}")
+            public Response detach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toDetach") Long toDetachId) {
+                «entity.name» found = service.find(id);
+                if (found == null)
+                    return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                    
+                «relationship.type.name» toDetach = new «relationship.type.name»Service().find(toDetachId);
+                if (toDetach == null)
+                    return status(Status.BAD_REQUEST).entity("«relationship.type.name» not found: " + toDetachId).build();    
+                    
+                found.«relationship.generateAccessorName»().remove(toDetach);
+                service.update(found);
+                return status(Status.NO_CONTENT).build();
+            }
+            «ENDIF»
             «ENDFOR»
-            «FOR relationship : entity.entityRelationships.filter[!multiple && !derived]»
+            «FOR relationship : entity.entityRelationships.filter[!derived]»
             @GET
             @Path("instances/{id}/relationships/«relationship.name»/domain")
             public Response list«relationship.name.toFirstUpper»Domain(@PathParam("id") Long id) {
