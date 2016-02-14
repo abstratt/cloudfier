@@ -129,18 +129,24 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }    
     
     def CharSequence generateJavaMethod(Operation operation, VisibilityKind visibility, boolean staticOperation) {
-        val parameterWithDefaults = operation.ownedParameters.filter[direction == ParameterDirectionKind.IN_LITERAL && (^default != null || defaultValue != null)]
         '''
         «operation.generateJavaMethodSignature(visibility, staticOperation)» {
-            «parameterWithDefaults.generateMany[
-            '''
-            if («name» == null) «name» = «defaultValue.generateValue»; 
-            '''
-            ]»
+            «operation.generateParameterDefaults»
             «operation.activity.generateJavaMethodBody»
         }
         '''
     }
+	
+	def CharSequence generateParameterDefaults(Operation operation) {
+        val parameterWithDefaults = operation.ownedParameters.filter[direction == ParameterDirectionKind.IN_LITERAL && (^default != null || defaultValue != null)]
+        return parameterWithDefaults.generateMany[generateParameterDefault(it)]
+	}
+	
+	def CharSequence generateParameterDefault(Parameter parameter) {
+		'''
+        if («parameter.name» == null) «parameter.name» = «parameter.defaultValue.generateValue»; 
+        '''		
+	}
     
     def CharSequence generateJavaMethodBody(Activity activity) {
         activity.generateActivity

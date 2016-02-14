@@ -35,6 +35,7 @@ import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
 import com.abstratt.kirra.mdd.core.KirraHelper
 import org.eclipse.uml2.uml.VisibilityKind
+import org.eclipse.uml2.uml.ParameterDirectionKind
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -478,6 +479,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val stateMachine = stateProperty?.type as StateMachine
         val isEventTriggering = stateMachine != null && !stateMachine.findTriggersForCalling(actionOperation).empty
         '''
+            «generateParameterDefaults(actionOperation)»
             «actionOperation.preconditions.map[generatePrecondition(actionOperation, it)].join()»
             «IF(firstMethod != null)»
             «generateActivity(firstMethod as Activity)»
