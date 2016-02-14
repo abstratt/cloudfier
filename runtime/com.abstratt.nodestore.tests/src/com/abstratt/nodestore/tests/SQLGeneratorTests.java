@@ -488,7 +488,7 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         model += "class Class2\n";
         model += "attribute attr2 : String[0, 1];\n";
         model += "end;\n";
-        model += "association OneToMany role roleOne : Class1; navigable role roleMany : Class2[*]; end;\n";
+        model += "association OneToMany !navigable role roleOne : Class1; navigable role roleMany : Class2[*]; end;\n";
         model += "end.";
         parseAndCheck(model);
 
@@ -652,14 +652,14 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         model += "association navigable role roleOneA2 : Class1; navigable role roleTwoA2 : Class2[0,1]; end;\n";
         model += "association navigable role roleOneA3 : Class1; navigable role roleTwoA3 : Class2[0,*]; end;\n";
         model += "association navigable role roleOneA4 : Class1; navigable role roleTwoA4 : Class2[1,*]; end;\n";
-        model += "association role roleOneB1 : Class1; navigable role roleTwoB1 : Class2; end;\n";
-        model += "association role roleOneB2 : Class1; navigable role roleTwoB2 : Class2[0,1]; end;\n";
-        model += "association role roleOneB3 : Class1; navigable role roleTwoB3 : Class2[0,*]; end;\n";
-        model += "association role roleOneB4 : Class1; navigable role roleTwoB4 : Class2[1,*]; end;\n";
-        model += "association role roleOneC1 : Class1[*]; navigable role roleTwoC1 : Class2; end;\n";
-        model += "association role roleOneC2 : Class1[*]; navigable role roleTwoC2 : Class2[0,1]; end;\n";
-        model += "association role roleOneC3 : Class1[*]; navigable role roleTwoC3 : Class2[0,*]; end;\n";
-        model += "association role roleOneC4 : Class1[*]; navigable role roleTwoC4 : Class2[1,*]; end;\n";
+        model += "association !navigable role roleOneB1 : Class1; navigable role roleTwoB1 : Class2; end;\n";
+        model += "association !navigable role roleOneB2 : Class1; navigable role roleTwoB2 : Class2[0,1]; end;\n";
+        model += "association !navigable role roleOneB3 : Class1; navigable role roleTwoB3 : Class2[0,*]; end;\n";
+        model += "association !navigable role roleOneB4 : Class1; navigable role roleTwoB4 : Class2[1,*]; end;\n";
+        model += "association !navigable role roleOneC1 : Class1[*]; navigable role roleTwoC1 : Class2; end;\n";
+        model += "association !navigable role roleOneC2 : Class1[*]; navigable role roleTwoC2 : Class2[0,1]; end;\n";
+        model += "association !navigable role roleOneC3 : Class1[*]; navigable role roleTwoC3 : Class2[0,*]; end;\n";
+        model += "association !navigable role roleOneC4 : Class1[*]; navigable role roleTwoC4 : Class2[1,*]; end;\n";
         model += "association navigable role roleOneD1 : Class1[*]; navigable role roleTwoD1 : Class2; end;\n";
         model += "association navigable role roleOneD2 : Class1[*]; navigable role roleTwoD2 : Class2[0,1]; end;\n";
         model += "association navigable role roleOneD3 : Class1[*]; navigable role roleTwoD3 : Class2[0,*]; end;\n";
@@ -821,7 +821,7 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         structure += "  class Engine\n";
         structure += "    attribute engineNumber : String[0, 1];\n";
         structure += "  end;\n";
-        structure += "  association role Car.carEngine; role engineCar : Car; end;\n";
+        structure += "  association role Car.carEngine; !navigable role engineCar : Car; end;\n";
         structure += "end.";
         parseAndCheck(structure);
     }
@@ -903,8 +903,8 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         model += "association ManyToManyNavigableAssociation navigable role myClass7s : MyClass7[*]; navigable role myClass6s : MyClass6[*]; end;\n";
         model += "association role MyClass1.myClass4s; role MyClass4.myClass1; end;\n";
         model += "composition role MyClass1.myClass5s; navigable role myClass1 : MyClass1; end;\n";
-        model += "association navigable role myClass8s : MyClass8[*]; role myClass9 : MyClass9; end;\n";
-        model += "association role myClass11 : MyClass11; navigable role myClass8s : MyClass8[*]; end;\n";
+        model += "association navigable role myClass8s : MyClass8[*]; !navigable role myClass9 : MyClass9; end;\n";
+        model += "association !navigable role myClass11 : MyClass11; navigable role myClass8s : MyClass8[*]; end;\n";
         model += "end.";
         parseAndCheck(model);
     }
