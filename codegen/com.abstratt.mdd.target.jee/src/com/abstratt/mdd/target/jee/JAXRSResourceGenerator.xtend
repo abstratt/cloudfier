@@ -279,11 +279,11 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         	if (parameter.multiple) {
         	// it is an entity, and the parameter is multivalued - need to map ids to POJOs
         	'''
-        	«parameter.name» = ((Collection<Map<String, Object>>) representation.get("«parameter.name»")).stream().findAny().map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+        	«parameter.name» = ((Collection<Map<String, Object>>) representation.get("«parameter.name»")).stream().map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
         	'''
         	} else {
         	'''
-        	«parameter.name» = Optional.ofNullable((Map<String, Object>) representation.get("«parameter.name»")).map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+        	«parameter.name» = ((Collection<Map<String, Object>>) representation.get("«parameter.name»")).stream().findAny().map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
         	'''	
         	}
         	
