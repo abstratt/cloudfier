@@ -40,6 +40,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import org.eclipse.uml2.uml.Pin
 
 class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
@@ -271,39 +272,54 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
         val targetType = action.operationTarget
         val operation = action.operation
+        val op1Optional = action.target != null && (action.target.source as Pin).lowerBound == 0
+        val op2Optional = !action.arguments.empty && (action.arguments.head.source as Pin).lowerBound == 0
+        val op1 = action.target?.generateAction
+        val op2 = action.arguments.head?.generateAction
         val operator = findOperator(action.operationTarget, action.operation)
         if (operator != null) {
             switch (action.arguments.size()) {
                 // unary operator
                 case 0:
-                    '''«operator»«generateAction(action.target)»'''.parenthesize(action)
+                    '''«operator»«op1»'''.parenthesize(action)
                 case 1:
-                    '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''.
+                    '''«op1» «operator» «op2»'''.
                         parenthesize(action)
                 default: unsupported('''operation «action.operation.name»''')
             }
-        } else
+        } else {
             switch (action.operation.owningClassifier.name) {
                 case 'Basic':
                     switch (operation.name) {
-                        case 'notNull': '''«action.target.generateAction» != null'''
+                        case 'notNull': '''«op1» != null'''
                         default: unsupported('''Basic operation «operation.name»''')
                     }
-                case 'Primitive':
+                case 'Primitive': 
+                {
                     switch (operation.name) {
-                        case 'equals': '''«action.target.generateAction».equals(«action.arguments.head.generateAction»)'''
-                        case 'notEquals': '''!«action.target.generateAction».equals(«action.arguments.head.
-                            generateAction»)'''
-                        case 'lowerThan': '''«action.target.generateAction».compareTo(«action.arguments.head.
-                            generateAction») < 0'''
-                        case 'greaterThan': '''«action.target.generateAction».compareTo(«action.arguments.head.
-                            generateAction») <= 0'''
-                        case 'lowerOrEquals': '''«action.target.generateAction».compareTo(«action.arguments.head.
-                            generateAction») >= 0'''
-                        case 'greaterOrEquals': '''«action.target.generateAction».compareTo(«action.arguments.head.
-                            generateAction») > 0'''
+                        case 'equals': 
+                            if (op1Optional) {
+                        	    if (op2Optional) 
+                        		    '''(«op1» == null && «op2» == null) || («op1» != null && «op1».equals(«op2»))'''
+                    		    else
+                    		        '''«op2».equals(«op1»)'''
+                            } else 
+                                '''«op1».equals(«op2»)'''
+                        case 'notEquals': 
+                            if (op1Optional) {
+                            	if (op2Optional)
+                                	'''(«op1» == null && «op2» != null) || («op1» != null && !«op1».equals(«op2»))'''
+                            	else
+                            	    '''!«op2».equals(«op1»)''' 
+                            } else 
+                                '''!«op1».equals(«op2»)'''
+                        case 'lowerThan': '''«op1».compareTo(«op2») < 0'''
+                        case 'greaterThan': '''«op1».compareTo(«op2») <= 0'''
+                        case 'lowerOrEquals': '''«op1».compareTo(«op2») >= 0'''
+                        case 'greaterOrEquals': '''«op1».compareTo(«op2») > 0'''
                         default: unsupported('''Primitive operation «operation.name»''')
                     }
+                }
                 case 'Date':
                     generateDateOperationCall(action)
                 case 'Duration': {
@@ -361,6 +377,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 }
                 default: unsupported('''classifier «targetType.name» - operation «operation.name»''')
             }
+        }
     }
     
     def generateGroupingOperationCall(CallOperationAction action) {
