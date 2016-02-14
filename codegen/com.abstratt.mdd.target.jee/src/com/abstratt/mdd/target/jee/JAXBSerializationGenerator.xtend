@@ -11,6 +11,7 @@ import org.eclipse.uml2.uml.TypedElement
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Operation
 import com.abstratt.kirra.TypeRef
+import org.eclipse.uml2.uml.MultiplicityElement
 
 class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
     
@@ -136,12 +137,13 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
     }
     
     def getValueExpression(CharSequence core, TypedElement element) {
-        if (element.type.enumeration) 
-            '''«core».name()'''
-        else if (element.type.name == 'String' || element.type.name == 'Memo') 
+    	val optional = (element as MultiplicityElement).lowerBound == 0
+        if (element.type.enumeration) {
+            '''«IF optional»«core» == null ? null : «ENDIF»«core».name()'''
+        } else if (element.type.name == 'String' || element.type.name == 'Memo') 
             '''stringEncoder.apply(«core»)'''            
         else if (element.type.name == 'Date') 
-            '''«core» == null ? null : dateFormat.format(«core»)'''            
+            '''«IF optional»«core» == null ? null : «ENDIF»dateFormat.format(«core»)'''            
         else
             core
     }
