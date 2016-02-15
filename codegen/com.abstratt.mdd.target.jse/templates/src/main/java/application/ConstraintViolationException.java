@@ -5,6 +5,6 @@ public class ConstraintViolationException extends RuntimeException {
         super(message);
     }
     public ConstraintViolationException() {
-        super();
+        super("A constraint was violated");
     }
 }

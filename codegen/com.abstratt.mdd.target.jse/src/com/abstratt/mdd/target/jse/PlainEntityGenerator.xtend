@@ -465,7 +465,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         /*
         «ENDIF»
         if («generatePredicate(constraint, true)») {
-            throw new «if (constraint.name?.length > 0) constraint.name else 'Runtime'»Exception();
+            throw new «if (constraint.name?.length > 0) constraint.name else 'ConstraintViolation'»Exception();
         }
         «IF parameterless && !selfReference»
         */

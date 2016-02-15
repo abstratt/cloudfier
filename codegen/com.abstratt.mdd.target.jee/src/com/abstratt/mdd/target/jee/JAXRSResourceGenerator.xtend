@@ -35,6 +35,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import java.io.IOException;
 
         import org.apache.commons.lang3.time.DateUtils;
+        import org.apache.commons.lang3.StringUtils;
         
         import javax.ws.rs.core.Context;
         import javax.ws.rs.core.MediaType;
@@ -154,14 +155,15 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             «IF !relationship.readOnly»
             @PUT
             @Path("instances/{id}/relationships/«relationship.name»/{toAttach}")
-            public Response attach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toAttach") Long toAttachId) {
+            public Response attach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toAttach") String toAttachIdStr) {
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
-                    
+                
+                Long toAttachId = parseId(toAttachIdStr);
                 «relationship.type.name» toAttach = new «relationship.type.name»Service().find(toAttachId);
                 if (toAttach == null)
-                    return status(Status.BAD_REQUEST).entity("«relationship.type.name» not found: " + toAttachId).build();    
+                    return status(Status.BAD_REQUEST).entity("«relationship.type.name» not found: " + toAttachId).build();
 
                 Collection<«relationship.type.name»> related = found.«relationship.generateAccessorName»();                    
                 related.add(toAttach);
@@ -170,11 +172,12 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             }
             @DELETE
             @Path("instances/{id}/relationships/«relationship.name»/{toDetach}")
-            public Response detach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toDetach") Long toDetachId) {
+            public Response detach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toDetach") String toDetachIdStr) {
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
-                    
+                
+                Long toDetachId = parseId(toDetachIdStr);
                 «relationship.type.name» toDetach = new «relationship.type.name»Service().find(toDetachId);
                 if (toDetach == null)
                     return status(Status.BAD_REQUEST).entity("«relationship.type.name» not found: " + toDetachId).build();    
@@ -272,6 +275,11 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return Response.status(status).type(MediaType.APPLICATION_JSON).entity(Collections.singletonMap("message", message));
             }
             
+            private static Long parseId(String idStr) {
+                String[] components = StringUtils.split(idStr, '@');
+                return Long.parseLong(components[components.length - 1]);
+            }
+            
             static ResponseBuilder toExternalList(UriInfo uriInfo, Collection<«entity.name»> models) {
                 URI extentURI = uriInfo.getRequestUri();
                 Collection<Map<String, Object>> items = models.stream().map(toMap -> {
@@ -330,7 +338,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         	'''
         	} else {
         	'''
-        	«parameter.name» = ((Collection<Map<String, Object>>) representation.get("«parameter.name»")).stream().findAny().map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+        	«parameter.name» = Optional.ofNullable(((Map<String, Object>) representation.get("«parameter.name»"))).map(it -> new «parameter.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
         	'''	
         	}
         	

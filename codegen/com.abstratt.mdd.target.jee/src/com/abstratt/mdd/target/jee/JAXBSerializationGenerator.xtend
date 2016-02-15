@@ -76,12 +76,12 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                         val accessor = '''«relationship.generateAccessorName»()'''
                         val relationshipInstancesURI = '''«relationship.type.name.toFirstLower»InstancesURI'''
                         '''
-                        List<Map<String, Object>> «relationshipName»Links = new LinkedList<>();
+                        Map<String, Object> «relationshipName»Link = null;
                         if (toRender.«accessor» != null) {
                         	URI «relationshipInstancesURI» = instancesURI.resolve("../..").resolve("«typeRef.fullName»/instances"); 
-                            «relationshipName»Links.add(«relationship.type.name»JAXBSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI», false));
+                            «relationshipName»Link = «relationship.type.name»JAXBSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI», false);
                         }    
-                        links.put("«relationshipName»", «relationshipName»Links);
+                        links.put("«relationshipName»", «relationshipName»Link);
                         '''
                     ].join('\n')»
                     result.put("links", links);
@@ -114,12 +114,12 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                     
                 ].join('\n')»
                 
-                Map<String, List<Map<String, Object>>> links = (Map<String, List<Map<String, Object>>>) external.get("links");
+                Map<String, Map<String, Object>> links = (Map<String, Map<String, Object>>) external.get("links");
                 «entity.entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true)].map[ relationship |
                 	'''
-            		List<Map<String, Object>> «relationship.name» = links.get("«relationship.name»");
+            		Map<String, Object> «relationship.name» = links.get("«relationship.name»");
             		if («relationship.name» != null) {
-            		    «relationship.type.name» newValue = «relationship.name».stream().findAny().map(it -> new «relationship.type.name»Service().find(Long.parseLong((String) it.get("objectId")))).orElse(null);
+            		    «relationship.type.name» newValue = Optional.ofNullable(«relationship.name».get("objectId")).map(it -> new «relationship.type.name»Service().find(Long.parseLong((String) it))).orElse(null);
             		    toUpdate.«relationship.generateSetterName»(newValue);
             		} else {
             			toUpdate.«relationship.generateSetterName»(null);
