@@ -272,10 +272,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
         val targetType = action.operationTarget
         val operation = action.operation
-        val op1Optional = action.target != null && (action.target.source as Pin).lowerBound == 0
-        val op2Optional = !action.arguments.empty && (action.arguments.head.source as Pin).lowerBound == 0
         val op1 = action.target?.generateAction
         val op2 = action.arguments.head?.generateAction
+        val op1Optional = action.target != null && (action.target.source as Pin).lowerBound == 0
+        val op2Optional = !action.arguments.empty && (action.arguments.head.source as Pin).lowerBound == 0
         val operator = findOperator(action.operationTarget, action.operation)
         if (operator != null) {
             switch (action.arguments.size()) {
