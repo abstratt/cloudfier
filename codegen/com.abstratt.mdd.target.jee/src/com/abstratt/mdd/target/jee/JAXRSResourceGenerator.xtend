@@ -9,6 +9,7 @@ import org.eclipse.uml2.uml.TypedElement
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Operation
 import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
+import org.eclipse.uml2.uml.AggregationKind
 
 class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
@@ -188,14 +189,14 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             }
             «ENDIF»
             «ENDFOR»
-            «FOR relationship : entity.entityRelationships.filter[!derived]»
+            «FOR relationship : entity.entityRelationships.filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL]»
             @GET
             @Path("instances/{id}/relationships/«relationship.name»/domain")
-            public Response list«relationship.name.toFirstUpper»Domain(@PathParam("id") Long id) {
+            public Response listDomainFor«relationship.name.toFirstUpper»(@PathParam("id") Long id) {
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
-                Collection<«relationship.type.name»> domain = new «relationship.type.name»Service().findAll();
+                Collection<«relationship.type.name»> domain = new «entity.name»Service().getDomainFor«relationship.name.toFirstUpper»(found);
                 return «relationship.type.name»Resource.toExternalList(uri, domain).build();
             }
             «ENDFOR»

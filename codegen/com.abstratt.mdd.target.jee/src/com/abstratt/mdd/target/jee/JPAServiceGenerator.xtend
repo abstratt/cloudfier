@@ -20,6 +20,7 @@ import com.abstratt.mdd.core.util.ConstraintUtils
 import com.abstratt.mdd.core.util.ActivityUtils
 import org.eclipse.uml2.uml.OutputPin
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.AggregationKind
 
 class JPAServiceGenerator extends ServiceGenerator {
 
@@ -142,16 +143,23 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
     
     def generateFindAll(String javaMethodName, Classifier entity) {
-        val entityAlias = entity.name.toFirstLower
         '''
             public List<«entity.name»> «javaMethodName»() {
-                CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-                CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
-                Root<«entity.name»> «entityAlias» = cq.from(«entity.name».class);
-                return getEntityManager().createQuery(cq.select(«entityAlias»).orderBy(cb.asc(«entityAlias».get("id"))).distinct(true)).getResultList();
+                «generateFindAllCore(entity)»
             }
         '''
     }
+    
+    def generateFindAllCore(Classifier entity) {
+        val entityAlias = entity.name.toFirstLower
+        '''
+        CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
+        CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
+        Root<«entity.name»> «entityAlias» = cq.from(«entity.name».class);
+        return getEntityManager().createQuery(cq.select(«entityAlias»).orderBy(cb.asc(«entityAlias».get("id"))).distinct(true)).getResultList();
+        '''
+    }
+    
     
     override generateRelated(Classifier entity) {
         val relationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[multiple || !navigable]
@@ -169,20 +177,20 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
     
     def CharSequence generateRelationshipDomain(Classifier entity) {
-        val relationships = getRelationships(entity).filter[!derived]
+        val relationships = getRelationships(entity).filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL]
         relationships.generateMany[ relationship |
-            val otherEnd = relationship.otherEnd
             val constraints = relationship.findInvariantConstraints
-            val methodName = '''getRelationshipDomainFor«relationship.type.name»«otherEnd.name.toFirstUpper»'''
-            if (constraints.isEmpty)
-                generateFindAll(methodName, entity)
-            else
-                '''
-                public List<«otherEnd.type.name»> «methodName»(«relationship.type.name» context) {
-                    //TODO honor constraints
-                    return Collections.emptyList();
-                }
-                '''
+            val methodName = '''getDomainFor«relationship.name.toFirstUpper»'''
+            '''
+            public List<«relationship.type.name»> «methodName»(«entity.name» context) {
+            	«IF constraints.isEmpty»
+            	return new «relationship.type.name»Service().findAll();
+    	        «ELSE»
+            	//TODO honor constraints
+        	    «generateFindAllCore(relationship.type as Class)»
+                «ENDIF»
+            }
+            '''
         ]
     }    
     

@@ -93,34 +93,37 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         '''
     }
     
-    def CharSequence getRelationshipRepresentation(Property property) {
-    	val associationName = property.associationName
+    def CharSequence getRelationshipRepresentation(Property relationship) {
+    	val associationName = relationship.associationName
+    	// XXX this is a trick so the UI doesn't allow linking from both sides, which the JPA service currently does not allow (N:N associations are mapped from one side only)  
+        val manyToManyNavigableFromBothSides = relationship.otherEnd != null && relationship.navigable && relationship.multivalued && relationship.otherEnd.multivalued && relationship.otherEnd.navigable
+    	
     	'''
-	    "«property.name»": {
+	    "«relationship.name»": {
 	      «IF associationName != null»	
 	      "associationName": "«associationName»",
 	      «ENDIF»
-	      "navigable": «property.navigable»,
-	      «IF property.opposite != null»	
-	      "opposite": "«property.opposite.name»",
-	      "oppositeRequired": «property.opposite.required»,
-	      "oppositeReadOnly": «property.opposite.readOnly»,
+	      "navigable": «relationship.navigable»,
+	      «IF relationship.opposite != null»	
+	      "opposite": "«relationship.opposite.name»",
+	      "oppositeRequired": «relationship.opposite.required»,
+	      "oppositeReadOnly": «relationship.opposite.readOnly»,
 	      «ENDIF»
-	      "primary": «property.primary»,
-	      "style": "«property.relationshipStyle»",
-	      "derived": «KirraHelper.isDerived(property)»,
-	      "editable": «property.editable»,
-	      "initializable": «property.initializable»,
-	      "userVisible": «property.userVisible»,
-	      "hasDefault": «property.hasDefault»,
-	      "multiple": «property.multiple»,
-	      "required": «property.required»,
-	      "typeRef": «getTypeRefRepresentation(property.type)»,
-	      "owner": «property.otherEnd.type.typeRefRepresentation»,
-	      "description": "«property.description.removeNewLines»",
-	      "label": "«KirraHelper.getLabel(property)»",
-	      "name": "«property.name»",
-	      "symbol": "«property.symbol»"
+	      "primary": «relationship.primary»,
+	      "style": "«relationship.relationshipStyle»",
+	      "derived": «KirraHelper.isDerived(relationship)»,
+	      "editable": «relationship.editable && (!manyToManyNavigableFromBothSides || relationship.primary)»,
+	      "initializable": «relationship.initializable»,
+	      "userVisible": «relationship.userVisible»,
+	      "hasDefault": «relationship.hasDefault»,
+	      "multiple": «relationship.multiple»,
+	      "required": «relationship.required»,
+	      "typeRef": «getTypeRefRepresentation(relationship.type)»,
+	      "owner": «relationship.otherEnd.type.typeRefRepresentation»,
+	      "description": "«relationship.description.removeNewLines»",
+	      "label": "«KirraHelper.getLabel(relationship)»",
+	      "name": "«relationship.name»",
+	      "symbol": "«relationship.symbol»"
 	    }
         '''
     }

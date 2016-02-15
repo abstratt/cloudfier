@@ -697,7 +697,6 @@ public class KirraHelper {
             public Boolean call() throws Exception {
                 if (thisEnd.getAssociation() == null)
                     return false;
-                Property firstEnd = thisEnd.getAssociation().getMemberEnds().get(0);
                 if (!thisEnd.isNavigable())
                     return false;
                 Property otherEnd = thisEnd.getOtherEnd();
@@ -709,6 +708,11 @@ public class KirraHelper {
                     return !thisEnd.isMultivalued();
                 if (isBasicallyRequired(thisEnd) != isBasicallyRequired(otherEnd))
                     return isBasicallyRequired(thisEnd);
+                // only one side is association owned
+                if (thisEnd.getAssociation().getOwnedEnds().size() == 1)
+                	return !thisEnd.getAssociation().getOwnedEnds().contains(thisEnd);
+                // both owned or none owned, pick the first one as a tie breaker
+                Property firstEnd = thisEnd.getAssociation().getMemberEnds().get(0);
                 return firstEnd == thisEnd;
             }
         });        
