@@ -211,6 +211,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 service.update(found);
                 return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(".."), true)).build();
             }
+            
             «FOR parameter : action.parameters.filter[type.entity]»
             @GET
             @Path("instances/{id}/actions/«action.name»/parameters/«parameter.name»/domain")
@@ -225,18 +226,29 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return «parameter.type.name»Resource.toExternalList(uri, domain).build();
             }
             «ENDFOR»
-            
             «ENDFOR»
             
             «FOR action : entity.entityActions»
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("actions/«action.name»")
-            public Response execute«action.name.toFirstUpper»(@PathParam("id") Long id, Map<String, Object> representation) {
+            public Response execute«action.name.toFirstUpper»(Map<String, Object> representation) {
                 «action.generateArgumentMatching»
                 service.«action.name»(«action.parameters.map[name].join(', ')»);
                 return status(Status.OK).entity(Collections.emptyMap()).build();
             }
+            
+            «FOR parameter : action.parameters.filter[type.entity]»
+            @GET
+            @Path("instances/undefined/actions/«action.name»/parameters/«parameter.name»/domain")
+            public Response list«action.name.toFirstUpper»_«parameter.name»Domain() {
+                Collection<«parameter.type.name»> domain = «if (parameter.hasParameterConstraints)
+                	'''service.getParameterDomainFor«parameter.name.toFirstUpper»To«action.name.toFirstUpper»()'''
+                else
+                	'''new «parameter.type.name»Service().findAll()'''»;
+                return «parameter.type.name»Resource.toExternalList(uri, domain).build();
+            }
+            «ENDFOR»
             «ENDFOR»
             
             «FOR query : entity.queries.filter[getReturnResult().multiple && getReturnResult().type == entity]»
@@ -249,6 +261,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return toExternalList(uri, models).build();
             }
             «ENDFOR»
+            
+            
         
             private static ResponseBuilder status(Status status) {
                 return Response.status(status).type(MediaType.APPLICATION_JSON);
