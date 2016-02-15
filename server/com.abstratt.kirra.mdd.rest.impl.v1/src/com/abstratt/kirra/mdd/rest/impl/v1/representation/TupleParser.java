@@ -178,12 +178,13 @@ public class TupleParser {
             return;
         if (fieldValueNode.isTextual())
             existingInstance.setSingleRelated(relationship.getName(), resolveLink(fieldValueNode, relationship.getTypeRef()));
-        else if (fieldValueNode.isArray()) {
-            List<Instance> allRelated = new ArrayList<Instance>();
-            for (Iterator<JsonNode> elements = ((ArrayNode) fieldValueNode).elements(); elements.hasNext();)
-                allRelated.add(resolveLink(elements.next(), relationship.getTypeRef()));
-            existingInstance.setRelated(relationship.getName(), allRelated);
-        } else if (fieldValueNode.isObject()) {
+        // kirra #31
+//        else if (fieldValueNode.isArray()) {
+//            List<Instance> allRelated = new ArrayList<Instance>();
+//            for (Iterator<JsonNode> elements = ((ArrayNode) fieldValueNode).elements(); elements.hasNext();)
+//                allRelated.add(resolveLink(elements.next(), relationship.getTypeRef()));
+//            existingInstance.setRelated(relationship.getName(), allRelated);
+        else if (fieldValueNode.isObject()) {
             existingInstance.setSingleRelated(relationship.getName(),
                     resolveLink(fieldValueNode.get("uri"), relationship.getTypeRef()));
         }

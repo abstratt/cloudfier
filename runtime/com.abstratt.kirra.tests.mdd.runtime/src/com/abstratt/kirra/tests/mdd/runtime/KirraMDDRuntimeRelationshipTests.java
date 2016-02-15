@@ -82,29 +82,6 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         super(name);
     }
 
-    public void _testCreateWithTwoLinks() throws CoreException {
-        parseAndCheck(sampleModel);
-        Repository kirra = getKirra();
-
-        Instance createdClass3a = kirra.createInstance(new Instance("mypackage", "MyClass3"));
-        Instance createdClass3b = kirra.createInstance(new Instance("mypackage", "MyClass3"));
-        List<Instance> class3Instances = Arrays.asList(createdClass3a, createdClass3b);
-
-        Instance newClass1 = new Instance("mypackage", "MyClass1");
-        newClass1.setRelated("myClass3", class3Instances);
-        Instance createdClass1 = kirra.createInstance(newClass1);
-
-        TestCase.assertTrue(!createdClass1.isNew());
-        TestCase.assertTrue(createdClass1.isFull());
-        TestCase.assertNotNull(createdClass1.getRelated("myClass3"));
-        TestCase.assertEquals(2, createdClass1.getRelated("myClass3").size());
-        List<Instance> related = createdClass1.getRelated("myClass3");
-        sortInstances(related);
-        sortInstances(class3Instances);
-        TestCase.assertEquals(class3Instances.get(0).getObjectId(), related.get(0).getObjectId());
-        TestCase.assertEquals(class3Instances.get(1).getObjectId(), related.get(1).getObjectId());
-    }
-
     public void testAttributePointingToEntity() throws CoreException {
         String model = "";
         model += "package mypackage;\n";
@@ -214,14 +191,13 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         Instance createdClass2 = kirra.createInstance(new Instance("mypackage", "MyClass2"));
 
         Instance newClass1 = new Instance("mypackage", "MyClass1");
-        newClass1.setRelated("myClass2", Arrays.asList(createdClass2));
+        newClass1.setRelated("myClass2", createdClass2);
         Instance createdClass1 = kirra.createInstance(newClass1);
 
         TestCase.assertTrue(!createdClass1.isNew());
         TestCase.assertTrue(createdClass1.isFull());
         TestCase.assertNotNull(createdClass1.getRelated("myClass2"));
-        TestCase.assertEquals(1, createdClass1.getRelated("myClass2").size());
-        TestCase.assertEquals(createdClass2.getObjectId(), createdClass1.getRelated("myClass2").get(0).getObjectId());
+        TestCase.assertEquals(createdClass2.getObjectId(), createdClass1.getRelated("myClass2").getObjectId());
     }
 
     public void testDefault() throws CoreException {
@@ -232,16 +208,14 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
 
         Instance transientInstance1 = kirra.newInstance("mypackage", "MyClass1");
         TestCase.assertEquals(0, transientInstance1.getValues().size());
-        Collection<List<Instance>> links1 = transientInstance1.getLinks().values();
-        for (List<Instance> list : links1)
-            TestCase.assertEquals(0, list.size());
+        for (Instance link : transientInstance1.getLinks().values())
+            TestCase.assertNull(link);
 
         for (String className : emptyClasses) {
             Instance transientInstance = kirra.newInstance("mypackage", className);
             TestCase.assertEquals(className, 0, transientInstance.getValues().size());
-            Collection<List<Instance>> links = transientInstance.getLinks().values();
-            for (List<Instance> list : links)
-                TestCase.assertEquals(0, list.size());
+            for (Instance link : transientInstance.getLinks().values())
+            	TestCase.assertNull(link);
         }
     }
 

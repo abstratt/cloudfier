@@ -728,7 +728,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                         if (value == null)
                             continue;
                         Object converted = convertFromBasicType(value, (Classifier) property.getType());
-                        kirraInstance.setRelated(KirraHelper.getName(property), Arrays.asList((Instance) converted));
+                        kirraInstance.setRelated(KirraHelper.getName(property), (Instance) converted);
                     }
                 } else if (KirraHelper.isProperty(property)) {
                     BasicType value = source.getValue(property);
@@ -762,7 +762,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                                             continue;
                                         Object converted = convertFromBasicType(value, (Classifier) forwardReference.getType());
                                         kirraInstance
-                                                .setRelated(KirraHelper.getName(forwardReference), Arrays.asList((Instance) converted));
+                                                .setRelated(KirraHelper.getName(forwardReference), (Instance) converted);
                                     }
                                 }
                             }
@@ -839,7 +839,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     continue;
                 target.setValue(attribute, convertToBasicType(entry.getValue(), attribute));
             }
-            for (Entry<String, List<Instance>> entry : instance.getLinks().entrySet()) {
+            for (Entry<String, Instance> entry : instance.getLinks().entrySet()) {
                 Relationship relationship = entity.getRelationship(entry.getKey());
                 if (relationship == null)
                     throw new KirraException("Relationship " + entry.getKey() + " does not exist", null, Kind.SCHEMA);
@@ -1010,11 +1010,10 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             } else {
                 // ensure provided links are to preexisting instances
                 Relationship entityRelationship = entity.getRelationship(property.getName());
-                List<Instance> linksProvided = kirraInstance.getRelated(KirraHelper.getName(property));
-                if (linksProvided != null)
-                    for (Instance linkedInstance : linksProvided)
-                        if (linkedInstance.isNew()) 
-                            throw new KirraException("Only previously persisted instances can be provided as links for " + entityRelationship.getLabel(), null, Kind.VALIDATION);
+                Instance linkedInstance = kirraInstance.getRelated(KirraHelper.getName(property));
+                if (linkedInstance != null)
+                    if (linkedInstance.isNew()) 
+                        throw new KirraException("Only previously persisted instances can be provided as links for " + entityRelationship.getLabel(), null, Kind.VALIDATION);
                 // TODO relationship validation disabled temporarily for release
                 // List<Instance> related =
                 // kirraInstance.getRelated(KirraHelper.getName(property));

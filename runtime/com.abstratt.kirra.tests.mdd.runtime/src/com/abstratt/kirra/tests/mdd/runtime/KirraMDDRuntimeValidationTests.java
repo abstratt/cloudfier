@@ -65,7 +65,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
 
         Instance newInstance2 = kirra.newInstance("mypackage", "MyClass2");
         newInstance2.setValue("attr3", "bar");
-        newInstance2.setRelated("ref1", Arrays.asList(newInstance1));
+        newInstance2.setRelated("ref1", newInstance1);
 
         try {
             kirra.createInstance(newInstance2);
@@ -142,7 +142,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         target2.setEntityNamespace("mypackage");
         target2 = kirra.createInstance(target2);
 
-        referrer.setRelated("ref2", Arrays.asList(target1));
+        referrer.setRelated("ref2", target1);
 
         referrer = kirra.createInstance(referrer);
         kirra.saveContext();
@@ -174,7 +174,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         target2.setEntityNamespace("mypackage");
         target2 = kirra.createInstance(target2);
 
-        referrer.setRelated("ref2", Arrays.asList(target1));
+        referrer.setRelated("ref2", target1);
 
         referrer = kirra.createInstance(referrer);
         kirra.saveContext();
@@ -182,7 +182,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         // deleting target1 would have failed as it is needed by the referrer
 
         // switching the referrer to target2 will allow target1 to be deleted
-        referrer.setRelated("ref2", Arrays.asList(target2));
+        referrer.setRelated("ref2", target2);
         kirra.updateInstance(referrer);
         kirra.saveContext();
 
@@ -222,7 +222,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
 
         Instance created3 = kirra.createInstance(newInstance3);
 
-        newInstance.setRelated("ref2", Arrays.asList(created3));
+        newInstance.setRelated("ref2", created3);
 
         kirra.createInstance(newInstance);
     }
@@ -236,11 +236,11 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
 
         Instance newInstance3 = kirra.createInstance(kirra.newInstance("mypackage", "MyClass3"));
 
-        newInstance.setRelated("ref2", Arrays.asList(newInstance3));
+        newInstance.setRelated("ref2", newInstance3);
 
         Instance created = kirra.createInstance(newInstance);
 
-        created.setRelated("ref2", Collections.<Instance> emptyList());
+        created.setRelated("ref2", null);
         try {
             kirra.updateInstance(created);
             kirra.saveContext();
@@ -249,7 +249,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
             TestCase.assertTrue(e.toString(), e.getMessage().contains("ref2"));
         }
-        created.setRelated("ref2", Arrays.asList(newInstance3));
+        created.setRelated("ref2", newInstance3);
 
         kirra.updateInstance(created);
     }
@@ -357,7 +357,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
 
         Instance newInstance3 = kirra.createInstance(kirra.newInstance("mypackage", "MyClass3"));
 
-        newInstance.setRelated("ref2", Arrays.asList(newInstance3));
+        newInstance.setRelated("ref2", newInstance3);
 
         kirra.createInstance(newInstance);
     }

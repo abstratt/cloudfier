@@ -58,48 +58,6 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         super(name);
     }
 
-    // N:N associations are not supported at this time
-    public void _testGraphViaAssociation() throws CoreException {
-        parseAndCheck(KirraDataPopulatorTests.accountModel);
-        Repository kirra = getKirra();
-
-        String contents = "";
-        contents += "{\n";
-        contents += "  banking: {\n";
-        contents += "    Person: [\n";
-        contents += "      { name: 'John'},\n";
-        contents += "      { name: 'Mary'},\n";
-        contents += "      { name: 'Bill'}\n";
-        contents += "    ],\n";
-        contents += "    Company: [\n";
-        contents += "      { name: 'Microsoft', employee: ['Person@2', 'Person@1', 'Person@3']},\n";
-        contents += "      { name: 'IBM', employee: ['Person@2']}\n";
-        contents += "    ]\n";
-        contents += "  }\n";
-        contents += "}\n";
-
-        FixtureHelper.assertCompilationSuccessful(parseData(contents));
-
-        DataPopulator populator = new DataPopulator(kirra);
-        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(3 + 2, status);
-
-        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", false), "name");
-        TestCase.assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Mary", "Bill")));
-
-        Map<String, Instance> companies = toMap(kirra.getInstances("banking", "Company", false), "name");
-        TestCase.assertEquals(companies.keySet(), new HashSet<String>(Arrays.asList("IBM", "Microsoft")));
-
-        Map<String, Instance> msEmployees = toMap(companies.get("Microsoft").getRelated("employee"), "name");
-        TestCase.assertEquals(msEmployees.keySet(), new HashSet<String>(Arrays.asList("Mary", "John", "Bill")));
-
-        Map<String, Instance> ibmEmployees = toMap(companies.get("IBM").getRelated("employee"), "name");
-        TestCase.assertEquals(ibmEmployees.keySet(), new HashSet<String>(Arrays.asList("Mary")));
-
-        Map<String, Instance> marysEmployers = toMap(persons.get("Mary").getRelated("employer"), "name");
-        TestCase.assertEquals(marysEmployers.keySet(), new HashSet<String>(Arrays.asList("Microsoft", "IBM")));
-    }
-
     public void testDataValidationValidData() throws CoreException {
         parseAndCheck(KirraDataPopulatorTests.accountModel);
 
