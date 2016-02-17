@@ -87,13 +87,13 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             public Response getSingle(@PathParam("id") String idString) {
                 if ("_template".equals(idString)) {
                     «entity.name» template = new «entity.name»(); 
-                    return status(Status.OK).entity(toExternalRepresentation(template, uri.getRequestUri().resolve(""), true)).build();
+                    return status(Status.OK).entity(toExternalRepresentation(template, uri.getRequestUri().resolve(""))).build();
                 }
                 Long id = Long.parseLong(idString);
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Status.NOT_FOUND).entity(Collections.singletonMap("message", "«entity.name» not found: " + id)).build();
-                return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(""), true)).build();
+                return status(Status.OK).entity(toFullExternalRepresentation(found, uri.getRequestUri().resolve(""))).build();
             }
             
             @PUT
@@ -109,7 +109,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                     return errorStatus(Status.BAD_REQUEST, e.getMessage()).build();
                 }    
                 service.update(found);
-                return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(""), true)).build();
+                return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(""))).build();
             }
             
             @POST
@@ -123,7 +123,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                     return errorStatus(Status.BAD_REQUEST, e.getMessage()).build();
                 }    
                 service.create(newInstance);
-                return status(Status.CREATED).entity(toExternalRepresentation(newInstance, uri.getRequestUri().resolve(newInstance.getId().toString()), true)).build();
+                return status(Status.CREATED).entity(toExternalRepresentation(newInstance, uri.getRequestUri().resolve(newInstance.getId().toString()))).build();
             }
             
             @DELETE
@@ -213,7 +213,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 found.«action.name»(«action.parameters.map[name].join(', ')»);
                 // save 
                 service.update(found);
-                return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(".."), true)).build();
+                return status(Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(".."))).build();
             }
             
             «FOR parameter : action.parameters.filter[type.entity]»
@@ -284,7 +284,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             static ResponseBuilder toExternalList(UriInfo uriInfo, Collection<«entity.name»> models) {
                 URI extentURI = uriInfo.getRequestUri();
                 Collection<Map<String, Object>> items = models.stream().map(toMap -> {
-                    return toExternalRepresentation(toMap, extentURI, true);
+                    return toExternalRepresentation(toMap, extentURI);
                 }).collect(Collectors.toList());
                 
                 Map<String, Object> result = new LinkedHashMap<String, Object>();
@@ -294,8 +294,12 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return status(Status.OK).entity(result);
             }
             
-            private static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
-            	return «entity.name»JAXBSerialization.toExternalRepresentation(toRender, instancesURI, full);
+            private static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI) {
+            	return «entity.name»JAXBSerialization.toExternalRepresentation(toRender, instancesURI, «entity.name»JAXBSerialization.Feature.Values, «entity.name»JAXBSerialization.Feature.Links);
+        	}
+            
+            private static Map<String, Object> toFullExternalRepresentation(«entity.name» toRender, URI instancesURI, «entity.name»JAXBSerialization.Feature... featureOptions) {
+            	return «entity.name»JAXBSerialization.toExternalRepresentation(toRender, instancesURI, «entity.name»JAXBSerialization.Feature.values());
             }
             
             private static void updateFromExternalRepresentation(«entity.name» toUpdate, Map<String, Object> external) {

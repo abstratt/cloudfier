@@ -45,14 +45,21 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         public class «entity.name»JAXBSerialization {
         	private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
 
-            public static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, boolean full) {
+            public static enum Feature {
+                Values,
+                Links,
+                ActionEnablement
+            }
+
+            public static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, Feature... featureOptions) {
+            	EnumSet<Feature> features = featureOptions.length == 0 ? EnumSet.noneOf(Feature.class) : EnumSet.copyOf(Arrays.asList(featureOptions));
                 Map<String, Object> result = new LinkedHashMap<>();
                 boolean persisted = toRender.getId() != null;
                 Function<String, String> stringEncoder = (it) -> it == null ? null : it.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"");
                 «IF (properties.exists[type.name == 'Date'])»
                 DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm'Z'");
                 «ENDIF»
-                if (full) {
+                if (features.contains(Feature.Values)) {
                     Map<String, Object> values = new LinkedHashMap<>();
                     «dataProperties.map[
                         '''values.put("«name»", «getModelValue(it, 'toRender')»);'''
@@ -70,6 +77,8 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                     }
                     '''»
                     result.put("values", values);
+                }
+                if (features.contains(Feature.Links)) {
                     Map<String, Object> links = new LinkedHashMap<>();
                     «entity.entityRelationships.filter[!derived && !multiple].map[ relationship |
                         val relationshipName = relationship.name
@@ -79,7 +88,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                         Map<String, Object> «relationshipName»Link = null;
                         if (toRender.«accessor» != null) {
                         	URI «relationshipInstancesURI» = instancesURI.resolve("../..").resolve("«typeRef.fullName»/instances"); 
-                            «relationshipName»Link = «relationship.type.name»JAXBSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI», false);
+                            «relationshipName»Link = «relationship.type.name»JAXBSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI»);
                         }    
                         links.put("«relationshipName»", «relationshipName»Link);
                         '''
@@ -91,8 +100,9 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                     result.put("objectId", toRender.getId().toString());
                     result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
                 }
-                result.put("full", full);
-                result.put("disabledActions", Collections.emptyMap());
+                if (features.contains(Feature.ActionEnablement)) {
+                    result.put("disabledActions", Collections.emptyMap());
+            	}
                 «generateSetTypeRef(typeRef, 'result')»
                 return result;                    
             }
