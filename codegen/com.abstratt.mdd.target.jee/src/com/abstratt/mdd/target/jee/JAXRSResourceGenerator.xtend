@@ -25,9 +25,20 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         val entityFullName = typeRef.fullName
         '''
         package resource.«entity.packagePrefix»;
-        
-        import «entity.packagePrefix».*;
+
         import resource.util.EntityResourceHelper;
+        import javax.ws.rs.GET;
+        import javax.ws.rs.Path;
+        import javax.ws.rs.Produces;
+        import javax.ws.rs.core.Context;
+        import javax.ws.rs.core.MediaType;
+        import javax.ws.rs.core.Response;
+        import javax.ws.rs.core.UriInfo;
+        
+        import java.io.IOException;
+        
+        «IF entity.concrete»        
+        import «entity.packagePrefix».*;
         
         import java.util.*;
         import java.util.stream.*;
@@ -38,17 +49,11 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import org.apache.commons.lang3.time.DateUtils;
         import org.apache.commons.lang3.StringUtils;
         
-        import javax.ws.rs.core.Context;
-        import javax.ws.rs.core.MediaType;
-        import javax.ws.rs.core.UriInfo;
-        import javax.ws.rs.GET;
         import javax.ws.rs.PUT;
         import javax.ws.rs.POST;
         import javax.ws.rs.DELETE;
         import javax.ws.rs.OPTIONS;
-        import javax.ws.rs.Path;
         import javax.ws.rs.PathParam;
-        import javax.ws.rs.Produces;
         import javax.ws.rs.Consumes;        
         import javax.ws.rs.core.MediaType;
         import javax.ws.rs.core.Response;
@@ -58,16 +63,17 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import java.net.URI;
         
         «entity.generateImports»
+        «ENDIF»
         
         @Path("entities/«entityFullName»/")
         @Produces(MediaType.APPLICATION_JSON)
         public class «entity.name»Resource {
-        	private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
-        	
+        «IF entity.concrete»
+            private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
+            private «entity.name»Service service = new «entity.name»Service();
+        «ENDIF»
             @Context
             UriInfo uri;
-        
-            private «entity.name»Service service = new «entity.name»Service();
             
             @GET
             public Response getEntity() {
@@ -82,6 +88,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 }
             }
             
+            «IF entity.concrete»
             @GET
             @Path("instances/{id}")
             public Response getSingle(@PathParam("id") String idString) {
@@ -305,6 +312,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             private static void updateFromExternalRepresentation(«entity.name» toUpdate, Map<String, Object> external) {
             	«entity.name»JAXBSerialization.updateFromExternalRepresentation(toUpdate, external);
             }
+            «ENDIF»
         }
         '''
     }

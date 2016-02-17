@@ -10,6 +10,7 @@ import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.ClassifierUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
@@ -18,17 +19,13 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         super(repository)
     }
     
-    def generateEntitySchema() {
-        entities.map[
-            generateEntityRepresentation
-        ]
-    }
-    
     def CharSequence generateEntityRepresentation(Class entity) {
         val typeRef = entity.convertType
         val mnemonicProperty = entity.mnemonic
         val entityProperties = entity.properties
         val entityRelationships = entity.entityRelationships
+        val superEntities = entity.generals.filter[it.entity]
+        val subEntities = repository.findAllSpecifics(entity).filter[it.entity]
         '''
         {
         	"mnemonicProperty": "«mnemonicProperty.name»",
@@ -54,19 +51,25 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "instanceActionParameterDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)/parameters/(parameterName)/domain",
             "finderUriTemplate": "${baseUri}entities/«typeRef.fullName»/finders/(finderName)",
             "operations" : {
-                «(entity.actions+entity.queries).map[operationRepresentation].join(',\n')»
+                «(entity.actions+entity.queries).map[getOperationRepresentation(entity)].join(',\n')»
             },
             "properties" : {
-                «entity.properties.map[getPropertyRepresentation(it == mnemonicProperty)].join(',\n')»
+                «entityProperties.map[getPropertyRepresentation(entity, it == mnemonicProperty)].join(',\n')»
             },
             "relationships" : {
-                «(entityRelationships).map[relationshipRepresentation].join(',\n')»
-            }
+                «(entityRelationships).map[getRelationshipRepresentation(entity)].join(',\n')»
+            },
+            "superTypes": [
+            	«superEntities.map[getTypeRefRepresentation].join(',\n')»
+            ],
+            "subTypes": [
+            	«subEntities.map[getTypeRefRepresentation].join(',\n')»
+            ]
         }
         '''
     }
     
-    def CharSequence getPropertyRepresentation(Property property, boolean mnemonic) {
+    def CharSequence getPropertyRepresentation(Property property, Class owner, boolean mnemonic) {
         '''
         "«property.name»" : {
             "unique": «KirraHelper.isUnique(property)»,
@@ -84,7 +87,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "multiple": «property.multivalued»,
             "required": «property.required»,
             "typeRef": «getTypeRefRepresentation(property.type)»,
-            "owner": «property.owningClassifier.typeRefRepresentation»,
+            "owner": «owner.typeRefRepresentation»,
             "description": "«property.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(property)»",
             "name": "«property.name»",
@@ -93,7 +96,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         '''
     }
     
-    def CharSequence getRelationshipRepresentation(Property relationship) {
+    def CharSequence getRelationshipRepresentation(Property relationship, Class owner) {
     	val associationName = relationship.associationName
     	// XXX this is a trick so the UI doesn't allow linking from both sides, which the JPA service currently does not allow (N:N associations are mapped from one side only)  
         val manyToManyNavigableFromBothSides = relationship.otherEnd != null && relationship.navigable && relationship.multivalued && relationship.otherEnd.multivalued && relationship.otherEnd.navigable
@@ -119,7 +122,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
 	      "multiple": «relationship.multiple»,
 	      "required": «relationship.required»,
 	      "typeRef": «getTypeRefRepresentation(relationship.type)»,
-	      "owner": «relationship.otherEnd.type.typeRefRepresentation»,
+	      "owner": «owner.typeRefRepresentation»,
 	      "description": "«relationship.description.removeNewLines»",
 	      "label": "«KirraHelper.getLabel(relationship)»",
 	      "name": "«relationship.name»",
@@ -129,21 +132,21 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
     }
     
     
-    def CharSequence getOperationRepresentation(Operation operation) {
+    def CharSequence getOperationRepresentation(Operation operation, Class owner) {
         '''
         "«operation.name»" : {
             "enabled": true,
             "instanceOperation": «!operation.static»,
             "kind": "«if (operation.isAction) 'Action' else 'Finder'»",
             "parameters": [
-            	«operation.parameters.map[parameterRepresentation].join(',\n')»
+            	«operation.parameters.map[getParameterRepresentation(owner)].join(',\n')»
             ],
             «IF operation.getReturnResult() != null»
             "multiple": «operation.getReturnResult().multiple»,
             "required": «operation.getReturnResult().required»,
             "typeRef": «getTypeRefRepresentation(operation.getReturnResult().type)»,
             «ENDIF»
-            "owner": «operation.owningClassifier.typeRefRepresentation»,
+            "owner": «owner.typeRefRepresentation»,
             "description": "«operation.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(operation)»",
             "name": "«operation.name»",
@@ -152,7 +155,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         '''
     }
 	
-	def CharSequence getParameterRepresentation(Parameter parameter) {
+	def CharSequence getParameterRepresentation(Parameter parameter, Class owner) {
 		'''
         {
             "hasDefault": «KirraHelper.hasDefault(parameter)»,
@@ -164,7 +167,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "multiple": «KirraHelper.isMultiple(parameter)»,
             "required": «KirraHelper.isRequired(parameter)»,
             "typeRef": «getTypeRefRepresentation(parameter.type)»,
-            "owner": «parameter.operation.owningClassifier.typeRefRepresentation»,
+            "owner": «owner.typeRefRepresentation»,
             "description": "«parameter.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(parameter)»",
             "name": "«parameter.name»",

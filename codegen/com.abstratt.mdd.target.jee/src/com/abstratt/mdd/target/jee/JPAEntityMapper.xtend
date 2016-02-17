@@ -1,13 +1,14 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.mdd.core.IRepository
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import org.eclipse.uml2.uml.Classifier
-import java.util.List
-import org.eclipse.uml2.uml.Class
-import com.abstratt.mdd.core.target.spi.TargetUtils
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.core.target.spi.TargetUtils
+import java.util.List
+import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
+
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     
@@ -21,22 +22,23 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
-        val entities = appPackages.entities.filter[!abstract]
-        val applicationName = entities.head.package.name
-        val applicationLabel = KirraHelper.getLabel(entities.head.package)
-        val entityNames = entities.map [ TypeRef.sanitize(qualifiedName) ]
+        val allEntities = appPackages.entities
+		val concreteEntities = allEntities.filter[!abstract]
+        val applicationName = concreteEntities.head.package.name
+        val applicationLabel = KirraHelper.getLabel(allEntities.head.package)
+        val entityNames = concreteEntities.map [ TypeRef.sanitize(qualifiedName) ]
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
         val jaxbSerializationGenerator = new JAXBSerializationGenerator(repository)
         val apiSchemaGenerator = new KirraAPIResourceGenerator(repository)
         val mappings = super.mapAll(repository)
-        mappings.putAll(entities.toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
-        mappings.putAll(entities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
-        mappings.putAll(entities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
+        mappings.putAll(allEntities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
+        mappings.putAll(concreteEntities.toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
+        mappings.putAll(concreteEntities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
         mappings.put(generateJAXRSServerFileName(applicationName), new JAXRSServerGenerator(repository).generate())
         mappings.put('src/test/resources/META-INF/sql/data.sql', new HSQLDataSnapshotGenerator(repository).generate())
-        mappings.putAll(entities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
+        mappings.putAll(allEntities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
         
         val templates = #{
         	'''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> "/templates/src/main/java/resource/EntityResource.java",

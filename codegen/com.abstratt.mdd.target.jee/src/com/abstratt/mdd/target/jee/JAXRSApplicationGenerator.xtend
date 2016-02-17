@@ -12,7 +12,7 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
     }
     
     def CharSequence generate() {
-        val entities = appPackages.entities.filter[concrete]
+        val entities = appPackages.entities
         val entityPackages = entities.map[package.name].toSet
         '''
         package resource.«applicationName»;

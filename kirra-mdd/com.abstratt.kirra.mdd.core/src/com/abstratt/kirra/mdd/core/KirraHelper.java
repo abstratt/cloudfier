@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -46,6 +47,7 @@ import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.VisibilityKind;
 
 import com.abstratt.kirra.Relationship.Style;
+import com.abstratt.kirra.Namespace;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.mdd.core.IRepository;
@@ -220,7 +222,7 @@ public class KirraHelper {
         });
     }
 
-    // RESIST THE TEMPTATION OF DELETING THIS, WE MAY CHOOSE TO USE IT AGAIN
+    // RESIST THE TEMPTATION TO DELETE THIS, WE MAY CHOOSE TO USE IT AGAIN
     private static boolean hasProperties(Classifier type) {
         for (Property attribute : type.getAttributes())
             if (isProperty(attribute))
