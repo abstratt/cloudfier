@@ -41,5 +41,49 @@ class JPAServiceGeneratorTests extends AbstractGeneratorTest {
 			SELECT DISTINCT door_ FROM Door door_, House thisHouse WHERE (door_.doorHouse = thisHouse) AND (thisHouse = :thisHouse)
 		''', generated.toString)
 	}
+	
+	@Test
+	def void testParameterDomainWithPreconditionUsingDerivedProperty() throws CoreException, IOException {
+		var source = '''
+			package house;
+			class House
+			    attribute address : String;
+			    attribute doors : Door[0, *];
+			    operation knock(doorToKnock : Door)
+			        precondition HouseDoor(doorToKnock) {
+			            (doorToKnock.doorHouse == self) and (doorToKnock.knockable) 
+			        };
+			end;
+			class Door
+			    attribute name : String;
+			    attribute doorHouse : House;
+			    attribute open : Boolean;
+			    attribute publiclyAccessible : Boolean;
+			    derived attribute knockable : Boolean := { (not self.open) and (self.publiclyAccessible) };
+			end;
+			end.
+		'''
+		parseAndCheck(source)
+		val knockOp = getOperation('house::House::knock')
+		val houseClass = knockOp.class_
+		val doorParameter = knockOp.getOwnedParameter("doorToKnock", null)
+		val generated = new JPAServiceGenerator(repository).generateActionParameterDomainQuery(houseClass, "thisHouse", doorParameter)
+		AssertHelper.assertStringsEqual(
+            '''
+            SELECT DISTINCT doorToKnock_ 
+                FROM 
+                    Door doorToKnock_,
+                    House thisHouse 
+                WHERE
+                    (
+                        doorToKnock_.doorHouse=thisHouse AND 
+                        NOT(doorToKnock_.open=TRUE) AND 
+                        doorToKnock_.publiclyAccessible=TRUE
+                    ) AND (
+                        thisHouse=:thisHouse
+                    )
+		''', generated.toString)
+	}
+	
 
 }

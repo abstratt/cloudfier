@@ -212,7 +212,7 @@ class JPAServiceGenerator extends ServiceGenerator {
     
     def CharSequence generateActionParameterDomainQuery(Class contextEntity, String context, Parameter parameter) {
         val predicateActivities = parameter.parameterConstraints.map[specification.resolveBehaviorReference as Activity]
-        val alias = '''«parameter.type.name.toFirstLower»_'''
+        val alias = '''«parameter.name»_'''
         val condition = predicateActivities.generateMany([
         	'''(«generatePreconditionQuery(alias, context, it)»)'''
         ], " AND ")
