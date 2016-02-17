@@ -15,12 +15,15 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 import com.abstratt.mdd.core.util.ConstraintUtils
 import com.abstratt.mdd.core.util.ActivityUtils
 import org.eclipse.uml2.uml.OutputPin
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.AggregationKind
+import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.CallOperationAction
 
 class JPAServiceGenerator extends ServiceGenerator {
 
@@ -65,7 +68,7 @@ class JPAServiceGenerator extends ServiceGenerator {
             «entity.generateDelete»
             «entity.generateRelationshipDomain»
             «entity.generateActionParameterDomain»
-            
+            «entity.generateActionEnablement»
         '''
     }
     
@@ -192,7 +195,105 @@ class JPAServiceGenerator extends ServiceGenerator {
             }
             '''
         ]
+    }
+    
+    def CharSequence generateActionEnablement(Class entity) {
+        val context = 'context'
+        val actions = entity.instanceActions.filter[action | action.preconditions.exists[!parametrizedConstraint]]
+        if (actions.empty) return ''
+        
+        val conditions = actions.map[generateActionPredicateExpression(entity, context, it).toString]
+        val needsCurrentUser = conditions.exists[contains('_currentUser')]
+        val userClass = if (needsCurrentUser) userClasses.head
+        
+        '''
+        public static class ActionEnablements {
+        	public final long id;
+        	«actions.generateMany([
+        		'''public final boolean «name»Enabled;''' 
+        	])»
+        	
+        	public long getId() {
+        		return id;
+        	}
+        	
+        	«actions.generateMany([
+        		'''
+        		public boolean is«name.toFirstUpper»Enabled() {
+        			return «name»Enabled;
+        		}
+    			''' 
+        	])»
+        	
+        	public ActionEnablements(«actions.generateMany([
+        		'''boolean «name»Enabled''' 
+        	    ], ', ')», long id) {
+                this.id = id;
+        	    «actions.generateMany([
+        		'''this.«name»Enabled = «name»Enabled;''' 
+        	    ])»	
+        	}	
+        }
+        
+        public List<ActionEnablements> getActionEnablements(Collection<Long> contextIds) {
+        	if (contextIds.isEmpty()) {
+        		return Collections.emptyList();
+        	}
+            return getEntityManager()
+                .createQuery(
+                    "SELECT NEW «entity.nearestPackage.toJavaPackage».«entity.toJavaType»Service$ActionEnablements("
+                        «conditions.map['''+ "«it»,"'''].join('\n')»
+                        + "context.id"
+                    + ") FROM «entity.name» context WHERE context.id IN :ids", ActionEnablements.class
+                )
+                «IF needsCurrentUser»
+                .setParameter("_currentUser", new «userClass.toJavaType»())
+                «ENDIF»
+                .setParameter("ids", contextIds)
+                .getResultList(); 
+        }
+        '''
     }    
+    
+    def CharSequence generateActionPredicateExpression(Class contextEntity, String context, Operation action) {
+        val predicateActivities = action.preconditions.filter[!parametrizedConstraint].map[specification.resolveBehaviorReference as Activity]
+        val condition = {
+	        val alias = '''«action.name»_'''
+	        predicateActivities.generateMany([
+	        	'''(«generateParameterlessPreconditionQuery(alias, context, it)»)'''
+	        ], 
+	        ''' AND ''')
+        }
+    	return '''«condition» as «action.name»Enabled'''
+    }
+    
+    def CharSequence generateParameterlessPreconditionQuery(String alias, String context, Activity preconditionActivity) {
+    	val newContext = new SimpleContext(alias)
+        behaviorGenerator.runInContext(newContext, 
+        	[
+        		ActivityContext.generateInNewContext(preconditionActivity, [context], [
+					val filterGenerator = new JPQLFilterActionGenerator(repository) {
+						override generateVariableNameReplacement(OutputPin source, ReadVariableAction action) {
+							if (source == null)
+								return context.generateCurrentReference
+							return super.generateVariableNameReplacement(source, action)
+						}
+						
+						override generateCallOperationAction(CallOperationAction action) {
+							if (action.operation.static) {
+								if ("mdd_types::System::user".equals(action.operation.qualifiedName)) {
+									return ':_currentUser'
+								}
+							}
+							
+							return super.generateCallOperationAction(action)
+						}
+					}
+					filterGenerator.generateAction(preconditionActivity.rootAction.findSingleStatement.sourceAction)
+				])
+        	]
+    	)
+    }
     
     def CharSequence generateActionParameterDomain(Class entity) {
         val actions = entity.instanceActions.filter[!parameters.empty]
@@ -214,12 +315,12 @@ class JPAServiceGenerator extends ServiceGenerator {
         val predicateActivities = parameter.parameterConstraints.map[specification.resolveBehaviorReference as Activity]
         val alias = '''«parameter.type.name.toFirstLower»_'''
         val condition = predicateActivities.generateMany([
-        	'''(«generatePreconditionQuery(alias, context, it)»)'''
+        	'''(«generateParameteredPreconditionQuery(alias, context, it)»)'''
         ], " AND ")
     	'''SELECT DISTINCT «alias» FROM «parameter.type.name» «alias», «contextEntity.name» «context» WHERE «condition» AND («context» = :«context»)'''
     }     
     
-    def CharSequence generatePreconditionQuery(String alias, String context, Activity preconditionActivity) {
+    def CharSequence generateParameteredPreconditionQuery(String alias, String context, Activity preconditionActivity) {
     	val newContext = new SimpleContext(alias)
         behaviorGenerator.runInContext(newContext, 
         	[

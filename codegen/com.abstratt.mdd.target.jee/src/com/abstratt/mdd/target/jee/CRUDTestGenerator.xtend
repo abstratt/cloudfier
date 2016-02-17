@@ -8,6 +8,8 @@ import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
+
 
 class CRUDTestGenerator extends PlainEntityGenerator {
 
@@ -59,6 +61,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
                         em.close();    
                 }
                 
+                «entityClass.generateActionEnablementTest»
                 «entityClass.generateCreateTest»
                 «entityClass.generateRetrieveTest»
                 «entityClass.generateUpdateTest»
@@ -91,6 +94,16 @@ class CRUDTestGenerator extends PlainEntityGenerator {
         «FOR property : properties»
         «target».set«property.name.toFirstUpper»(«property.generateDefaultValue»);
         «ENDFOR»    
+        '''
+    }
+    
+    def generateActionEnablementTest(Class entityClass) {
+    	if (!entityClass.instanceActions.exists[action | action.preconditions.exists[!parametrizedConstraint]]) return ''
+        '''
+        @Test
+        public void checkActionEnablement() {
+            «entityClass.generateServiceReference».getActionEnablements(Collections.singleton(1L));
+        }
         '''
     }
     
