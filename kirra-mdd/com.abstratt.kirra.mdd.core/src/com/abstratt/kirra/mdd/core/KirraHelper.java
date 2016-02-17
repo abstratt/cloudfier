@@ -18,6 +18,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioralFeature;
@@ -81,12 +83,9 @@ public class KirraHelper {
         return collected;
     }
 
-    protected static <T> T get(NamedElement target, String property, Callable<T> retriever) {
+    protected static <T> T get(String identity, String property, Callable<T> retriever) {
         ensureSession();
         Map<String, Object> cachedProperties = null;
-        String identity = target.getQualifiedName();
-        if (identity == null)
-            identity = target.eClass().getName() + "@" + System.identityHashCode(target);
         cachedProperties = getCachedProperties(identity);
         if (cachedProperties == null)
             cachedProperties = initCachedProperties(identity);
@@ -105,7 +104,14 @@ public class KirraHelper {
         cachedProperties.put(property, retrieved);
         return retrieved;
     }
-
+    
+    protected static <T> T get(NamedElement target, String property, Callable<T> retriever) {
+        String identity = target.getQualifiedName();
+        if (identity == null)
+            identity = target.eClass().getName() + "@" + System.identityHashCode(target);
+        return get(identity, property, retriever);
+    }
+    
     private static Map<String, Object> initCachedProperties(String identity) {
         HashMap<String, Object> cachedProperties;
         getMetadataCache().values.put(identity, cachedProperties = new HashMap<String, Object>());
@@ -223,6 +229,24 @@ public class KirraHelper {
             if (hasProperties(general))
                 return true;
         return false;
+    }
+    
+    public static Collection<Class> getUserClasses() {
+    	IRepository mddRepository = RepositoryService.DEFAULT.getCurrentResource().getFeature(IRepository.class);
+    	return get(mddRepository.getBaseURI().toString(), "getUserClasses", new Callable<Collection<Class>>() {
+            @Override
+            public Collection<Class> call() throws Exception {
+            	return mddRepository.findAll(new EObjectCondition() {
+                    @Override
+                    public boolean isSatisfied(EObject eObject) {
+                        if (UMLPackage.Literals.CLASS != eObject.eClass())
+                            return false;
+                        Class umlClass = (Class) eObject;
+                        return KirraHelper.isUser(umlClass) && KirraHelper.isConcrete(umlClass);
+                    }
+                }, false);
+            }
+        });
     }
 
     public static boolean isUser(final Classifier classifier) {

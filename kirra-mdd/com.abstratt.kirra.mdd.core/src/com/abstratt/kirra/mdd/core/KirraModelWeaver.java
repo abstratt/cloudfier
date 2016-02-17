@@ -127,6 +127,7 @@ public class KirraModelWeaver implements IModelWeaver {
     					final Association newAssociation =
     						(Association) entity.getNearestPackage().createPackagedElement(null,
     										UMLPackage.Literals.ASSOCIATION);
+    					newAssociation.setIsDerived(property.isDerived());
     					newAssociation.getMemberEnds().add(property);
     					// automatically created owned end
     					newAssociation.createOwnedEnd(null, entity);
