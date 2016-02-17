@@ -1,5 +1,6 @@
 package com.abstratt.mdd.target.jse
 
+import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil
 import com.abstratt.mdd.target.base.DelegatingBehaviorGenerator
@@ -17,6 +18,7 @@ import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Feature
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadSelfAction
@@ -25,17 +27,16 @@ import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.UMLPackage
+import org.eclipse.uml2.uml.VisibilityKind
 
 import static com.abstratt.mdd.target.jse.PlainJavaGenerator.*
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
-import com.abstratt.kirra.mdd.core.KirraHelper
-import org.eclipse.uml2.uml.VisibilityKind
-import org.eclipse.uml2.uml.ParameterDirectionKind
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -188,6 +189,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                     /*************************** ACTIONS ***************************/
                     
                     «generateMany(actionOperations, [generateActionOperation])»
+                    «generateMany(actionOperations, [generateActionEnablement])»
                 «ENDIF»
                 «IF !derivedAttributes.empty»
                     /*************************** DERIVED PROPERTIES ****************/
@@ -452,6 +454,42 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         «action.generateJavaMethodSignature(visibility, action.static)» {
             «action.generateActionOperationBody»
         }'''
+    }
+    
+    def generateActionEnablement(Operation actionOperation) {
+    	
+        val preconditions = actionOperation.preconditions
+        val stateProperty = actionOperation.class_.findStateProperties.head
+        val stateMachine = stateProperty?.type as StateMachine
+        
+        val sourceStates = if (stateMachine != null) stateMachine.findStatesForCalling(actionOperation) else #[]
+		'''
+		/**
+		 * Is the «actionOperation.name.toFirstUpper» action enabled at this time?
+		 */
+		public boolean is«actionOperation.name.toFirstUpper»Enabled() {
+			«IF sourceStates.size > 1»
+			if (!EnumSet.of(«sourceStates.generateMany([ '''«stateProperty.type.toJavaType».«name»''' ], ', ')»).contains(«stateProperty.generateAccessorName»())) {
+				return false;
+			}
+			«ELSEIF sourceStates.size == 1»
+			if («stateProperty.generateAccessorName»() != «stateProperty.type.toJavaType».«sourceStates.head.name») {
+				return false;
+			}
+			«ENDIF»
+		    «preconditions.generateMany[ constraint |
+            	val predicateActivity = constraint.specification.resolveBehaviorReference as Activity
+            	val parameterless = predicateActivity.constraintParameterless
+            	if (!parameterless) return ''
+            	'''
+            	if («generatePredicate(constraint, true)») {
+            	    return false;
+            	}
+                '''
+            ]»
+		    return true;
+		}
+		'''
     }
     
     def generatePrecondition(Operation operation, Constraint constraint) {

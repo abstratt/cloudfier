@@ -26,7 +26,8 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         val typeRef = entity.convertType
         val properties = entity.properties
         val dataProperties = properties.filter[!derived]
-        val derivedProperties = properties.filter[derived]      
+        val derivedProperties = properties.filter[derived]
+        val instanceActions = entity.instanceActions      
         '''
         package resource.«entity.packagePrefix»;
         
@@ -43,7 +44,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         import java.net.URI;
         
         public class «entity.name»JAXBSerialization {
-        	private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
+            private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
 
             public static enum Feature {
                 Values,
@@ -52,7 +53,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
             }
 
             public static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI, Feature... featureOptions) {
-            	EnumSet<Feature> features = featureOptions.length == 0 ? EnumSet.noneOf(Feature.class) : EnumSet.copyOf(Arrays.asList(featureOptions));
+                EnumSet<Feature> features = featureOptions.length == 0 ? EnumSet.noneOf(Feature.class) : EnumSet.copyOf(Arrays.asList(featureOptions));
                 Map<String, Object> result = new LinkedHashMap<>();
                 boolean persisted = toRender.getId() != null;
                 Function<String, String> stringEncoder = (it) -> it == null ? null : it.replace("\n", "\\n").replace("\r", "\\r").replace("\"", "\\\"");
@@ -87,7 +88,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                         '''
                         Map<String, Object> «relationshipName»Link = null;
                         if (toRender.«accessor» != null) {
-                        	URI «relationshipInstancesURI» = instancesURI.resolve("../..").resolve("«typeRef.fullName»/instances"); 
+                            URI «relationshipInstancesURI» = instancesURI.resolve("../..").resolve("«typeRef.fullName»/instances"); 
                             «relationshipName»Link = «relationship.type.name»JAXBSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI»);
                         }    
                         links.put("«relationshipName»", «relationshipName»Link);
@@ -100,9 +101,16 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                     result.put("objectId", toRender.getId().toString());
                     result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
                 }
+                «IF !instanceActions.empty»
                 if (features.contains(Feature.ActionEnablement)) {
-                    result.put("disabledActions", Collections.emptyMap());
-            	}
+                    Map<String, String> disabledActions = new LinkedHashMap<>();
+                    «FOR action : instanceActions»
+                        if (!toRender.is«action.name.toFirstUpper»Enabled())
+                            disabledActions.put("«action.name»", "");
+                    «ENDFOR»
+                    result.put("disabledActions", disabledActions);
+                }
+                «ENDIF»
                 «generateSetTypeRef(typeRef, 'result')»
                 return result;                    
             }
@@ -126,15 +134,15 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 
                 Map<String, Map<String, Object>> links = (Map<String, Map<String, Object>>) external.get("links");
                 «entity.entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true)].map[ relationship |
-                	'''
-            		Map<String, Object> «relationship.name» = links.get("«relationship.name»");
-            		if («relationship.name» != null) {
-            		    «relationship.type.name» newValue = Optional.ofNullable(«relationship.name».get("objectId")).map(it -> new «relationship.type.name»Service().find(Long.parseLong((String) it))).orElse(null);
-            		    toUpdate.«relationship.generateSetterName»(newValue);
-            		} else {
-            			toUpdate.«relationship.generateSetterName»(null);
-            		}	
-                	'''
+                    '''
+                    Map<String, Object> «relationship.name» = links.get("«relationship.name»");
+                    if («relationship.name» != null) {
+                        «relationship.type.name» newValue = Optional.ofNullable(«relationship.name».get("objectId")).map(it -> new «relationship.type.name»Service().find(Long.parseLong((String) it))).orElse(null);
+                        toUpdate.«relationship.generateSetterName»(newValue);
+                    } else {
+                        toUpdate.«relationship.generateSetterName»(null);
+                    }    
+                    '''
                 ].join»
             }
         }
@@ -147,7 +155,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
     }
     
     def getValueExpression(CharSequence core, TypedElement element) {
-    	val optional = (element as MultiplicityElement).lowerBound == 0
+        val optional = (element as MultiplicityElement).lowerBound == 0
         if (element.type.enumeration) {
             '''«IF optional»«core» == null ? null : «ENDIF»«core».name()'''
         } else if (element.type.name == 'String' || element.type.name == 'Memo') 
@@ -164,12 +172,12 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
             case 'Integer' : '''Long.parseLong(«expression».toString())'''
             case 'Date' : '''DateUtils.parseDate((String) «expression», DATE_FORMATS)'''
             default: 
-            	if (typedElement.type.entity) 
-            		convertIdToInternal(typedElement, expression)
+                if (typedElement.type.entity) 
+                    convertIdToInternal(typedElement, expression)
                 else if (typedElement.type.enumeration) 
-            		'''«typedElement.toJavaType()».valueOf((String) «expression»)'''
-            	else 
-            		'''(«typedElement.toJavaType(true)») «expression»'''
+                    '''«typedElement.toJavaType()».valueOf((String) «expression»)'''
+                else 
+                    '''(«typedElement.toJavaType(true)») «expression»'''
         }
     }
     
