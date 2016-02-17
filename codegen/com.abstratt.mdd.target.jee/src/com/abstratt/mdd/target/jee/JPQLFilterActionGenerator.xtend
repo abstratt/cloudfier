@@ -21,6 +21,10 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import org.eclipse.uml2.uml.ConditionalNode
+import org.eclipse.uml2.uml.Clause
+import org.eclipse.uml2.uml.StructuredActivityNode
+import org.eclipse.uml2.uml.LiteralBoolean
 
 /** Builds a query based on a filter closure. */
 class JPQLFilterActionGenerator extends QueryFragmentGenerator {
@@ -30,7 +34,10 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override generateTraverseRelationshipAction(InputPin target, Property end) {
-        '''«target.generateAction».«end.name»'''
+    	if (!end.derived)
+        	'''«target.generateAction».«end.name»'''
+    	else
+    	    '''«end.derivation.generateActivityAsExpression»'''
     }
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
@@ -47,6 +54,24 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
             core
     }
     
+	override generateStructuredActivityNode(StructuredActivityNode action) {
+		action.findStatements.head.generateAction
+	}
+    
+	override generateConditionalNode(ConditionalNode action) {
+        val clauses = action.clauses
+		'''CASE «clauses.generateMany([generateClause(it)], ' ')» END'''
+	}
+	
+	def CharSequence generateClause(Clause clause) {
+		val condition = (clause.tests.head as Action).generateAction
+		val result = (clause.bodies.head as Action).generateAction
+		if ("TRUE" == condition.toString)
+		    '''ELSE «result»'''
+		else	
+		    '''WHEN «condition» THEN «result»'''
+	}
+
     def override CharSequence generateAddVariableValueAction(AddVariableValueAction action) {
         if (action.variable.name == '')
             generateAction(action.value.sourceAction)
@@ -55,14 +80,17 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override CharSequence generateCallOperationAction(CallOperationAction action) {
-        if (action.operation.static) {
-            return switch (action.operation.owningClassifier.name) {
-                case 'Date' : switch (action.operation.name) {
-                    case 'today' : 'CURRENT_DATE'
-                    case 'now' : 'CURRENT_TIME'
-                    default : unsupportedElement(action, action.operation.name)    
-                }
-                default : unsupportedElement(action, action.operation.name)
+        switch (action.operation.owningClassifier.name) {
+            case 'Date' : return switch (action.operation.name) {
+                case 'today' : 'CURRENT_DATE'
+                case 'now' : 'CURRENT_TIMESTAMP'
+                case 'difference' : '''(«action.target.generateAction» - «action.arguments.head.generateAction»)'''
+                default : unsupportedElement(action, action.operation.name)    
+            }
+            //XXX this does not really work like that in JPQL
+            case 'Duration' : return switch (action.operation.name) {
+                case 'toDays' : '''(«action.target.generateAction» / (24 * 60 * 60 * 1000))'''
+                default : unsupportedElement(action, action.operation.name)    
             }
         }
         
@@ -76,7 +104,7 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
             	return '''«leftBracket»«operands.map[sourceAction.generateAction].join(''' «asQueryOperator» ''')»«rightBracket»'''
             } 
             else
-            	return '''«asQueryOperator» «action.target.sourceAction.generateAction»'''
+            	return '''«asQueryOperator» («action.target.sourceAction.generateAction»)'''
         } else if (action.collectionOperation)
             return new JPQLSubQueryActionGenerator(repository).generateSubQuery(action)
         else
@@ -136,6 +164,8 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
                     default:
                         value.stringValue
                 }»'''
+            LiteralBoolean:
+                '''«value.value»'''.toString.toUpperCase
             LiteralNull:
                 switch (value) {
                     case value.isVertexLiteral : 

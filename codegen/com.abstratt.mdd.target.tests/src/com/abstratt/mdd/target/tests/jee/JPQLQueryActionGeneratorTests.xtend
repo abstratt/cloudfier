@@ -662,7 +662,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                SELECT DISTINCT myClass_ FROM MyClass myClass_ WHERE myClass_.attr1 > 'stringValue' AND myClass_.attr2 = TRUE AND NOT myClass_.attr3 = TRUE AND myClass_.attr4 > 10 AND myClass_.attr5 > 42.3 
+                SELECT DISTINCT myClass_ FROM MyClass myClass_ WHERE myClass_.attr1 > 'stringValue' AND myClass_.attr2 = TRUE AND NOT (myClass_.attr3 = TRUE) AND myClass_.attr4 > 10 AND myClass_.attr5 > 42.3 
             ''', generated.toString)
     }
     
