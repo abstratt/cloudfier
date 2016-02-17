@@ -96,7 +96,7 @@ class DataFlowAnalyzer {
 			return null
 		}
 		// we only care about collection operations
-		if (!action.target.multivalued) {
+		if (!action.target?.multivalued) {
 			return null
 		}
 		val operationName = action.operation.name
