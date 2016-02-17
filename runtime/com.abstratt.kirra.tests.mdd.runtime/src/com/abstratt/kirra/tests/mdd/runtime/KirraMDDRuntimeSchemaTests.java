@@ -502,7 +502,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("Enum1", attr1.getTypeRef().getTypeName());
         TestCase.assertEquals(TypeKind.Enumeration, attr1.getTypeRef().getKind());
         TestCase.assertEquals(3, attr1.getEnumerationLiterals().size());
-        TestCase.assertEquals(Arrays.asList("value1", "value2", "value3"), attr1.getEnumerationLiterals());
+        TestCase.assertTrue(attr1.getEnumerationLiterals().values().containsAll(Arrays.asList("value1", "value2", "value3")));
 
         try {
             kirra.getEntity("mypackage", "Enum1");

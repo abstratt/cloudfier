@@ -936,15 +936,18 @@ public class KirraHelper {
         });
     }
     
-    public static List<String> getEnumerationLiterals(final Type enumOrStateMachine) {
-        return get(enumOrStateMachine, "getEnumerationLiterals", new Callable<List<String>>() {
+    public static Map<String, String> getEnumerationLiterals(final Type enumOrStateMachine) {
+        return get(enumOrStateMachine, "getEnumerationLiterals", new Callable<Map<String, String>>() {
             @Override
-            public List<String> call() throws Exception {
+            public Map<String, String> call() throws Exception {
+            	List<String> names;
                 if (enumOrStateMachine instanceof Enumeration)
-                    return NamedElementUtils.getNames(((Enumeration) enumOrStateMachine).getOwnedLiterals());
-                if (enumOrStateMachine instanceof StateMachine)
-                    return NamedElementUtils.getNames(StateMachineUtils.getVertices(((StateMachine) enumOrStateMachine)));
-                return Arrays.<String>asList();
+                	names = NamedElementUtils.getNames(((Enumeration) enumOrStateMachine).getOwnedLiterals());
+				else if (enumOrStateMachine instanceof StateMachine)
+                    names = NamedElementUtils.getNames(StateMachineUtils.getVertices(((StateMachine) enumOrStateMachine)));
+				else
+					names = Arrays.<String>asList();
+                return names.stream().collect(Collectors.toMap(name -> name, name -> getLabelFromSymbol(name)));
             }
         });
     }

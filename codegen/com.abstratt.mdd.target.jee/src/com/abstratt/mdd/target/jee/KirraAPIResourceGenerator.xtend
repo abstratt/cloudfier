@@ -77,9 +77,9 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "initializable": «property.initializable»,
             "hasDefault": «property.defaultValue != null»,
             «IF property.type.enumeration»
-            "enumerationLiterals": [
-                «property.type.enumerationLiterals.map['''"«it»"'''].join(',\n')»
-            ],
+            "enumerationLiterals": {
+                «property.type.enumerationLiterals.entrySet.map['''"«it.key»": "«it.value»"'''].join(',\n')»
+            },
             «ENDIF»
             "multiple": «property.multivalued»,
             "required": «property.required»,
@@ -157,9 +157,9 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         {
             "hasDefault": «KirraHelper.hasDefault(parameter)»,
             «IF parameter.type.enumeration»
-            "enumerationLiterals": [
-                «parameter.type.enumerationLiterals.map['''"«it»"'''].join(',\n')»
-            ],
+            "enumerationLiterals": {
+                «parameter.type.enumerationLiterals.entrySet.map['''"«it.key»": "«it.value»"'''].join(',\n')»
+            },
             «ENDIF»
             "multiple": «KirraHelper.isMultiple(parameter)»,
             "required": «KirraHelper.isRequired(parameter)»,
