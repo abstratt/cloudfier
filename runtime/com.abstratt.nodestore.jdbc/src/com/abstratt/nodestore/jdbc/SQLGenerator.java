@@ -194,16 +194,13 @@ public class SQLGenerator {
         Entity thisEntity = metadata.getEntity(thisType);
         Relationship otherEnd = metadata.getOpposite(myRelationship);
 
-        if (myRelationship.isMultiple()) {
+        if (myRelationship.isMultiple())
             if (otherEnd != null) {
                 if (!otherEnd.isMultiple())
                     // go the other way
                     return generateRemoveRelated(otherEnd, relatedType, otherId, thisType, thisId);
                 return generateRemoveRelatedViaMappingTable(thisEntity, myRelationship, thisId, otherEnd, otherId);
-            } else
-                // on a relational DB, we can only traverse from the N side
-                throw new UnsupportedOperationException(myRelationship.getName() + "  : " + myRelationship.getTypeRef());
-        }
+            }
         if (isMappingTableRelationship(myRelationship)) {
             return generateRemoveRelatedViaMappingTable(thisEntity, myRelationship, thisId, otherEnd, otherId);
         }
@@ -299,11 +296,6 @@ public class SQLGenerator {
         Validate.isTrue(myRelationship != null);
         Relationship otherEnd = metadata.getOpposite(myRelationship);
         List<String> result = new ArrayList<String>();
-        if (otherEnd == null) {
-            // on a relational DB, we can only set/traverse from the N side
-            if (myRelationship.isMultiple())
-                throw new UnsupportedOperationException(myRelationship.getName() + " : " + myRelationship.getTypeRef());
-        }
 
         if (isMappingTableRelationship(myRelationship)) {
             Entity contextClass = metadata.getEntity(myRelationship.getOwner());
