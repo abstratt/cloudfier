@@ -3,6 +3,7 @@ package com.abstratt.kirra.tests.mdd.runtime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -502,7 +503,9 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("Enum1", attr1.getTypeRef().getTypeName());
         TestCase.assertEquals(TypeKind.Enumeration, attr1.getTypeRef().getKind());
         TestCase.assertEquals(3, attr1.getEnumerationLiterals().size());
-        TestCase.assertTrue(attr1.getEnumerationLiterals().values().containsAll(Arrays.asList("value1", "value2", "value3")));
+        List<String> expected = Arrays.asList("value1", "value2", "value3");
+		Set<String> actual = attr1.getEnumerationLiterals().keySet();
+		TestCase.assertTrue(actual.toString(), actual.containsAll(expected));
 
         try {
             kirra.getEntity("mypackage", "Enum1");
