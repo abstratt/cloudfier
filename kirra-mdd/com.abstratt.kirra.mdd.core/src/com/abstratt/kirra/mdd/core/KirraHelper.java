@@ -291,7 +291,7 @@ public class KirraHelper {
         return get(property, "isRequiredProperty_" + creation, new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return !isReadOnly(property, creation) && isBasicallyRequired(property);
+                return property.isNavigable() && !isReadOnly(property, creation) && isBasicallyRequired(property);
             }
         });
     }
