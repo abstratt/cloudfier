@@ -130,7 +130,10 @@ public class KirraModelWeaver implements IModelWeaver {
     					newAssociation.setIsDerived(property.isDerived());
     					newAssociation.getMemberEnds().add(property);
     					// automatically created owned end
-    					newAssociation.createOwnedEnd(null, entity);
+    					Property otherEnd = newAssociation.createOwnedEnd(null, entity);
+    					otherEnd.setIsDerived(property.isDerived());
+    					otherEnd.setLower(0);
+    					otherEnd.setIsNavigable(false);
     				}
 			    }
 		// ensure user entities have a username property
