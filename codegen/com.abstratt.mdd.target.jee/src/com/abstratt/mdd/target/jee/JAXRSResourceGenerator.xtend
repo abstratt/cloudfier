@@ -1,15 +1,18 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.mdd.target.jse.BehaviorlessClassGenerator
 import com.abstratt.mdd.core.IRepository
-import org.eclipse.uml2.uml.Class
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import com.abstratt.mdd.core.util.MDDExtensionUtils.AccessCapability
+import com.abstratt.mdd.target.jse.BehaviorlessClassGenerator
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
-import org.eclipse.uml2.uml.TypedElement
-import org.eclipse.uml2.uml.Parameter
-import org.eclipse.uml2.uml.Operation
-import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
+import java.util.EnumSet
 import org.eclipse.uml2.uml.AggregationKind
+import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.TypedElement
+
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 
 class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
@@ -23,6 +26,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     def generateResource(Class entity) {
         val typeRef = entity.convertType
         val entityFullName = typeRef.fullName
+        val allRoleClasses = appPackages.entities.filter[ role ]
+        val accessControlGenerator = new JAXRSAccessControlGenerator()
         '''
         package resource.«entity.packagePrefix»;
 
@@ -59,6 +64,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         import javax.ws.rs.core.Response;
         import javax.ws.rs.core.Response.ResponseBuilder;
         import javax.ws.rs.core.Response.Status;
+        import javax.annotation.security.RolesAllowed;
         
         import java.net.URI;
         
@@ -67,6 +73,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         
         @Path("entities/«entityFullName»/")
         @Produces(MediaType.APPLICATION_JSON)
+        «accessControlGenerator.generateEndpointAnnotation(EnumSet.noneOf(AccessCapability), allRoleClasses, #[entity])»
         public class «entity.name»Resource {
         «IF entity.concrete»
             private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
@@ -74,8 +81,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         «ENDIF»
             @Context
             UriInfo uri;
-            
             @GET
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.noneOf(AccessCapability), #[], #[])»
             public Response getEntity() {
                 try {
                     String contents = EntityResourceHelper.getEntityRepresentation("«entityFullName»", uri.getRequestUri().resolve("..").toString());
@@ -91,6 +98,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             «IF entity.concrete»
             @GET
             @Path("instances/{id}")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Read), allRoleClasses, #[entity])»
             public Response getSingle(@PathParam("id") String idString) {
                 if ("_template".equals(idString)) {
                     «entity.name» template = new «entity.name»(); 
@@ -106,6 +114,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @PUT
             @Path("instances/{id}")
             @Consumes(MediaType.APPLICATION_JSON)
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Update), allRoleClasses, #[entity])»
             public Response put(@PathParam("id") Long id, Map<String, Object> representation) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -122,6 +131,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @POST
             @Path("instances")
             @Consumes(MediaType.APPLICATION_JSON)
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Create), allRoleClasses, #[entity])»
             public Response post(Map<String, Object> representation) {
                 «entity.name» newInstance = new «entity.name»();
                 try {    
@@ -135,6 +145,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             
             @DELETE
             @Path("instances/{id}")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Delete), allRoleClasses, #[entity])»
             public Response delete(@PathParam("id") Long id) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -145,14 +156,16 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                             
             @GET
             @Path("instances")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Read), allRoleClasses, #[entity])»
             public Response getList() {
                 Collection<«entity.name»> models = service.findAll();
                 return toExternalList(uri, models).build();
             }
             
-            «FOR relationship : entity.entityRelationships.filter[multiple && navigable]»
+            «FOR relationship : entity.entityRelationships.filter[multiple && navigable && userVisible]»
             @GET
             @Path("instances/{id}/relationships/«relationship.name»")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Read), allRoleClasses, #[entity, relationship])»
             public Response list«relationship.name.toFirstUpper»(@PathParam("id") Long id) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -163,6 +176,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             «IF !relationship.readOnly»
             @PUT
             @Path("instances/{id}/relationships/«relationship.name»/{toAttach}")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Update), allRoleClasses, #[entity, relationship])»
             public Response attach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toAttach") String toAttachIdStr) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -180,6 +194,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             }
             @DELETE
             @Path("instances/{id}/relationships/«relationship.name»/{toDetach}")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Update), allRoleClasses, #[entity, relationship])»            
             public Response detach«relationship.name.toFirstUpper»(@PathParam("id") Long id, @PathParam("toDetach") String toDetachIdStr) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -196,9 +211,10 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             }
             «ENDIF»
             «ENDFOR»
-            «FOR relationship : entity.entityRelationships.filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL]»
+            «FOR relationship : entity.entityRelationships.filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL && userVisible]»
             @GET
             @Path("instances/{id}/relationships/«relationship.name»/domain")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Read), allRoleClasses, #[entity, relationship])»
             public Response listDomainFor«relationship.name.toFirstUpper»(@PathParam("id") Long id) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -212,6 +228,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("instances/{id}/actions/«action.name»")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Call), allRoleClasses, #[entity, action])»
             public Response execute«action.name.toFirstUpper»(@PathParam("id") Long id, Map<String, Object> representation) {
                 «action.generateArgumentMatching»
                 «entity.name» found = service.find(id);
@@ -226,6 +243,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             «FOR parameter : action.parameters.filter[type.entity]»
             @GET
             @Path("instances/{id}/actions/«action.name»/parameters/«parameter.name»/domain")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Call), allRoleClasses, #[entity, action])»
             public Response list«action.name.toFirstUpper»_«parameter.name»Domain(@PathParam("id") Long id) {
                 «entity.name» found = service.find(id);
                 if (found == null)
@@ -243,6 +261,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("actions/«action.name»")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Call), allRoleClasses, #[entity, action])»
             public Response execute«action.name.toFirstUpper»(Map<String, Object> representation) {
                 «action.generateArgumentMatching»
                 service.«action.name»(«action.parameters.map[name].join(', ')»);
@@ -252,6 +271,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             «FOR parameter : action.parameters.filter[type.entity]»
             @GET
             @Path("instances/undefined/actions/«action.name»/parameters/«parameter.name»/domain")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Call), allRoleClasses, #[entity, action])»
             public Response list«action.name.toFirstUpper»_«parameter.name»Domain() {
                 Collection<«parameter.type.name»> domain = «if (parameter.hasParameterConstraints)
                 	'''service.getParameterDomainFor«parameter.name.toFirstUpper»To«action.name.toFirstUpper»()'''
@@ -266,6 +286,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("finders/«query.name»")
+            «accessControlGenerator.generateEndpointAnnotation(EnumSet.of(AccessCapability.Call), allRoleClasses, #[entity, query])»
             public Response execute«query.name.toFirstUpper»(Map<String, Object> representation) {
                 «query.generateArgumentMatching»
                 Collection<«entity.name»> models = service.«query.name»(«query.parameters.map[name].join(', ')»);

@@ -4,8 +4,11 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.base.IBehaviorGenerator
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import org.apache.commons.lang3.StringUtils
+import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Namespace
+import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Port
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.Signal
@@ -13,8 +16,6 @@ import org.eclipse.uml2.uml.Signal
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
-import org.eclipse.uml2.uml.Operation
-import org.eclipse.uml2.uml.Activity
 
 class JPAEntityGenerator extends PlainEntityGenerator {
     protected String applicationName
@@ -51,6 +52,15 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         @Entity
         '''
     }
+    
+	override generatePrefix(Class entity) {
+		'''
+		«IF entity.role»
+		public static final String ROLE_ID = "«entity.name»";
+		«ENDIF»
+		«super.generatePrefix(entity)»
+		'''
+	}
     
     override generateRelationship(Property relationship) {
         '''
@@ -138,8 +148,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     def toJpaPropertyAnnotation(Property property) {
         // careful when using KirraHelper as this is about storing data, not user capabilities
         
-        // making an exception for username properties as they may not be necessarily filled in (unprovisioned user)
-        val nullable = property.lower == 0 || property.userNameProperty
+        val nullable = !property.basicallyRequired
         val length = if (property.type.name == 'Memo') 16*1024 else 255 
         val unique = property.ID
         val insertable = true /* the back-end can anything) */ // !property.readOnly || !nullable
@@ -170,6 +179,13 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         }
         '''
     }
+    
+	override generateImports(Namespace namespaceContext) {
+		val userClass = (namespaceContext instanceof Class) && (namespaceContext as Class).isRole 
+		'''
+		«super.generateImports(namespaceContext)»
+		'''
+	}
     
     override generateStandardImports() {
         '''

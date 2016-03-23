@@ -14,7 +14,11 @@
           <systemPackage
 		    name="kirra"
     		uri="platform:/plugin/com.abstratt.kirra.mdd.core/models/kirra.uml"
-    		requires="mdd.enableKirra"/>
+    		requires="mdd.modelWeaver=kirraWeaver"/>
+          <systemPackage
+		    name="kirra_base"
+    		uri="platform:/plugin/com.abstratt.kirra.mdd.core/models/kirra_templates.uml"
+    		requires="mdd.modelWeaver=kirraWeaver"/>
 	</extension>
    <extension
          point="com.abstratt.resman.features">
