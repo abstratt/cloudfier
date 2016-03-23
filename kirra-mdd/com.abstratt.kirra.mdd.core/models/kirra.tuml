@@ -1,7 +1,6 @@
 profile kirra;
 
-stereotype User specializes mdd_extensions::Role end;
-stereotype Role specializes mdd_extensions::Role end;
+stereotype User extends UML::Class end;
 
 stereotype Entity extends UML::Class end;
 

@@ -115,8 +115,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setInstantiable(KirraHelper.isInstantiable(umlClass));
         entity.setTopLevel(KirraHelper.isTopLevel(umlClass));
         entity.setStandalone(KirraHelper.isStandalone(umlClass));
-        entity.setRole(KirraHelper.isRole(umlClass));
-        entity.setUserVisible(KirraHelper.isUserVisible(umlClass));
+        entity.setUser(KirraHelper.isUser(umlClass));
         Stream<Classifier> superEntities = umlClass.getGenerals().stream().filter(g -> KirraHelper.isEntity(g)); 
         List<TypeRef> superTypes = superEntities.map(superEntity -> KirraHelper.convertType(superEntity)).collect(Collectors.toList());
         entity.setSuperTypes(superTypes);

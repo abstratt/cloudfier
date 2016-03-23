@@ -30,7 +30,7 @@ public abstract class KirraActorSelector implements ActorSelector {
                 if (UMLPackage.Literals.CLASS != eObject.eClass())
                     return false;
                 Class umlClass = (Class) eObject;
-                return KirraHelper.isRole(umlClass) && KirraHelper.isConcrete(umlClass);
+                return KirraHelper.isUser(umlClass) && KirraHelper.isConcrete(umlClass);
             }
         }, false);
         if (userClasses.isEmpty())

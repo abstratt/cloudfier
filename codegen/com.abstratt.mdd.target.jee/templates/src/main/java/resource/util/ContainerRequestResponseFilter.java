@@ -27,13 +27,17 @@ public class ContainerRequestResponseFilter implements ContainerRequestFilter, C
     @Override
     public void filter(ContainerRequestContext request) throws IOException {
         if (MUTATION_METHODS.contains(request.getMethod())) {
+        	System.out.println("2");
             entityManager.getTransaction().begin();
+            System.out.println("3");
         }
+        System.out.println("4");
         try {
         	PersistenceHelper.setEntityManager(entityManager);
         } catch (RuntimeException e) {
         	e.printStackTrace();
         }
+        System.out.println("5");
     }
     
     @Override
@@ -47,7 +51,7 @@ public class ContainerRequestResponseFilter implements ContainerRequestFilter, C
                     entityManager.getTransaction().rollback();
                 }
             }
-        }	
+        }
         PersistenceHelper.setEntityManager(null);
         response.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
         response.getHeaders().putSingle("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");

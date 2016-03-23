@@ -81,7 +81,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 }
                 if (features.contains(Feature.Links)) {
                     Map<String, Object> links = new LinkedHashMap<>();
-                    «entity.entityRelationships.filter[!derived && !multiple && userVisible].map[ relationship |
+                    «entity.entityRelationships.filter[!derived && !multiple].map[ relationship |
                         val relationshipName = relationship.name
                         val accessor = '''«relationship.generateAccessorName»()'''
                         val relationshipInstancesURI = '''«relationship.type.name.toFirstLower»InstancesURI'''
@@ -133,7 +133,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 ].join('\n')»
                 
                 Map<String, Map<String, Object>> links = (Map<String, Map<String, Object>>) external.get("links");
-                «entity.entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true) && userVisible].map[ relationship |
+                «entity.entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true)].map[ relationship |
                     '''
                     Map<String, Object> «relationship.name» = links.get("«relationship.name»");
                     if («relationship.name» != null) {

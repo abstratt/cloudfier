@@ -60,7 +60,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     def generateImports(Namespace namespaceContext) {
         namespaceContext.nearestPackage.packageImports.filter[importedPackage?.kirraPackage].generateMany(['''import «importedPackage.toJavaPackage».*;'''])
     }
-    
+
     def generateComment(Element element) {
         if (!element.ownedComments.empty) {
             val reformattedParagraphs = element.ownedComments.head.body.replaceAll('\\s+', ' ').wrap(120, '<br>', false).

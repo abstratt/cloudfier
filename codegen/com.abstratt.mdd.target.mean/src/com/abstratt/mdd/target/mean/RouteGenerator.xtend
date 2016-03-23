@@ -163,7 +163,7 @@ class RouteGenerator {
             'description' -> '''"«entity.description.replaceAll('\\n', ' ')»"''', 
             'uri' -> '''resolveUrl("entities/«fullName»")''',
             'extentUri' -> '''resolveUrl("entities/«fullName»/instances")''',
-            'user' -> entity.isRole.toString,
+            'user' -> entity.user.toString,
             'concrete' -> entity.concrete.toString,
             'standalone' -> entity.standalone.toString
         )

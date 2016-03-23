@@ -11,6 +11,7 @@ import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ClassifierUtils.*
+import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
     
@@ -32,7 +33,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "instantiable": «entity.instantiable»,
             "standalone": «entity.standalone»,
             "topLevel": «entity.topLevel»,
-            "role": «entity.isRole»,
+            "user": «entity.user»,
             "namespace": "«typeRef.namespace»",
             "description": "«entity.description.removeNewLines»",
             "label": "«KirraHelper.getLabel(entity)»",

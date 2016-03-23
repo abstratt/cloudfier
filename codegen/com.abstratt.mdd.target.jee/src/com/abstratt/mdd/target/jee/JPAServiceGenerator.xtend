@@ -21,7 +21,6 @@ import com.abstratt.mdd.core.util.ActivityUtils
 import org.eclipse.uml2.uml.OutputPin
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.AggregationKind
-import org.eclipse.uml2.uml.Namespace
 
 class JPAServiceGenerator extends ServiceGenerator {
 
@@ -76,7 +75,7 @@ class JPAServiceGenerator extends ServiceGenerator {
     
     
     def CharSequence generateDerivedRelationshipAccessors(Class entity) {
-        val derivedRelationships = getRelationships(entity).filter[derived && userVisible]
+        val derivedRelationships = getRelationships(entity).filter[derived]
         val derivedRelationshipsWithQuery = derivedRelationships.filter[derivation?.queryPerformingActivity]
         return derivedRelationshipsWithQuery.map[generateDerivedRelationshipAccessor(entity, it)].join
     }
@@ -104,12 +103,6 @@ class JPAServiceGenerator extends ServiceGenerator {
             import static util.PersistenceHelper.*;
         '''
     }
-    
-	override generateImports(Namespace namespaceContext) {
-		'''
-		«super.generateImports(namespaceContext)»
-		'''
-	}
 
     def generateCreate(Classifier entity) {
         '''
@@ -121,20 +114,10 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
 
     def generateFind(Classifier entity) {
-    	val entityAlias = entity.name.toFirstLower
         '''
             public «entity.name» find(Object id) {
                 return getEntityManager().find(«entity.name».class, id);
             }
-            
-            «FOR id : entity.getAllAttributes.filter[ID]»
-            public «entity.name» findBy«id.name.toFirstUpper»(«id.toJavaType» «id.name») {
-                CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-                CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
-                Root<«entity.name»> «entityAlias» = cq.from(«entity.name».class);
-                return getEntityManager().createQuery(cq.select(«entityAlias»).where(cb.equal(«entityAlias».get("«id.name»"), «id.name»))).getResultList().stream().findAny().orElse(null);
-            }
-            «ENDFOR»
         '''
     }
     
@@ -179,22 +162,22 @@ class JPAServiceGenerator extends ServiceGenerator {
     
     
     override generateRelated(Classifier entity) {
-        val relationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[!navigable]
+        val relationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[multiple || !navigable]
         relationships.generateMany[ relationship |
             val otherEnd = relationship.otherEnd
         '''
-            public «relationship.toJavaType» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
+            public List<«relationship.type.name»> find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«relationship.type.name»> cq = cb.createQuery(«relationship.type.name».class);
                 Root<«relationship.type.name»> root = cq.from(«relationship.type.name».class);
-                return getEntityManager().createQuery(cq.select(root).where(cb.equal(root.get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList()«IF !relationship.multiple».stream().findAny().orElse(null)«ENDIF»;
+                return getEntityManager().createQuery(cq.select(root).where(cb.equal(root.get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList();
             }
         '''
         ]
     }
     
     def CharSequence generateRelationshipDomain(Classifier entity) {
-        val relationships = getRelationships(entity).filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL && userVisible]
+        val relationships = getRelationships(entity).filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL]
         relationships.generateMany[ relationship |
             val constraints = relationship.findInvariantConstraints
             val methodName = '''getDomainFor«relationship.name.toFirstUpper»'''

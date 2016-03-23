@@ -55,7 +55,6 @@ import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.AssociationUtils;
 import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
-import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.NamedElementUtils;
 import com.abstratt.mdd.core.util.StateMachineUtils;
@@ -245,18 +244,18 @@ public class KirraHelper {
                         if (UMLPackage.Literals.CLASS != eObject.eClass())
                             return false;
                         Class umlClass = (Class) eObject;
-                        return KirraHelper.isRole(umlClass);
+                        return KirraHelper.isUser(umlClass) && KirraHelper.isConcrete(umlClass);
                     }
                 }, false);
             }
         });
     }
 
-    public static boolean isRole(final Classifier classifier) {
-        return get(classifier, "isRole", new Callable<Boolean>() {
+    public static boolean isUser(final Classifier classifier) {
+        return get(classifier, "isUser", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return !classifier.isAbstract() && MDDExtensionUtils.isRoleClass(classifier);
+                return !classifier.isAbstract() && hasStereotype(classifier, "User") && getUsernameProperty(classifier) != null;
             }
         });
     }
@@ -301,7 +300,7 @@ public class KirraHelper {
         return get(property, "isBasicallyRequiredProperty", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return property.getLower() > 0;
+                return !(property.getType() instanceof StateMachine) && property.getLower() > 0;
             }
         });
 
@@ -670,8 +669,6 @@ public class KirraHelper {
         return get(umlClass, "isTopLevel", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-            	if (!isUserVisible(umlClass))
-            		return false;
             	if (!isConcrete(umlClass))
             		return false;
                 for (Operation operation : umlClass.getAllOperations())
@@ -892,10 +889,6 @@ public class KirraHelper {
         if (isParentRelationship(property) && !isTopLevel((Classifier) property.getOwner()))
             return false;
         return isPublic(property);
-    }
-    
-    public static boolean isUserVisible(Classifier classifier) {
-        return isPublic(classifier);
     }
     
     public static String getApplicationName(IRepository repository, Collection<org.eclipse.uml2.uml.Package> namespaces) {

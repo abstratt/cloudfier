@@ -1,4 +1,19 @@
-package resource.{applicationName};
+package com.abstratt.mdd.target.jee
+
+import com.abstratt.mdd.target.jse.AbstractGenerator
+import com.abstratt.mdd.core.IRepository
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+
+
+class JAXRSServerGenerator extends AbstractGenerator {
+    
+    new(IRepository repository) {
+        super(repository)
+    }
+    
+    def CharSequence generate() {
+        '''
+package resource.«applicationName»;
 
 import java.io.IOException;
 import java.net.URL;
@@ -11,8 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
-
-import resource.expenses.UserLoginService;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;
@@ -62,13 +75,15 @@ public class RESTServer extends AbstractHandler {
         context.setContextPath("/");
         context.setParentLoaderPriority(true);
         
+		context.setInitParameter("javax.ws.rs.Application", Application.class.getName());
+		context.setInitParameter("resteasy.servlet.mapping.prefix", "/");
 		context.addEventListener(new ResteasyBootstrap());
-		context.addEventListener(new ContextListener());
-		UserLoginService loginService = new UserLoginService();
-		context.getSecurityHandler().setLoginService(loginService);
         
         server.setHandler(context);
         server.start();
         server.join();
     }
+}
+        '''
+    }    
 }

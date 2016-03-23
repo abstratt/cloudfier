@@ -155,7 +155,7 @@ public class RuntimeObject extends BasicType {
     }
 
     public Constraint checkConstraints(Classifier scope, String kind) {
-        List<Constraint> invariants = ConstraintUtils.findConstraints(scope, kind);
+        List<Constraint> invariants = MDDExtensionUtils.findConstraints(scope, kind);
         Constraint partial = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
         if (partial != null)
             return partial;
@@ -168,7 +168,7 @@ public class RuntimeObject extends BasicType {
     }
 
     public Constraint checkConstraints(NamedElement scope, String kind) {
-        List<Constraint> constraints = ConstraintUtils.findConstraints(scope, kind);
+        List<Constraint> constraints = MDDExtensionUtils.findConstraints(scope, kind);
         return checkConstraints(constraints, Collections.<String, BasicType> emptyMap());
     }
 
@@ -210,7 +210,7 @@ public class RuntimeObject extends BasicType {
         List<Constraint> invariants = MDDExtensionUtils.findOwnedInvariantConstraints(getRuntimeClass().getModelClassifier());
         Constraint violated = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
         if (violated != null)
-            constraintViolated(MDDExtensionUtils.getConstraintScope(violated), violated);
+            constraintViolated(MDDExtensionUtils.getInvariantScope(violated), violated);
     }
 
     @Override

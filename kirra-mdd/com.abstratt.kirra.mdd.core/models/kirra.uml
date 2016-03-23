@@ -1,26 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<uml:Profile xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_0" name="kirra" URI="models/kirra" metamodelReference="_packageImport.0">
+<uml:Profile xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_0" name="kirra" URI="models/kirra">
   <eAnnotations xmi:id="_com.abstratt2Fmdd2F" source="com.abstratt/mdd/">
-    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2016/03/20 04:04:11 470 -0300"/>
+    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2015/04/13 07:52:40 758 -0300"/>
   </eAnnotations>
   <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML">
     <contents xmi:type="ecore:EPackage" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra" name="kirra" nsURI="models/kirra" nsPrefix="kirra">
-      <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-_http2F2Fwww.eclipse.org2Fuml22F4.0.02FUML" source="http://www.eclipse.org/uml2/4.0.0/UML">
-        <references xmi:type="uml:Profile" href="pathmap://MDD_PROFILES/mdd_extensions.uml#_0"/>
-      </eAnnotations>
-      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User" name="User" eSuperTypes="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-mdd_extensions_Role">
+      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User" name="User">
         <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="User"/>
-      </eClassifiers>
-      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-mdd_extensions_Role" name="mdd_extensions_Role">
-        <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-mdd_extensions_Role-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML">
-          <references xmi:type="uml:Stereotype" href="pathmap://MDD_PROFILES/mdd_extensions.uml#Role"/>
-        </eAnnotations>
-        <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-mdd_extensions_Role-base_Class" name="base_Class" ordered="false" lowerBound="1">
+        <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User-base_Class" name="base_Class" ordered="false" lowerBound="1">
           <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//Class"/>
         </eStructuralFeatures>
-      </eClassifiers>
-      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Role" name="Role" eSuperTypes="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-mdd_extensions_Role">
-        <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Role-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="Role"/>
       </eClassifiers>
       <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity" name="Entity">
         <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="Entity"/>
@@ -84,18 +73,10 @@
       </eClassifiers>
     </contents>
   </eAnnotations>
-  <packageImport xmi:id="_packageImport.0">
-    <importedPackage xmi:type="uml:Model" href="pathmap://UML_METAMODELS/UML.metamodel.uml#_0"/>
-  </packageImport>
   <packagedElement xmi:type="uml:Stereotype" xmi:id="User" name="User">
-    <generalization xmi:id="User-_generalization.0">
-      <general xmi:type="uml:Stereotype" href="pathmap://MDD_PROFILES/mdd_extensions.uml#Role"/>
-    </generalization>
-  </packagedElement>
-  <packagedElement xmi:type="uml:Stereotype" xmi:id="Role" name="Role">
-    <generalization xmi:id="Role-_generalization.0">
-      <general xmi:type="uml:Stereotype" href="pathmap://MDD_PROFILES/mdd_extensions.uml#Role"/>
-    </generalization>
+    <ownedAttribute xmi:id="User-base_Class" name="base_Class" association="Class_User">
+      <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Class"/>
+    </ownedAttribute>
   </packagedElement>
   <packagedElement xmi:type="uml:Stereotype" xmi:id="Entity" name="Entity">
     <ownedAttribute xmi:id="Entity-base_Class" name="base_Class" association="Class_Entity">
@@ -151,6 +132,9 @@
     <ownedAttribute xmi:id="BusinessRuleViolation-base_Classifier" name="base_Classifier" association="Classifier_BusinessRuleViolation">
       <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Classifier"/>
     </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Extension" xmi:id="Class_User" name="Class_User" memberEnd="Class_User-extension_User User-base_Class">
+    <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Class_User-extension_User" name="extension_User" type="User" aggregation="composite" association="Class_User"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Extension" xmi:id="Class_Entity" name="Class_Entity" memberEnd="Class_Entity-extension_Entity Entity-base_Class">
     <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Class_Entity-extension_Entity" name="extension_Entity" type="Entity" aggregation="composite" association="Class_Entity"/>
