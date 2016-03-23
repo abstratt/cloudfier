@@ -515,6 +515,6 @@ Produces a deployable WAR file containing the application, which comprises a per
 
 #### mvn exec:java
 
-Launches the application as a standalone server (using Jetty) on port 8888. You can then use Kirra Qooxdoo to access the application via a mobile-styled web UI using [Kirra Qooxdoo](https://github.com/abstratt/kirra/tree/master/kirra_qooxdoo), for instance (once the Kirra Qooxdoo server is up), using the URI:
+Launches the application as a standalone server (using Jetty) on port 8888. You can then use [kirra-angular](https://github.com/abstratt/kirra-angular), a generic Angular-based admin UI, to interact with the application, using the URI:
 
-http://localhost:9999/kirra-api/kirra_qooxdoo/source/index.html?app-uri=http://localhost:8888
+http://develop.cloudfier.com/kirra-api/kirra-ng/?app-uri=http://localhost:8888
