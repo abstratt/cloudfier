@@ -35,7 +35,7 @@ public class KirraUIHelperTests extends AbstractRepositoryBuildingTests {
         model1 += "class MyClass\n";
         model1 += "  attribute attr1 : String;\n";
         model1 += "end;\n";
-        model1 += "[kirra::User] class MyClass2\n";
+        model1 += "[kirra::Role] class MyClass2\n";
         model1 += "  readonly id attribute attr2 : String;\n";
         model1 += "end;\n";
         model1 += "end.\n";
@@ -43,7 +43,7 @@ public class KirraUIHelperTests extends AbstractRepositoryBuildingTests {
         model2 += "package mypackage2;\n";
         model2 += "import base;\n";
         model2 += "apply kirra;\n";
-        model2 += "[kirra::User] class MyClass3\n";
+        model2 += "[kirra::Role] class MyClass3\n";
         model2 += "  readonly id attribute attr3 : String;\n";
         model2 += "end;\n";
         model2 += "class MyClass4\n";

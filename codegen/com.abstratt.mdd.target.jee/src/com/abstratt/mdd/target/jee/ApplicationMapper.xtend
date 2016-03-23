@@ -1,16 +1,15 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.kirra.mdd.core.KirraHelper
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.spi.TargetUtils
 
 class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
     override mapAll(IRepository repository) {
         val result = super.mapAll(repository)
-        val entityPackages = KirraHelper.getEntityPackages(repository.getTopLevelPackages(null))
-        val applicationName = entityPackages.head.name
+        val entityPackages = getEntityPackages(repository.getTopLevelPackages(null))
+        val applicationName = getEntities(entityPackages).filter[userVisible].head.package.name
         val templates = #[
-            'src/main/webapp/WEB-INF/web.xml',
             'src/main/resources/META-INF/persistence.xml', 
             'src/main/resources/META-INF/orm.xml',
             'src/main/resources/META-INF/sql/create.sql',
@@ -19,6 +18,7 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
             'src/main/assemble/assembly.xml',
             'src/main/java/util/PersistenceHelper.java',
             'src/main/java/resource/util/StandaloneRequestResponseFilter.java',
+            'src/main/java/resource/util/Authenticator.java',
             'src/main/java/resource/util/ContainerRequestResponseFilter.java',            
             'src/main/java/resource/util/EntityManagerProvider.java',
             'src/main/java/resource/util/EntityResourceHelper.java'            

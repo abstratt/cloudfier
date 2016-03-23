@@ -42,7 +42,7 @@ public class ProfileResource extends AbstractKirraRepositoryResource {
 
         Entity profileEntity = getEntityFromURI(typeURI);
         ResourceUtils.ensure(profileEntity != null, "Could not determine entity from type URI", Status.CLIENT_ERROR_BAD_REQUEST);
-        ResourceUtils.ensure(profileEntity.isUser(), profileEntity.getTypeRef().getFullName() + " is not a user entity",
+        ResourceUtils.ensure(profileEntity.isRole(), profileEntity.getTypeRef().getFullName() + " is not a role entity",
                 Status.CLIENT_ERROR_BAD_REQUEST);
 
         Repository repository = getRepository();
