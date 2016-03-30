@@ -46,7 +46,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1\n";
@@ -94,7 +94,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User id readonly attribute attr1 : String; end;\n";
+        model += "role class User id readonly attribute attr1 : String; end;\n";
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), false);
 
@@ -109,7 +109,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1\n";
@@ -151,7 +151,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         // this catches a stack overflow error with a derived property that
         // causes a lookup
@@ -187,7 +187,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User id readonly attribute attr1 : String; end;\n";
+        model += "role class User id readonly attribute attr1 : String; end;\n";
         model += "[Entity] class MyClass1 attribute attr1 : String[0,1]; end;\n";
         model += "end.";
 
@@ -225,7 +225,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1\n";
@@ -293,7 +293,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1\n";
@@ -335,7 +335,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1 attribute a : Integer[0,1]; end;\n";
@@ -403,7 +403,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1\n";
@@ -434,8 +434,8 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "import base;\n";
         model += "apply kirra;\n";
-        model += "[User] class User\n";
-        model += "    readonly id attribute username : String;\n";
+        model += "class MyClass\n";
+        model += "    readonly id attribute name : String;\n";
         model += "end;\n";
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
@@ -445,7 +445,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
                 Repository repository = resource.getFeature(Repository.class);
                 TestCase.assertTrue(repository.isOpen());
                 TestCase.assertEquals(1, repository.getEntities("mypackage").size());
-                TestCase.assertEquals("User", repository.getEntities("mypackage").get(0).getName());
+                TestCase.assertEquals("MyClass", repository.getEntities("mypackage").get(0).getName());
                 return null;
             }
         });
@@ -456,7 +456,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User\n";
+        model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
         model += "end;\n";
         model += "[Entity] class MyClass1\n";
@@ -560,7 +560,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "[User] class User readonly id attribute attr1 : String; end;\n";
+        model += "role class User readonly id attribute attr1 : String; end;\n";
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), false);
 

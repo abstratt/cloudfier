@@ -81,7 +81,9 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val entities = appPackages.entities
-    	val applicationName = entities.head.package.name
+        val applicationPackage = entities.filter[userVisible].head.package
+	    val applicationName = applicationPackage.name
+
     	
         val result = new LinkedHashMap<String, CharSequence>()
         

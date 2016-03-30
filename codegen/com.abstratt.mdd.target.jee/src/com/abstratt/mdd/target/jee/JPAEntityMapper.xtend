@@ -22,39 +22,47 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
-        val allEntities = appPackages.entities
-		val concreteEntities = allEntities.filter[!abstract]
-        val applicationName = concreteEntities.head.package.name
-        val applicationLabel = KirraHelper.getLabel(allEntities.head.package)
-        val entityNames = concreteEntities.map [ TypeRef.sanitize(qualifiedName) ]
+        val entities = appPackages.entities
+        val allResourceEntities = entities.filter[userVisible]
+        val allRepresentationEntities = entities.filter[userVisible && concrete]
+        val persistentEntities = entities
+        val roleEntities = entities.filter[role && concrete] 
+        val applicationPackage = entities.filter[userVisible].head.package
+        val applicationName = applicationPackage.name
+        val applicationLabel = KirraHelper.getLabel(applicationPackage)
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
         val jaxbSerializationGenerator = new JAXBSerializationGenerator(repository)
         val apiSchemaGenerator = new KirraAPIResourceGenerator(repository)
         val mappings = super.mapAll(repository)
-        mappings.putAll(allEntities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
-        mappings.putAll(concreteEntities.toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
-        mappings.putAll(concreteEntities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
+        val entityNames = persistentEntities.map[ TypeRef.sanitize(qualifiedName) ]
+        mappings.putAll(persistentEntities.filter[concrete].toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
+        mappings.putAll(allResourceEntities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
+        mappings.putAll(allRepresentationEntities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
-        mappings.put(generateJAXRSServerFileName(applicationName), new JAXRSServerGenerator(repository).generate())
+        mappings.put('src/main/webapp/WEB-INF/web.xml', new WebXmlGenerator(repository).generateWebXml())
         mappings.put('src/test/resources/META-INF/sql/data.sql', new HSQLDataSnapshotGenerator(repository).generate())
-        mappings.putAll(allEntities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
+        mappings.putAll(allResourceEntities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
         
         val templates = #{
-        	'''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> "/templates/src/main/java/resource/EntityResource.java",
-        	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> "/templates/src/main/java/resource/ConversionException.java",
-        	'''src/main/java/resource/«applicationName»/ConstraintViolationExceptionMapper.java'''.toString -> "/templates/src/main/java/resource/ConstraintViolationExceptionMapper.java",
-        	'''src/main/java/resource/«applicationName»/ThrowableMapper.java'''.toString -> "/templates/src/main/java/resource/ThrowableMapper.java",
-        	'''src/main/java/resource/«applicationName»/RestEasyFailureMapper.java'''.toString -> "/templates/src/main/java/resource/RestEasyFailureMapper.java"
+        	'''src/main/java/resource/«applicationName»/RESTServer.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/ConstraintViolationExceptionMapper.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/ThrowableMapper.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/UserLoginService.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/RestEasyFailureMapper.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/ContextListener.java'''.toString -> null
     	}
-    	templates.forEach[targetPath, sourcePath|
+    	templates.forEach[targetPath, sourcePath |
     		mappings.put(
 				targetPath,
-					TargetUtils.merge(JPAEntityMapper.getResourceAsStream(sourcePath), 
+					TargetUtils.merge(JPAEntityMapper.getResourceAsStream(sourcePath ?: '''/templates/«targetPath.replaceFirst(applicationName, 'applicationName')»'''), 
 	                #{ 
 	                    "entityNameList" -> entityNames.map['''"«it»"'''].join(', '),
 	                    "applicationName" -> applicationName,
-	                    "applicationLabel" -> applicationLabel
+	                    "applicationLabel" -> applicationLabel,
+	                    "userRoleNames" -> roleEntities.map['''«name».ROLE_ID'''].join(", ")
 	                }
 	            )
     		)	

@@ -1,7 +1,5 @@
 profile kirra;
 
-stereotype User extends UML::Class end;
-
 stereotype Entity extends UML::Class end;
 
 (*

@@ -1,16 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<uml:Profile xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_0" name="kirra" URI="models/kirra">
+<uml:Profile xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_0" name="kirra" URI="models/kirra" metamodelReference="_packageImport.0">
   <eAnnotations xmi:id="_com.abstratt2Fmdd2F" source="com.abstratt/mdd/">
-    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2015/04/13 07:52:40 758 -0300"/>
+    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2016/03/29 09:13:01 128 -0300"/>
   </eAnnotations>
   <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML">
     <contents xmi:type="ecore:EPackage" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra" name="kirra" nsURI="models/kirra" nsPrefix="kirra">
-      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User" name="User">
-        <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="User"/>
-        <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-User-base_Class" name="base_Class" ordered="false" lowerBound="1">
-          <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//Class"/>
-        </eStructuralFeatures>
-      </eClassifiers>
       <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity" name="Entity">
         <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="Entity"/>
         <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity-base_Class" name="base_Class" ordered="false" lowerBound="1">
@@ -73,11 +67,9 @@
       </eClassifiers>
     </contents>
   </eAnnotations>
-  <packagedElement xmi:type="uml:Stereotype" xmi:id="User" name="User">
-    <ownedAttribute xmi:id="User-base_Class" name="base_Class" association="Class_User">
-      <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Class"/>
-    </ownedAttribute>
-  </packagedElement>
+  <packageImport xmi:id="_packageImport.0">
+    <importedPackage xmi:type="uml:Model" href="pathmap://UML_METAMODELS/UML.metamodel.uml#_0"/>
+  </packageImport>
   <packagedElement xmi:type="uml:Stereotype" xmi:id="Entity" name="Entity">
     <ownedAttribute xmi:id="Entity-base_Class" name="base_Class" association="Class_Entity">
       <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Class"/>
@@ -132,9 +124,6 @@
     <ownedAttribute xmi:id="BusinessRuleViolation-base_Classifier" name="base_Classifier" association="Classifier_BusinessRuleViolation">
       <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Classifier"/>
     </ownedAttribute>
-  </packagedElement>
-  <packagedElement xmi:type="uml:Extension" xmi:id="Class_User" name="Class_User" memberEnd="Class_User-extension_User User-base_Class">
-    <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Class_User-extension_User" name="extension_User" type="User" aggregation="composite" association="Class_User"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Extension" xmi:id="Class_Entity" name="Class_Entity" memberEnd="Class_Entity-extension_Entity Entity-base_Class">
     <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Class_Entity-extension_Entity" name="extension_Entity" type="Entity" aggregation="composite" association="Class_Entity"/>

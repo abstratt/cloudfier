@@ -371,7 +371,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 }
                 case 'System': {
                     switch (operation.name) {
-                        case 'user': '''null /* TBD */'''
+                        case 'user': generateSystemUserCall(action)
                         default: unsupported('''System operation: «operation.name»''')
                     }
                 }
@@ -379,6 +379,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             }
         }
     }
+	
+	def generateSystemUserCall(CallOperationAction action) {
+		'''null /* TBD */'''
+	}
     
     def generateGroupingOperationCall(CallOperationAction action) {
         val operation = action.operation
