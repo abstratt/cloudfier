@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <uml:Package xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_0" name="kirra_templates" URI="models/kirra_templates">
   <eAnnotations xmi:id="_com.abstratt2Fmdd2F" source="com.abstratt/mdd/">
-    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2016/03/20 04:04:11 517 -0300"/>
+    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2016/03/29 09:13:01 184 -0300"/>
   </eAnnotations>
   <packageImport xmi:id="_packageImport.0">
     <importedPackage xmi:type="uml:Model" href="pathmap://MDD_LIBRARIES/mdd_types.uml#_0"/>
   </packageImport>
-  <packagedElement xmi:type="uml:Class" xmi:id="UserTemplate" name="UserTemplate">
+  <packagedElement xmi:type="uml:Class" xmi:id="UserTemplate" name="UserTemplate" visibility="private">
     <eAnnotations xmi:id="UserTemplate-_com.abstratt2Fmdd2Funit" source="com.abstratt/mdd/unit">
       <details xmi:id="UserTemplate-_com.abstratt2Fmdd2Funit-_details.0" key="name" value="kirra_templates.tuml"/>
     </eAnnotations>

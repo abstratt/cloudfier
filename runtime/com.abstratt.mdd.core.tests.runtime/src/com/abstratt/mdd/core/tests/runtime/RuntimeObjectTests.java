@@ -78,7 +78,7 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "    end;\n";
         RuntimeObjectTests.model += "    operation hasRole(r : Role) : Boolean;\n";
         RuntimeObjectTests.model += "    begin\n";
-        RuntimeObjectTests.model += "      return r = self.personRole;\n";
+        RuntimeObjectTests.model += "      return r == self.personRole;\n";
         RuntimeObjectTests.model += "    end;\n";
         RuntimeObjectTests.model += "    operation hasAnyRole() : Boolean;\n";
         RuntimeObjectTests.model += "    begin\n";

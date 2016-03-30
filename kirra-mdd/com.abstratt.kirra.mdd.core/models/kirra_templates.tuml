@@ -2,7 +2,7 @@ package kirra_templates;
 
 import mdd_types;
 
-class UserTemplate
+private class UserTemplate
     readonly id attribute username : String;
     readonly attribute email : String;
     private attribute password : String;

@@ -166,7 +166,7 @@ public class KirraModelWeaver implements IModelWeaver {
 				return;
 			Package roleClassPackage = roleEntities.get(0).getPackage();
 			Class userClass = EcoreUtil.copy(userTemplate);
-			userClass.setName("User");
+			userClass.setName("_UserData");
 			roleClassPackage.getPackagedElements().add(userClass);
 			StereotypeUtils.safeApplyStereotype(userClass, entityStereotype);
 			roleEntities.forEach(it -> {

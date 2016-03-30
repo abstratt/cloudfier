@@ -210,7 +210,7 @@ public class RuntimeObject extends BasicType {
         List<Constraint> invariants = MDDExtensionUtils.findOwnedInvariantConstraints(getRuntimeClass().getModelClassifier());
         Constraint violated = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
         if (violated != null)
-            constraintViolated(MDDExtensionUtils.getConstraintScope(violated), violated);
+            constraintViolated(ConstraintUtils.getConstraintScope(violated), violated);
     }
 
     @Override
