@@ -27,11 +27,11 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
     }
     
     override mapAll(IRepository repository) {
-        val applicationPackages = KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null))
-        val applicationDescription = KirraHelper.getApplicationName(repository, applicationPackages)
+        val applicationLabel = KirraHelper.getApplicationLabel(repository)
+        val applicationName = KirraHelper.getApplicationName(repository)
         val replacements = #{
-            'applicationName' -> applicationPackages.head.name, 
-            'applicationDescription' -> applicationDescription
+            'applicationName' -> applicationName, 
+            'applicationDescription' -> applicationLabel
         }
         val result = new LinkedHashMap<String, CharSequence>()
         val getContents = [ String path | ApplicationMapper.getResourceAsStream('''/templates/«path»''') ]

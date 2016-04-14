@@ -124,12 +124,12 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyUserClass", entities.get(1).getName());
         
         TestCase.assertEquals("mypackage", entities.get(1).getEntityNamespace());
-        TestCase.assertEquals("_UserData", entities.get(2).getName());
+        TestCase.assertEquals("_UserProfile", entities.get(2).getName());
         
 
         kirra.getEntity("mypackage", "MyUserClass");
         kirra.getEntity("mypackage", "MyClass");
-        Entity userData = kirra.getEntity("mypackage", "_UserData");
+        Entity userData = kirra.getEntity("mypackage", "_UserProfile");
         assertTrue(!userData.isUserVisible());
     }
 

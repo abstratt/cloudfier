@@ -128,6 +128,7 @@ class JPAServiceGenerator extends ServiceGenerator {
             }
             
             «FOR id : entity.getAllAttributes.filter[ID]»
+            // id-based finder
             public «entity.name» findBy«id.name.toFirstUpper»(«id.toJavaType» «id.name») {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
@@ -183,10 +184,10 @@ class JPAServiceGenerator extends ServiceGenerator {
         relationships.generateMany[ relationship |
             val otherEnd = relationship.otherEnd
         '''
-            public «relationship.toJavaType» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
+            public «entity.toJavaType» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
-                CriteriaQuery<«relationship.type.name»> cq = cb.createQuery(«relationship.type.name».class);
-                Root<«relationship.type.name»> root = cq.from(«relationship.type.name».class);
+                CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
+                Root<«entity.name»> root = cq.from(«entity.name».class);
                 return getEntityManager().createQuery(cq.select(root).where(cb.equal(root.get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList()«IF !relationship.multiple».stream().findAny().orElse(null)«ENDIF»;
             }
         '''

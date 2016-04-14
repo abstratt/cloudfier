@@ -10,5 +10,8 @@ Import-Package: org.osgi.framework,
  org.osgi.service.http,
  org.osgi.util.tracker,
  org.eclipse.osgi.service.resolver,
- com.abstratt.pluginutils
+ com.abstratt.pluginutils,
+ com.abstratt.kirra,
+ com.abstratt.resman
 Export-Package: com.abstratt.kirra.auth
+Bundle-Activator: com.abstratt.kirra.auth.Activator 

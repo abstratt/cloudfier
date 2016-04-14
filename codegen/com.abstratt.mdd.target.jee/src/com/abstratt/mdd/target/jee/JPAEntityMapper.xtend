@@ -26,10 +26,9 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         val allResourceEntities = entities.filter[userVisible]
         val allRepresentationEntities = entities.filter[userVisible && concrete]
         val persistentEntities = entities
-        val roleEntities = entities.filter[role && concrete] 
-        val applicationPackage = entities.filter[userVisible].head.package
-        val applicationName = applicationPackage.name
-        val applicationLabel = KirraHelper.getLabel(applicationPackage)
+        val roleEntities = entities.filter[role && concrete]
+        val applicationName = KirraHelper.getApplicationName(repository)
+        val applicationLabel = KirraHelper.getApplicationLabel(repository)
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
         val jaxbSerializationGenerator = new JAXBSerializationGenerator(repository)

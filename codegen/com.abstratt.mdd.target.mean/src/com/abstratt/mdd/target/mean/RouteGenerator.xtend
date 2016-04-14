@@ -141,7 +141,7 @@ class RouteGenerator {
         app.get("/", function(req, res) {
             cls.getNamespace('session').run(function(context) {
                 res.json({
-                    applicationName : "«repository.getApplicationName(appPackages)»",
+                    applicationName : "«repository.getApplicationName()»",
                     entities : resolveUrl("entities"),
                     currentUser : context.username 
                 });

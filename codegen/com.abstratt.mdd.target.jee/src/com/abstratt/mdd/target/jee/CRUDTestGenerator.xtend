@@ -44,7 +44,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             
                 @Before
                 public void initEM() {
-                    this.em = util.PersistenceHelper.createSchemaAndInitData();
+                    this.em = util.PersistenceHelper.createSchema();
                     util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();
@@ -103,7 +103,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             «entityClass.name» created = «entityClass.generateServiceReference».create(toCreate);
             Object id = created.getId();
             assertNotNull(id);
-            em.clear();
+            PersistenceHelper.flush(true);
             «entityClass.name» retrieved = «entityClass.generateServiceReference».find(id);
             assertNotNull(retrieved);
             assertEquals(id, retrieved.getId());
@@ -134,7 +134,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             «entityClass.name» toCreate2 = new «entityClass.name»();
             «entityClass.requiredProperties.generateValueAssignments('toCreate2')»
             «entityClass.generateServiceReference».create(toCreate2);
-            em.clear();
+            PersistenceHelper.flush(true);
             «entityClass.name» retrieved1 = «entityClass.generateServiceReference».find(toCreate1.getId());
             assertNotNull(retrieved1);
             assertEquals(toCreate1.getId(), retrieved1.getId());

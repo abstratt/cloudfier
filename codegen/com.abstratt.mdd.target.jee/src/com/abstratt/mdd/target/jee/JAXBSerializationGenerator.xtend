@@ -43,6 +43,8 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         
         import java.net.URI;
         
+        import resource.kirra_user_profile.*;
+        
         public class «entity.name»JAXBSerialization {
             private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
 

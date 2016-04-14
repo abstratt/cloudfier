@@ -10,6 +10,7 @@ import org.eclipse.uml2.uml.Class
 import java.io.InputStream
 import java.io.IOException
 import org.eclipse.uml2.uml.NamedElement
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 class ApplicationMapper implements ITopLevelMapper<Class> {
     
@@ -38,14 +39,14 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
     }
     
     override mapAll(IRepository repository) {
-        val entityPackages = getEntities(repository.getTopLevelPackages(null)).map[package].toSet
-        val applicationDescription = getApplicationName(repository, entityPackages)
+        val applicationName = getApplicationName(repository)
+        val applicationDescription = getApplicationLabel(repository)
         val replacements = newLinkedHashMap(
-            'applicationName' -> entityPackages.head.name,
+            'applicationName' -> KirraHelper.getApplicationName(repository),
             'applicationDescription' -> applicationDescription,
-            'groupId' -> (entityPackages.head.qualifiedName.replace(NamedElement.SEPARATOR, ".")),
-            'groupPath' -> (entityPackages.head.qualifiedName.replace(NamedElement.SEPARATOR, "/")),
-            'artifactId' -> entityPackages.head.name,
+            'groupId' -> applicationName,
+            'groupPath' -> applicationName,
+            'artifactId' -> applicationName,
             'version' -> '1.0'
         )
         repository.properties.forEach[key, value| replacements.put(key.toString(), value.toString)]

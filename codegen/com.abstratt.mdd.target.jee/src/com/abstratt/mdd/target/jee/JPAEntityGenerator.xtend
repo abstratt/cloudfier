@@ -16,6 +16,7 @@ import org.eclipse.uml2.uml.Signal
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import com.abstratt.mdd.core.util.ClassifierUtils
 
 class JPAEntityGenerator extends PlainEntityGenerator {
     protected String applicationName
@@ -48,8 +49,11 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
     
     override generateEntityAnnotations(Class entity) {
+    	val inInheritance = entity.superClasses.exists[it.entity] || ClassifierUtils.findAllSpecifics(repository, entity).exists[it.entity]
         '''
         @Entity
+        «IF inInheritance»@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)«ENDIF»
+        @Table(schema="«repository.applicationName»")
         '''
     }
     
@@ -172,12 +176,14 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
 
     override generateEntityId(Class entity) {
+    	if (!entity.superClasses.exists[it.entity]) {
         '''
-        @Id @GeneratedValue(strategy=GenerationType.IDENTITY) private Long id;
+        @Id @GeneratedValue(strategy=GenerationType.TABLE) private Long id;
         public Long getId() {
             return id;
         }
         '''
+    	}
     }
     
 	override generateImports(Namespace namespaceContext) {

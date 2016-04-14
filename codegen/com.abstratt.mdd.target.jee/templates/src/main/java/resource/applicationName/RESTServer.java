@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.jboss.resteasy.plugins.server.servlet.ResteasyBootstrap;
 
-import resource.expenses.UserLoginService;
+import resource.{applicationName}.UserLoginService;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Server;

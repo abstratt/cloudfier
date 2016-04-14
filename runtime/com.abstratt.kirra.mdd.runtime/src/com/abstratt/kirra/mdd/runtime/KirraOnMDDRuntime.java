@@ -79,6 +79,7 @@ import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.ReceptionUtils;
 import com.abstratt.mdd.core.util.StateMachineUtils;
+import com.abstratt.mdd.core.util.MDDExtensionUtils.AccessCapability;
 import com.abstratt.nodestore.NodeNotFoundException;
 import com.abstratt.nodestore.NodeStoreException;
 import com.abstratt.nodestore.NodeStoreNotFoundException;
@@ -317,7 +318,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     
     @Override
     public List<Instance> filterInstances(Map<String, List<Object>> kirraCriteria, String namespace, String name, boolean full, boolean includeSubClasses) {
-        Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
+    	Class umlClass = (Class) getModelElement(namespace, name, UMLPackage.Literals.CLASS);
+    	
         Map<org.eclipse.uml2.uml.Property, List<BasicType>> runtimeCriteria = new LinkedHashMap<org.eclipse.uml2.uml.Property, List<BasicType>>();
         for (Entry<String, List<Object>> entry : kirraCriteria.entrySet()) {
             org.eclipse.uml2.uml.Property attribute = FeatureUtils.findAttribute(umlClass, entry.getKey(), false, true);

@@ -7,8 +7,7 @@ import com.abstratt.mdd.core.target.spi.TargetUtils
 class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
     override mapAll(IRepository repository) {
         val result = super.mapAll(repository)
-        val entityPackages = getEntityPackages(repository.getTopLevelPackages(null))
-        val applicationName = getEntities(entityPackages).filter[userVisible].head.package.name
+        val applicationName = repository.applicationName
         val templates = #[
             'src/main/resources/META-INF/persistence.xml', 
             'src/main/resources/META-INF/orm.xml',

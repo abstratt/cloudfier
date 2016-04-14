@@ -45,7 +45,8 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     @Override
     public Schema build() {
         IRepository repository = RepositoryService.DEFAULT.getFeature(IRepository.class);
-        Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null));
+        Package[] topLevelPackages = repository.getTopLevelPackages(null);
+		Collection<Package> applicationPackages = KirraHelper.getApplicationPackages(topLevelPackages);
         List<Namespace> namespaces = new ArrayList<Namespace>();
         for (Package current : applicationPackages) {
             List<Entity> entities = new ArrayList<Entity>();
@@ -65,7 +66,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         Schema schema = new Schema();
         schema.setNamespaces(namespaces);
         applySubtypes(schema, subTypes);
-        schema.setApplicationName(KirraHelper.getApplicationName(repository, applicationPackages));
+        schema.setApplicationName(KirraHelper.getApplicationName(repository));
         if (!namespaces.isEmpty())
             schema.setBuild(namespaces.get(0).getTimestamp());
         return schema;
@@ -116,6 +117,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setTopLevel(KirraHelper.isTopLevel(umlClass));
         entity.setStandalone(KirraHelper.isStandalone(umlClass));
         entity.setRole(KirraHelper.isRole(umlClass));
+        entity.setUser(KirraHelper.isUser(umlClass));
         entity.setUserVisible(KirraHelper.isUserVisible(umlClass));
         Stream<Classifier> superEntities = umlClass.getGenerals().stream().filter(g -> KirraHelper.isEntity(g)); 
         List<TypeRef> superTypes = superEntities.map(superEntity -> KirraHelper.convertType(superEntity)).collect(Collectors.toList());

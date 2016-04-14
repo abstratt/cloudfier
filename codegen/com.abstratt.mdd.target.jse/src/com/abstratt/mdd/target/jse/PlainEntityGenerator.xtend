@@ -50,7 +50,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         super(repository)
         behaviorGenerator = createBehaviorGenerator()
         stateMachineGenerator = new StateMachineGenerator(repository, createBehaviorGenerator())
-        applicationName = getEntityPackages(KirraHelper.getApplicationPackages(repository.getTopLevelPackages(null))).head.name
+        applicationName = KirraHelper.getApplicationName(repository)
     }
     
     def IBehaviorGenerator createBehaviorGenerator() {
@@ -131,17 +131,17 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateEntity(Class entity) {
-        val actionOperations = entity.actions.filter[!static]
-        val relationships = entity.entityRelationships.filter[!relationshipDerived && navigable]
-        val attributeInvariants = entity.properties.filter[!propertyDerived].map[findInvariantConstraints].flatten
-        val derivedAttributes = entity.properties.filter[propertyDerived]
-        val attributes = entity.properties.filter[!propertyDerived && !sequence]
-        val sequenceAttributes = entity.properties.filter[sequence]
-        val derivedRelationships = entity.entityRelationships.filter[relationshipDerived]
-        val privateOperations = entity.operations.filter[!action && !finder]
+        val actionOperations = entity.actions.filter[!static && owner == entity]
+        val relationships = entity.entityRelationships.filter[!relationshipDerived && navigable && owner == entity]
+        val attributeInvariants = entity.properties.filter[!propertyDerived && owner == entity].map[findInvariantConstraints].flatten
+        val derivedAttributes = entity.properties.filter[propertyDerived && owner == entity]
+        val attributes = entity.properties.filter[!propertyDerived && !sequence && owner == entity]
+        val sequenceAttributes = entity.properties.filter[sequence && owner == entity]
+        val derivedRelationships = entity.entityRelationships.filter[relationshipDerived && owner == entity]
+        val privateOperations = entity.operations.filter[!action && !finder && owner == entity]
         val stateProperty = entity.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
-        val ports = entity.getAllAttributes().filter(typeof(Port))
+        val ports = entity.getAllAttributes().filter(typeof(Port)).filter[owner == entity]
         val signals = findTriggerableSignals(actionOperations)
         
         '''
@@ -151,7 +151,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             «entity.generateImports»
             
             «entity.generateComment»
-            «entity.generateEntityAnnotations»public class «entity.name» «entity.generateEntityGenealogy»{
+            «entity.generateEntityAnnotations»public «IF entity.abstract»abstract «ENDIF»class «entity.name» «entity.generateEntityGenealogy»{
             	
                 «entity.generatePrefix»
                 
@@ -245,8 +245,10 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         ''
     }
     
-    def generateEntityGenealogy(Class class1) {
-        ''
+    def generateEntityGenealogy(Class entityClass) {
+    	val ancestors = entityClass.superClasses.filter[entity]
+    	if (!ancestors.empty)
+        '''extends «ancestors.map[toJavaType].join(', ')» '''
     }
     
     def generateEntityAnnotations(Class class1) {

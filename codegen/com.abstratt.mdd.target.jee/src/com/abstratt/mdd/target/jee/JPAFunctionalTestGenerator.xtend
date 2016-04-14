@@ -37,7 +37,7 @@ class JPAFunctionalTestGenerator extends AbstractGenerator {
             
                 @Before
                 public void initEM() {
-                    this.em = util.PersistenceHelper.createSchemaAndInitData();
+                    this.em = util.PersistenceHelper.createSchema();
                     util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();

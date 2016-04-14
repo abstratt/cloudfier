@@ -59,7 +59,7 @@ class ModelGenerator extends AsyncJSGenerator {
     new(IRepository repository) {
         this.repository = repository
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
-        this.applicationName = repository.getApplicationName(appPackages)
+        this.applicationName = repository.getApplicationName()
         this.entities = appPackages.entities.filter[topLevel]
     }
     

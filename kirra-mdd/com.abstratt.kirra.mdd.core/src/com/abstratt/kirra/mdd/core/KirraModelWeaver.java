@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.util.EcoreUtil;
@@ -12,6 +13,7 @@ import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
 import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
+import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.Port;
@@ -21,10 +23,11 @@ import org.eclipse.uml2.uml.Stereotype;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
-import org.eclipse.uml2.uml.VisibilityKind;
+import org.eclipse.uml2.uml.util.UMLUtil;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.isv.IModelWeaver;
+import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
@@ -33,7 +36,7 @@ import com.abstratt.mdd.core.util.StereotypeUtils;
  * A model weaver for turning plain UML models into Kirra-compatible models.
  */
 public class KirraModelWeaver implements IModelWeaver {
-
+	
 	public void packageCreated(IRepository repository, Package created) {
 		Profile kirraProfile = (Profile) repository.loadPackage(URI.createURI(KirraMDDCore.KIRRA_URI));
 		Package types = repository.findPackage(IRepository.TYPES_NAMESPACE, null);
@@ -42,6 +45,10 @@ public class KirraModelWeaver implements IModelWeaver {
 		created.createPackageImport(types);
 		created.createPackageImport(extensions);
 		created.createPackageImport(kirraProfile);
+		if (!"kirra_user_profile".equals(created.getQualifiedName())) {
+			Package kirraUserProfile = repository.findPackage("kirra_user_profile", null);
+			created.createPackageImport(kirraUserProfile);
+		}
 	}
 
 	/**
@@ -59,11 +66,8 @@ public class KirraModelWeaver implements IModelWeaver {
 
 		private Stereotype roleStereotype;
 		private Stereotype debuggableStereotype;
-		private Stereotype entityStereotype;
+		@Deprecated
 		private Stereotype serviceStereotype;
-		private Stereotype actionStereotype;
-		private Stereotype finderStereotype;
-		private Stereotype essentialStereotype;
 		private Class baseObject;
 		private IRepository repository;
 		private boolean enabled;
@@ -75,15 +79,10 @@ public class KirraModelWeaver implements IModelWeaver {
 			roleStereotype = repository.findNamedElement(MDDExtensionUtils.ROLE_CLASS_STEREOTYPE, Literals.STEREOTYPE, null);
 			debuggableStereotype = repository.findNamedElement(MDDExtensionUtils.DEBUGGABLE_STEREOTYPE,
 					Literals.STEREOTYPE, null);
-			entityStereotype = repository.findNamedElement("kirra::Entity", Literals.STEREOTYPE, null);
 			serviceStereotype = repository.findNamedElement("kirra::Service", Literals.STEREOTYPE, null);
-			actionStereotype = repository.findNamedElement("kirra::Action", Literals.STEREOTYPE, null);
-			finderStereotype = repository.findNamedElement("kirra::Finder", Literals.STEREOTYPE, null);
-			essentialStereotype = repository.findNamedElement("kirra::Essential", Literals.STEREOTYPE, null);
 
 			baseObject = repository.findNamedElement("mdd_types::Object", Literals.CLASS, null);
-			enabled = !(baseObject == null || roleStereotype == null || entityStereotype == null
-					|| actionStereotype == null || finderStereotype == null || essentialStereotype == null);
+			enabled = !(baseObject == null);
 
 			if (!enabled)
 				return;
@@ -132,45 +131,29 @@ public class KirraModelWeaver implements IModelWeaver {
 		public void weave() {
 			if (!enabled)
 				return;
-			configureEntities();
 			enhanceUserEntities();
+			configureEntities();
 			buildAssociations();
 		}
 
 		private void configureEntities() {
 			// apply entity stereotype
-			for (Class entity : entities)
-				StereotypeUtils.safeApplyStereotype(entity, entityStereotype);
-			for (Class entity : entities) {
-				// apply operation stereotypes
-				for (Operation operation : entity.getOperations()) {
-					Type returnType = operation.getType();
-					if (returnType != null && operation.isStatic() && operation.isQuery())
-						StereotypeUtils.safeApplyStereotype(operation, finderStereotype);
-					else if (!operation.isQuery() && VisibilityKind.PUBLIC_LITERAL == operation.getVisibility())
-						StereotypeUtils.safeApplyStereotype(operation, actionStereotype);
-				}
-				for (Property property : entity.getAttributes())
-					if (property.getName() != null && property.getType() != null && !property.getName().startsWith("_")
-							&& property.getUpper() == 1 && property.getLower() == 1)
-						// only properties that are required, single-valued and
-						// do not start with '_' are marked as essential
-						StereotypeUtils.safeApplyStereotype(property, essentialStereotype);
-			}
+//			for (Class entity : entities)
+//				StereotypeUtils.safeApplyStereotype(entity, entityStereotype);
 		}
 
 		private void enhanceUserEntities() {
-			Class userTemplate = repository.findNamedElement("kirra_templates::UserTemplate", UMLPackage.Literals.CLASS, null);
 			List<Class> roleEntities = entities.stream().filter(it -> MDDExtensionUtils.isRoleClass(it)).collect(Collectors.toList());
 			if (roleEntities.isEmpty())
 				return;
-			Package roleClassPackage = roleEntities.get(0).getPackage();
-			Class userClass = EcoreUtil.copy(userTemplate);
-			userClass.setName("_UserData");
-			roleClassPackage.getPackagedElements().add(userClass);
-			StereotypeUtils.safeApplyStereotype(userClass, entityStereotype);
-			roleEntities.forEach(it -> {
-				Property userInfoReference = it.createOwnedAttribute("user", userClass);
+			Class profileClass = repository.findNamedElement("kirra_user_profile::UserProfile", UMLPackage.Literals.CLASS, null);
+			if (profileClass == null)
+				throw new IllegalStateException("No class for user profiles");
+
+			// if there are any role classes in this package, create relationships to the profile class
+			// (ignore role classes that specialize other role classes)
+			roleEntities.stream().filter(it -> !ClassifierUtils.isKindOfAnyOf(it, roleEntities, false)).forEach(it -> {
+				Property userInfoReference = it.createOwnedAttribute("user", profileClass);
 				userInfoReference.setIsReadOnly(true);
 				userInfoReference.setLower(0);
 			});
@@ -187,7 +170,7 @@ public class KirraModelWeaver implements IModelWeaver {
 		private void buildAssociationForAttribute(Class entity, Property property) {
 			if (KirraHelper.isRegularProperty(property)) {
 				Type propertyType = property.getType();
-				if (propertyType != null && propertyType.isStereotypeApplied(entityStereotype)
+				if (propertyType != null && KirraHelper.isEntity(propertyType)
 						&& property.getAssociation() == null) {
 					Association newAssociation = (Association) entity.getNearestPackage()
 							.createPackagedElement(null, UMLPackage.Literals.ASSOCIATION);
@@ -201,5 +184,29 @@ public class KirraModelWeaver implements IModelWeaver {
 				}
 			}
 		}
+	}
+
+	public Class deepCopy(Class source) {
+		Class copy = EcoreUtil.copy(source);
+		return copy;
+	}
+
+	protected void copyStereotypes(Element source, Element copy) {
+		if (!(source instanceof Class) && !(source instanceof Operation) && !(source instanceof Property))
+			return;
+		source.getStereotypeApplications().forEach(sourceStereotypeApplication -> {
+			Stereotype stereotype = UMLUtil.getStereotype(sourceStereotypeApplication);
+			String stereotypeName = stereotype.getName();
+			copy.applyStereotype(stereotype);
+			stereotype.getAllAttributes().forEach(stereotypeProperty -> {
+				String propertyName = stereotypeProperty.getName();
+				Object value = source.getValue(stereotype, propertyName);
+				copy.setValue(stereotype, propertyName, value);
+			});
+		});
+		EList<Element> sourceChildren = source.getOwnedElements();
+		EList<Element> copyChildren = copy.getOwnedElements();
+		for (int i = 0; i < sourceChildren.size(); i++)
+			copyStereotypes(sourceChildren.get(i), copyChildren.get(i));
 	}
 }

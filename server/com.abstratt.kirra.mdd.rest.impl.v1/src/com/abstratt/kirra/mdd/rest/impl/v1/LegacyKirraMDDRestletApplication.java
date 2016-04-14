@@ -10,7 +10,7 @@ import org.restlet.routing.Router;
 import org.restlet.security.Authenticator;
 import org.restlet.service.LogService;
 
-import com.abstratt.kirra.mdd.rest.KirraAuthenticator;
+import com.abstratt.kirra.mdd.rest.KirraCookieAuthenticator;
 import com.abstratt.kirra.mdd.rest.KirraCORSFilter;
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
 import com.abstratt.kirra.mdd.rest.KirraSetExpirationFilter;
@@ -118,9 +118,7 @@ public class LegacyKirraMDDRestletApplication extends Application {
             created = new KirraRepositoryFilter(created);
         }
         if (authenticated) {
-            Authenticator guard = new KirraAuthenticator();
-            guard.setNext(created);
-            created = guard;
+            created = new KirraCookieAuthenticator(created);
         }
         if (LegacyKirraMDDRestletApplication.SHOW_TIMING) {
             created = KirraTimingFilter.monitor(created);

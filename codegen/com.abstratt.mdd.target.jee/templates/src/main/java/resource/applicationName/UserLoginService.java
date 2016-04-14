@@ -16,6 +16,7 @@ import org.eclipse.jetty.util.security.Password;
 
 import {applicationName}.*;
 import util.PersistenceHelper;
+import kirra_user_profile.*;
 
 @Provider
 public class UserLoginService extends MappedLoginService {
@@ -27,7 +28,7 @@ public class UserLoginService extends MappedLoginService {
 		EntityManagerFactory emf = (EntityManagerFactory) servletContext.getAttribute("emf");
 		PersistenceHelper.setEntityManager(emf.createEntityManager());
 		try {
-			User user = new UserService().findByUsername(username);
+			UserProfile user = new UserProfileService().findByUsername(username);
 			if (user == null)
 				return null;
 			return new DefaultUserIdentity(new Subject(), new KnownUser(username, new Password(user.getPassword())), new String[] { {userRoleNames} });

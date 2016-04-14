@@ -31,7 +31,7 @@ public class SchemaManagementOnUML implements SchemaManagement {
     public List<Entity> getAllEntities() {
         return getSchemaManagement().getAllEntities();
     }
-
+    
     @Override
     public List<Service> getAllServices() {
         return getSchemaManagement().getAllServices();

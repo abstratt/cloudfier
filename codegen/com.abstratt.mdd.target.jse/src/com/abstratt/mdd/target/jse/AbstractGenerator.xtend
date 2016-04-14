@@ -12,6 +12,7 @@ import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -27,7 +28,7 @@ abstract class AbstractGenerator {
         if (repository != null) {
             this.appPackages = repository.getTopLevelPackages(null).applicationPackages
             this.entities = appPackages.entities.filter[topLevel]
-            this.applicationName = entities.head.package.name
+            this.applicationName = KirraHelper.getApplicationName(repository)
         }
     }
     

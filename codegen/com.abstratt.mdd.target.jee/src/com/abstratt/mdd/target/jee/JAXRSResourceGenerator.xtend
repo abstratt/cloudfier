@@ -53,6 +53,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         
         import java.net.URI;
         
+        import resource.kirra_user_profile.*;
+        
         «entity.generateImports»
         «ENDIF»
         
@@ -60,10 +62,10 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         @Produces(MediaType.APPLICATION_JSON)
         «accessControlGenerator.generateEndpointAnnotation(null, allRoleClasses, #[entity])»
         public class «entity.name»Resource {
-        «IF entity.concrete»
+            «IF entity.concrete»
             private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
             private «entity.name»Service service = new «entity.name»Service();
-        «ENDIF»
+            «ENDIF»
             @Context
             UriInfo uri;
             @GET
@@ -144,7 +146,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @GET
             @Path("instances")
             «accessControlGenerator.generateEndpointAnnotation(AccessCapability.List, allRoleClasses, #[entity])»
-            public Response getList(«accessControlGenerator.generateSecurityContextParameter(AccessCapability.List, #[entity], ", ")») {
+            public Response getList(«accessControlGenerator.generateSecurityContextParameter(AccessCapability.List, #[entity], "")») {
                 Collection<«entity.name»> models = service.findAll();
                 return toExternalList(uri, models).build();
             }
@@ -296,7 +298,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 return Long.parseLong(components[components.length - 1]);
             }
             
-            static Response.ResponseBuilder toExternalList(UriInfo uriInfo, Collection<«entity.name»> models) {
+            public static Response.ResponseBuilder toExternalList(UriInfo uriInfo, Collection<«entity.name»> models) {
                 URI extentURI = uriInfo.getRequestUri();
                 Collection<Map<String, Object>> items = models.stream().map(toMap -> {
                     return toExternalRepresentation(toMap, extentURI);

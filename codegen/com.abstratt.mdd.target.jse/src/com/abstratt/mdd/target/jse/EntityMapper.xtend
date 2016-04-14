@@ -19,6 +19,7 @@ import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Operation
 import com.abstratt.mdd.core.target.spi.TargetUtils
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 class EntityMapper implements ITopLevelMapper<Classifier> {
     
@@ -81,8 +82,7 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val entities = appPackages.entities
-        val applicationPackage = entities.filter[userVisible].head.package
-	    val applicationName = applicationPackage.name
+	    val applicationName = KirraHelper.getApplicationName(repository)
 
     	
         val result = new LinkedHashMap<String, CharSequence>()

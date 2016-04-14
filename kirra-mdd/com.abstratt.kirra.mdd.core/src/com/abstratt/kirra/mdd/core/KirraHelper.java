@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -47,7 +46,6 @@ import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.VisibilityKind;
 
 import com.abstratt.kirra.Relationship.Style;
-import com.abstratt.kirra.Namespace;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.mdd.core.IRepository;
@@ -158,6 +156,10 @@ public class KirraHelper {
         return applicationPackages;
     }
     
+    public static Package getApplicationPackage(Package... packages) { 
+    	return Arrays.stream(packages).filter(it -> "kirra_user_profile".equals(it.getName())).findAny().orElse(null);
+    }
+    
     public static Collection<Package> getEntityPackages(Package... packages) {
         Set<Package> applicationPackages = new LinkedHashSet<Package>();
         for (Package it : packages)
@@ -201,7 +203,6 @@ public class KirraHelper {
      * Tests whether a type is an entity type. A type is an entity type if: 
      * 
      * - it is a classifier 
-     * - it is marked with the Entity stereotype 
      * - it is virtual or has at least a property, even if derived - OR ELSE USERS CAN'T MAKE SENSE OF IT!!!
      */
     public static boolean isEntity(final Type type) {
@@ -218,12 +219,16 @@ public class KirraHelper {
         return get(type, "isBasicallyAnEntity", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return type != null && type.getName() != null && type instanceof org.eclipse.uml2.uml.Class && (hasStereotype(type, "Entity"));
+            	String typePackageName = type.getNearestPackage().getName();
+				if (typePackageName.equals(IRepository.COLLECTIONS_NAMESPACE))
+            		return false;
+				if (typePackageName.equals(IRepository.TYPES_NAMESPACE))
+            		return false;
+                return type != null && type.getName() != null && type.eClass() == UMLPackage.Literals.CLASS;
             }
         });
     }
 
-    // RESIST THE TEMPTATION TO DELETE THIS, WE MAY CHOOSE TO USE IT AGAIN
     private static boolean hasProperties(Classifier type) {
         for (Property attribute : type.getAttributes())
             if (isProperty(attribute))
@@ -239,15 +244,8 @@ public class KirraHelper {
     	return get(mddRepository.getBaseURI().toString(), "getUserClasses", new Callable<Collection<Class>>() {
             @Override
             public Collection<Class> call() throws Exception {
-            	return mddRepository.findAll(new EObjectCondition() {
-                    @Override
-                    public boolean isSatisfied(EObject eObject) {
-                        if (UMLPackage.Literals.CLASS != eObject.eClass())
-                            return false;
-                        Class umlClass = (Class) eObject;
-                        return KirraHelper.isRole(umlClass);
-                    }
-                }, false);
+            	Class userProfileClass = mddRepository.findNamedElement("kirra_user_profile::UserProfile", UMLPackage.Literals.CLASS, null);
+            	return Arrays.asList(userProfileClass);
             }
         });
     }
@@ -261,14 +259,22 @@ public class KirraHelper {
         });
     }
     
+    public static boolean isUser(final Classifier classifier) {
+        return get(classifier, "isUser", new Callable<Boolean>() {
+            @Override
+            public Boolean call() throws Exception {
+                return !classifier.isAbstract() && classifier.getQualifiedName().equals("kirra_user_profile::UserProfile");
+            }
+        });
+    }
+        
+    
     public static Property getUsernameProperty(final Classifier userClass) {
         return get(userClass, "getUsernameProperty", new Callable<Property>() {
             @Override
             public Property call() throws Exception {
-                for (Property property : getProperties(userClass))
-                    if (isUserNameProperty(property))
-                        return property;
-                return null;
+            	Property property = FeatureUtils.findAttribute(userClass, "username", false, true);
+                return property != null && isUserNameProperty(property) ? property : null;
             }
         });
     }
@@ -326,7 +332,7 @@ public class KirraHelper {
     }
 
     public static boolean isAction(Operation operation) {
-        return isPublic(operation) && hasStereotype(operation, "Action");
+        return isPublic(operation) && !operation.isQuery() && VisibilityKind.PUBLIC_LITERAL == operation.getVisibility();
     }
     
     public static boolean isEntityOperation(Operation operation) {
@@ -338,7 +344,7 @@ public class KirraHelper {
     }
 
     public static boolean isFinder(Operation operation) {
-        return isPublic(operation) && hasStereotype(operation, "Finder");
+        return isPublic(operation) && operation.getReturnResult() != null && operation.isStatic() && operation.isQuery();
     }
 
     public static boolean isNamespace(org.eclipse.uml2.uml.Package package_) {
@@ -350,12 +356,12 @@ public class KirraHelper {
             @Override
             public Boolean call() throws Exception {
                 // no support for static properties
-                return isRegularProperty(attribute) && isInstance(attribute) && attribute.getName() != null && !isBasicallyAnEntity(attribute.getType());
+                boolean isProperty = isRegularProperty(attribute) && isInstance(attribute) && attribute.getName() != null && !isBasicallyAnEntity(attribute.getType());
+				return isProperty;
             }
         });
     }
 
-    /** Avoids things such as stereotypes */
     public static boolean isRegularProperty(Property attribute) {
         return attribute.eClass() == UMLPackage.Literals.PROPERTY && attribute.getType() != null && (attribute.getType().eClass() == UMLPackage.Literals.CLASS || attribute.getType().eClass() == UMLPackage.Literals.STATE_MACHINE || attribute.getType().eClass() == UMLPackage.Literals.ENUMERATION);
     }
@@ -433,8 +439,11 @@ public class KirraHelper {
         return element.eClass().getName();
     }
 
-    public static boolean isEssential(org.eclipse.uml2.uml.Property umlAttribute) {
-        return isPublic(umlAttribute) && hasStereotype(umlAttribute, "kirra::Essential");
+    public static boolean isEssential(org.eclipse.uml2.uml.Property property) {
+    	// only public properties that are required, single-valued and
+    	// do not start with '_' are considered essential
+        return isPublic(property) && property.getName() != null && property.getType() != null && !property.getName().startsWith("_")
+				&& property.getUpper() == 1 && property.getLower() == 1;
     }
     
     public static boolean isAutoGenerated(final org.eclipse.uml2.uml.Property umlAttribute) {
@@ -898,15 +907,20 @@ public class KirraHelper {
         return isPublic(classifier);
     }
     
-    public static String getApplicationName(IRepository repository, Collection<org.eclipse.uml2.uml.Package> namespaces) {
+    public static String getApplicationName(IRepository repository) {
         Properties repositoryProperties = repository.getProperties();
         String applicationName = repositoryProperties.getProperty(IRepository.APPLICATION_NAME);
-        if (applicationName == null) {
-            for (Package package_ : namespaces)
-                if (isApplication(package_))
-                    return getLabel(package_);
-        }
-        return applicationName == null ? "App" : applicationName;
+        if (applicationName == null)
+        	return repository.getBaseURI().lastSegment();
+        return applicationName;
+    }
+    
+    public static String getApplicationLabel(IRepository repository) {
+        Properties repositoryProperties = repository.getProperties();
+        String applicationTitle = repositoryProperties.getProperty(IRepository.APPLICATION_TITLE);
+        if (applicationTitle == null)
+        	return getApplicationName(repository);
+        return applicationTitle;
     }
     
     public static List<Class> getEntities(Collection<Package> applicationPackages) {

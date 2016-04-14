@@ -78,7 +78,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 			return ''
 			
 		'''
-		User user = new UserService().findByUsername(securityContext.getUserPrincipal().getName());
+		UserProfile user = new UserProfileService().findByUsername(securityContext.getUserPrincipal().getName());
 		«checksPerRole.join()»
 		'''
 	}

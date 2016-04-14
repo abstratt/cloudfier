@@ -1,9 +1,7 @@
 package com.abstratt.mdd.core.runtime;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -13,11 +11,9 @@ import java.util.Map.Entry;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Classifier;
-import org.eclipse.uml2.uml.Interface;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.Property;
-import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Vertex;
 

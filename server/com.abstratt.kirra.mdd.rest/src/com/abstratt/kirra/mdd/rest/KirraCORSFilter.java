@@ -2,6 +2,7 @@ package com.abstratt.kirra.mdd.rest;
 
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
@@ -18,15 +19,15 @@ public class KirraCORSFilter extends Filter {
     protected int doHandle(final Request request, final Response response) {
         int result = super.doHandle(request, response);
         
-        Map<String, Object> responseAttributes = response.getAttributes(); 
-        Series<Header> headers = (Series<Header>)responseAttributes.get("org.restlet.http.headers"); 
-        if (headers == null) { 
-            headers = new Series<Header>(Header.class); 
-            responseAttributes.put("org.restlet.http.headers", headers); 
-        } 
-        headers.add("Access-Control-Allow-Origin", "*");
-        headers.add("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
-        headers.add("Access-Control-Allow-Headers", "Content-Type");
+        Map<String, Object> requestAttributes = request.getAttributes();
+        Map<String, Object> responseAttributes = response.getAttributes();
+        Series<Header> requestHeaders = (Series<Header>)requestAttributes.computeIfAbsent("org.restlet.http.headers", key -> new Series<Header>(Header.class));
+        Series<Header> responseHeaders = (Series<Header>)responseAttributes.computeIfAbsent("org.restlet.http.headers", key -> new Series<Header>(Header.class)); 
+        responseHeaders.add("Access-Control-Allow-Credentials", "true");
+        //TODO fix me
+        responseHeaders.add("Access-Control-Allow-Origin", requestHeaders.getFirstValue("Origin"));
+        responseHeaders.add("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
+        responseHeaders.add("Access-Control-Allow-Headers", "Content-Type, X-Requested-With");
         return result;
     }
 }

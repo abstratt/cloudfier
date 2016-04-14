@@ -44,6 +44,8 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import java.io.FileNotFoundException
+import com.abstratt.kirra.TypeRef
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 class DataSnapshotGenerator extends AbstractGenerator {
 
@@ -106,11 +108,15 @@ class DataSnapshotGenerator extends AbstractGenerator {
 		Map<String, AtomicLong> ids) {
 		return namespaceContents.fields.toIterable.map [ entry |
 			val className = entry.key
+			val nameComponents = TypeRef.splitName(className)
+			val actualNamespace = nameComponents.get(0) ?: namespace
+			val actualName = nameComponents.get(1)
+			
 			val instanceNodes = (entry.value as ArrayNode)
-			val entity = entities.get(namespace + '::' + className)
-			val id = ids.get(namespace + '::' + className)
+			val entity = entities.get(actualNamespace + '::' + actualName)
+			val id = ids.get(actualNamespace+ '::' + actualName)
 			instanceNodes.elements.map [
-				generateInstance(entity, namespace, className, it as ObjectNode, id.incrementAndGet)
+				generateInstance(entity, actualNamespace, actualName, it as ObjectNode, id.incrementAndGet)
 			].join() as CharSequence
 		]
 	}
@@ -131,9 +137,11 @@ class DataSnapshotGenerator extends AbstractGenerator {
 		sqlPropertyValues.forEach[key, value|sqlValues.put(key, value)]
 		sqlForeignKeys.
 			forEach[key, value|sqlValues.put(key + '_id', value)]
+			
+		val applicationName = KirraHelper.getApplicationName(repository)	
 
 		'''
-			INSERT INTO «namespace».«className» (id, «sqlValues.keySet.join(', ')») VALUES («id», «sqlValues.keySet.map[sqlValues.get(it)].join(', ')»);
+			INSERT INTO «applicationName».«className» (id, «sqlValues.keySet.join(', ')») VALUES («id», «sqlValues.keySet.map[sqlValues.get(it)].join(', ')»);
 		'''
 	}
 
