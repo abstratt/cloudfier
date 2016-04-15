@@ -17,6 +17,8 @@ import javax.ws.rs.ext.Provider;
 
 import util.PersistenceHelper;
 
+import org.apache.commons.lang3.StringUtils;
+
 @Provider
 public class ContainerRequestResponseFilter implements ContainerRequestFilter, ContainerResponseFilter {
     private static final Collection<String> MUTATION_METHODS = Arrays.asList("PUT", "POST", "DELETE");
@@ -49,8 +51,9 @@ public class ContainerRequestResponseFilter implements ContainerRequestFilter, C
             }
         }	
         PersistenceHelper.setEntityManager(null);
-        response.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
+        response.getHeaders().putSingle("Access-Control-Allow-Origin", StringUtils.trimToEmpty(request.getHeaderString("Origin")));
+        response.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
         response.getHeaders().putSingle("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
-        response.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type");
+        response.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type, X-Requested-With");
     }
 }

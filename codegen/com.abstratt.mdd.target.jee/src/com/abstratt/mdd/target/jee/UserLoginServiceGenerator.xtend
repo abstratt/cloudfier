@@ -1,6 +1,26 @@
-package resource.{applicationName};
+package com.abstratt.mdd.target.jee
+
+import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.jse.AbstractGenerator
+
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+
+class UserLoginServiceGenerator extends AbstractGenerator {
+	
+    new(IRepository repository) {
+        super(repository)
+    }
+
+	def CharSequence generate() {
+		val applicationName = KirraHelper.getApplicationName(repository)
+		val roleClasses = entities.filter[roleClass]
+		'''
+package resource.«applicationName»;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.persistence.EntityManagerFactory;
 import javax.security.auth.Subject;
@@ -14,9 +34,9 @@ import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.util.security.Password;
 
-import {applicationName}.*;
-import util.PersistenceHelper;
+import «applicationName».*;
 import kirra_user_profile.*;
+import util.PersistenceHelper;
 
 @Provider
 public class UserLoginService extends MappedLoginService {
@@ -31,7 +51,16 @@ public class UserLoginService extends MappedLoginService {
 			UserProfile user = new UserProfileService().findByUsername(username);
 			if (user == null)
 				return null;
-			return new DefaultUserIdentity(new Subject(), new KnownUser(username, new Password(user.getPassword())), new String[] { {userRoleNames} });
+			List<String> roles = new ArrayList<>();
+			«roleClasses.map[ current | 
+				'''
+				if (new «current.name»Service().findByUser(user) != null) {
+					roles.add(«current.name».ROLE_ID);
+				}
+				'''
+			].join()»
+			System.out.println("User: " + username + " has roles: " + roles);
+			return new DefaultUserIdentity(new Subject(), new KnownUser(username, new Password(user.getPassword())), roles.toArray(new String[0]));
 		} finally {
 			PersistenceHelper.setEntityManager(null);
 		}
@@ -41,4 +70,7 @@ public class UserLoginService extends MappedLoginService {
 	protected void loadUsers() throws IOException {
 	}
 
+}		
+		'''
+	}
 }

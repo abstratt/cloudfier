@@ -101,7 +101,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 result.put("uri", instancesURI.resolve(persisted ? toRender.getId().toString() : "_template").toString());
                 if (persisted) {
                     result.put("objectId", toRender.getId().toString());
-                    result.put("shorthand", «getModelValue(entity.properties.head, 'toRender')»);
+                    result.put("shorthand", «getModelValue(entity.mnemonic, 'toRender')»);
                 }
                 «IF !instanceActions.empty»
                 if (features.contains(Feature.ActionEnablement)) {

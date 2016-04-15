@@ -23,9 +23,9 @@ public class KirraCORSFilter extends Filter {
         Map<String, Object> responseAttributes = response.getAttributes();
         Series<Header> requestHeaders = (Series<Header>)requestAttributes.computeIfAbsent("org.restlet.http.headers", key -> new Series<Header>(Header.class));
         Series<Header> responseHeaders = (Series<Header>)responseAttributes.computeIfAbsent("org.restlet.http.headers", key -> new Series<Header>(Header.class)); 
-        responseHeaders.add("Access-Control-Allow-Credentials", "true");
         //TODO fix me
         responseHeaders.add("Access-Control-Allow-Origin", requestHeaders.getFirstValue("Origin"));
+        responseHeaders.add("Access-Control-Allow-Credentials", "true");
         responseHeaders.add("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
         responseHeaders.add("Access-Control-Allow-Headers", "Content-Type, X-Requested-With");
         return result;

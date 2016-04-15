@@ -390,7 +390,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     
     def CharSequence getAuthorizationFailedStatement() {
     	'''
-    	return status(Response.Status.UNAUTHORIZED).build();
+    	System.out.println("Forbade");
+    	return status(Response.Status.FORBIDDEN).build();
     	'''
     }
 }

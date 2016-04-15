@@ -39,6 +39,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         mappings.putAll(allResourceEntities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
         mappings.putAll(allRepresentationEntities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
+        mappings.put(generateUserLoginServiceFileName(applicationName), new UserLoginServiceGenerator(repository).generate())
         mappings.put('src/main/webapp/WEB-INF/web.xml', new WebXmlGenerator(repository).generateWebXml())
         mappings.put('src/test/resources/META-INF/sql/data.sql', new HSQLDataSnapshotGenerator(repository).generate())
         mappings.putAll(allResourceEntities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
@@ -49,7 +50,6 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/ConstraintViolationExceptionMapper.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/ThrowableMapper.java'''.toString -> null,
-        	'''src/main/java/resource/«applicationName»/UserLoginService.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/RestEasyFailureMapper.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/ContextListener.java'''.toString -> null
     	}
@@ -68,7 +68,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     	]
         return mappings 
     }
-    
+	
     def generateSchemaRepresentationFileName(Class entityClass) {
         '''src/main/resources/schema/entities/«entityClass.namespace.name».«entityClass.name».json'''.toString
     }
@@ -97,4 +97,10 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
     def generateJAXRSServerFileName(String applicationName) {
         '''src/main/java/resource/«applicationName»/RESTServer.java'''.toString
     }
+    
+	def generateUserLoginServiceFileName(String applicationName) {
+		'''src/main/java/resource/«applicationName»/UserLoginService.java'''.toString
+	}
+    
+    
 }

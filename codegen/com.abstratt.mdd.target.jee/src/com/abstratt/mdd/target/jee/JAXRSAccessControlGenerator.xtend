@@ -69,23 +69,26 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 	def CharSequence generateAccessChecks(String current, AccessCapability requiredCapability,
 		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement) {
 		val constraintsPerRole = computeConstraintsPerRoleClass(accessConstraintContexts)
+		val allTautologies = !constraintsPerRole.values.exists[it.values.exists[!tautology]]
+		if (allTautologies)
+			return ''
+		
+		
 		val checksPerRole = constraintsPerRole.entrySet.filter[value.keySet.contains(requiredCapability)].map[entry |
 			val role = entry.key
 			val constraint = entry.value.get(requiredCapability)
-			return if (constraint.tautology) null else generateAccessChecksForRole(current, role, constraint, failStatement)
-		].filter[it != null]
-		if (checksPerRole.empty)
-			return ''
+			return if (constraint.tautology) generateFullAccessForRole(role) else generateAccessChecksForRole(current, role, constraint, failStatement)
+		]
 			
 		'''
 		UserProfile user = new UserProfileService().findByUsername(securityContext.getUserPrincipal().getName());
-		«checksPerRole.join()»
+		«checksPerRole.map[toString().trim()].join(' else ')»
 		'''
 	}
 	
 	def CharSequence generateAccessChecksForRole(String current, Classifier classifier, Constraint constraint, CharSequence failStatement) {
 		val castUser = '''as«classifier.name»'''	
-		val condition = new PlainJavaBehaviorGenerator(repository) {
+		val condition = new JPABehaviorGenerator(repository) {
 			override generateSystemUserCall(CallOperationAction action) {
 				castUser
 			}
@@ -97,9 +100,19 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		if (securityContext.isUserInRole("«classifier.name»")) {
 			«classifier.name» «castUser» = new «classifier.name»Service().findByUser(user);
 			if («castUser» == null || «condition») {
+				System.out.println("User " + user + " failed access checks as «classifier.name» («castUser»)");
 				«failStatement»
 		    }
 		} 
+		'''
+	}
+	
+	def CharSequence generateFullAccessForRole(Classifier classifier) {
+		'''
+		if (securityContext.isUserInRole("«classifier.name»")) {
+			// no further checks
+			System.out.println("Getting free pass as «classifier.name»");
+		}
 		'''
 	}
 

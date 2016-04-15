@@ -16,6 +16,8 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 
+import org.apache.commons.lang3.StringUtils;
+
 import kirra_user_profile.UserProfileService;
 
 import util.PersistenceHelper;
@@ -37,7 +39,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 
 	@Override
 	public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
-		enableCORS(response);
+		enableCORS(request, response);
 		endTransaction(request, response);
 	}
 
@@ -60,10 +62,11 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 		return true;
 	}
 
-	private void enableCORS(ContainerResponseContext response) {
-		response.getHeaders().putSingle("Access-Control-Allow-Origin", "*");
+	private void enableCORS(ContainerRequestContext request, ContainerResponseContext response) {
+		response.getHeaders().putSingle("Access-Control-Allow-Origin", StringUtils.trimToEmpty(request.getHeaderString("Origin")));
+		response.getHeaders().putSingle("Access-Control-Allow-Credentials", "true");
 		response.getHeaders().putSingle("Access-Control-Allow-Methods", "HEAD, GET, PUT, POST, DELETE, OPTIONS, TRACE");
-		response.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type");
+		response.getHeaders().putSingle("Access-Control-Allow-Headers", "Content-Type, X-Requested-With");
 	}
 
 	private void beginTransaction(ContainerRequestContext request) {

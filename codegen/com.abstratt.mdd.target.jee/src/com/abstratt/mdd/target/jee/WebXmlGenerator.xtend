@@ -3,6 +3,7 @@ package com.abstratt.mdd.target.jee
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.jse.AbstractGenerator
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import com.abstratt.kirra.mdd.core.KirraHelper
 
 class WebXmlGenerator extends AbstractGenerator {
     
@@ -12,8 +13,7 @@ class WebXmlGenerator extends AbstractGenerator {
     
     def CharSequence generateWebXml() {
     	val roles = entities.filter[concrete]
-    	val applicationPackage = entities.filter[userVisible].head.package
-        val applicationName = applicationPackage.name
+        val applicationName = KirraHelper.getApplicationName(repository)
     	'''
     	<?xml version="1.0" encoding="UTF-8"?>
     	<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -58,6 +58,9 @@ class WebXmlGenerator extends AbstractGenerator {
     			<web-resource-collection>
     				<web-resource-name>Resteasy</web-resource-name>
     				<url-pattern>/</url-pattern>
+    				«#["HEAD", "GET", "PUT", "POST", "DELETE"].map['''
+					<http-method>«it»</http-method>
+					'''].join()»
     			</web-resource-collection>
     			<auth-constraint>
     				«FOR role : roles»
