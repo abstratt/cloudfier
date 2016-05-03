@@ -143,7 +143,7 @@ public class ResourceUtils {
                         for (IProblem compilationProblem : allProblems)
                             if (compilationProblem.getSeverity() == IProblem.Severity.ERROR)
                                 return null;
-                        allProblems.add(ResourceUtils.generateInfoMessage(startCompilation, endCompilation, "Model compiled successfuly"));
+                        allProblems.add(ResourceUtils.generateInfoMessage(startCompilation, endCompilation, "Model compiled successfully"));
                         return null;
                     }
                 });
