@@ -36,7 +36,11 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.mdd.core.util.AccessControlUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
+import com.abstratt.mdd.core.util.AccessCapability
+import org.eclipse.uml2.uml.StructuredActivityNode
+import com.abstratt.mdd.core.util.MDDExtensionUtils
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -131,17 +135,18 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateEntity(Class entity) {
-        val actionOperations = entity.actions.filter[!static && owner == entity]
-        val relationships = entity.entityRelationships.filter[!relationshipDerived && navigable && owner == entity]
-        val attributeInvariants = entity.properties.filter[!propertyDerived && owner == entity].map[findInvariantConstraints].flatten
-        val derivedAttributes = entity.properties.filter[propertyDerived && owner == entity]
-        val attributes = entity.properties.filter[!propertyDerived && !sequence && owner == entity]
-        val sequenceAttributes = entity.properties.filter[sequence && owner == entity]
-        val derivedRelationships = entity.entityRelationships.filter[relationshipDerived && owner == entity]
-        val privateOperations = entity.operations.filter[!action && !finder && owner == entity]
+        val actionOperations = entity.actions.filter[!static && !isInherited(entity)]
+        val relationships = entity.entityRelationships.filter[!relationshipDerived && navigable && !isInherited(entity)]
+        val notOwned = entity.entityRelationships.filter[!relationshipDerived && navigable && !isInherited(entity)]
+        val attributeInvariants = entity.properties.filter[!propertyDerived && !isInherited(entity)].map[findInvariantConstraints].flatten
+        val derivedAttributes = entity.properties.filter[propertyDerived && !isInherited(entity)]
+        val attributes = entity.properties.filter[!propertyDerived && !sequence && !isInherited(entity)]
+        val sequenceAttributes = entity.properties.filter[sequence && !isInherited(entity)]
+        val derivedRelationships = entity.entityRelationships.filter[relationshipDerived && !isInherited(entity)]
+        val privateOperations = entity.operations.filter[!action && !finder && !isInherited(entity)]
         val stateProperty = entity.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
-        val ports = entity.getAllAttributes().filter(typeof(Port)).filter[owner == entity]
+        val ports = entity.getAllAttributes().filter(typeof(Port)).filter[!isInherited(entity)]
         val signals = findTriggerableSignals(actionOperations)
         
         '''
@@ -183,12 +188,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                 «IF !relationships.empty»
                     /*************************** RELATIONSHIPS ***************************/
                     
-                    «generateMany(relationships, [generateRelationship])»
+                    «generateMany(relationships, [generateRelationship(entity)])»
                 «ENDIF»
                 «IF !actionOperations.empty»
                     /*************************** ACTIONS ***************************/
                     
-                    «generateMany(actionOperations, [generateActionOperation])»
+                    «generateMany(actionOperations, [generateOperation])»
                     «generateMany(actionOperations, [generateActionEnablement])»
                 «ENDIF»
                 «IF !derivedAttributes.empty»
@@ -211,8 +216,10 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                     
                     «stateMachineGenerator.generateStateMachine(stateMachine, entity)»
                 «ENDIF»
-                «entity.generateSuffix»
+                /*************************** PERMISSIONS ********************/
+                «generatePermissions(entity)»
                 
+                «entity.generateSuffix»
             }
         '''
     }
@@ -291,15 +298,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
     def generatePrivateOperation(Operation operation) {
         // for now, we do not honor visibility (it is really meant for the API)
-        operation.generateActionOperation(VisibilityKind.PUBLIC_LITERAL)
-    }
-
-    def generateDerivedRelationships(Iterable<Property> properties) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
-    }
-
-    def generateQueryOperations(List<Operation> operations) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+        operation.generateOperation(VisibilityKind.PUBLIC_LITERAL)
     }
 
     def generateAttributeInvariants(Property attribute) {
@@ -347,6 +346,12 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
     def generateDerivedAttribute(Property attribute) {
         '''
+        «generateDerivedAttributeGetter(attribute)»
+        '''
+    }
+    
+    def generateDerivedAttributeGetter(Property attribute) {
+        '''
         public «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.generateAccessorName»() {
             «generateDerivedAttributeComputation(attribute)»
         }
@@ -379,20 +384,36 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generateAttribute(Property attribute) {
-        val defaultValue = attribute.generateAttributeDefaultValue
         
         '''
-        private «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;
-        
-        public «attribute.generateStaticModifier»«attribute.toJavaType» get«attribute.name.toFirstUpper»() {
-            return this.«attribute.name»;
-        }
-        
+		«generateAttributePerSe(attribute)»
+		«generateAttributeGetter(attribute)»
+		«generateAttributeSetter(attribute)»
+        '''
+    }
+	
+	def generateAttributeSetter(Property attribute) {
+		'''
         public void set«attribute.name.toFirstUpper»(«attribute.generateStaticModifier»«attribute.toJavaType» new«attribute.name.toFirstUpper») {
             «generateAttributeInvariants(attribute)»            
             this.«attribute.name» = new«attribute.name.toFirstUpper»;
         }
         '''
+	}
+	
+	def generateAttributeGetter(Property attribute) {
+		'''
+        public «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.generateAccessorName»() {
+            return this.«attribute.name»;
+        }
+		'''
+	}
+    
+    def generateAttributePerSe(Property attribute) {
+        val defaultValue = attribute.generateAttributeDefaultValue
+    	'''
+    	protected «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;
+    	'''
     }
     
     def generateStaticModifier(Feature feature) {
@@ -406,38 +427,86 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             relationship.type.toJavaType
     }
     
-    def generateRelationship(Property relationship) {
+    def generateRelationship(Property relationship, Class entity) {
+    	val isOverride = (relationship.class_ != null && relationship.class_.generals.exists[it.getAttribute(relationship.name, relationship.type) != null]) ||
+    		(relationship.class_ == null && (#[entity] + entity.generals).filter[it.associations.exists[it.getMemberEnd(relationship.name, relationship.type) != null]].size > 1)
+    	
+    	if (isOverride) {
+    		return generateInheritedRelationshipGetter(relationship)
+    	}
+    	  
         '''
-        private «relationship.generateStaticModifier»«relationship.generateRelationshipType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;
-        
-        public «relationship.generateStaticModifier»«relationship.generateRelationshipType» get«relationship.name.toFirstUpper»() {
-            return this.«relationship.name»;
-        }
-        
+        «generateRelationshipAttribute(relationship)»
+        «generateRelationshipGetter(relationship)»
+        «generateRelationshipSetter(relationship)»
         «IF relationship.multivalued»
-        
-        public «relationship.generateStaticModifier»void addTo«relationship.name.toFirstUpper»(«relationship.type.toJavaType» new«relationship.name.toFirstUpper») {
-            this.«relationship.name».add(new«relationship.name.toFirstUpper»);
-        }
-        
-        public «relationship.generateStaticModifier»void removeFrom«relationship.name.toFirstUpper»(«relationship.type.toJavaType» existing«relationship.name.toFirstUpper») {
-            this.«relationship.name».remove(existing«relationship.name.toFirstUpper»);
-        }
-        «ELSE»
-        public «relationship.generateStaticModifier»void set«relationship.name.toFirstUpper»(«relationship.generateRelationshipType» new«relationship.name.toFirstUpper») {
-            this.«relationship.name» = new«relationship.name.toFirstUpper»;
-        }
+		«generateRelationshipAdder(relationship)»
+		«generateRelationshipRemover(relationship)»
         «ENDIF»
         '''
     }
+	
+	def generateRelationshipAttribute(Property relationship) {
+		'''
+		protected «relationship.generateStaticModifier»«relationship.generateRelationshipType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;
+		'''
+	}
+
+	def generateRelationshipSetter(Property relationship) {
+		'''
+        public «relationship.generateStaticModifier»void set«relationship.name.toFirstUpper»(«relationship.generateRelationshipType» new«relationship.name.toFirstUpper») {
+            this.«relationship.name» = new«relationship.name.toFirstUpper»;
+        }
+		'''
+	}
+
+	
+	def generateRelationshipAdder(Property relationship) {
+		'''
+        public «relationship.generateStaticModifier»void addTo«relationship.name.toFirstUpper»(«relationship.type.toJavaType» new«relationship.name.toFirstUpper») {
+            this.«relationship.name».add(new«relationship.name.toFirstUpper»);
+        }
+		'''
+	}
+	
+	def generateRelationshipRemover(Property relationship) {
+		'''
+        public «relationship.generateStaticModifier»void removeFrom«relationship.name.toFirstUpper»(«relationship.type.toJavaType» existing«relationship.name.toFirstUpper») {
+            this.«relationship.name».remove(existing«relationship.name.toFirstUpper»);
+        }
+		'''
+	}
+	
+	def generateRelationshipGetter(Property relationship) {
+		'''
+    		public «relationship.generateStaticModifier»«relationship.generateRelationshipType» get«relationship.name.toFirstUpper»() {
+    			return this.«relationship.name»;
+    		}
+		'''
+	}
+	
+    def generateInheritedRelationshipGetter(Property relationship) {
+		'''
+    		public «relationship.generateStaticModifier»«relationship.generateRelationshipType» get«relationship.name.toFirstUpper»() {
+    			return super.get«relationship.name.toFirstUpper»();
+    		}
+		'''
+    }
     
     def generateDerivedRelationship(Property relationship) {
+    	'''
+    	«generateDerivedRelationshipGetter(relationship)»
+    	'''
+    }
+    
+    def generateDerivedRelationshipGetter(Property relationship) {
         val derivation = relationship.derivation
         '''
         public «relationship.generateStaticModifier»«relationship.generateRelationshipAccessorType» «relationship.generateAccessorName»() {
             «generateRelationshipDerivationAsActivity(derivation, relationship)»
         }'''
     }
+    
     
     def generateRelationshipDerivationAsActivity(Activity derivation, Property relationship) {
         '''return «derivation.generateActivityAsExpression»;'''
@@ -447,18 +516,28 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         relationship.toJavaType
     }
     
-    def generateActionOperation(Operation action) {
-    	generateActionOperation(action, action.visibility)
+    def generateOperation(Operation action) {
+    	generateOperation(action, action.visibility)
     }
     
-    def generateActionOperation(Operation action, VisibilityKind visibility) {
+    def generateOperation(Operation action, VisibilityKind visibility) {
         '''
         «action.generateJavaMethodSignature(visibility, action.static)» {
-            «action.generateActionOperationBody»
+            «action.generateOperationBody»
         }'''
     }
     
     def generateActionEnablement(Operation actionOperation) {
+		'''
+		/**
+		 * Is the «actionOperation.name.toFirstUpper» action enabled at this time?
+		 */
+		 «generateActionEnablementGetter(actionOperation)»
+		'''    	
+    }
+
+    
+    def generateActionEnablementGetter(Operation actionOperation) {
     	
         val preconditions = actionOperation.preconditions
         val stateProperty = actionOperation.class_.findStateProperties.head
@@ -466,9 +545,6 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         
         val sourceStates = if (stateMachine != null) stateMachine.findStatesForCalling(actionOperation) else #[]
 		'''
-		/**
-		 * Is the «actionOperation.name.toFirstUpper» action enabled at this time?
-		 */
 		public boolean is«actionOperation.name.toFirstUpper»Enabled() {
 			«IF sourceStates.size > 1»
 			if (!EnumSet.of(«sourceStates.generateMany([ '''«stateProperty.type.toJavaType».«name»''' ], ', ')»).contains(«stateProperty.generateAccessorName»())) {
@@ -494,6 +570,88 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 		'''
     }
     
+    def generatePermissions(Class entity) {
+    	val allRoleClasses = appPackages.entities.filter[ role ]
+    	val instanceActions = entity.instanceActions
+    	val delegate = new DelegatingBehaviorGenerator(behaviorGenerator) {
+            override generateAction(Action action, boolean delegate) {
+            	if (action instanceof CallOperationAction) {
+            		if (action.operation.name == 'user' && action.operation.class_.qualifiedName == 'mdd_types::System') {
+            			return 'subject'
+            		}
+            	}
+            	if (action instanceof StructuredActivityNode) {
+            		if (MDDExtensionUtils.isCast(action)) {
+    					val targetClass = action.outputs.head.type as Classifier 
+						val sourceClass = action.inputs.head.type as Classifier
+						val profileToRoleClass = targetClass.roleClass && sourceClass.qualifiedName == SYSTEM_USER_CLASS
+				        if (profileToRoleClass)
+							return '''«action.inputs.head.generateAction»'''
+            		}
+            	}
+            	return target.generateAction(action, false)
+            }
+        } 
+    	
+    	behaviorGenerator.runInContext(new SimpleContext('''target''', delegate), [
+    	'''
+
+        public static class Permissions {
+            «allRoleClasses.map[roleClass |
+    	    	'''
+    	    	«generateInstancePermissions(entity, roleClass)»
+    	    	«instanceActions.map[ action |
+    	    		generateActionPermitted(entity, action, roleClass)
+	    		].join»
+    	    	'''
+    	    ].join»
+        }
+    	'''
+    	])
+    }
+    
+    def generateInstancePermissions(Class entity, Class roleClass) {
+    	'''
+    	«generateInstancePermission(entity, roleClass, AccessCapability.Read)»
+    	«generateInstancePermission(entity, roleClass, AccessCapability.Update)»
+    	«generateInstancePermission(entity, roleClass, AccessCapability.Delete)»
+    	'''
+    }
+    
+    def generateInstancePermission(Class entity, Class roleClass, AccessCapability capability) {
+    	val constraint = findAccessConstraint(#[entity], capability, roleClass)
+    	'''
+        public static boolean can«capability.name»(«roleClass.name» subject, «entity.name» target) {
+            «IF constraint != null»
+            return «generatePredicate(constraint, false)»;
+            «ELSE»
+            return false;
+            «ENDIF»
+        }'''
+    }
+    def generateActionPermitted(Class entity, Operation actionOperation, Class roleClass) {
+    	val requiredCapability = if (actionOperation.static) AccessCapability.StaticCall else AccessCapability.Call
+    	val accessConstraint = findAccessConstraint(#[actionOperation, actionOperation.class_], requiredCapability, roleClass)
+    	if (accessConstraint == null)
+    		return ''
+    	
+		'''
+		/**
+		 * Is the '«actionOperation.name»' action allowed for the given «roleClass.name»?
+		 */
+		«generateActionPermittedGetter(entity, actionOperation, roleClass, accessConstraint)»
+		'''    	
+    }
+
+    
+    def CharSequence generateActionPermittedGetter(Class entity, Operation actionOperation, Class roleClass, Constraint accessConstraint) {
+		'''
+        public static boolean is«actionOperation.name.toFirstUpper»AllowedFor(«roleClass.name» subject, «entity.name» target) {
+            return «generatePredicate(accessConstraint, false)»;
+        }
+		'''
+    }
+    
     def generatePrecondition(Operation operation, Constraint constraint) {
         val predicateActivity = constraint.specification.resolveBehaviorReference as Activity
         
@@ -513,19 +671,19 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         '''
     }
     
-    def generateActionOperationBody(Operation actionOperation) {
-        val firstMethod = actionOperation.methods?.head
-        val stateProperty = actionOperation.class_.findStateProperties.head
+    def generateOperationBody(Operation operation) {
+        val firstMethod = operation.methods?.head
+        val stateProperty = operation.class_.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
-        val isEventTriggering = stateMachine != null && !stateMachine.findTriggersForCalling(actionOperation).empty
+        val isEventTriggering = !operation.static && operation.action && stateMachine != null && !stateMachine.findTriggersForCalling(operation).empty
         '''
-            «generateParameterDefaults(actionOperation)»
-            «actionOperation.preconditions.map[generatePrecondition(actionOperation, it)].join()»
+            «generateParameterDefaults(operation)»
+            «operation.preconditions.map[generatePrecondition(operation, it)].join()»
             «IF(firstMethod != null)»
             «generateActivity(firstMethod as Activity)»
             «ENDIF»
             «IF (isEventTriggering)»
-            this.handleEvent(«stateMachine.name»Event.«actionOperation.name.toFirstUpper»);
+            this.handleEvent(«stateMachine.name»Event.«operation.name.toFirstUpper»);
             «ENDIF»
         '''
     }

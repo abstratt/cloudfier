@@ -11,6 +11,7 @@
 
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.id.new_generator_mappings" value="true" />			
 		</properties>
 
 	</persistence-unit>
@@ -38,6 +39,7 @@
 
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.format_sql" value="true" />
+            <property name="hibernate.id.new_generator_mappings" value="true" />			
 		</properties>
 
 	</persistence-unit>
@@ -64,8 +66,10 @@
 				value=" META-INF/sql/drop.sql" />
 			<property name="javax.persistence.sql-load-script-source"
 				value="META-INF/sql/data.sql" />
+
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.id.new_generator_mappings" value="true" />
 		</properties>
 
 	</persistence-unit>

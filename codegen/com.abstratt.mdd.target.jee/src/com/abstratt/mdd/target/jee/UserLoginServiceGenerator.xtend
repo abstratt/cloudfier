@@ -35,7 +35,7 @@ import org.eclipse.jetty.server.handler.ContextHandler.Context;
 import org.eclipse.jetty.util.security.Password;
 
 import «applicationName».*;
-import kirra_user_profile.*;
+import userprofile.*;
 import util.PersistenceHelper;
 
 @Provider
@@ -48,13 +48,13 @@ public class UserLoginService extends MappedLoginService {
 		EntityManagerFactory emf = (EntityManagerFactory) servletContext.getAttribute("emf");
 		PersistenceHelper.setEntityManager(emf.createEntityManager());
 		try {
-			UserProfile user = new UserProfileService().findByUsername(username);
+			Profile user = new ProfileService().findByUsername(username);
 			if (user == null)
 				return null;
 			List<String> roles = new ArrayList<>();
 			«roleClasses.map[ current | 
 				'''
-				if (new «current.name»Service().findByUser(user) != null) {
+				if (new «current.name»Service().find«current.name»ByUser(user) != null) {
 					roles.add(«current.name».ROLE_ID);
 				}
 				'''

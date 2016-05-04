@@ -8,14 +8,10 @@ import java.util.Map
 import java.util.concurrent.atomic.AtomicLong
 import org.eclipse.uml2.uml.Class
 
-class HSQLDataSnapshotGenerator extends DataSnapshotGenerator {
+class HSQLDataSnapshotGenerator extends DataSnapshotJoinedTableGenerator {
 
 	new(IRepository repository) {
 		super(repository)
-	}
-
-	override generateAlterSequences(Map<String, AtomicLong> ids, String namespace, Map<String, Class> entities) {
-		#[]
 	}
 
 	override CharSequence toSqlValue(Property property, JsonNode propertyValue) {

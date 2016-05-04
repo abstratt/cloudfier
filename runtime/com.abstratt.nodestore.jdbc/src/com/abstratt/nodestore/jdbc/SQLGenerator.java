@@ -98,7 +98,7 @@ public class SQLGenerator {
             }
         }
         for (Relationship multi : getMappingTableRelationships(clazz))
-            if (multi.isPrimary())
+            if (multi.isPrimary() && !multi.isInherited())
                 statements.addAll(generateMappingConstraints(clazz, multi));
         for (Property property : clazz.getProperties())
             if (property.isUnique() && (!property.isHasDefault() || !property.isDerived())) 
@@ -300,7 +300,8 @@ public class SQLGenerator {
         if (isMappingTableRelationship(myRelationship)) {
             Entity contextClass = metadata.getEntity(myRelationship.getOwner());
             String associationName = getMappingTableName(contextClass, myRelationship, otherEnd);
-            String mappingTableName = tableName(contextClass.getEntityNamespace(), associationName);
+            String associationNamespace = getMappingTableNamespace(contextClass, myRelationship, otherEnd);
+            String mappingTableName = tableName(associationNamespace, associationName);
             // don't delete other existing relationships if relationship admits
             // multiple instances
             if (replaceExisting && !myRelationship.isMultiple()) {
@@ -378,7 +379,7 @@ public class SQLGenerator {
         List<String> result = new ArrayList<String>();
         result.add(stmt);
         for (Relationship mappingRelationship : getMappingTableRelationships(clazz))
-            if (mappingRelationship.isPrimary())
+            if (mappingRelationship.isPrimary() && !mappingRelationship.isInherited())
                 result.addAll(generateMappingTable(clazz, mappingRelationship));
         return result;
     }
@@ -415,8 +416,9 @@ public class SQLGenerator {
                 if (relationship.isPrimary()) {
                     String statement = "select 1 from " + modelToSchemaName(context) + " as " + thisAlias;
                     String mappingTableName = getMappingTableName(context, relationship, otherEnd);
+                    String mappingTableNamespace = getMappingTableNamespace(context, relationship, otherEnd);
                     String mappingTableAlias = escape(mappingTableName);
-                    statement += " left join " + tableName(context.getEntityNamespace(), mappingTableName) + asAlias(mappingTableAlias);
+                    statement += " left join " + tableName(mappingTableNamespace, mappingTableName) + asAlias(mappingTableAlias);
                     statement += " on " + mappingTableAlias + "." + generateOppositeToSelfFK(otherEnd);
                     statement += " = " + thisAlias + ".id";
                     statement += " where " + mappingTableAlias + "." + otherAlias + " is null;";
@@ -526,6 +528,18 @@ public class SQLGenerator {
         }
         return contextEntity.getName() + "_" + source.getName();
     }
+    
+	private String getMappingTableNamespace(Entity contextEntity, Relationship source, Relationship opposite) { 
+		Relationship relationship = source;
+		if (!relationship.isPrimary()) {
+			relationship = opposite;
+			Validate.isTrue(relationship.isPrimary());
+		}
+		if (!StringUtils.isBlank(relationship.getAssociationNamespace()))
+			return relationship.getAssociationNamespace();
+		return relationship.getOwner().getEntityNamespace();
+	}
+
 
     protected boolean isPersistable(DataElement property) {
         return !property.isDerived() && !property.isMultiple();
@@ -585,8 +599,8 @@ public class SQLGenerator {
         String selfToOppositeFK = generateSelfToOppositeFK(multiPrimary);
         String oppositeToSelfFK = generateOppositeToSelfFK(multiSecondary);
         String associationName = getMappingTableName(contextEntity, multiPrimary, multiSecondary);
-
-        String tableName = tableName(contextEntity.getEntityNamespace(), associationName);
+        String associationNamespace = getMappingTableNamespace(contextEntity, multiPrimary, multiSecondary);
+		String tableName = tableName(associationNamespace, associationName);
         String stmt1 = "alter table " + tableName;
         stmt1 += " add constraint " + selfToOppositeFK + " foreign key (" + selfToOppositeFK + ") references "
                 + modelToSchemaName(metadata.getEntity(multiPrimary.getTypeRef())) + " (id)";
@@ -606,7 +620,9 @@ public class SQLGenerator {
         String selfToOppositeFK = generateSelfToOppositeFK(multi);
         String oppositeToSelfFK = generateOppositeToSelfFK(opposite);
         String associationName = getMappingTableName(contextEntity, multi, opposite);
-        String stmt = "create table " + tableName(contextEntity.getEntityNamespace(), associationName) + " (";
+        String associationNamespace = getMappingTableNamespace(contextEntity, multi, opposite);
+		String tableName = tableName(associationNamespace, associationName);
+        String stmt = "create table " + tableName + " (";
         stmt += selfToOppositeFK + " bigint not null";
         stmt += ", " + oppositeToSelfFK + " bigint not null";
         stmt += ");";
@@ -616,7 +632,8 @@ public class SQLGenerator {
     private List<String> generateRemoveRelatedViaMappingTable(Entity thisEntity, Relationship myRelationship, Long thisId,
             Relationship otherEnd, Long otherId) {
         String associationName = getMappingTableName(thisEntity, myRelationship, otherEnd);
-        String mappingTableName = tableName(thisEntity.getEntityNamespace(), associationName);
+        String associationNamespace = getMappingTableNamespace(thisEntity, myRelationship, otherEnd);
+		String mappingTableName = tableName(associationNamespace, associationName);        
 
         String unlinkStmt = "delete from " + mappingTableName + " where " + generateOppositeToSelfFK(otherEnd) + " = " + thisId + " and "
                 + generateSelfToOppositeFK(myRelationship) + " = " + otherId + ";";
@@ -628,8 +645,10 @@ public class SQLGenerator {
         String otherAlias = modelToSchemaName(myRelationship);
         String statement = generateSelect(otherEntity, otherAlias, true);
         String mappingTableName = getMappingTableName(context, myRelationship, otherEnd);
+        String mappingTableNamespace = getMappingTableNamespace(context, myRelationship, otherEnd);
         String mappingTableAlias = escape(mappingTableName);
-        statement += " join " + tableName(context.getEntityNamespace(), mappingTableName) + asAlias(mappingTableAlias);
+        String tableName = tableName(mappingTableNamespace, mappingTableName);        
+        statement += " join " + tableName + asAlias(mappingTableAlias);
         statement += " on " + mappingTableAlias + "." + modelToSchemaName(myRelationship);
         statement += " = " + otherAlias + ".id";
         return statement;
@@ -644,8 +663,10 @@ public class SQLGenerator {
     private List<String> generateSelectManyRelatedKeysViaMappingTable(Relationship myRelationship, long key, Relationship otherEnd,
             Entity contextEntity) {
         String mappingTableName = getMappingTableName(contextEntity, myRelationship, otherEnd);
+        String mappingTableNamespace = getMappingTableNamespace(contextEntity, myRelationship, otherEnd);
+        String mappingTableAlias = escape(mappingTableName);
         String stmt = generateSelectKeysViaMappingTable(contextEntity, myRelationship, otherEnd);
-        stmt += " where " + escape(mappingTableName) + "." + generateSelfToOppositeFK(otherEnd) + " = " + key + ";";
+        stmt += " where " + mappingTableAlias + "." + generateSelfToOppositeFK(otherEnd) + " = " + key + ";";
         return Arrays.asList(stmt);
     }
 

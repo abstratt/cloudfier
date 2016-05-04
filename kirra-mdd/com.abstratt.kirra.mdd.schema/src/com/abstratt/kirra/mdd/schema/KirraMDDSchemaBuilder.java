@@ -171,6 +171,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
 
         entityRelationship.setStyle(KirraHelper.getRelationshipStyle(umlAttribute));
         entityRelationship.setAssociationName(KirraHelper.getAssociationName(umlAttribute));
+        entityRelationship.setAssociationNamespace(KirraHelper.getAssociationNamespace(umlAttribute));
         entityRelationship.setPrimary(KirraHelper.isPrimary(umlAttribute));
         entityRelationship.setNavigable(umlAttribute.isNavigable());
         entityRelationship.setRequired(!umlAttribute.isDerived() && umlAttribute.getLower() > 0);
@@ -187,8 +188,11 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     @Override
     public List<Relationship> getEntityRelationships(Class modelClass) {
         List<Relationship> entityRelationships = new ArrayList<Relationship>();
-        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getRelationships(modelClass))
-            entityRelationships.add(getEntityRelationship(attribute));
+        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getRelationships(modelClass)) {
+        	Relationship relationship = getEntityRelationship(attribute);
+			relationship.setInherited(KirraHelper.isInherited(attribute, modelClass));
+			entityRelationships.add(relationship);
+        }
         return entityRelationships;
     }
 
@@ -231,23 +235,32 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     List<Operation> getEntityOperations(Class umlClass) {
         List<Operation> entityOperations = new ArrayList<Operation>();
         for (org.eclipse.uml2.uml.Operation operation : umlClass.getAllOperations())
-            if (operation.getVisibility() == VisibilityKind.PUBLIC_LITERAL && KirraHelper.isEntityOperation(operation))
-                entityOperations.add(getEntityOperation(operation));
+            if (operation.getVisibility() == VisibilityKind.PUBLIC_LITERAL && KirraHelper.isEntityOperation(operation)) {
+				Operation entityOperation = getEntityOperation(operation);
+				entityOperation.setInherited(KirraHelper.isInherited(operation, umlClass));
+				entityOperations.add(entityOperation);
+			}
         return entityOperations;
     }
 
     List<Property> getEntityProperties(Class umlClass) {
         List<Property> entityProperties = new ArrayList<Property>();
-        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getProperties(umlClass))
-            entityProperties.add(getEntityProperty(attribute));
+        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getProperties(umlClass)) {
+            Property entityProperty = getEntityProperty(attribute);
+            entityProperty.setInherited(KirraHelper.isInherited(attribute, umlClass));
+			entityProperties.add(entityProperty);
+        }
         return entityProperties;
     }
     
     List<Property> getTupleProperties(Classifier dataType) {
         List<Property> tupleProperties = new ArrayList<Property>();
-        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getTupleProperties(dataType))
-            // piggyback on entity properties for now
-            tupleProperties.add(getEntityProperty(attribute));
+        for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getTupleProperties(dataType)) {
+			Property tupleProperty = getEntityProperty(attribute);
+			tupleProperty.setInherited(attribute.getClass_() != null && attribute.getClass_() != dataType);
+			tupleProperty.setInherited(KirraHelper.isInherited(attribute, dataType));
+			tupleProperties.add(tupleProperty);
+		}
         return tupleProperties;
     }
 

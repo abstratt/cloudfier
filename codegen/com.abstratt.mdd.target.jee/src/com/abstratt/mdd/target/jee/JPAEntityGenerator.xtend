@@ -52,7 +52,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     	val inInheritance = entity.superClasses.exists[it.entity] || ClassifierUtils.findAllSpecifics(repository, entity).exists[it.entity]
         '''
         @Entity
-        «IF inInheritance»@Inheritance(strategy=InheritanceType.TABLE_PER_CLASS)«ENDIF»
+        «IF inInheritance»@Inheritance(strategy=InheritanceType.JOINED)«ENDIF»
         @Table(schema="«repository.applicationName»")
         '''
     }
@@ -66,14 +66,26 @@ class JPAEntityGenerator extends PlainEntityGenerator {
 		'''
 	}
     
-    override generateRelationship(Property relationship) {
+	override generateRelationshipGetter(Property relationship) {
         '''
         «relationship.toJpaRelationshipAnnotation»
         «relationship.toJpaJoinTableAnnotation»
-        «super.generateRelationship(relationship)»
+        «super.generateRelationshipGetter(relationship)»
         '''
-    }
-    
+	}
+	
+	override generateInheritedRelationshipGetter(Property relationship) {
+		'''
+        «relationship.toJpaRelationshipAnnotation»
+        «relationship.toJpaJoinTableAnnotation»
+        «super.generateInheritedRelationshipGetter(relationship)»
+		'''
+	}
+	
+	override generateRelationshipAttribute(Property relationship) {
+		super.generateRelationshipAttribute(relationship)
+	}
+				
     override generateRelationshipAccessorType(Property relationship) {
         if (relationship.multivalued)
             '''Collection<«relationship.type.toJavaType»>'''
@@ -83,6 +95,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     
     override generateSequenceAttribute(Property attribute) {
         '''
+        @Transient
         public «attribute.toJavaType» «attribute.generateAccessorName»() {
         	«IF attribute.type.name == 'String'»
         	return id == null ? null : Long.toString(id);
@@ -93,12 +106,37 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         '''
     }
     
-    override generateAttribute(Property attribute) {
+	override generateAttributePerSe(Property attribute) {
+		super.generateAttributePerSe(attribute)
+	}
+	
+	override generateAttributeGetter(Property attribute) {
         '''
         «attribute.toJpaPropertyAnnotation»
-        «super.generateAttribute(attribute)»
+        «super.generateAttributeGetter(attribute)»
         '''
-    }
+	}
+	
+	override generateDerivedAttributeGetter(Property attribute) {
+		'''
+		@Transient
+		«super.generateDerivedAttributeGetter(attribute)»
+		'''
+	}
+	
+	override generateActionEnablementGetter(Operation actionOperation) {
+		'''
+		@Transient
+		«super.generateActionEnablementGetter(actionOperation)»
+		'''
+	}
+	
+	override generateDerivedRelationshipGetter(Property relationship) {
+		'''
+		@Transient
+		«super.generateDerivedRelationshipGetter(relationship)»
+		'''
+	}
     
     def toJpaRelationshipAnnotation(Property relationship) {
         val hasOtherEnd = relationship.otherEnd != null 
@@ -178,9 +216,15 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     override generateEntityId(Class entity) {
     	if (!entity.superClasses.exists[it.entity]) {
         '''
-        @Id @GeneratedValue(strategy=GenerationType.TABLE) private Long id;
+        private Long id;
+        @Id
+        @SequenceGenerator(name="«entity.name»Sequence", sequenceName="«entity.name.toLowerCase»_id_seq") 
+        @GeneratedValue(strategy=GenerationType.AUTO, generator="«entity.name»Sequence")
         public Long getId() {
             return id;
+        }
+        public void setId(Long newId) {
+            this.id = newId;
         }
         '''
     	}
@@ -205,6 +249,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         import javax.enterprise.event.*;
         import javax.enterprise.context.*;
         import static util.PersistenceHelper.*;
+        import static util.SecurityHelper.*;
         '''
     }
     
@@ -243,4 +288,11 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         // delegate query performing to the service
         '''return new «relationship.class_.name.toFirstUpper»Service().«relationship.generateAccessorName»(this);'''    
     }
+    
+	override generateOperationBody(Operation operation) {
+		'''
+		«super.generateOperationBody(operation)»
+		'''
+	}
+				
 }

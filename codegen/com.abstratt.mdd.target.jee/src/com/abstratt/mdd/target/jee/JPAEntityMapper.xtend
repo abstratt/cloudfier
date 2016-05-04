@@ -46,11 +46,13 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         
         val templates = #{
         	'''src/main/java/resource/«applicationName»/RESTServer.java'''.toString -> null,
-        	'''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/IndexResource.java'''.toString -> null,
+            '''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> null,        	
         	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/ConstraintViolationExceptionMapper.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/ThrowableMapper.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/RestEasyFailureMapper.java'''.toString -> null,
+        	'''src/main/java/resource/«applicationName»/WebApplicationExceptionMapper.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/ContextListener.java'''.toString -> null
     	}
     	templates.forEach[targetPath, sourcePath |

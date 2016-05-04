@@ -4,6 +4,7 @@ import com.abstratt.mdd.target.jse.BehaviorlessClassGenerator
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Class
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import org.eclipse.uml2.uml.Property
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
@@ -27,7 +28,9 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         val properties = entity.properties
         val dataProperties = properties.filter[!derived]
         val derivedProperties = properties.filter[derived]
-        val instanceActions = entity.instanceActions      
+        val instanceActions = entity.instanceActions
+        // avoid duplicates due to redefinitions
+        val entityRelationships = entity.entityRelationships      
         '''
         package resource.«entity.packagePrefix»;
         
@@ -43,7 +46,13 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         
         import java.net.URI;
         
-        import resource.kirra_user_profile.*;
+        import resource.userprofile.*;
+        
+        «entity.package.packageImports.map[importedPackage].toSet.filter[hasProfile("kirra") && ownedTypes.exists[isEntity]].map[
+        	'''
+        	import resource.«name».*;
+        	'''
+        ].join()»
         
         public class «entity.name»JAXBSerialization {
             private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
@@ -83,11 +92,12 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 }
                 if (features.contains(Feature.Links)) {
                     Map<String, Object> links = new LinkedHashMap<>();
-                    «entity.entityRelationships.filter[!derived && !multiple && userVisible].map[ relationship |
+                    «entityRelationships.filter[!derived && !multiple && userVisible && navigable].map[ relationship |
                         val relationshipName = relationship.name
                         val accessor = '''«relationship.generateAccessorName»()'''
                         val relationshipInstancesURI = '''«relationship.type.name.toFirstLower»InstancesURI'''
                         '''
+                        // «relationshipName» is navigable: «relationship.navigable»
                         Map<String, Object> «relationshipName»Link = null;
                         if (toRender.«accessor» != null) {
                             URI «relationshipInstancesURI» = instancesURI.resolve("../..").resolve("«typeRef.fullName»/instances"); 
@@ -135,7 +145,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 ].join('\n')»
                 
                 Map<String, Map<String, Object>> links = (Map<String, Map<String, Object>>) external.get("links");
-                «entity.entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true) && userVisible].map[ relationship |
+                «entityRelationships.filter[!multiple && !KirraHelper.isReadOnly(it, true) && userVisible].map[ relationship |
                     '''
                     Map<String, Object> «relationship.name» = links.get("«relationship.name»");
                     if («relationship.name» != null) {
@@ -212,7 +222,8 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
                 «map».put("typeRef", «map»TypeRef);   
                 «map».put("scopeName", "«typeRef.typeName»");
                 «map».put("scopeNamespace", "«typeRef.entityNamespace»");
-                «map».put("entityUri", instancesURI.resolve("../..").resolve("«typeRef.fullName»").toString());                
+                «map».put("instanceCapabilityUri", instancesURI.toString() + "/capabilities");
+                «map».put("entityUri", instancesURI.resolve("../..").resolve("«typeRef.fullName»").toString());
         '''
     }
     

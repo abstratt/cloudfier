@@ -20,6 +20,8 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
         import java.util.HashSet;
         import java.util.Set;
         
+        import resource.userprofile.ProfileResource;
+        import resource.util.LoginLogoutResource;
         
         «entityPackages.map[ appPackage |
         	'''
@@ -34,10 +36,13 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
                 «entities.map [ entity | '''
                 services.add(new «entity.name»Resource());
                 '''].join()»
+                services.add(new LoginLogoutResource());
                 services.add(new resource.util.StandaloneRequestResponseFilter());
+                services.add(new IndexResource());
                 services.add(new EntityResource());
                 services.add(new ConstraintViolationExceptionMapper());
                 services.add(new RestEasyFailureMapper());
+                services.add(new WebApplicationExceptionMapper());
                 services.add(new ThrowableMapper());
             }
         

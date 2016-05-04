@@ -16,6 +16,8 @@ import org.eclipse.uml2.uml.UMLPackage.Literals
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import org.eclipse.uml2.uml.CallOperationAction
 
 class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     PlainJavaBehaviorGenerator plainJavaBehaviorGenerator
@@ -28,6 +30,16 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     override generateProviderReference(Classifier context, Classifier provider) {
         '''new «provider.name.toFirstUpper»Service()'''
     }
+    
+	override generateStructuredActivityNodeAsCast(StructuredActivityNode node) {
+		val targetClass = node.outputs.head.type as Classifier 
+		val sourceClass = node.inputs.head.type as Classifier
+		val profileToRoleClass = targetClass.roleClass && sourceClass.qualifiedName == SYSTEM_USER_CLASS
+        if (profileToRoleClass)
+			'''«node.inputs.head.generateAction».get«targetClass.name»()'''
+		else
+			super.generateStructuredActivityNodeAsCast(node)
+	}
     
     override CharSequence generateTestIdentityAction(TestIdentityAction action) {
         if (action.first.type.entity) {
@@ -47,6 +59,10 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         targetAction instanceof TestIdentityAction || super.needsParenthesis(targetAction)
     }
     
+	override generateSystemUserCall(CallOperationAction action) {
+		'''getCurrentUser()'''
+	}
+    
     override generateReadExtentAction(ReadExtentAction action) {
         val classifier = action.classifier
         val providerReference = generateProviderReference(action.actionActivity.behaviorContext, classifier)
@@ -63,7 +79,22 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
 		val providerReference = generateProviderReference(action.actionActivity.behaviorContext, action.target.type as Classifier)
         '''«providerReference».delete(«action.target.sourceAction.generateAction».getId())'''
 	}
-    
+	
+	override generateAddVariableValueActionAsReturn(AddVariableValueAction action) {
+		val operation = action.actionActivity.operation
+		if (operation?.action) {
+			val resultVar = '''«action.actionActivity.operation.name»Result'''
+			// an action that returns a value - we need an opportunity to flush before returning
+			'''
+			«action.value.toJavaType» «resultVar» = «generateAddVariableValueActionCore(action)»;
+			flush();
+			return «resultVar»
+			'''
+		} else {
+			super.generateAddVariableValueActionAsReturn(action)
+		}
+	}
+	
     override generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
         val core = super.generateStructuredActivityNodeAsBlock(node)
         
@@ -102,16 +133,20 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
             refresh(«refetchVars.join(', ')»);
             «ENDIF»
             «core»
-            «IF node.shouldIsolate || nonQueryOperation »
+            «IF node.shouldIsolate || nonQueryOperation»
             «IF !creationVars.empty»
             persist(«creationVars.join(', ')»);
             «ENDIF»
             «IF node.shouldIsolate»
+            // flush persisted local vars
             flush();
             «ENDIF»
             «ENDIF»
             «IF nonQueryOperationWithResult»
                 «super.generateStatement(node.findStatements.last)»
+            «ELSEIF node.owningActivity.operation?.action»
+            // flush after action
+            flush();
             «ENDIF»
             '''
         } else 
@@ -125,5 +160,4 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
         else
             super.generateStatement(statementAction)
     }
-    
 }

@@ -7,6 +7,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +55,8 @@ import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.AssociationUtils;
 import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
+import com.abstratt.mdd.core.util.ClassifierUtils;
+import com.abstratt.mdd.core.util.TypeUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.NamedElementUtils;
@@ -157,7 +161,7 @@ public class KirraHelper {
     }
     
     public static Package getApplicationPackage(Package... packages) { 
-    	return Arrays.stream(packages).filter(it -> "kirra_user_profile".equals(it.getName())).findAny().orElse(null);
+    	return Arrays.stream(packages).filter(it -> "userprofile".equals(it.getName())).findAny().orElse(null);
     }
     
     public static Collection<Package> getEntityPackages(Package... packages) {
@@ -179,17 +183,44 @@ public class KirraHelper {
         return get(modelClass, "getRelationships_" + navigableOnly, new Callable<List<Property>>() {
             @Override
             public List<Property> call() throws Exception {
-                LinkedHashSet<Property> entityRelationships = new LinkedHashSet<Property>();
+                Collection<Property> entityRelationships = new LinkedHashSet<Property>();
                 for (org.eclipse.uml2.uml.Property attribute : modelClass.getAllAttributes())
                     if (isRelationship(attribute) && attribute.getVisibility() == VisibilityKind.PUBLIC_LITERAL)
                         entityRelationships.add(attribute);
                 addAssociationOwnedRelationships(modelClass, navigableOnly, entityRelationships);
-                return new ArrayList<Property>(entityRelationships);
+                return removeDuplicates(entityRelationships, propertySelector(modelClass));
             }
         });
     }
+    
+    private static <T extends Feature> List<T> removeDuplicates(Collection<T> original, BinaryOperator<T> conflictSolver) {
+    	return new ArrayList<T>(original.stream().collect(Collectors.toMap((it -> it.getName()), (it -> it), conflictSolver, LinkedHashMap::new)).values());
+    }
+    
+    protected static BinaryOperator<Property> propertySelector(Classifier context) {
+    	return (a, b) -> {
+    		Classifier aType;
+    		Classifier bType; 
+    		if (a.getOtherEnd() != null && b.getOtherEnd() != null) {
+	    		aType = (Classifier) a.getOtherEnd().getType();
+	    		bType = (Classifier) b.getOtherEnd().getType();
+    		} else {
+    			aType = (Classifier) a.getClass_();
+	    		bType = (Classifier) b.getClass_();
+    		}
+    		boolean switched = aType != bType && ClassifierUtils.isKindOf(bType, aType);
+			return switched ? b : a;
+		};
+    }
+    
+    protected static BinaryOperator<Operation> operationSelector(Classifier context) {
+    	return (a, b) -> {
+    		boolean isSwitched = ClassifierUtils.isKindOf(b.getClass_(), a.getClass_());
+			return isSwitched ? b : a;
+		};
+    }
 
-    protected static void addAssociationOwnedRelationships(Classifier modelClass, boolean navigableOnly, LinkedHashSet<Property> entityRelationships) {
+    protected static void addAssociationOwnedRelationships(Classifier modelClass, boolean navigableOnly, Collection<Property> entityRelationships) {
         List<Classifier> allLevels = new ArrayList<Classifier>(modelClass.allParents());
         allLevels.add(modelClass);
         for (Classifier level : allLevels)
@@ -224,7 +255,11 @@ public class KirraHelper {
             		return false;
 				if (typePackageName.equals(IRepository.TYPES_NAMESPACE))
             		return false;
-                return type != null && type.getName() != null && type.eClass() == UMLPackage.Literals.CLASS;
+				if (type.getName() == null)
+					return false;
+				if (type.eClass() != UMLPackage.Literals.CLASS)
+					return false;
+                return type.getVisibility() == VisibilityKind.PUBLIC_LITERAL;
             }
         });
     }
@@ -244,7 +279,7 @@ public class KirraHelper {
     	return get(mddRepository.getBaseURI().toString(), "getUserClasses", new Callable<Collection<Class>>() {
             @Override
             public Collection<Class> call() throws Exception {
-            	Class userProfileClass = mddRepository.findNamedElement("kirra_user_profile::UserProfile", UMLPackage.Literals.CLASS, null);
+            	Class userProfileClass = mddRepository.findNamedElement("userprofile::Profile", UMLPackage.Literals.CLASS, null);
             	return Arrays.asList(userProfileClass);
             }
         });
@@ -263,7 +298,7 @@ public class KirraHelper {
         return get(classifier, "isUser", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return !classifier.isAbstract() && classifier.getQualifiedName().equals("kirra_user_profile::UserProfile");
+                return !classifier.isAbstract() && classifier.getQualifiedName().equals("userprofile::Profile");
             }
         });
     }
@@ -493,6 +528,14 @@ public class KirraHelper {
         return isReadOnly(umlAttribute, false);
     }
     
+    public static boolean isUpdatable(org.eclipse.uml2.uml.Property umlAttribute) {
+    	return isReadOnly(umlAttribute, false);
+    }
+    
+    public static boolean isAlwaysReadOnly(org.eclipse.uml2.uml.Property umlAttribute) {
+    	return isReadOnly(umlAttribute, false) && isReadOnly(umlAttribute, true);
+    }
+    
     /**
      * 
      * @param umlAttribute
@@ -561,7 +604,7 @@ public class KirraHelper {
             public List<Property> call() throws Exception {
                 List<Property> entityProperties = new ArrayList<Property>();
                 addEntityProperties(umlClass, entityProperties);
-                return entityProperties;
+                return removeDuplicates(entityProperties, propertySelector(umlClass));
             }
         });
     }
@@ -572,7 +615,7 @@ public class KirraHelper {
             public List<Property> call() throws Exception {
                 List<Property> tupleProperties = new ArrayList<Property>();
                 addTupleProperties(dataType, tupleProperties);
-                return tupleProperties;
+                return removeDuplicates(tupleProperties, propertySelector(dataType));
             }
         });
     }
@@ -592,7 +635,7 @@ public class KirraHelper {
                 LinkedHashSet<Property> entityProperties = new LinkedHashSet<Property>();
                 addEntityPropertiesAndRelationships(umlClass, entityProperties);
                 addAssociationOwnedRelationships(umlClass, true, entityProperties);
-                return new ArrayList<Property>(entityProperties);
+                return removeDuplicates(entityProperties, propertySelector(umlClass));
             }
         });
     }
@@ -627,7 +670,7 @@ public class KirraHelper {
                 for (Operation operation : umlClass.getAllOperations())
                     if (isFinder(operation))
                         queries.add(operation);
-                return queries;
+                return removeDuplicates(queries, operationSelector(umlClass));
             }
         });
     }
@@ -640,7 +683,7 @@ public class KirraHelper {
                 for (Operation operation : umlClass.getAllOperations())
                     if (isAction(operation))
                         actions.add(operation);
-                return actions;
+                return removeDuplicates(actions, operationSelector(umlClass));
             }
         });
     }
@@ -1058,6 +1101,15 @@ public class KirraHelper {
 	public static String getAssociationName(org.eclipse.uml2.uml.Property umlAttribute) {
 		return umlAttribute.isDerived() ? null : umlAttribute.getAssociation().getName();
 	}
+	
+	public static String getAssociationNamespace(org.eclipse.uml2.uml.Property umlAttribute) {
+		return getNamespace(umlAttribute.getAssociation());
+	}
+	
+    public static String getNamespace(org.eclipse.uml2.uml.NamedElement umlClass) {
+        return umlClass.getNamespace().getQualifiedName().replace(org.eclipse.uml2.uml.NamedElement.SEPARATOR, ".");
+    }
+
 
 	public static Style getRelationshipStyle(org.eclipse.uml2.uml.Property umlAttribute) {
         Style style;
@@ -1068,5 +1120,15 @@ public class KirraHelper {
         else
             style = Style.LINK;
 		return style;
+	}
+
+	public static boolean isInherited(Property feature, Classifier candidateOwner) {
+		boolean inherited = feature.getOwner() != candidateOwner && ClassifierUtils.isKindOf(candidateOwner, (Classifier) feature.getOwner());
+		return inherited;
+	}
+	
+	public static boolean isInherited(Operation feature, Classifier candidateOwner) {
+		boolean inherited = feature.getOwner() != candidateOwner && ClassifierUtils.isKindOf(candidateOwner, (Classifier) feature.getOwner());
+		return inherited;
 	}
 }

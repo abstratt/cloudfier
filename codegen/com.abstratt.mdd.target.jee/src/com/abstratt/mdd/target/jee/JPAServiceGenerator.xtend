@@ -102,6 +102,7 @@ class JPAServiceGenerator extends ServiceGenerator {
             import javax.enterprise.event.*;
             import javax.enterprise.context.*;
             import static util.PersistenceHelper.*;
+            import static util.SecurityHelper.*;
         '''
     }
     
@@ -180,22 +181,26 @@ class JPAServiceGenerator extends ServiceGenerator {
     
     
     override generateRelated(Classifier entity) {
-        val relationships = getRelationships(entity).filter[!derived].map[otherEnd].filter[!navigable]
+        val relationships = getRelationships(entity).filter[!derived].map[otherEnd]
         relationships.generateMany[ relationship |
             val otherEnd = relationship.otherEnd
+            // XXX we compare ids explicitly below to avoid HHH-5757
         '''
-            public «entity.toJavaType» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
+            /**
+             * Returns related instances of «entity.name» for the given '«otherEnd.name»' «otherEnd.type.name».
+             */ 
+            public «relationship.toJavaType» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
                 Root<«entity.name»> root = cq.from(«entity.name».class);
-                return getEntityManager().createQuery(cq.select(root).where(cb.equal(root.get("«otherEnd.name»"), «otherEnd.name»)).distinct(true)).getResultList()«IF !relationship.multiple».stream().findAny().orElse(null)«ENDIF»;
+                return getEntityManager().createQuery(cq.select(root).where(cb.equal(root.get("«otherEnd.name»").get("id"), «otherEnd.name».getId())).distinct(true)).getResultList()«IF !relationship.multiple».stream().findAny().orElse(null)«ENDIF»;
             }
         '''
         ]
     }
     
     def CharSequence generateRelationshipDomain(Classifier entity) {
-        val relationships = getRelationships(entity).filter[!derived && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL && userVisible]
+        val relationships = getRelationships(entity).filter[!derived && !alwaysReadOnly && navigable && aggregation != AggregationKind.COMPOSITE_LITERAL && userVisible]
         relationships.generateMany[ relationship |
             val constraints = relationship.findInvariantConstraints
             val methodName = '''getDomainFor«relationship.name.toFirstUpper»'''
@@ -277,8 +282,9 @@ class JPAServiceGenerator extends ServiceGenerator {
         '''
             public void delete(Object id) {
                 «entity.name» found = getEntityManager().find(«entity.name».class, id);
-                if (found != null)
+                if (found != null) {
                     getEntityManager().remove(found);
+                }
             }
         '''
     }

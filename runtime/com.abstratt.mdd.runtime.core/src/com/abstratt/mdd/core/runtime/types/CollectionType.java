@@ -274,6 +274,16 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         }
         return result;
     }
+    
+    public IntegerType count(ExecutionContext context, ElementReferenceType reference) {
+        long result = 0;
+        for (BasicType current : backEnd) {
+            BooleanType predicateOutcome = (BooleanType) CollectionType.runClosureBehavior(context, reference, current);
+            if (predicateOutcome.isTrue())
+                result++;
+        }
+        return IntegerType.fromValue(result);
+    }
 
     public IntegerType size(ExecutionContext context) {
         return IntegerType.fromValue(backEnd.size());

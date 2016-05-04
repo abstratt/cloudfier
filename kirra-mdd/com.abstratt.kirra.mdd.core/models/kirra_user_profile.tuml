@@ -4,8 +4,7 @@ apply mdd_extensions;
 apply kirra;
 import mdd_types;
 
-[Entity]
-class UserProfile
+private abstract class UserProfile
     allow none;
     readonly id attribute username : String;
     attribute email : String;

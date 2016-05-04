@@ -1,23 +1,18 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.core.util.MDDExtensionUtils.AccessCapability
+import com.abstratt.mdd.core.util.AccessCapability
 import com.abstratt.mdd.target.jse.AbstractGenerator
-import java.util.Set
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.NamedElement
 
-import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import com.abstratt.mdd.target.jse.PlainJavaBehaviorGenerator
-import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import java.util.Map
-import java.util.Optional
 
 class JAXRSAccessControlGenerator extends AbstractGenerator {
 	
@@ -35,7 +30,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 			// no role classes in this app
 			return '''@PermitAll'''
 			
-		val capabilitiesPerRole = computeConstraintsPerRoleClass(accessConstraintContexts).mapValues[it.keySet]
+		val capabilitiesPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts).mapValues[it.keySet]
 		
 		if (capabilitiesPerRole.empty) {
 			// no access constraints
@@ -54,53 +49,79 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		'''
 	}
 	
-	def CharSequence generateSecurityContextParameter(AccessCapability requiredCapability, Iterable<NamedElement> accessConstraintContexts, CharSequence suffix) {
-		val constraintsPerRole = computeConstraintsPerRoleClass(accessConstraintContexts)
-		if (constraintsPerRole.values.exists[values.exists[!tautology]])
+	def private boolean isAllTautologies(Map<? extends Classifier, Map<AccessCapability, Constraint>> constraintsPerRole, AccessCapability requiredCapability) {
+		val allTautologies = !constraintsPerRole.empty && constraintsPerRole.values.forall[it.get(requiredCapability)?.tautology]
+		return allTautologies
+	}
+	
+	def CharSequence generateSecurityContextParameter(Iterable<Class> allRoleClasses, AccessCapability requiredCapability, Iterable<NamedElement> accessConstraintContexts, CharSequence suffix) {
+		val constraintsPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts)
+		// note that here we only care for constraints explicitly provided, we ignore those roles without constraints
+		if (!constraintsPerRole.isAllTautologies(requiredCapability))
 			return '''@Context SecurityContext securityContext«suffix»'''
 		return ''
 	}
 
+
+	def CharSequence generateInstanceAccessChecks(String current, AccessCapability requiredCapability,
+		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement) {
+		generateAccessChecks(current, requiredCapability, allRoleClasses, accessConstraintContexts, failStatement, false)
+	}
+	
+	def CharSequence generateStaticAccessChecks(AccessCapability requiredCapability,
+		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
+		generateAccessChecks(null, requiredCapability, allRoleClasses, accessConstraintContexts, failStatement, true)
+	}
+	
 	/**
 	 * Generates a programmatic check for the constraints on the contexts that do define a condition.
 	 * 
 	 * Ignores constraints that do not define a condition.  
 	 */
 	def CharSequence generateAccessChecks(String current, AccessCapability requiredCapability,
-		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement) {
-		val constraintsPerRole = computeConstraintsPerRoleClass(accessConstraintContexts)
-		val allTautologies = !constraintsPerRole.values.exists[it.values.exists[!tautology]]
-		if (allTautologies)
+		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
+        val entity = accessConstraintContexts.filter(Class).head
+		val explicitConstraintsPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts)
+
+		if (explicitConstraintsPerRole.empty) {
 			return ''
+		}		
+		
+		val constraintsPerRole = if (exhaustive) allRoleClasses.toInvertedMap[ explicitConstraintsPerRole.getOrDefault(it, #{})] else explicitConstraintsPerRole 
+		println('''«accessConstraintContexts.map[name].join(", ")» - can «requiredCapability»?''')
+		constraintsPerRole.forEach[roleClass, constraints| println('''«roleClass.name» -> «constraints.keySet»''')]
+		if (constraintsPerRole.isAllTautologies(requiredCapability))
+			return '''/*«requiredCapability»: allTautologies*/'''
 		
 		
 		val checksPerRole = constraintsPerRole.entrySet.filter[value.keySet.contains(requiredCapability)].map[entry |
 			val role = entry.key
 			val constraint = entry.value.get(requiredCapability)
-			return if (constraint.tautology) generateFullAccessForRole(role) else generateAccessChecksForRole(current, role, constraint, failStatement)
+			return if (constraint.tautology) generateFullAccessForRole(role) else generateInstanceAccessChecksForRole(entity, current, role, requiredCapability, failStatement)
 		]
 			
 		'''
-		UserProfile user = new UserProfileService().findByUsername(securityContext.getUserPrincipal().getName());
-		«checksPerRole.map[toString().trim()].join(' else ')»
+		«IF !checksPerRole.empty»«checksPerRole.map[toString().trim()].join(' else ').trim» else {
+			«failStatement»
+		}«ELSE»
+		«ENDIF»
 		'''
 	}
 	
-	def CharSequence generateAccessChecksForRole(String current, Classifier classifier, Constraint constraint, CharSequence failStatement) {
-		val castUser = '''as«classifier.name»'''	
-		val condition = new JPABehaviorGenerator(repository) {
-			override generateSystemUserCall(CallOperationAction action) {
-				castUser
-			}
-			override generateReadSelfAction(ReadSelfAction action) {
-				current
-			}
-		}.generatePredicate(constraint, true)
+	def CharSequence generateInstanceAccessChecksForRole(Class entity, String current, Classifier roleClass, AccessCapability capability, CharSequence failStatement) {
+		val castUser = '''as«roleClass.name»'''	
+//		val condition = new JPABehaviorGenerator(repository) {
+//			override generateSystemUserCall(CallOperationAction action) {
+//				castUser
+//			}
+//			override generateReadSelfAction(ReadSelfAction action) {
+//				current
+//			}
+//		}.generatePredicate(constraint, true)
 		'''
-		if (securityContext.isUserInRole("«classifier.name»")) {
-			«classifier.name» «castUser» = new «classifier.name»Service().findByUser(user);
-			if («castUser» == null || «condition») {
-				System.out.println("User " + user + " failed access checks as «classifier.name» («castUser»)");
+		if (securityContext.isUserInRole("«roleClass.name»")) {
+			«roleClass.name» «castUser» = SecurityHelper.getCurrentUser().get«roleClass.name»();
+			if (!«entity.name».Permissions.can«capability.name()»(«castUser», «current»)) {
 				«failStatement»
 		    }
 		} 
@@ -111,17 +132,17 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		'''
 		if (securityContext.isUserInRole("«classifier.name»")) {
 			// no further checks
-			System.out.println("Getting free pass as «classifier.name»");
 		}
 		'''
 	}
 
-	def Map<Classifier, Map<AccessCapability, Constraint>> computeConstraintsPerRoleClass(Iterable<NamedElement> accessConstraintContexts) {
+	def Map<Classifier, Map<AccessCapability, Constraint>> computeConstraintsPerRoleClass(Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts) {
 		val accessConstraintLayers = accessConstraintContexts.map[it.findConstraints.filter[access]]
 		val Map<Classifier, Map<AccessCapability, Constraint>> constraintsPerRole = newLinkedHashMap()
 		accessConstraintLayers.forEach [ layer |
 			layer.forEach [ constraint |
-				constraint.accessRoles.forEach [ roleClass |
+				val applicableRoles = if (constraint.accessRoles.empty) allRoleClasses else constraint.accessRoles 
+				applicableRoles.forEach [ roleClass |
 					constraintsPerRole.remove(roleClass)
 					val constraintsByCapabilities = newLinkedHashMap()
 					constraintsPerRole.put(roleClass, constraintsByCapabilities)

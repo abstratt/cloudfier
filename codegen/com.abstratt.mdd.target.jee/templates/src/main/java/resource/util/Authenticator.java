@@ -1,6 +1,6 @@
 package resource.util;
 
-import kirra_user_profile.*;
+import userprofile.*;
 
 public class Authenticator {
 	private static Authenticator authenticator = null;
@@ -17,7 +17,7 @@ public class Authenticator {
 			return false;
 		if (password == null)
 			return false;
-		UserProfile user = new UserProfileService().findByUsername(username);
+		Profile user = new ProfileService().findByUsername(username);
 		if (user == null)
 			return false;
 		if (!user.getPassword().equals(password))

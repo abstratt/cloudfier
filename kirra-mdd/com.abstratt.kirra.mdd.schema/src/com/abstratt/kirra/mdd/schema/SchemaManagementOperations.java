@@ -3,10 +3,11 @@ package com.abstratt.kirra.mdd.schema;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.SchemaManagement;
+import com.abstratt.kirra.mdd.core.KirraHelper;
 
 public class SchemaManagementOperations {
     public static String getNamespace(org.eclipse.uml2.uml.NamedElement umlClass) {
-        return umlClass.getNamespace().getQualifiedName().replace(org.eclipse.uml2.uml.NamedElement.SEPARATOR, ".");
+        return KirraHelper.getNamespace(umlClass);
     }
 
     public static Relationship getOpposite(SchemaManagement schema, Relationship relationship) {

@@ -590,24 +590,19 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 return '''«node.findStatements.head.generateAction»'''
         
         // default path, generate as a statement
-        if (MDDExtensionUtils.isCast(node))
-            generateStructuredActivityNodeAsCast(node)
-        else if (node.objectInitialization)
+        if (node.objectInitialization)
             generateStructuredActivityNodeObjectInitialization(node)
+		else if (MDDExtensionUtils.isCast(node))
+            generateStructuredActivityNodeAsCast(node)
         else
             generateStructuredActivityNodeAsBlock(node)
     }
 
     def generateStructuredActivityNodeAsCast(StructuredActivityNode node) {
-        if (!(node.inputs.head.sourceAction.objectInitialization)) {
-            '''(«node.outputs.head.toJavaType») «node.sourceAction.generateAction»'''.parenthesize(node)
-        } else {
-            val classifier = node.outputs.head.type
-            val tupleType = classifier.toJavaType
-            generateConstructorInvocation(tupleType, node.sourceAction.inputs)
-        }
+        '''(«node.outputs.head.toJavaType») «node.sourceAction.generateAction»'''.parenthesize(node)
     }
-
+    
+    
     def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
         val terminals = node.findTerminals
         val statements = terminals.map[

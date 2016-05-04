@@ -79,7 +79,6 @@ import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.ReceptionUtils;
 import com.abstratt.mdd.core.util.StateMachineUtils;
-import com.abstratt.mdd.core.util.MDDExtensionUtils.AccessCapability;
 import com.abstratt.nodestore.NodeNotFoundException;
 import com.abstratt.nodestore.NodeStoreException;
 import com.abstratt.nodestore.NodeStoreNotFoundException;

@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.ecore.EObject;
@@ -14,7 +15,6 @@ import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Element;
-import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.Port;
 import org.eclipse.uml2.uml.Profile;
@@ -23,13 +23,14 @@ import org.eclipse.uml2.uml.Stereotype;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
+import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.util.UMLUtil;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.isv.IModelWeaver;
-import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
+import com.abstratt.mdd.core.util.PackageUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 
 /**
@@ -41,14 +42,10 @@ public class KirraModelWeaver implements IModelWeaver {
 		Profile kirraProfile = (Profile) repository.loadPackage(URI.createURI(KirraMDDCore.KIRRA_URI));
 		Package types = repository.findPackage(IRepository.TYPES_NAMESPACE, null);
 		Package extensions = repository.findPackage(IRepository.EXTENSIONS_NAMESPACE, null);
-		created.applyProfile(kirraProfile);
-		created.createPackageImport(types);
-		created.createPackageImport(extensions);
-		created.createPackageImport(kirraProfile);
-		if (!"kirra_user_profile".equals(created.getQualifiedName())) {
-			Package kirraUserProfile = repository.findPackage("kirra_user_profile", null);
-			created.createPackageImport(kirraUserProfile);
-		}
+		PackageUtils.safeApplyProfile(created, kirraProfile);
+		PackageUtils.importPackage(created, types);
+		PackageUtils.importPackage(created, extensions);
+		PackageUtils.importPackage(created, kirraProfile);
 	}
 
 	/**
@@ -146,16 +143,32 @@ public class KirraModelWeaver implements IModelWeaver {
 			List<Class> roleEntities = entities.stream().filter(it -> MDDExtensionUtils.isRoleClass(it)).collect(Collectors.toList());
 			if (roleEntities.isEmpty())
 				return;
-			Class profileClass = repository.findNamedElement("kirra_user_profile::UserProfile", UMLPackage.Literals.CLASS, null);
-			if (profileClass == null)
-				throw new IllegalStateException("No class for user profiles");
-
+			Package kirraProfilePackage = repository.findPackage("kirra_user_profile", null);
+			if (kirraProfilePackage == null)
+				throw new IllegalStateException("No package for user profiles");
+			
+			Package userProfilePackage = EcoreUtil.copy(kirraProfilePackage);
+			repository.addTopLevelPackage(userProfilePackage, "userprofile", null);
+			copyStereotypes(kirraProfilePackage, userProfilePackage);
+			Class profileClass = (Class) repository.findNamedElement("userprofile::UserProfile", UMLPackage.Literals.CLASS, null);
+			profileClass.setName("Profile");
+			profileClass.setVisibility(VisibilityKind.PUBLIC_LITERAL);
+			profileClass.setIsAbstract(false);
+			
 			// if there are any role classes in this package, create relationships to the profile class
 			// (ignore role classes that specialize other role classes)
-			roleEntities.stream().filter(it -> !ClassifierUtils.isKindOfAnyOf(it, roleEntities, false)).forEach(it -> {
-				Property userInfoReference = it.createOwnedAttribute("user", profileClass);
-				userInfoReference.setIsReadOnly(true);
-				userInfoReference.setLower(0);
+			System.out.println("Role entities: ");
+			roleEntities.forEach(it -> System.out.println(it.getName()));
+			roleEntities.stream().filter(it -> !it.isAbstract()).forEach(it -> {
+				PackageUtils.importPackage(userProfilePackage, it.getNearestPackage()).setVisibility(VisibilityKind.PRIVATE_LITERAL);
+				PackageUtils.importPackage(it.getNearestPackage(), userProfilePackage).setVisibility(VisibilityKind.PRIVATE_LITERAL);
+				Property asRoleClass = profileClass.createOwnedAttribute(StringUtils.uncapitalize(it.getName()), it);
+				asRoleClass.setIsReadOnly(true);
+				asRoleClass.setLower(0);
+				Property otherEnd = buildAssociationForAttribute(profileClass, asRoleClass, "user", false);
+				otherEnd.setIsNavigable(true);
+				asRoleClass.setIsNavigable(true);
+				System.out.println("Creating " + otherEnd.getName() + " back to " + profileClass.getName());
 			});
 		}
 
@@ -164,10 +177,10 @@ public class KirraModelWeaver implements IModelWeaver {
 			// (just like references)
 			for (Class entity : entities)
 				for (Property property : entity.getAttributes())
-					buildAssociationForAttribute(entity, property);
+					buildAssociationForAttribute(entity, property, null, false);
 		}
 
-		private void buildAssociationForAttribute(Class entity, Property property) {
+		private Property buildAssociationForAttribute(Class entity, Property property, String name, boolean memberOwned) {
 			if (KirraHelper.isRegularProperty(property)) {
 				Type propertyType = property.getType();
 				if (propertyType != null && KirraHelper.isEntity(propertyType)
@@ -177,12 +190,22 @@ public class KirraModelWeaver implements IModelWeaver {
 					newAssociation.setIsDerived(property.isDerived());
 					newAssociation.getMemberEnds().add(property);
 					// automatically created owned end
-					Property otherEnd = newAssociation.createOwnedEnd(null, entity);
+					Property otherEnd;
+					if (memberOwned) {
+						otherEnd = ((Class) property.getType()).createOwnedAttribute(name, entity);
+						newAssociation.getMemberEnds().add(otherEnd);	
+					} else {
+						otherEnd = newAssociation.createOwnedEnd(name, entity);	
+					}
+					
 					otherEnd.setIsDerived(property.isDerived());
+					otherEnd.setIsReadOnly(property.isReadOnly());
 					otherEnd.setLower(0);
-					otherEnd.setIsNavigable(false);
+					System.out.println("*** Creating " + otherEnd.getName() + " opposite to " + entity.getName() + "." + property.getName() + " : " + property.getType().getName());
+					return otherEnd;
 				}
 			}
+			return null;
 		}
 	}
 
@@ -192,17 +215,20 @@ public class KirraModelWeaver implements IModelWeaver {
 	}
 
 	protected void copyStereotypes(Element source, Element copy) {
-		if (!(source instanceof Class) && !(source instanceof Operation) && !(source instanceof Property))
-			return;
 		source.getStereotypeApplications().forEach(sourceStereotypeApplication -> {
 			Stereotype stereotype = UMLUtil.getStereotype(sourceStereotypeApplication);
-			String stereotypeName = stereotype.getName();
-			copy.applyStereotype(stereotype);
+			String stereotypeName = stereotype.getQualifiedName();
+			Stereotype stereotypeCopy = StereotypeUtils.findStereotype(stereotypeName);
+			copy.applyStereotype(stereotypeCopy);
+			System.out.println("Applying " + stereotypeName + " to " + copy.eClass().getName());
+			System.out.println("Source: " + source);
+			System.out.println("Target: " + copy);
 			stereotype.getAllAttributes().forEach(stereotypeProperty -> {
 				String propertyName = stereotypeProperty.getName();
 				Object value = source.getValue(stereotype, propertyName);
-				copy.setValue(stereotype, propertyName, value);
+				copy.setValue(stereotypeCopy, propertyName, value);
 			});
+			System.out.println("Stereotype applied: " + copy.isStereotypeApplied(stereotypeCopy));
 		});
 		EList<Element> sourceChildren = source.getOwnedElements();
 		EList<Element> copyChildren = copy.getOwnedElements();

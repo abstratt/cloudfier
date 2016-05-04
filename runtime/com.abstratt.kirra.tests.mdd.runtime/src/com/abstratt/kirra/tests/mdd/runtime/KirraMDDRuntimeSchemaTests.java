@@ -123,8 +123,8 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("mypackage", entities.get(1).getEntityNamespace());
         TestCase.assertEquals("MyUserClass", entities.get(1).getName());
         
-        TestCase.assertEquals("mypackage", entities.get(1).getEntityNamespace());
-        TestCase.assertEquals("_UserProfile", entities.get(2).getName());
+        TestCase.assertEquals("userprofile", entities.get(2).getEntityNamespace());
+        TestCase.assertEquals("Profile", entities.get(2).getName());
         
 
         kirra.getEntity("mypackage", "MyUserClass");
@@ -494,7 +494,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertTrue(!opposite.isNavigable());
     }
 
-    public void testEntityRelationships_Reflexive() throws CoreException {
+    public void testEntityRelationships_Reflective() throws CoreException {
         String source = "";
         source += "package mypackage;\n";
         source += "import datatypes;\n";
@@ -519,6 +519,45 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("peer2", relationships.get(1).getName());
         TestCase.assertEquals("peer1", relationships.get(1).getOpposite());
     }
+    
+    public void testEntityProperties_Inherited() throws CoreException {
+        String source = "";
+        source += "package mypackage;\n";
+        source += "import datatypes;\n";
+        source += "class Class1\n";
+        source += "attribute attr1 : String;\n";
+        source += "end;\n";
+        source += "class Class2 specializes Class1\n";
+        source += "end;\n";
+        source += "class Class3 specializes Class1\n";
+        source += "attribute attr1 : String;\n";
+        source += "end;\n";
+        source += "class Class4 specializes Class2\n";
+        source += "end;\n";                
+        source += "end.";
+        parseAndCheck(KirraMDDRuntimeSchemaTests.library, source);
+        Repository kirra = getKirra();
+
+        Entity class1 = kirra.getEntity("mypackage", "Class1");
+        Entity class2 = kirra.getEntity("mypackage", "Class2");
+        Entity class3 = kirra.getEntity("mypackage", "Class3");
+        Entity class4 = kirra.getEntity("mypackage", "Class4");
+
+        List<Property> class1Properties = class1.getProperties();
+        List<Property> class2Properties = class2.getProperties();
+        List<Property> class3Properties = class3.getProperties();
+        List<Property> class4Properties = class4.getProperties();
+        assertEquals(1, class1Properties.size());
+        assertEquals(1, class2Properties.size());
+        assertEquals(1, class3Properties.size());
+        assertEquals(1, class4Properties.size());
+
+        assertTrue(!class1.getProperties().get(0).isInherited());
+        assertTrue(class2.getProperties().get(0).isInherited());
+        assertTrue(!class3.getProperties().get(0).isInherited());
+        assertTrue(class4.getProperties().get(0).isInherited());
+    }
+
 
     public void testEnumeration() throws CoreException {
         String model = "";
@@ -591,8 +630,9 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         List<String> namespaces = kirra.getNamespaces();
         // profile is not expected to show
         TestCase.assertFalse(namespaces.contains("kirra"));
-        TestCase.assertEquals(1, namespaces.size());
+        TestCase.assertEquals(2, namespaces.size());
         TestCase.assertTrue(namespaces.contains("pack3"));
+        TestCase.assertTrue(namespaces.contains("userprofile"));
     }
 
     public void testOperations() throws CoreException {
@@ -603,12 +643,12 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         model += "import datatypes;\n";
         model += "class MyClass1\n";
         model += "attribute singleAttribute : Integer;\n";
-        model += "[Action]operation action1();\n";
-        model += "[Action]operation action2(par1 : Integer, par2 : Boolean) : String;\n";
-        model += "[Action]operation action3() : MyClass1[*];\n";
-        model += "[Action]static operation action4();\n";
+        model += "operation action1();\n";
+        model += "operation action2(par1 : Integer, par2 : Boolean) : String;\n";
+        model += "operation action3() : MyClass1[*];\n";
+        model += "static operation action4();\n";
         model += "private operation nonaction2(par1 : Integer, par2 : Boolean) : String;\n";
-        model += "[Finder]operation query1(par1 : Integer, par2 : Boolean) : MyClass1[*];\n";
+        model += "query query1(par1 : Integer, par2 : Boolean) : MyClass1[*];\n";
         model += "private operation nonQuery1(par1 : Integer, par2 : Boolean) : MyClass1[*];\n";
         model += "end;\n";
         model += "end.";

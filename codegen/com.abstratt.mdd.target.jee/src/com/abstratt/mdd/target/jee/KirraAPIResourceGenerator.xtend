@@ -49,6 +49,8 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "relatedInstanceUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/relationships/(relationshipName)/(relatedObjectId)",
             "instanceActionParameterDomainUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/actions/(actionName)/parameters/(parameterName)/domain",
             "finderUriTemplate": "${baseUri}entities/«typeRef.fullName»/finders/(finderName)",
+            "entityCapabilityUri": "${baseUri}entities/«typeRef.fullName»/capabilities",
+            "instanceCapabilityUriTemplate": "${baseUri}entities/«typeRef.fullName»/instances/(objectId)/capabilities",
             "operations" : {
                 «(entity.actions+entity.queries).map[getOperationRepresentation(entity)].join(',\n')»
             },
