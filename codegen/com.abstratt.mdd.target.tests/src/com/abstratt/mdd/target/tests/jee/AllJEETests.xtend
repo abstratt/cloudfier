@@ -9,6 +9,7 @@ class AllJEETests {
         suite.addTestSuite(JPQLQueryActionGeneratorTests)
 		suite.addTestSuite(CriteriaQueryActionGeneratorTests)
 		suite.addTestSuite(JPACriteriaServiceBehaviorGeneratorTests)
+		suite.addTestSuite(JAXRSAccessControlGeneratorTests)
         return suite
     }     
 }

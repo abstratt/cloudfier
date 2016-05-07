@@ -10,7 +10,7 @@ import org.eclipse.uml2.uml.Class
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
-class JAXRSAccessControlGeneratorTest extends AbstractGeneratorTest {
+class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
@@ -76,13 +76,20 @@ class JAXRSAccessControlGeneratorTest extends AbstractGeneratorTest {
         val allRoleClasses = repository.findInAnyPackage(it | it instanceof Class && (it as Class).role)
 		val actual = new JAXRSAccessControlGenerator(repository).generateInstanceAccessChecks('self', requiredCapability, allRoleClasses, contexts, 'throw new Error();')
 		val expected = '''
-		Profile user = new ProfileService().findByUsername(securityContext.getUserPrincipal().getName());
-		if (securityContext.isUserInRole("Customer")) {
-			Customer asCustomer = new CustomerService().findCustomerByUser(user);
-			if (asCustomer == null || !(asCustomer == self.getCustomer())) {
+		if (securityContext.isUserInRole("Admin")) {
+			//no further checks
+		} else if (securityContext.isUserInRole("Representative")){
+			//no further checks
+		} else if (securityContext.isUserInRole("Personnel")) {
+			//no further checks
+		} else if(securityContext.isUserInRole("Customer")) {
+			Customer asCustomer = SecurityHelper.getCurrentCustomer();
+			if(!Account.Permissions.canRead(asCustomer,self)) { 
 				throw new Error();
 		    }
-		} 
+		} else {
+			throw new Error();
+		}
 		'''
 		AssertHelper.assertStringsEqual(expected.toString, actual.toString)
     }
@@ -96,8 +103,8 @@ class JAXRSAccessControlGeneratorTest extends AbstractGeneratorTest {
 		val actual = new JAXRSAccessControlGenerator(repository).generateInstanceAccessChecks('self', requiredCapability, allRoleClasses, contexts, 'throw new Error();')
 		val expected = '''
 		if (securityContext.isUserInRole("Admin")) {
-			Admin asAdmin = SecurityHelper.getCurrentUser().getAdmin();
-			if (asAdmin == null || !(self.getBalance() < 0L)) {
+			Admin asAdmin = SecurityHelper.getCurrentAdmin();
+			if (!Account.Permissions.canRead(asAdmin,self)) {
 				throw new Error();
 			}
 		} else {
@@ -115,13 +122,20 @@ class JAXRSAccessControlGeneratorTest extends AbstractGeneratorTest {
         val allRoleClasses = repository.findInAnyPackage(it | it instanceof Class && (it as Class).role)
 		val actual = new JAXRSAccessControlGenerator(repository).generateInstanceAccessChecks('self', requiredCapability, allRoleClasses, contexts, 'throw new Error();')
 		val expected = '''
-		Profile user = new ProfileService().findByUsername(securityContext.getUserPrincipal().getName());
-		if (securityContext.isUserInRole("Customer")) {
-			Customer asCustomer = new CustomerService().findCustomerByUser(user);
-			if (asCustomer == null || !(asCustomer == self.getCustomer())) {
+		if (securityContext.isUserInRole("Admin")) {
+			//no further checks
+		} else if (securityContext.isUserInRole("Representative")) {
+			//no further checks
+		} else if (securityContext.isUserInRole("Personnel")) {
+			//no further checks
+		} else if (securityContext.isUserInRole("Customer")) {
+			Customer asCustomer = SecurityHelper.getCurrentCustomer();
+			if (!Account.Permissions.canRead(asCustomer, self)) {
 				throw new Error();
 		    }
-		} 
+		} else {
+			throw new Error();
+		}
 		'''
 		AssertHelper.assertStringsEqual(expected.toString, actual.toString)
     }
@@ -134,12 +148,16 @@ class JAXRSAccessControlGeneratorTest extends AbstractGeneratorTest {
         val allRoleClasses = repository.findInAnyPackage(it | it instanceof Class && (it as Class).role)
 		val actual = new JAXRSAccessControlGenerator(repository).generateInstanceAccessChecks('self', requiredCapability, allRoleClasses, contexts, 'throw new Error();')
 		val expected = '''
-		if (securityContext.isUserInRole("Customer")) {
-			Customer asCustomer = SecurityHelper.getCurrentUser().getCustomer();
-			if (asCustomer == null || !(asCustomer == self.getCustomer())) {
+		if(securityContext.isUserInRole("Admin")) {
+			//no further checks
+		} else if (securityContext.isUserInRole("Customer")) {
+			Customer asCustomer = SecurityHelper.getCurrentCustomer();
+			if (!Account.Permissions.canCall(asCustomer, self)) {
 				throw new Error();
 		    }
-		} 
+		} else {
+			throw new Error();
+		}
 		'''
 		AssertHelper.assertStringsEqual(expected.toString, actual.toString)
     }    
