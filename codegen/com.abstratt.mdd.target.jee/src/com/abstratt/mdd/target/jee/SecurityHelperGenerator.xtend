@@ -60,10 +60,10 @@ public class SecurityHelper {
     «roleClasses.map[ roleClass |
     '''
     public static «roleClass.name» as«roleClass.name»(Profile user) {
+    	if (user == null) {
+    		return null;
+        }
     	«roleClass.name» asRole = new «roleClass.name»Service().findRoleByUser(user);
-    	System.out.println(user);
-        System.out.println("as «roleClass.name»");
-        System.out.println(asRole);
         return asRole;
     }
     
