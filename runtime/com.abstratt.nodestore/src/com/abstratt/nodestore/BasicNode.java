@@ -42,11 +42,6 @@ public class BasicNode implements INode, Serializable {
         setKey(new IntegerKey(key));
     }
 
-    public BasicNode(String key) {
-        this();
-        setKey(new StringKey(key));
-    }
-
     private BasicNode() {
         children = new HashMap<String, Collection<INode>>();
         properties = new HashMap<String, Object>();
@@ -56,7 +51,7 @@ public class BasicNode implements INode, Serializable {
     @Override
     public BasicNode clone() {
         BasicNode clone = new BasicNode(this);
-        clone.setKey(key);
+        clone.key = key;
         return clone;
     }
 

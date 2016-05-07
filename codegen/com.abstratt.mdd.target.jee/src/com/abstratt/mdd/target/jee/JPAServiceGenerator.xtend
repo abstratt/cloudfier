@@ -189,7 +189,7 @@ class JPAServiceGenerator extends ServiceGenerator {
             /**
              * Returns related instances of «entity.name» for the given '«otherEnd.name»' «otherEnd.type.name».
              */ 
-            public «relationship.toJavaType» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
+            public «entity.toJavaType(!relationship.required, relationship.multiple)» find«relationship.name.toFirstUpper»By«otherEnd.name.toFirstUpper»(«otherEnd.type.name» «otherEnd.name») {
                 CriteriaBuilder cb = getEntityManager().getCriteriaBuilder();
                 CriteriaQuery<«entity.name»> cq = cb.createQuery(«entity.name».class);
                 Root<«entity.name»> root = cq.from(«entity.name».class);

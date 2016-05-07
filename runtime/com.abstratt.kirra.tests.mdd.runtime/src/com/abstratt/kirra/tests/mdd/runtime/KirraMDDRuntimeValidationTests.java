@@ -1,10 +1,5 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
-import java.util.Arrays;
-import java.util.Collections;
-
-import junit.framework.TestCase;
-
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 
@@ -12,6 +7,8 @@ import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
 import com.abstratt.kirra.Repository;
+
+import junit.framework.TestCase;
 
 public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests {
 
@@ -22,28 +19,28 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         KirraMDDRuntimeValidationTests.model += "package mypackage;\n";
         KirraMDDRuntimeValidationTests.model += "import base;\n";
         KirraMDDRuntimeValidationTests.model += "apply kirra;\n";
-        KirraMDDRuntimeValidationTests.model += "[Entity] class MyClass1\n";
+        KirraMDDRuntimeValidationTests.model += "class MyClass1\n";
         KirraMDDRuntimeValidationTests.model += "attribute attr1 : Integer invariant { self.attr1 > 50 };\n";
         KirraMDDRuntimeValidationTests.model += "attribute attr2 : String;\n";
         KirraMDDRuntimeValidationTests.model += "derived attribute attr2a : String := \"\";\n";
         KirraMDDRuntimeValidationTests.model += "end;\n";
-        KirraMDDRuntimeValidationTests.model += "[Entity] class MyClass2\n";
+        KirraMDDRuntimeValidationTests.model += "class MyClass2\n";
         KirraMDDRuntimeValidationTests.model += "attribute attr3 : String;\n";
         KirraMDDRuntimeValidationTests.model += "reference ref1 : MyClass1[0,1];\n";
         KirraMDDRuntimeValidationTests.model += "end;\n";
-        KirraMDDRuntimeValidationTests.model += "[Entity] class MyClass3\n";
+        KirraMDDRuntimeValidationTests.model += "class MyClass3\n";
         KirraMDDRuntimeValidationTests.model += "attribute attr4 : String[0,1];\n";
         KirraMDDRuntimeValidationTests.model += "end;\n";
-        KirraMDDRuntimeValidationTests.model += "[Entity] class MyClass4\n";
+        KirraMDDRuntimeValidationTests.model += "class MyClass4\n";
         KirraMDDRuntimeValidationTests.model += "attribute attr5 : String;\n";
         KirraMDDRuntimeValidationTests.model += "reference ref2 : MyClass3;\n";
         KirraMDDRuntimeValidationTests.model += "derived attribute ref2a : MyClass3 := { self.ref2 };\n";
         KirraMDDRuntimeValidationTests.model += "end;\n";
-        KirraMDDRuntimeValidationTests.model += "[Entity] class MyClass5\n";
+        KirraMDDRuntimeValidationTests.model += "class MyClass5\n";
         KirraMDDRuntimeValidationTests.model += "attribute attr6 : String;\n";
         KirraMDDRuntimeValidationTests.model += "derived attribute attr7 : String := \"\";\n";
         KirraMDDRuntimeValidationTests.model += "end;\n";
-        KirraMDDRuntimeValidationTests.model += "[Entity] class MyClass6\n";
+        KirraMDDRuntimeValidationTests.model += "class MyClass6\n";
         KirraMDDRuntimeValidationTests.model += "id attribute attr8 : String;\n";
         KirraMDDRuntimeValidationTests.model += "end;\n";
 
@@ -247,7 +244,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());
-            TestCase.assertTrue(e.toString(), e.getMessage().contains("ref2"));
+            TestCase.assertTrue(e.toString(), e.getMessage().contains("Ref 2"));
         }
         created.setRelated("ref2", newInstance3);
 
@@ -325,7 +322,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         model += "package mypackage;\n";
         model += "import base;\n";
         model += "apply kirra;\n";
-        model += "[Entity] class MyClass1\n";
+        model += "class MyClass1\n";
         model += "public attribute _attr1 : Integer := 10;\n";
         model += "derived attribute attr3 : Integer := { self._attr1 };\n";
         model += "attribute attr2 : String;\n";
@@ -376,6 +373,7 @@ public class KirraMDDRuntimeValidationTests extends AbstractKirraMDDRuntimeTests
         try {
             // same value will fail
             kirra.createInstance(newInstance);
+            kirra.saveContext();
             TestCase.fail();
         } catch (KirraException e) {
             TestCase.assertEquals(e.toString(), KirraException.Kind.VALIDATION, e.getKind());

@@ -231,7 +231,6 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
     
 	override generateImports(Namespace namespaceContext) {
-		val userClass = (namespaceContext instanceof Class) && (namespaceContext as Class).isRole 
 		'''
 		«super.generateImports(namespaceContext)»
 		'''

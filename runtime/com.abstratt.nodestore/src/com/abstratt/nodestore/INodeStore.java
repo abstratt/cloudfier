@@ -42,8 +42,6 @@ public interface INodeStore {
      */
     public INodeKey generateKey();
 
-    public INodeStoreCatalog getCatalog();
-
     public String getName();
 
     /**
@@ -99,4 +97,8 @@ public interface INodeStore {
     public void updateNode(INode node);
 
     public Collection<INodeKey> filter(Map<String, Collection<Object>> nodeCriteria, Integer limit);
+    
+    public default NodeReference getReference(INodeKey key) {
+    	return new NodeReference(getName(), key);
+    }
 }

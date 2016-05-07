@@ -8,7 +8,7 @@ import java.util.Map;
  * Nodes are hierarchical. Root nodes have keys for direct retrieval. Values can
  * be null, primitives, {@link Date}, or node keys (for cross referencing).
  */
-public interface INode {
+public interface INode extends Cloneable {
 
     public Map<String, Collection<INode>> getChildren();
 
@@ -43,4 +43,6 @@ public interface INode {
     public void setProperties(Map<String, Object> values);
 
     public void setRelated(Map<String, Collection<NodeReference>> related);
+    
+    public INode clone();
 }

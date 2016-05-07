@@ -46,9 +46,7 @@ class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
         
         import java.net.URI;
         
-        import resource.userprofile.*;
-        
-        «entity.package.packageImports.map[importedPackage].toSet.filter[hasProfile("kirra") && ownedTypes.exists[isEntity]].map[
+        «entity.entityRelationships.map[type.nearestPackage].toSet.filter[it != entity.package].map[
         	'''
         	import resource.«name».*;
         	'''

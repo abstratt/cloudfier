@@ -1,7 +1,9 @@
 package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
 import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Constraint
@@ -20,6 +22,7 @@ import org.eclipse.uml2.uml.Namespace
 import org.eclipse.uml2.uml.OpaqueExpression
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Package
+import org.eclipse.uml2.uml.PackageableElement
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
@@ -31,17 +34,12 @@ import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.kirra.mdd.schema.KirraMDDSchemaBuilder.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import org.eclipse.uml2.uml.ValueSpecificationAction
-import org.eclipse.uml2.uml.PackageableElement
-import org.eclipse.uml2.uml.CallOperationAction
-import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
 
 abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
@@ -58,7 +56,14 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
     
     def generateImports(Namespace namespaceContext) {
-        namespaceContext.nearestPackage.packageImports.filter[importedPackage?.kirraPackage].generateMany(['''import «importedPackage.toJavaPackage».*;'''])
+        val modelImports = namespaceContext.nearestPackage.packageImports.filter[importedPackage?.kirraPackage].generateMany(['''import «importedPackage.toJavaPackage».*;'''])
+        
+        val roleClassesToImport = appPackages.entities.filter[ role ].filter[it.package != namespaceContext]
+        
+        '''
+        «modelImports»
+        «roleClassesToImport.generateMany['''import «it.package.toJavaPackage».«it.name»;''']»
+        '''
     }
     
     def generateComment(Element element) {
@@ -162,15 +167,14 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         ].flatten.toSet
     }
     
-    def toJavaType(TypedElement element, boolean honorOptionality) {
+    def CharSequence toJavaType(TypedElement element, boolean honorOptionality) {
         var nullable = true 
+        var multivalued = false
         if (element instanceof MultiplicityElement) {
             nullable = element.lower == 0 || (element instanceof Parameter && (element as Parameter).defaultValue != null)
-            if (element.multivalued) {
-                return '''«(element as MultiplicityElement).toJavaGeneralCollection»<«element.type.toJavaType»>'''
-            }
+            multivalued = element.multivalued
         }
-        element.type.toJavaType(if (honorOptionality) nullable else true)
+        element.type.toJavaType(if (honorOptionality) nullable else true, multivalued)
     }
     
     def toJavaType(TypedElement element) {
@@ -178,7 +182,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
     
         
-    def getJavaReturnType(Operation op) {
+    def CharSequence getJavaReturnType(Operation op) {
         return if (op.getReturnResult == null) "void" else op.getReturnResult().toJavaType(true)
     }
     
@@ -203,11 +207,11 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
 
     def String toJavaType(Type type) {
-        toJavaType(type, true)
+        toJavaType(type, true, false)
     }
     
-    def String toJavaType(Type type, boolean nullable) {
-        switch (type.kind) {
+    def String toJavaType(Type type, boolean nullable, boolean multivalued) {
+        val baseType = switch (type.kind) {
             case Entity:
                 type.name
             case Enumeration:
@@ -232,6 +236,10 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
             }
             default: '''UNEXPECTED KIND: «type.kind»'''
         }
+        return if (multivalued) 
+            '''Collection<«baseType»>'''
+        else
+        	baseType
     }
     
     def generateAnonymousDataTypeName(DataType type) {

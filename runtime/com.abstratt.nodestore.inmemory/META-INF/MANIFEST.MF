@@ -1,0 +1,19 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Memory-based NodeStore implementation
+Bundle-SymbolicName: com.abstratt.nodestore.inmemory;singleton:=true
+Bundle-Version: 2.1.201501.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Import-Package: org.apache.commons.logging,
+ org.apache.commons.lang,
+ com.abstratt.kirra,
+ com.abstratt.pluginutils,
+ com.abstratt.nodestore,
+ org.apache.commons.io,
+ com.abstratt.resman;resolution:=optional,
+ com.google.gson;version="2.2.4",
+ com.google.gson.reflect;version="2.2.4"
+Export-Package: com.abstratt.nodestore.inmemory
+
+

@@ -19,6 +19,7 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.nodestore.INodeKey;
+import com.abstratt.nodestore.NodeReference;
 
 /**
  * An execution context is a thread.
@@ -246,7 +247,7 @@ public class ExecutionContext {
      * The set of objects modified during this context and that need invariants
      * checked.
      */
-    private Map<INodeKey, RuntimeObject> workingSet = new LinkedHashMap<INodeKey, RuntimeObject>();
+    private Map<NodeReference, RuntimeObject> workingSet = new LinkedHashMap<>();
 
     private List<RuntimeEvent> events = new ArrayList<RuntimeEvent>();
 
@@ -268,7 +269,7 @@ public class ExecutionContext {
     }
 
     public void addToWorkingSet(RuntimeObject runtimeObject) {
-        Assert.isLegal(runtimeObject.getKey() != null);
+        Assert.isLegal(runtimeObject.nodeReference() != null);
         if (this.workingSet != null) {
             RuntimeObject existing = installIntoWorkingSet(runtimeObject);
             Assert.isLegal(existing == null || existing == runtimeObject);
@@ -281,7 +282,7 @@ public class ExecutionContext {
     }
 
     public void clearWorkingSet() {
-        workingSet = new LinkedHashMap<INodeKey, RuntimeObject>();
+        workingSet = new LinkedHashMap<>();
     }
 
     public void commitWorkingSet() {
@@ -371,7 +372,7 @@ public class ExecutionContext {
         return currentFrame().currentScope().getVariableValue(variable);
     }
 
-    public RuntimeObject getWorkingObject(INodeKey key) {
+    public RuntimeObject getWorkingObject(NodeReference key) {
         return workingSet.get(key);
     }
 
@@ -460,7 +461,7 @@ public class ExecutionContext {
 
     public void removeFromWorkingSet(RuntimeObject runtimeObject) {
         if (this.workingSet != null)
-            this.workingSet.remove(runtimeObject.getKey());
+            this.workingSet.remove(runtimeObject.nodeReference());
     }
 
     public void runWithAdvices(RuntimeAction action, RuntimeRunnable actionBehavior) {
@@ -513,7 +514,7 @@ public class ExecutionContext {
     }
 
     private RuntimeObject installIntoWorkingSet(RuntimeObject runtimeObject) {
-        return this.workingSet.put(runtimeObject.getKey(), runtimeObject);
+        return this.workingSet.put(runtimeObject.nodeReference(), runtimeObject);
     }
 
     private void processEvents(List<RuntimeEvent> eventsToProcess) {

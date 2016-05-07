@@ -1,4 +1,6 @@
-package com.abstratt.nodestore.jdbc;
+package com.abstratt.nodestore.inmemory;
+
+import java.net.URI;
 
 import com.abstratt.kirra.KirraApplication;
 import com.abstratt.kirra.SchemaManagement;
@@ -8,19 +10,17 @@ import com.abstratt.resman.Resource;
 import com.abstratt.resman.TaskModeSelector;
 import com.abstratt.resman.TaskModeSelector.Mode;
 
-public class JDBCNodeStoreProvider implements ActivatableFeatureProvider {
+public class InMemoryNodeStoreProvider implements ActivatableFeatureProvider {
     @Override
     public void activateContext(Resource<?> resource) {
-        JDBCNodeStoreCatalog contextCatalog = (JDBCNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
+        InMemoryNodeStoreCatalog contextCatalog = (InMemoryNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
         boolean readOnly = resource.getFeature(TaskModeSelector.class).getMode() == Mode.ReadOnly;
         contextCatalog.setReadOnly(readOnly);
     }
 
     @Override
     public void deactivateContext(Resource<?> resource, boolean operationSucceeded) {
-        JDBCNodeStoreCatalog contextCatalog = (JDBCNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
-        if (contextCatalog != null)
-            contextCatalog.clearCache();
+        InMemoryNodeStoreCatalog contextCatalog = (InMemoryNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
     }
 
     @Override
@@ -37,12 +37,12 @@ public class JDBCNodeStoreProvider implements ActivatableFeatureProvider {
     public void initFeatures(Resource<?> resource) {
         SchemaManagement schema = resource.getFeature(SchemaManagement.class);
         String applicationName = resource.getFeature(KirraApplication.class).getName();
-        resource.setFeature(INodeStoreCatalog.class, new JDBCNodeStoreCatalog(applicationName, schema));
+        resource.setFeature(INodeStoreCatalog.class, new InMemoryNodeStoreCatalog(applicationName, schema));
     }
     
     @Override
     public boolean isEnabled() {
-    	String kind = JDBCNodeStore.class.getSimpleName();
-    	return kind.equals(System.getProperty("nodestore.kind"));
+    	String kind = InMemoryNodeStore.class.getSimpleName();
+		return kind.equals(System.getProperty("nodestore.kind", kind));
     }
 }

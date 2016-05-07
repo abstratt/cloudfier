@@ -17,7 +17,7 @@
     		requires="mdd.modelWeaver=kirraWeaver"/>
           <systemPackage
 		    name="kirra_base"
-    		uri="platform:/plugin/com.abstratt.kirra.mdd.core/models/kirra_user_profile.uml"
+    		uri="platform:/plugin/com.abstratt.kirra.mdd.core/models/userprofile.uml"
     		requires="mdd.modelWeaver=kirraWeaver"/>
 	</extension>
    <extension

@@ -191,6 +191,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getRelationships(modelClass)) {
         	Relationship relationship = getEntityRelationship(attribute);
 			relationship.setInherited(KirraHelper.isInherited(attribute, modelClass));
+			relationship.setDefiner(KirraHelper.convertType(attribute.getClass_()));
 			entityRelationships.add(relationship);
         }
         return entityRelationships;
@@ -238,6 +239,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
             if (operation.getVisibility() == VisibilityKind.PUBLIC_LITERAL && KirraHelper.isEntityOperation(operation)) {
 				Operation entityOperation = getEntityOperation(operation);
 				entityOperation.setInherited(KirraHelper.isInherited(operation, umlClass));
+				entityOperation.setDefiner(KirraHelper.convertType(operation.getClass_()));
 				entityOperations.add(entityOperation);
 			}
         return entityOperations;
@@ -248,6 +250,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         for (org.eclipse.uml2.uml.Property attribute : KirraHelper.getProperties(umlClass)) {
             Property entityProperty = getEntityProperty(attribute);
             entityProperty.setInherited(KirraHelper.isInherited(attribute, umlClass));
+            entityProperty.setDefiner(KirraHelper.convertType(attribute.getClass_()));
 			entityProperties.add(entityProperty);
         }
         return entityProperties;

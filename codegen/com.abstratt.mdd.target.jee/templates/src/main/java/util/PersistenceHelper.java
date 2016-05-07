@@ -5,13 +5,29 @@ import javax.persistence.Persistence;
 
 public class PersistenceHelper {
     public static ThreadLocal<EntityManager> entityManager = new ThreadLocal<>();
+    public static EntityManager getEntityManager(boolean required) {
+    	EntityManager em = entityManager.get();
+    	if (em == null && required)
+    		throw new NullPointerException();
+        return em;
+    }
+ 
     public static EntityManager getEntityManager() {
-        return entityManager.get();
+        return getEntityManager(true);
     }
     
     public static void setEntityManager(EntityManager em) {
+    	System.out.println("Setting entityManager to " + em);
+    	if (em == null)
+    		throw new NullPointerException();
         entityManager.set(em);
     }
+    
+    public static void removeEntityManager() {
+    	System.out.println("Removing entityManager");
+        entityManager.remove();
+    }
+    
     
     public static void flush() {
         flush(false);

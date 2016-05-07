@@ -112,7 +112,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         Repository kirra = getKirra();
 
         List<Entity> entities = kirra.getEntities("mypackage");
-        TestCase.assertEquals(3, entities.size());
+        TestCase.assertEquals(2, entities.size());
 
         // ensure order by entity name for ease of testing
         sortNamedElements(entities);
@@ -123,14 +123,10 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("mypackage", entities.get(1).getEntityNamespace());
         TestCase.assertEquals("MyUserClass", entities.get(1).getName());
         
-        TestCase.assertEquals("userprofile", entities.get(2).getEntityNamespace());
-        TestCase.assertEquals("Profile", entities.get(2).getName());
-        
-
         kirra.getEntity("mypackage", "MyUserClass");
         kirra.getEntity("mypackage", "MyClass");
-        Entity userData = kirra.getEntity("mypackage", "_UserProfile");
-        assertTrue(!userData.isUserVisible());
+        Entity userData = kirra.getEntity("userprofile", "Profile");
+        assertTrue(userData.isUserVisible());
     }
 
     public void testEntityAggregationRelationships() throws CoreException {
@@ -648,7 +644,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         model += "operation action3() : MyClass1[*];\n";
         model += "static operation action4();\n";
         model += "private operation nonaction2(par1 : Integer, par2 : Boolean) : String;\n";
-        model += "query query1(par1 : Integer, par2 : Boolean) : MyClass1[*];\n";
+        model += "static query query1(par1 : Integer, par2 : Boolean) : MyClass1[*];\n";
         model += "private operation nonQuery1(par1 : Integer, par2 : Boolean) : MyClass1[*];\n";
         model += "end;\n";
         model += "end.";
@@ -713,10 +709,11 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertNotNull(schema);
 
         List<Namespace> namespaces = schema.getNamespaces();
-        TestCase.assertEquals(namespaces.toString(), 2, namespaces.size());
+        TestCase.assertEquals(namespaces.toString(), 3, namespaces.size());
         sortNamedElements(namespaces);
         TestCase.assertEquals("pack1", namespaces.get(0).getName());
         TestCase.assertEquals("pack2", namespaces.get(1).getName());
+        TestCase.assertEquals("userprofile", namespaces.get(2).getName());
 
         List<Entity> namespace1Entities = namespaces.get(0).getEntities();
         TestCase.assertEquals(1, namespace1Entities.size());
@@ -728,6 +725,11 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals(1, namespace2Entities.size());
         TestCase.assertEquals("pack2", namespace2Entities.get(0).getEntityNamespace());
         TestCase.assertEquals("Class2", namespace2Entities.get(0).getName());
+        
+        List<Entity> namespace3Entities = namespaces.get(2).getEntities();
+        TestCase.assertEquals(1, namespace3Entities.size());
+        TestCase.assertEquals("userprofile", namespace3Entities.get(0).getEntityNamespace());
+        TestCase.assertEquals("Profile", namespace3Entities.get(0).getName());
     }
 
 }

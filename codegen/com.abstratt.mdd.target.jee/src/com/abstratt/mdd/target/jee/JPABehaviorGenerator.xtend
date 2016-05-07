@@ -36,7 +36,7 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
 		val sourceClass = node.inputs.head.type as Classifier
 		val profileToRoleClass = targetClass.roleClass && sourceClass.qualifiedName == SYSTEM_USER_CLASS
         if (profileToRoleClass)
-			'''«node.inputs.head.generateAction».get«targetClass.name»()'''
+			'''as«targetClass.name»(«node.inputs.head.generateAction»)'''
 		else
 			super.generateStructuredActivityNodeAsCast(node)
 	}

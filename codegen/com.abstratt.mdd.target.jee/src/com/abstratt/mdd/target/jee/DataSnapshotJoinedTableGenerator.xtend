@@ -1,12 +1,10 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.kirra.InstanceRef
-import com.abstratt.kirra.TypeRef
 import com.abstratt.mdd.core.IRepository
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.databind.node.TextNode
-import java.util.LinkedHashSet
 import java.util.Map
 import java.util.Set
 import java.util.concurrent.atomic.AtomicLong
@@ -16,10 +14,15 @@ import org.eclipse.uml2.uml.Property
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class DataSnapshotJoinedTableGenerator extends DataSnapshotGenerator {
-	Map<String, Long> idMapping = newLinkedHashMap()
 	
 	new(IRepository repository) {
 		super(repository)
+	}
+	
+	override def getIdAnchorEntity(Class entity) {
+		val hierarchy = findHierarchy(entity)
+	    val rootEntity = hierarchy.last
+	    return rootEntity
 	}
 
 	/**
@@ -30,8 +33,8 @@ class DataSnapshotJoinedTableGenerator extends DataSnapshotGenerator {
 	 * PK. The id is the one defined for the base class.
 	 */
 	def override Iterable<CharSequence> generateInstance(Class entity, String namespace, String className, long index,
-		ObjectNode node, Map<String, AtomicLong> ids) {
-		val id = generateId(entity, index, ids)
+		ObjectNode node) {
+		val id = generateId(entity, index)
 		println('''«entity.qualifiedName» =  «id»''')
 		
 		val hierarchy = findHierarchy(entity)
@@ -56,10 +59,8 @@ class DataSnapshotJoinedTableGenerator extends DataSnapshotGenerator {
 		]
 	}
 	
-	def generateId(Class entity, long index, Map<String, AtomicLong> ids) {
-		val newId = ids.get(findRootClass(entity).qualifiedName).incrementAndGet()
-		idMapping.put(TypeRef.sanitize(entity.qualifiedName) + "@" + index, newId)
-		return newId
+	def generateId(Class entity, long index) {
+		return idMapping.get(InstanceRef.toString(entity.package.name, entity.name, "" + index))
 	}
 	
 	override def CharSequence getRelatedInstanceId(Property relationship, JsonNode propertyValue) {
@@ -80,38 +81,6 @@ class DataSnapshotJoinedTableGenerator extends DataSnapshotGenerator {
 			'''«generateAlterSequenceStatement(namespace, entity, nextValue)»'''
 		]
 	}
-	
-	def Class findRootClass(Class entity) {
-		val superClasses = entity.superClasses.filter[it.entity]
-		if (superClasses.empty)
-			return entity
-		if (superClasses.size > 1)
-			throw new IllegalStateException('''Multiple base classes found: «superClasses.map[qualifiedName].join(', ')» for «entity.qualifiedName»''')
-		return findRootClass(superClasses.get(0))
-	}
-
-	def Iterable<Class> findHierarchy(Class entity) {
-		val superClasses = entity.superClasses.filter[it.entity]
-		if (superClasses.empty)
-			return #[entity]
-		if (superClasses.size > 1)
-			throw new IllegalStateException('''Multiple base classes found: «superClasses.map[qualifiedName].join(', ')» for «entity.qualifiedName»''')
-		return #[entity] + findHierarchy(superClasses.get(0))
-	}
-
-	private def findRootSuperClass(Class entity) {
-		val allSuperClasses = collectAllSuperClasses(entity, newLinkedHashSet())
-		val candidates = new LinkedHashSet(allSuperClasses)
-		allSuperClasses.forEach [
-			if(it.superClasses.exists[superSuperClass|superClasses.contains(superSuperClass)]) candidates.remove(it)
-		]
-		if (candidates.size() >
-			1)
-			throw new IllegalStateException('''Multiple base classes found: «candidates.map[qualifiedName].join(', ')» for «entity.qualifiedName»''')
-		val rootSuperClass = if(candidates.empty) null else candidates.iterator.next
-		return rootSuperClass
-	}
-
 	def private Set<Class> collectAllSuperClasses(Class current, Set<Class> collected) {
 		val superClasses = current.superClasses
 		collected.addAll(superClasses)

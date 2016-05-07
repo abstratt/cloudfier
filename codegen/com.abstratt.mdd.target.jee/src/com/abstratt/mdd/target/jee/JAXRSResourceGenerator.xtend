@@ -381,9 +381,10 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 «allRoleClasses.map[ roleClass |
                     '''
                     if (securityContext.isUserInRole(«roleClass.name».ROLE_ID)) {
+                    	«roleClass.name» as«roleClass.name» = SecurityHelper.getCurrent«roleClass.name»();
                         «#[AccessCapability.Read, AccessCapability.Update, AccessCapability.Delete].map[
                             '''
-                            if («entity.name».Permissions.can«it.name»(SecurityHelper.getCurrentUser().get«roleClass.name»(), found)) {
+                            if («entity.name».Permissions.can«it.name»(as«roleClass.name», found)) {
                                instance.add("«it.name()»");
                             }
                             '''
@@ -394,7 +395,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                                 return ''
                             '''
                             // «action.name»
-                            if («entity.name».Permissions.is«action.name.toFirstUpper»AllowedFor(SecurityHelper.getCurrentUser().get«roleClass.name»(), found)) {
+                            if («entity.name».Permissions.is«action.name.toFirstUpper»AllowedFor(as«roleClass.name», found)) {
                                 actions.get("«action.name»").add("Call");
                             }
                             '''

@@ -1,7 +1,8 @@
 package com.abstratt.nodestore;
 
 public class IntegerKey implements INodeKey {
-    private long innerKey;
+	private static final long serialVersionUID = 1L;
+	private long innerKey;
 
     public IntegerKey(long innerKey) {
         this.innerKey = innerKey;
@@ -32,4 +33,7 @@ public class IntegerKey implements INodeKey {
     public String toString() {
         return Long.toString(innerKey);
     }
+    public long getValue() {
+		return innerKey;
+	}
 }

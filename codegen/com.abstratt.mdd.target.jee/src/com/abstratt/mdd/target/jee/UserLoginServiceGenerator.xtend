@@ -37,6 +37,7 @@ import org.eclipse.jetty.util.security.Password;
 import «applicationName».*;
 import userprofile.*;
 import util.PersistenceHelper;
+import util.SecurityHelper;
 
 @Provider
 public class UserLoginService extends MappedLoginService {
@@ -45,25 +46,11 @@ public class UserLoginService extends MappedLoginService {
 	protected UserIdentity loadUser(String username) {
 		Context jettyContext = ContextHandler.getCurrentContext();
 		ServletContext servletContext = jettyContext.getContext(jettyContext.getServletContextName());
-		EntityManagerFactory emf = (EntityManagerFactory) servletContext.getAttribute("emf");
-		PersistenceHelper.setEntityManager(emf.createEntityManager());
-		try {
-			Profile user = new ProfileService().findByUsername(username);
-			if (user == null)
-				return null;
-			List<String> roles = new ArrayList<>();
-			«roleClasses.map[ current | 
-				'''
-				if (new «current.name»Service().find«current.name»ByUser(user) != null) {
-					roles.add(«current.name».ROLE_ID);
-				}
-				'''
-			].join()»
-			System.out.println("User: " + username + " has roles: " + roles);
-			return new DefaultUserIdentity(new Subject(), new KnownUser(username, new Password(user.getPassword())), roles.toArray(new String[0]));
-		} finally {
-			PersistenceHelper.setEntityManager(null);
-		}
+		Profile user = new ProfileService().findByUsername(username);
+		if (user == null)
+			return null;
+		List<String> roles = SecurityHelper.getRoles(user);
+		return new DefaultUserIdentity(new Subject(), new KnownUser(username, new Password(user.getPassword())), roles.toArray(new String[0]));
 	}
 
 	@Override

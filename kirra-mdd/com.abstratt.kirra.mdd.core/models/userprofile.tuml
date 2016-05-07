@@ -1,0 +1,17 @@
+package userprofile;
+
+apply mdd_extensions;
+apply kirra;
+import mdd_types;
+
+class Profile
+    readonly id attribute username : String;
+    attribute email : String;
+    attribute password : String;
+    static query findByUsernameAndPassword(username : String, password : String) : Profile[*];
+    begin
+        return Profile extent.select((u : Profile) : Boolean { (u.username = username) and (u.password = password) });
+    end;
+end;
+
+end.

@@ -13,6 +13,7 @@
 	<modules>
 	    <!-- first so target gets updated/rebuilt first -->
 		<module>com.abstratt.nodestore</module>
+		<module>com.abstratt.nodestore.inmemory</module>
 		<module>com.abstratt.nodestore.jdbc</module>
 		<module>com.abstratt.mdd.runtime.core</module>
 		<module>com.abstratt.kirra.mdd.runtime</module>

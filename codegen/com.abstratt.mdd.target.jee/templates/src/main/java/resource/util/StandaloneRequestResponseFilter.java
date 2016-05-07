@@ -44,6 +44,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 
 	@Override
 	public void filter(ContainerRequestContext request) throws IOException {
+		System.out.println("Before " + request.getUriInfo());
 		SecurityHelper.setCurrentUsername(null);
 		beginTransaction(request);
 		if (!authenticate(request)) {
@@ -62,8 +63,12 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 
 	@Override
 	public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
-		enableCORS(request, response);
-		endTransaction(request, response);
+		try {
+			enableCORS(request, response);
+			endTransaction(request, response);
+		} finally {
+			System.out.println("After " + request.getUriInfo());
+		}
 	}
 
 	private boolean authenticate(ContainerRequestContext request) {
@@ -93,16 +98,8 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 		if (password != null && !password.equals(user.getPassword()))
 			return false;
 		
-		List<String> roles = new ArrayList<>();
-		if (new ApproverService().findApproverByUser(user) != null) {
-			roles.add(Approver.ROLE_ID);
-		}
-		if (new AdminService().findAdminByUser(user) != null) {
-			roles.add(Admin.ROLE_ID);
-		}
-		if (new EmployeeService().findEmployeeByUser(user) != null) {
-			roles.add(Employee.ROLE_ID);
-		}
+		
+		List<String> roles = SecurityHelper.getRoles(user);
 		Principal principal = new Principal() {
 			@Override
 			public String getName() {
@@ -152,7 +149,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 
 	private void endTransaction(ContainerRequestContext request, ContainerResponseContext response) {
 		SecurityHelper.setCurrentUsername(null);
-		EntityManager entityManager = PersistenceHelper.getEntityManager();
+		EntityManager entityManager = PersistenceHelper.getEntityManager(false);
 		if (entityManager != null) {
 			try {
 				if (MUTATION_METHODS.contains(request.getMethod())) {
@@ -164,7 +161,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 				}
 			} finally {
 				entityManager.close();
-				PersistenceHelper.setEntityManager(null);
+				PersistenceHelper.removeEntityManager();
 			}
 		}
 	}

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="com.abstratt.nodestore.factories">
+      <factory
+            class="com.abstratt.nodestore.inmemory.InMemoryNodeStoreFactory"
+            name="inmemory">
+      </factory>
+   </extension>
+   
+      <extension
+         point="com.abstratt.resman.features">
+      <feature
+            provider="com.abstratt.nodestore.inmemory.InMemoryNodeStoreProvider">
+      </feature>
+   </extension>
+</plugin>

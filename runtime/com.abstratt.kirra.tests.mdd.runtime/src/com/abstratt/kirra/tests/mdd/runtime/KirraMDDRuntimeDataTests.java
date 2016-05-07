@@ -257,9 +257,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertFalse(loaded2.isNew());
 
         TestCase.assertEquals(true, loaded2.getValue("attr3"));
-        // apparently, we don't keep time, only date, expect accordingly (that
-        // is probably not deliberate)
-        TestCase.assertEquals(new Date(now.getYear(), now.getMonth(), now.getDate()), loaded2.getValue("attr4"));
+        TestCase.assertEquals(now, loaded2.getValue("attr4"));
         TestCase.assertEquals("value2", loaded2.getValue("attr5"));
     }
 

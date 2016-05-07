@@ -120,7 +120,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 //		}.generatePredicate(constraint, true)
 		'''
 		if (securityContext.isUserInRole("«roleClass.name»")) {
-			«roleClass.name» «castUser» = SecurityHelper.getCurrentUser().get«roleClass.name»();
+			«roleClass.name» «castUser» = SecurityHelper.getCurrent«roleClass.name»();
 			if (!«entity.name».Permissions.can«capability.name()»(«castUser», «current»)) {
 				«failStatement»
 		    }

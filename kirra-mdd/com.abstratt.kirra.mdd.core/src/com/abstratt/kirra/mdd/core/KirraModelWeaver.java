@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.emf.common.util.EList;
@@ -28,6 +29,7 @@ import org.eclipse.uml2.uml.util.UMLUtil;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.isv.IModelWeaver;
+import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.PackageUtils;
@@ -140,35 +142,38 @@ public class KirraModelWeaver implements IModelWeaver {
 		}
 
 		private void enhanceUserEntities() {
-			List<Class> roleEntities = entities.stream().filter(it -> MDDExtensionUtils.isRoleClass(it)).collect(Collectors.toList());
+			List<Class> roleEntities = entities.stream().filter(it -> KirraHelper.isRole(it)).collect(Collectors.toList());
 			if (roleEntities.isEmpty())
 				return;
-			Package kirraProfilePackage = repository.findPackage("kirra_user_profile", null);
+			Package kirraProfilePackage = repository.findPackage("userprofile", null);
 			if (kirraProfilePackage == null)
 				throw new IllegalStateException("No package for user profiles");
 			
-			Package userProfilePackage = EcoreUtil.copy(kirraProfilePackage);
-			repository.addTopLevelPackage(userProfilePackage, "userprofile", null);
-			copyStereotypes(kirraProfilePackage, userProfilePackage);
-			Class profileClass = (Class) repository.findNamedElement("userprofile::UserProfile", UMLPackage.Literals.CLASS, null);
-			profileClass.setName("Profile");
-			profileClass.setVisibility(VisibilityKind.PUBLIC_LITERAL);
-			profileClass.setIsAbstract(false);
+//			Package userProfilePackage = EcoreUtil.copy(kirraProfilePackage);
+//			repository.addTopLevelPackage(userProfilePackage, "userprofile", null);
+//			copyStereotypes(kirraProfilePackage, userProfilePackage);
+			Class profileClass = (Class) repository.findNamedElement("userprofile::Profile", UMLPackage.Literals.CLASS, null);
+//			profileClass.setName("Profile");
+//			profileClass.setVisibility(VisibilityKind.PUBLIC_LITERAL);
+//			profileClass.setIsAbstract(false);
 			
 			// if there are any role classes in this package, create relationships to the profile class
 			// (ignore role classes that specialize other role classes)
-			System.out.println("Role entities: ");
-			roleEntities.forEach(it -> System.out.println(it.getName()));
-			roleEntities.stream().filter(it -> !it.isAbstract()).forEach(it -> {
-				PackageUtils.importPackage(userProfilePackage, it.getNearestPackage()).setVisibility(VisibilityKind.PRIVATE_LITERAL);
-				PackageUtils.importPackage(it.getNearestPackage(), userProfilePackage).setVisibility(VisibilityKind.PRIVATE_LITERAL);
-				Property asRoleClass = profileClass.createOwnedAttribute(StringUtils.uncapitalize(it.getName()), it);
-				asRoleClass.setIsReadOnly(true);
-				asRoleClass.setLower(0);
-				Property otherEnd = buildAssociationForAttribute(profileClass, asRoleClass, "user", false);
+			List<Class> nonDerivedRoleEntities = roleEntities.stream().filter(it -> !roleEntities.stream().anyMatch(other -> it != other && ClassifierUtils.isKindOf(it,  other))).collect(Collectors.toList());
+			nonDerivedRoleEntities.stream().forEach(roleClass -> {
+//				PackageUtils.importPackage(userProfilePackage, it.getNearestPackage()).setVisibility(VisibilityKind.PRIVATE_LITERAL);
+				PackageUtils.importPackage(roleClass.getNearestPackage(), kirraProfilePackage).setVisibility(VisibilityKind.PRIVATE_LITERAL);
+//				Property asRoleClass = profileClass.createOwnedAttribute(StringUtils.uncapitalize(it.getName()), it);
+//				asRoleClass.setIsReadOnly(true);
+//				asRoleClass.setLower(0);
+				
+				Property user = roleClass.createOwnedAttribute("user", profileClass);
+				user.setIsReadOnly(true);
+				user.setLower(0);
+				
+				Property otherEnd = buildAssociationForAttribute(roleClass, user, "role", false);
 				otherEnd.setIsNavigable(true);
-				asRoleClass.setIsNavigable(true);
-				System.out.println("Creating " + otherEnd.getName() + " back to " + profileClass.getName());
+				user.setIsNavigable(true);
 			});
 		}
 

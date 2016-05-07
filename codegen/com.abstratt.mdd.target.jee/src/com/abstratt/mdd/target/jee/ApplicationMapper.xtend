@@ -16,7 +16,6 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
             'src/main/resources/log4j.properties',
             'src/main/assemble/assembly.xml',
             'src/main/java/util/PersistenceHelper.java',
-            'src/main/java/util/SecurityHelper.java',
             'src/main/java/resource/util/StandaloneRequestResponseFilter.java',
             'src/main/java/resource/util/LoginLogoutResource.java',
             'src/main/java/resource/util/Authenticator.java',

@@ -11,6 +11,7 @@ Require-Bundle: com.abstratt.mdd.core.tests.harness,
  com.abstratt.mdd.core.tests.runtime,
  com.abstratt.kirra.mdd.runtime,
  com.abstratt.nodestore,
+ com.abstratt.nodestore.inmemory,
  com.abstratt.nodestore.jdbc,
  org.apache.commons.lang
 Export-Package: com.abstratt.nodestore.tests

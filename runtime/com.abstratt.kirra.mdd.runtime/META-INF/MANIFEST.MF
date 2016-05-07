@@ -17,8 +17,10 @@ Require-Bundle: com.abstratt.mdd.runtime.core,
  com.abstratt.pluginutils,
  org.apache.commons.io,
  org.eclipse.core.runtime,
- org.eclipse.emf.common ,
- com.abstratt.nodestore.jdbc
+ org.eclipse.emf.common,
+ com.abstratt.nodestore,
+ com.abstratt.nodestore.jdbc,
+ com.abstratt.nodestore.inmemory
 Import-Package: com.abstratt.nodestore,
  com.abstratt.resman 
 Export-Package: com.abstratt.kirra.mdd.runtime

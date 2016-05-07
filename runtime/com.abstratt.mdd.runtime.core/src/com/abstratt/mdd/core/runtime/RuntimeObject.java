@@ -12,7 +12,6 @@ import java.util.Set;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.ecore.EAnnotation;
 import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.Association;
@@ -499,7 +498,7 @@ public class RuntimeObject extends BasicType {
     @Override
     public BooleanType same(ExecutionContext context, BasicType other) {
         if (other instanceof RuntimeObject)
-            return BooleanType.fromValue(this.getKey().equals(((RuntimeObject) other).getKey()));
+            return BooleanType.fromValue(this.nodeReference().equals(((RuntimeObject) other).nodeReference()));
         return super.same(context, other);
     }
 
@@ -874,7 +873,7 @@ public class RuntimeObject extends BasicType {
     }
 
     private String storeName() {
-        return this.getRuntimeClass().getModelClassifier().getQualifiedName();
+        return this.getRuntimeClass().getModelClassifier().getQualifiedName().replaceAll(NamedElement.SEPARATOR, ".");
     }
 
     static Object toExternalValue(BasicType value) {

@@ -40,6 +40,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         mappings.putAll(allRepresentationEntities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
         mappings.put(generateUserLoginServiceFileName(applicationName), new UserLoginServiceGenerator(repository).generate())
+        mappings.put(generateSecurityHelperFileName(applicationName), new SecurityHelperGenerator(repository).generate())
         mappings.put('src/main/webapp/WEB-INF/web.xml', new WebXmlGenerator(repository).generateWebXml())
         mappings.put('src/test/resources/META-INF/sql/data.sql', new HSQLDataSnapshotGenerator(repository).generate())
         mappings.putAll(allResourceEntities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
@@ -103,6 +104,8 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
 	def generateUserLoginServiceFileName(String applicationName) {
 		'''src/main/java/resource/«applicationName»/UserLoginService.java'''.toString
 	}
-    
+    def generateSecurityHelperFileName(String applicationName) {
+		'''src/main/java/util/SecurityHelper.java'''.toString
+	}
     
 }

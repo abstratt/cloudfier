@@ -36,7 +36,7 @@ public class KirraUIHelperTests extends AbstractRepositoryBuildingTests {
         model1 += "  attribute attr1 : String;\n";
         model1 += "end;\n";
         model1 += "role class MyClass2\n";
-        model1 += "  readonly id attribute attr2 : String;\n";
+        model1 += "  readonly id attribute username : String;\n";
         model1 += "end;\n";
         model1 += "end.\n";
         String model2 = "";
@@ -44,7 +44,7 @@ public class KirraUIHelperTests extends AbstractRepositoryBuildingTests {
         model2 += "import base;\n";
         model2 += "apply kirra;\n";
         model2 += "role class MyClass3\n";
-        model2 += "  readonly id attribute attr3 : String;\n";
+        model2 += "  readonly id attribute username : String;\n";
         model2 += "end;\n";
         model2 += "class MyClass4\n";
         model2 += "  attribute attr4 : String;\n";
@@ -59,8 +59,8 @@ public class KirraUIHelperTests extends AbstractRepositoryBuildingTests {
         TestCase.assertEquals(2, userEntities.size());
         TestCase.assertTrue(userEntities.contains(getClass("mypackage1::MyClass2")));
         TestCase.assertTrue(userEntities.contains(getClass("mypackage2::MyClass3")));
-        assertEquals("attr2", KirraHelper.getUsernameProperty(getClass("mypackage1::MyClass2")).getName());
-        assertEquals("attr3", KirraHelper.getUsernameProperty(getClass("mypackage2::MyClass3")).getName());
+        assertEquals("username", KirraHelper.getUsernameProperty(getClass("mypackage1::MyClass2")).getName());
+        assertEquals("username", KirraHelper.getUsernameProperty(getClass("mypackage2::MyClass3")).getName());
     }
 
     public void testIsChildTabRelationship_unidirectionalManyToMany() throws CoreException {

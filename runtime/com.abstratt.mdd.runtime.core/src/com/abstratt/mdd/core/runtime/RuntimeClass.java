@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Classifier;
+import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.Property;
@@ -25,6 +26,7 @@ import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStore;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.nodestore.IntegerKey;
+import com.abstratt.nodestore.NodeReference;
 
 /**
  */
@@ -142,7 +144,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
 	private String getNodeStoreName() {
-		return getModelClassifier().getQualifiedName();
+		return getModelClassifier().getQualifiedName().replaceAll(NamedElement.SEPARATOR, ".");
 	}
 
     public Collection<RuntimeObject> getParameterDomain(String externalId, Parameter parameter, Classifier parameterType) {
@@ -247,7 +249,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     protected RuntimeObject getOrLoadInstance(INodeKey key) {
-        RuntimeObject existing = getRuntime().getCurrentContext().getWorkingObject(key);
+        RuntimeObject existing = getRuntime().getCurrentContext().getWorkingObject(new NodeReference(getNodeStoreName(), key));
         if (existing != null) {
             if (!existing.isActive())
                 return null;

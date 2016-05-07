@@ -8,6 +8,7 @@ Require-Bundle: com.abstratt.mdd.runtime.core;visibility:=reexport,
  com.abstratt.mdd.core.tests.harness;visibility:=reexport,
  com.abstratt.nodestore,
  com.abstratt.nodestore.jdbc,
+ com.abstratt.nodestore.inmemory, 
  com.abstratt.kirra.api,
  com.abstratt.kirra.mdd.runtime,
  com.abstratt.kirra.mdd.rest

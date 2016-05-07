@@ -48,8 +48,10 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import java.util.concurrent.atomic.AtomicInteger
+import com.abstratt.kirra.InstanceRef
 
 abstract class DataSnapshotGenerator extends AbstractGenerator {
+    protected Map<String, Long> idMapping = newLinkedHashMap()
 
 	new(IRepository repository) {
 		super(repository)
@@ -75,14 +77,20 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 		} finally {
 			IOUtils.closeQuietly(sourceStream)
 		}
-		val jsonTree = parse(new InputStreamReader(new ByteArrayInputStream(contents.toByteArray)))
-		generateContents(jsonTree as ObjectNode)
+		val jsonTree = parse(new InputStreamReader(new ByteArrayInputStream(contents.toByteArray))) as ObjectNode
+		
+		generateContents(jsonTree)
 	}
 
 	def CharSequence generateContents(ObjectNode root) {
 		val entities = entities.toMap[qualifiedName]
 		val entityNames = entities.keySet()
 		val ids = entityNames.toInvertedMap[new AtomicLong(0)]
+		root.fields.toIterable.forEach [ entry |
+			val namespaceName = entry.key
+			val namespaceNode = entry.value as ObjectNode
+			allocateIds(entities, ids, namespaceName, namespaceNode)
+		]
 		val namespaceStatements = root.fields.toIterable.map [ entry |
 			val namespaceName = entry.key
 			val namespaceNode = entry.value as ObjectNode
@@ -92,10 +100,42 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 		println('''IDs: «ids»''')
 		return contents
 	}
+	
+	protected def Iterable<Class> findHierarchy(Class entity) {
+		val superClasses = entity.superClasses.filter[it.entity]
+		if (superClasses.empty)
+			return #[entity]
+		if (superClasses.size > 1)
+			throw new IllegalStateException('''Multiple base classes found: «superClasses.map[qualifiedName].join(', ')» for «entity.qualifiedName»''')
+		return #[entity] + findHierarchy(superClasses.get(0))
+	}
+	
+	def void allocateIds(Map<String, Class> entities, Map<String, AtomicLong> ids,
+		String namespace, ObjectNode namespaceContents) {
 
+	    namespaceContents.fields.forEach[ entry |
+			val className = entry.key
+			val nameComponents = TypeRef.splitName(className)
+			val actualNamespace = nameComponents.get(0) ?: namespace
+			val actualName = nameComponents.get(1)
+			val instanceNodes = entry.value as ArrayNode
+			val entity = entities.get(actualNamespace + '::' + actualName)
+		    val idAnchorEntity = getIdAnchorEntity(entity)
+	    	instanceNodes.elements.forEach[ it, i |
+	    		val index = i + 1
+	    		val newId = ids.get(idAnchorEntity.qualifiedName).incrementAndGet()
+	    		idMapping.put(TypeRef.sanitize(entity.qualifiedName) + "@" + index, newId)
+	    	]
+	    ]
+	}
+	
+	def getIdAnchorEntity(Class entity) {
+		return entity
+	}
+	
 	def Iterable<CharSequence> generateNamespace(Map<String, Class> entities, Map<String, AtomicLong> ids,
 		String namespace, ObjectNode namespaceContents) {
-		val inserts = generateDataInserts(namespaceContents, entities, namespace, ids)
+		val inserts = generateDataInserts(namespaceContents, entities, namespace)
 		val alterSequences = generateAlterSequences(ids, namespace, entities)
 		return inserts + alterSequences
 	}
@@ -115,8 +155,7 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 	}
 	
 		
-	def Iterable<CharSequence> generateDataInserts(ObjectNode namespaceContents, Map<String, Class> entities, String namespace,
-		Map<String, AtomicLong> ids) {
+	def Iterable<CharSequence> generateDataInserts(ObjectNode namespaceContents, Map<String, Class> entities, String namespace) {
 		val inserts = namespaceContents.fields.toIterable.map [ entry |
 			val className = entry.key
 			val nameComponents = TypeRef.splitName(className)
@@ -127,13 +166,18 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 			val entity = entities.get(actualNamespace + '::' + actualName)
 			val index = new AtomicInteger(0)
 			instanceNodes.elements.toList.map [
-				generateInstance(entity, actualNamespace, actualName, index.incrementAndGet, it as ObjectNode, ids)
+				generateInstance(entity, actualNamespace, actualName, index.incrementAndGet, it as ObjectNode)
 			].flatten().join() as CharSequence
 		]
 		return inserts
 	}
 
-    def abstract Iterable<CharSequence> generateInstance(Class entity, String namespace, String className, long index, ObjectNode node, Map<String, AtomicLong> ids)
+	def Iterable<CharSequence> generateInstance(Class entity, String namespace, String className, long index, ObjectNode node) {
+		val id = idMapping.get(InstanceRef.toString(namespace, className, "" + index))
+		val allEntityProperties = entity.properties
+		val allEntityRelationships = entity.entityRelationships
+		#[generateInsert(allEntityProperties, allEntityRelationships, node, className, id)]
+	}    
 
 	def CharSequence generateInsert(List<Property> allEntityProperties, List<Property> allEntityRelationships, ObjectNode node, String className, long id) {
 		val sqlPropertyValues = allEntityProperties.filter[!autoGenerated].toMap[name].mapValues [ property |

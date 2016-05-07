@@ -261,11 +261,6 @@ public class JDBCNodeStore implements INodeStore {
     }
 
     @Override
-    public INodeStoreCatalog getCatalog() {
-        return basicGetCatalog();
-    }
-
-    @Override
     public String getName() {
         return clazz.getTypeRef().toString();
     }
