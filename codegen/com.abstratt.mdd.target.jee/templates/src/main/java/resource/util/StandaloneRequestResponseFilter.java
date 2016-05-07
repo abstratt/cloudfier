@@ -26,8 +26,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import {applicationName}.*;
 
-import resource.expenses.EntityResource;
-import resource.expenses.IndexResource;
+import resource.{applicationName}.EntityResource;
+import resource.{applicationName}.IndexResource;
 import userprofile.Profile;
 import userprofile.ProfileService;
 import util.PersistenceHelper;
@@ -39,7 +39,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 	private EntityManagerFactory entityManagerFactory;
 
 	public StandaloneRequestResponseFilter() {
-		entityManagerFactory = Persistence.createEntityManagerFactory("expenses-local");
+		entityManagerFactory = Persistence.createEntityManagerFactory("{applicationName}-local");
 	}
 
 	@Override
