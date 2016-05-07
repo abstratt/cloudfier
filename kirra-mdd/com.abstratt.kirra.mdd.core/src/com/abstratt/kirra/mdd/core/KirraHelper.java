@@ -954,7 +954,7 @@ public class KirraHelper {
         Properties repositoryProperties = repository.getProperties();
         String applicationName = repositoryProperties.getProperty(IRepository.APPLICATION_NAME);
         if (applicationName == null)
-        	return repository.getBaseURI().lastSegment();
+        	return Arrays.stream(repository.getTopLevelPackages(null)).filter(it -> repository.isOwnPackage(it)).map(it -> it.getName()).findAny().get();
         return applicationName;
     }
     
