@@ -675,7 +675,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val firstMethod = operation.methods?.head
         val stateProperty = operation.class_.findStateProperties.head
         val stateMachine = stateProperty?.type as StateMachine
-        val isEventTriggering = !operation.static && operation.action && stateMachine != null && !stateMachine.findTriggersForCalling(operation).empty
+        val isEventTriggering = !operation.static && !operation.query && stateMachine != null && !stateMachine.findTriggersForCalling(operation).empty
         '''
             «generateParameterDefaults(operation)»
             «operation.preconditions.map[generatePrecondition(operation, it)].join()»
