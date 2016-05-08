@@ -361,8 +361,10 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 
 	@Override
 	public Collection<INodeKey> filter(Map<String, Collection<Object>> nodeCriteria, Integer limit) {
-		// TODO Auto-generated method stub
-		return null;
+		return nodes.values().stream().filter(node -> {
+			Map<String, Object> properties = node.getProperties();
+			return nodeCriteria.entrySet().stream().allMatch(criteria -> criteria.getValue().contains(properties.get(criteria.getKey())));
+		}).map(it -> it.getKey()).collect(Collectors.toList());
 	}
 	
 	@Override
