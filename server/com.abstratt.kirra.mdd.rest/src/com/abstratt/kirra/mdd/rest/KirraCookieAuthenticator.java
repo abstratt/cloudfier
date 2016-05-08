@@ -1,11 +1,19 @@
 package com.abstratt.kirra.mdd.rest;
 
+import java.util.Base64;
+import java.util.StringTokenizer;
+
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.data.ChallengeResponse;
+import org.restlet.data.ChallengeScheme;
 import org.restlet.data.CookieSetting;
 import org.restlet.data.Method;
+import org.restlet.data.Status;
+import org.restlet.engine.header.Header;
 import org.restlet.ext.crypto.CookieAuthenticator;
+import org.restlet.util.Series;
 
 public class KirraCookieAuthenticator extends CookieAuthenticator implements KirraAuthenticationContext {
 
@@ -24,12 +32,12 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
 
     @Override
     public String getLoginPath() {
-        return "/" + WORKSPACE_NAME.get() + "/login";
+        return "/" + WORKSPACE_NAME.get() + "/session/login";
     }
 
     @Override
     public String getLogoutPath() {
-        return "/" + WORKSPACE_NAME.get() + "/logout";
+        return "/" + WORKSPACE_NAME.get() + "/session/logout";
     }
     
     @Override
@@ -43,6 +51,30 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     	String cookiePath = request.getRootRef().getPath() +'/' + WORKSPACE_NAME.get();
     	credentialsCookie.setPath(cookiePath);
 		return credentialsCookie;
+    }
+    
+    @Override
+    protected void login(Request request, Response response) {
+    	Series<Header> requestHeaders = (Series<Header>)request.getAttributes().computeIfAbsent("org.restlet.http.headers", key -> new Series<Header>(Header.class));
+    	Header authorizationHeader = requestHeaders.getFirst("Authorization");
+		if (authorizationHeader == null || !authorizationHeader.getValue().startsWith("Custom ")) {
+			super.logout(request, response);
+			return;
+		}
+		String authorization = authorizationHeader.getValue();
+		
+		String encodedUserPassword = authorization.replaceFirst("Custom ", "");
+		String usernameAndPassword = new String(Base64.getDecoder().decode(encodedUserPassword));
+		StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
+		String username = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
+		String password = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
+
+        // Set credentials
+        ChallengeResponse cr = new ChallengeResponse(new ChallengeScheme("Custom", "custom"), username, password);
+        request.setChallengeResponse(cr);
+
+        // Attempt to redirect
+        attemptRedirect(request, response);
     }
 
     @Override

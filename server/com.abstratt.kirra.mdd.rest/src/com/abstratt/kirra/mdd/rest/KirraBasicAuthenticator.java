@@ -1,19 +1,10 @@
 package com.abstratt.kirra.mdd.rest;
 
-import java.util.Properties;
-
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Path;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.data.Method;
-import org.restlet.engine.header.Header;
 import org.restlet.security.ChallengeAuthenticator;
-import org.restlet.util.Series;
-
-import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
 
 public class KirraBasicAuthenticator extends ChallengeAuthenticator implements KirraAuthenticationContext {
 

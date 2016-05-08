@@ -1,6 +1,8 @@
 package com.abstratt.kirra.mdd.rest;
 
 import org.apache.commons.lang.StringUtils;
+import org.restlet.Request;
+import org.restlet.Response;
 import org.restlet.security.SecretVerifier;
 import org.restlet.security.Verifier;
 
@@ -41,4 +43,10 @@ public class KirraSecretVerifier extends SecretVerifier implements KirraAuthenti
                 + " failed, unknown user identifier: " + identifier, null);
         return Verifier.RESULT_UNKNOWN;
     }
+    
+    @Override
+    	protected String getIdentifier(Request request, Response response) {
+    		// TODO Auto-generated method stub
+    		return super.getIdentifier(request, response);
+    	}
 }
