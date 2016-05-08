@@ -12,6 +12,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -38,12 +40,16 @@ import org.eclipse.uml2.uml.Vertex;
 
 import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
+import com.abstratt.kirra.EntityCapabilities;
 import com.abstratt.kirra.ExternalService;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.InstanceCapabilities;
+import com.abstratt.kirra.InstanceManagement;
 import com.abstratt.kirra.InstanceRef;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
 import com.abstratt.kirra.Namespace;
+import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
@@ -73,6 +79,7 @@ import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
 import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.runtime.types.ValueConverter;
+import com.abstratt.mdd.core.util.AccessCapability;
 import com.abstratt.mdd.core.util.AssociationUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
@@ -256,6 +263,29 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             if (enabled.contains(operation))
                 result.add(entity.getOperation(operation.getName()));
         return new ArrayList<com.abstratt.kirra.Operation>(result);
+    }
+    
+    @Override
+    public EntityCapabilities getEntityCapabilities(Entity entity) {
+    	EntityCapabilities capabilities = new EntityCapabilities();
+    	
+    	Stream<com.abstratt.kirra.Operation> actions = entity.getOperations().stream().filter(it -> it.getKind() == OperationKind.Action  && !it.isInstanceOperation());
+    	Stream<com.abstratt.kirra.Operation> queries = entity.getOperations().stream().filter(it -> it.getKind() == OperationKind.Finder && !it.isInstanceOperation());
+    	
+    	capabilities.setActions(actions.collect(Collectors.toMap(it -> it.getName(), it -> Arrays.asList(AccessCapability.StaticCall.name()))));
+    	capabilities.setQueries(queries.collect(Collectors.toMap(it -> it.getName(), it -> Arrays.asList(AccessCapability.StaticCall.name()))));
+    	capabilities.setEntity(Arrays.stream(AccessCapability.values()).filter(it -> !it.isInstance()).map(it -> it.name()).collect(Collectors.toList()));
+    	
+		return capabilities;
+    }
+    
+    @Override
+    public InstanceCapabilities getInstanceCapabilities(Entity entity, String objectId) {
+    	InstanceCapabilities capabilities = new InstanceCapabilities();
+    	Stream<com.abstratt.kirra.Operation> actions = entity.getOperations().stream().filter(it -> it.getKind() == OperationKind.Action && it.isInstanceOperation());
+    	capabilities.setActions(actions.collect(Collectors.toMap(it -> it.getName(), it -> Arrays.asList(AccessCapability.StaticCall.name()))));
+    	capabilities.setInstance(Arrays.stream(AccessCapability.values()).filter(it -> it.isInstance()).map(it -> it.name()).collect(Collectors.toList()));
+		return capabilities;
     }
 
     @Override
