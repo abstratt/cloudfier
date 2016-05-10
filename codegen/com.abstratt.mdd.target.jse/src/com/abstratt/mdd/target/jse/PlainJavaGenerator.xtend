@@ -40,6 +40,7 @@ import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
+import com.abstratt.mdd.target.base.AbstractGenerator
 
 abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
     
@@ -76,14 +77,6 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
                  */
             '''
         }
-    }
-
-    def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper) {
-        return items.generateMany(mapper, '\n')
-    }
-
-    def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper, String separator) {
-        return items.map[mapper.apply(it)].join(separator)
     }
     
     def boolean isJavaPrimitive(Type toCheck) {

@@ -9,23 +9,6 @@ import java.util.List
 import org.eclipse.uml2.uml.Class
 
 class ApplicationMapper implements ITopLevelMapper<Class> {
-    
-    override mapFileName(Class element) {
-        throw new UnsupportedOperationException
-    }
-    
-    override map(Class toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Class> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Class element) {
-        throw new UnsupportedOperationException
-    }
-    
     override mapAll(IRepository repository) {
         val applicationLabel = KirraHelper.getApplicationLabel(repository)
         val applicationName = KirraHelper.getApplicationName(repository)

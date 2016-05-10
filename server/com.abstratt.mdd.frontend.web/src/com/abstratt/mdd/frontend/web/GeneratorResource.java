@@ -24,6 +24,7 @@ import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.target.ITargetPlatform;
 import com.abstratt.mdd.core.target.ITopLevelMapper;
+import com.abstratt.mdd.core.target.OutputHolder;
 import com.abstratt.mdd.core.target.TargetCore;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.resman.Resource;
@@ -54,8 +55,8 @@ public class GeneratorResource extends AbstractWorkspaceResource {
                 for (String artifactType : artifactTypesToGenerate) {
                     ITopLevelMapper<Classifier> mapper = platform.getMapper(artifactType);
                     try {
-                        for (Map.Entry<String, CharSequence> entry : mapper.mapAll(repository).entrySet())
-                            result.put(entry.getKey(), entry.getValue().toString().getBytes());
+                        for (Map.Entry<String, OutputHolder<?>> entry : mapper.mapMultiple(repository).entrySet())
+                            result.put(entry.getKey(), entry.getValue().getBytes());
                     } catch (RuntimeException re) {
                         log.error("Error mapping to platform "+ platform.getId() + " and artifact type " + artifactType + " for repository " + repository.getBaseURI(), re);
                         StringWriter out = new StringWriter();

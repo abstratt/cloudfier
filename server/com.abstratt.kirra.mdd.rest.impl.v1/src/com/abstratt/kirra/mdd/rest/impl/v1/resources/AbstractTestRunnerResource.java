@@ -99,7 +99,7 @@ public abstract class AbstractTestRunnerResource extends AbstractKirraRepository
         TestResult testResult;
         final Runtime runtime = RepositoryService.DEFAULT.getFeature(Runtime.class);
         ResourceUtils.ensure(testCase != null, "Could not find operation", null);
-        ResourceUtils.ensure(TestResource.isTestCase(testCase), "Not a test case operation", null);
+        ResourceUtils.ensure(MDDExtensionUtils.isTestCase(testCase), "Not a test case operation", null);
         SourceLocation testLocation = findOperationLocation(testCase);
         try {
             BasicType instance = runtime.newInstance(testCase.getClass_());

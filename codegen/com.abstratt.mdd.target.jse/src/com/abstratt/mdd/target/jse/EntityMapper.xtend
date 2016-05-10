@@ -63,18 +63,6 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name»Service.java'''.toString
     }
     
-    override map(Classifier toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Classifier> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Classifier element) {
-        throw new UnsupportedOperationException
-    }
-    
     def PlainEntityGenerator createEntityGenerator(IRepository repository) {
         new PlainEntityGenerator(repository)
     }

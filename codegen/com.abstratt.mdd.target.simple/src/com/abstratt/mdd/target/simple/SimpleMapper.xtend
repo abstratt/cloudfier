@@ -21,17 +21,4 @@ class SimpleMapper implements ITopLevelMapper<Class> {
     override mapFileName(Class classElement) {
         '''«classElement.name».txt'''
     }
-    
-    override map(Class toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Class> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Class element) {
-        throw new UnsupportedOperationException
-    }
-    
 }

@@ -5,7 +5,7 @@ import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil
-import com.abstratt.mdd.target.jse.AbstractGenerator
+import com.abstratt.mdd.target.base.AbstractGenerator
 import com.fasterxml.jackson.core.JsonFactory
 import com.fasterxml.jackson.core.JsonParseException
 import com.fasterxml.jackson.core.JsonParser
@@ -49,6 +49,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import java.util.concurrent.atomic.AtomicInteger
 import com.abstratt.kirra.InstanceRef
+import com.abstratt.mdd.target.base.AbstractGenerator
 
 abstract class DataSnapshotGenerator extends AbstractGenerator {
     protected Map<String, Long> idMapping = newLinkedHashMap()

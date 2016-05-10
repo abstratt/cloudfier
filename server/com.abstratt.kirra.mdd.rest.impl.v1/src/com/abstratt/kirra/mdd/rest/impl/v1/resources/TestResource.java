@@ -20,6 +20,7 @@ import org.restlet.resource.Post;
 import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.Status;
 import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
 import com.abstratt.pluginutils.ISharedContextRunnable;
@@ -34,10 +35,6 @@ public class TestResource extends AbstractTestRunnerResource {
     public static String getExpectedContext(Operation testCase) {
         Stereotype failure = StereotypeUtils.getStereotype(testCase, "Failure");
         return (String) testCase.getValue(failure, "context");
-    }
-
-    static boolean isTestCase(Operation op) {
-        return !op.isStatic() && op.getClass_() != null && StereotypeUtils.hasStereotype(op.getClass_(), "Test");
     }
 
     static boolean shouldFail(Operation op) {
@@ -86,7 +83,7 @@ public class TestResource extends AbstractTestRunnerResource {
                         if (UMLPackage.Literals.OPERATION != eObject.eClass())
                             return false;
                         Operation op = (Operation) eObject;
-                        return TestResource.isTestCase(op);
+                        return MDDExtensionUtils.isTestCase(op);
                     }
                 }, true);
                 return testCaseOperations.stream().map(operation -> asTestCase(operation)).collect(Collectors.toList());

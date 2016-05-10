@@ -12,6 +12,7 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.TemplateUtils.*
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.UMLPackage
@@ -74,7 +75,7 @@ class FunctionalTestGenerator extends ModelGenerator {
         
         val isTestCase = [Operation it | it.public && it.ownedParameters.empty]
         val testCases = testClass.operations.filter(isTestCase)
-        val helpers = testClass.operations.filter[!isTestCase.apply(it)]
+        val helpers = testClass.operations.filter[!isTestCase(it)]
         
         '''
         

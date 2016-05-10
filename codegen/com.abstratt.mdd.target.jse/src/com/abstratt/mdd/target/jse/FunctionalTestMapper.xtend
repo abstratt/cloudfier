@@ -2,8 +2,8 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
-import java.util.List
 import org.eclipse.uml2.uml.Class
+
 import static extension com.abstratt.mdd.target.jse.TestUtils.*
 
 class FunctionalTestMapper implements ITopLevelMapper<Class> {
@@ -27,17 +27,5 @@ class FunctionalTestMapper implements ITopLevelMapper<Class> {
         ])
         return result
         
-    }
-    
-    override map(Class toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Class> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Class element) {
-        throw new UnsupportedOperationException
     }
 }

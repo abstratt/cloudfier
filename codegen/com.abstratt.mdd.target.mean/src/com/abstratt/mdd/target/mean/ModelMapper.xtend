@@ -13,18 +13,6 @@ class ModelMapper implements ITopLevelMapper<Class> {
         '''models/«element.name».js'''
     }
     
-    override map(Class toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Class> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Class element) {
-        throw new UnsupportedOperationException
-    }
-    
     override mapAll(IRepository repository) {
         val appPackages = repository.getTopLevelPackages(null).applicationPackages
         val topLevelEntities = appPackages.entities.filter[it.topLevel]

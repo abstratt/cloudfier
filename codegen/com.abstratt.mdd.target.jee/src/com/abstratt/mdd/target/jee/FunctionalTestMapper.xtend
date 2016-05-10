@@ -31,16 +31,4 @@ class FunctionalTestMapper implements ITopLevelMapper<Class> {
         return result
         
     }
-    
-    override map(Class toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Class> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Class element) {
-        throw new UnsupportedOperationException
-    }
 }

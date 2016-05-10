@@ -69,6 +69,7 @@
       <plugin id="com.abstratt.mdd.target.base"/>
       <plugin id="com.abstratt.mdd.target.core"/>
       <plugin id="com.abstratt.mdd.target.engine.gstring"/>
+      <plugin id="com.abstratt.mdd.target.doc"/>
       <plugin id="com.abstratt.mdd.target.jee"/>
       <plugin id="com.abstratt.mdd.target.jse"/>
       <plugin id="com.abstratt.mdd.target.mean"/>

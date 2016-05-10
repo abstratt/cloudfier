@@ -19,16 +19,4 @@ class RouteMapper implements ITopLevelMapper<Class> {
             new RouteGenerator(repo).generateRoutes
         }
     }
-    
-    override map(Class toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override mapAll(List<Class> toMap) {
-        throw new UnsupportedOperationException
-    }
-    
-    override canMap(Class element) {
-        throw new UnsupportedOperationException
-    }
 }

@@ -17,10 +17,6 @@ class FunctionalTestGenerator extends PlainEntityGenerator {
         super(repository)
     }
 
-    private def boolean isTestCase(Operation toCheck) {
-        toCheck.public && toCheck.ownedParameters.empty && toCheck.class_.isTestClass()
-    }
-    
     override IBehaviorGenerator createBehaviorGenerator() {
         new FunctionalTestBehaviorGenerator(repository)
     }
