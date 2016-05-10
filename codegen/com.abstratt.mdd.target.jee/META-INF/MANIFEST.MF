@@ -15,6 +15,7 @@ Require-Bundle: com.abstratt.mdd.target.core,
  org.apache.commons.io,
  com.abstratt.mdd.target.jse,
  com.abstratt.mdd.target.base,
+ com.abstratt.kirra.mdd.target.base,
  com.fasterxml.jackson.core.jackson-core;bundle-version="2.1.0",
  com.fasterxml.jackson.core.jackson-annotations;bundle-version="2.1.0",
  com.fasterxml.jackson.core.jackson-databind;bundle-version="2.1.0"

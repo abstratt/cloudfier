@@ -2,7 +2,7 @@ package com.abstratt.mdd.target.doc
 
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.target.base.AbstractGenerator
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.google.common.base.Function
 import java.util.Set
 import org.apache.commons.lang3.StringUtils
@@ -18,6 +18,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 
 class DataDictionaryGenerator extends AbstractGenerator {
     

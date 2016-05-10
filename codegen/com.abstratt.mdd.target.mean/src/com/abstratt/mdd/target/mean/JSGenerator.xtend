@@ -45,10 +45,8 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
-import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast

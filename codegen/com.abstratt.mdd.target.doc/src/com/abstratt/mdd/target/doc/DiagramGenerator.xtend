@@ -5,7 +5,7 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.modelrenderer.MapBackedSettingsSource
 import com.abstratt.mdd.modelrenderer.RenderingSettings
 import com.abstratt.mdd.modelrenderer.uml2dot.UML2DOT
-import com.abstratt.mdd.target.base.AbstractGenerator
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import java.io.ByteArrayInputStream
 import java.io.File
 import java.net.URI
@@ -17,6 +17,7 @@ import org.apache.commons.io.FileUtils
 import org.eclipse.core.runtime.Path
 import org.eclipse.uml2.uml.Package
 import org.eclipse.core.runtime.CoreException
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 
 class DiagramGenerator extends AbstractGenerator {
 	
