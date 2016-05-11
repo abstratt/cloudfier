@@ -44,7 +44,6 @@ import org.eclipse.uml2.uml.ValueSpecification
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.isVertexLiteral
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.resolveVertexLiteral
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
@@ -137,8 +136,9 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 	
 	def Iterable<CharSequence> generateNamespace(Map<String, Class> entities, Map<String, AtomicLong> ids,
 		String namespace, ObjectNode namespaceContents) {
+	    val defaultNamespace = entities.values.filter[it | !KirraHelper.isUser(it)].head.namespace.name
 		val inserts = generateDataInserts(namespaceContents, entities, namespace)
-		val alterSequences = generateAlterSequences(ids, namespace, entities)
+		val alterSequences = generateAlterSequences(ids, defaultNamespace, entities)
 		return inserts + alterSequences
 	}
 
