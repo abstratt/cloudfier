@@ -144,15 +144,17 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
         parseAndCheck(source)
         val contextNames = #['crm::Account']
         val contexts = contextNames.map[repository.findNamedElement(it, null, null)]
-        val requiredCapability = AccessCapability.Call
+        val requiredCapability = AccessCapability.Read
         val allRoleClasses = repository.findInAnyPackage(it | it instanceof Class && (it as Class).role)
 		val actual = new JAXRSAccessControlGenerator(repository).generateInstanceAccessChecks('self', requiredCapability, allRoleClasses, contexts, 'throw new Error();')
 		val expected = '''
 		if(securityContext.isUserInRole("Admin")) {
 			//no further checks
-		} else if (securityContext.isUserInRole("Customer")) {
+		} else if (securityContext.isUserInRole("Representative")) {
+			//no further checks
+		} else if(securityContext.isUserInRole("Customer")) {
 			Customer asCustomer = SecurityHelper.getCurrentCustomer();
-			if (!Account.Permissions.canCall(asCustomer, self)) {
+			if (!Account.Permissions.canRead(asCustomer, self)) {
 				throw new Error();
 		    }
 		} else {
