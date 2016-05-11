@@ -241,7 +241,8 @@ public class KirraHelper {
             @Override
             public Boolean call() throws Exception {
                 Classifier asClassifier = (Classifier) type;
-				return isBasicallyAnEntity(type) && !isService(type) && (asClassifier.isAbstract() || hasProperties(asClassifier));
+				boolean isEntity = isBasicallyAnEntity(type) && !isService(type) && (asClassifier.isAbstract() || hasProperties(asClassifier));
+				return isEntity;
             }
         });
     }
@@ -289,7 +290,8 @@ public class KirraHelper {
         return get(classifier, "isRole", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return !classifier.isAbstract() && MDDExtensionUtils.isRoleClass(classifier);
+                boolean isRole = !classifier.isAbstract() && MDDExtensionUtils.isRoleClass(classifier);
+				return isRole;
             }
         });
     }
