@@ -146,6 +146,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Response.Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                «accessControlGenerator.generateInstanceAccessChecks('found', AccessCapability.Delete, allRoleClasses, #[entity], authorizationFailedStatement)»                    
                 service.delete(id);    
                 return Response.noContent().build();
             }
@@ -230,6 +231,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 «entity.name» found = service.find(id);
                 if (found == null)
                     return status(Response.Status.NOT_FOUND).entity("«entity.name» not found: " + id).build();
+                «accessControlGenerator.generateInstanceAccessChecks('found', AccessCapability.Call, allRoleClasses, #[entity, action], authorizationFailedStatement)»
                 found.«action.name»(«action.parameters.map[name].join(', ')»);
                 return status(Response.Status.OK).entity(toExternalRepresentation(found, uri.getRequestUri().resolve(".."))).build();
             }

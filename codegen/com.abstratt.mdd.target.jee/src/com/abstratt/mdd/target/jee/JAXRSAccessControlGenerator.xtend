@@ -13,6 +13,7 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import java.util.Map
+import org.eclipse.uml2.uml.Operation
 
 class JAXRSAccessControlGenerator extends AbstractGenerator {
 	
@@ -80,11 +81,10 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 	 */
 	def CharSequence generateAccessChecks(String current, AccessCapability requiredCapability,
 		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
-        val entity = accessConstraintContexts.filter(Class).head
 		val explicitConstraintsPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts)
 
 		if (explicitConstraintsPerRole.empty) {
-			return ''
+			return '/*explicitConstraintsPerRole.empty*/'
 		}		
 		
 		val constraintsPerRole = if (exhaustive) allRoleClasses.toInvertedMap[ explicitConstraintsPerRole.getOrDefault(it, #{})] else explicitConstraintsPerRole 
@@ -97,19 +97,22 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		val checksPerRole = constraintsPerRole.entrySet.filter[value.keySet.contains(requiredCapability)].map[entry |
 			val role = entry.key
 			val constraint = entry.value.get(requiredCapability)
-			return if (constraint.tautology) generateFullAccessForRole(role) else generateInstanceAccessChecksForRole(entity, current, role, requiredCapability, failStatement)
+			return if (constraint.tautology) generateFullAccessForRole(role) else generateInstanceAccessChecksForRole(accessConstraintContexts, current, role, requiredCapability, failStatement)
 		]
 			
 		'''
 		«IF !checksPerRole.empty»«checksPerRole.map[toString().trim()].join(' else ').trim» else {
 			«failStatement»
 		}«ELSE»
+		/* nothing here */
 		«ENDIF»
 		'''
 	}
 	
-	def CharSequence generateInstanceAccessChecksForRole(Class entity, String current, Classifier roleClass, AccessCapability capability, CharSequence failStatement) {
-		val castUser = '''as«roleClass.name»'''	
+	def CharSequence generateInstanceAccessChecksForRole(Iterable<NamedElement> accessConstraintContexts, String current, Classifier roleClass, AccessCapability capability, CharSequence failStatement) {
+		val castUser = '''as«roleClass.name»'''
+		val entity = accessConstraintContexts.filter(Class).head
+		val operation = accessConstraintContexts.filter(Operation).head
 //		val condition = new JPABehaviorGenerator(repository) {
 //			override generateSystemUserCall(CallOperationAction action) {
 //				castUser
@@ -121,7 +124,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		'''
 		if (securityContext.isUserInRole("«roleClass.name»")) {
 			«roleClass.name» «castUser» = SecurityHelper.getCurrent«roleClass.name»();
-			if (!«entity.name».Permissions.can«capability.name()»(«castUser», «current»)) {
+			if (!«entity.name».Permissions.«IF capability == AccessCapability.Call»is«operation.name.toFirstUpper»AllowedFor«ELSE»can«capability.name()»«ENDIF»(«castUser», «current»)) {
 				«failStatement»
 		    }
 		} 
