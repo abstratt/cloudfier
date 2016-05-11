@@ -292,6 +292,8 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 			return Collections.emptyList();
 		Entity entity = getEntity();
 		Relationship relationship = entity.getRelationship(relationshipName);
+		if (relationship == null)
+			return Collections.emptyList();
 		if (relationship.isPrimary()) {
 			Collection<NodeReference> related = node.getRelated().get(relationship.getName());
 			return related == null ? Collections.emptyList() : related.stream().map(it -> getCatalog().resolve(it)).filter(it -> it != null).collect(Collectors.toList());
