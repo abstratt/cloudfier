@@ -31,7 +31,7 @@ class ApplicationMapper implements ITopLevelMapper<Class> {
         )
         repository.properties.forEach[key, value| replacements.put(key.toString(), value.toString)]
         val result = new LinkedHashMap<String, CharSequence>()
-        result.putAll(#['index.html'].toInvertedMap[ name | TargetUtils.merge(getTemplateContents(name), replacements)])
+        result.putAll(#['pom.xml'].toInvertedMap[ name | TargetUtils.merge(getTemplateContents(name), replacements)])
         return result
     }    
 }
