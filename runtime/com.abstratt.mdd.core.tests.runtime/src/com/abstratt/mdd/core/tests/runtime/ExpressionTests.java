@@ -33,6 +33,7 @@ public class ExpressionTests extends AbstractRuntimeTests {
         ExpressionTests.structure += "static operation staticOperateOnBoolean(value :  Boolean) : Boolean;\n";
         ExpressionTests.structure += "static operation staticOperateOnTwoBooleans(value1 :  Boolean, value2 : Boolean) : Boolean;\n";
         ExpressionTests.structure += "static operation staticDoubleNumber(number : Integer) : Integer;\n";
+        ExpressionTests.structure += "static operation staticCheckObject(value : Object) : Boolean;\n";
         ExpressionTests.structure += "static operation staticCompareTwoNumbers(value1 :  Number, value2 : Number) : Boolean;\n";
         ExpressionTests.structure += "static operation staticCompareTwoObjects(value1 :  Object, value2 : Object) : Boolean;\n";
         ExpressionTests.structure += "end;\n";
@@ -51,6 +52,42 @@ public class ExpressionTests extends AbstractRuntimeTests {
                 runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
         TestCase.assertEquals(BooleanType.FALSE,
                 runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
+    }
+    
+    public void testOrAndExpression() throws CoreException {
+        createExpressionMethod("staticOperateOnTwoBooleans", "value1 or value1 and value2");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.TRUE));        
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
+    }
+    
+    public void testNotOrAndExpression() throws CoreException {
+        createExpressionMethod("staticOperateOnTwoBooleans", "not value1 or value1 and value2");
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.TRUE));        
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
+    }
+    
+    public void testNotOrAndExpression2() throws CoreException {
+        createExpressionMethod("staticOperateOnTwoBooleans", "not value2 or value1 and value2");
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.FALSE));
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.FALSE, BooleanType.TRUE));        
         TestCase.assertEquals(BooleanType.TRUE,
                 runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
     }
@@ -185,6 +222,23 @@ public class ExpressionTests extends AbstractRuntimeTests {
         TestCase.assertEquals(BooleanType.TRUE,
                 runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
     }
+    
+    public void testIsClassifierExpression() throws CoreException {
+        getRepository().getProperties().put(IRepository.EXTEND_BASE_OBJECT, "true");
+        createExpressionMethod("staticCheckObject", "(value is tests::ClassB)");
+        
+        org.eclipse.uml2.uml.Class classA = getRepository().findNamedElement("tests::ClassA", UMLPackage.Literals.CLASS, null);
+        org.eclipse.uml2.uml.Class classB = getRepository().findNamedElement("tests::ClassB", UMLPackage.Literals.CLASS, null);
+        TestCase.assertNotNull(classA);
+        TestCase.assertNotNull(classB);
+
+        RuntimeObject a1 = getRuntime().getRuntimeClass(classA).newInstance();
+        RuntimeObject b1 = getRuntime().getRuntimeClass(classB).newInstance();
+        
+        TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCheckObject", a1));
+        TestCase.assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCheckObject", b1));
+
+    }
 
     public void testSameExpression() throws CoreException {
         getRepository().getProperties().put(IRepository.EXTEND_BASE_OBJECT, "true");
@@ -213,6 +267,17 @@ public class ExpressionTests extends AbstractRuntimeTests {
         behavior += "operation Simple." + operationName + ";\n";
         behavior += "begin\n";
         behavior += "return value1 " + operator + " value2;\n";
+        behavior += "end;\n";
+        behavior += "end.";
+        parseAndCheck(ExpressionTests.structure, behavior);
+    }
+    
+    private void createExpressionMethod(String operationName, String expression) throws CoreException {
+        String behavior = "";
+        behavior += "model tests;\n";
+        behavior += "operation Simple." + operationName + ";\n";
+        behavior += "begin\n";
+        behavior += "return " + expression + ";\n";
         behavior += "end;\n";
         behavior += "end.";
         parseAndCheck(ExpressionTests.structure, behavior);
