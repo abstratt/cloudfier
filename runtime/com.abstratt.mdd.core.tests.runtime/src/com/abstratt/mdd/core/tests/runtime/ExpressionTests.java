@@ -56,6 +56,16 @@ public class ExpressionTests extends AbstractRuntimeTests {
                 runStaticOperation("tests::Simple", "staticOperateOnTwoBooleans", BooleanType.TRUE, BooleanType.TRUE));
     }
     
+    public void testOrRelationalExpression() throws CoreException {
+        createExpressionMethod("staticCompareTwoNumbers", "value1 > value2 or value1 = value2 ");
+        TestCase.assertEquals(BooleanType.FALSE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", IntegerType.fromValue(1), IntegerType.fromValue(2)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", IntegerType.fromValue(1), IntegerType.fromValue(1)));
+        TestCase.assertEquals(BooleanType.TRUE,
+                runStaticOperation("tests::Simple", "staticCompareTwoNumbers", IntegerType.fromValue(2), IntegerType.fromValue(1)));        
+    }
+    
     public void testOrAndExpression() throws CoreException {
         createExpressionMethod("staticOperateOnTwoBooleans", "value1 or value1 and value2");
         TestCase.assertEquals(BooleanType.FALSE,
