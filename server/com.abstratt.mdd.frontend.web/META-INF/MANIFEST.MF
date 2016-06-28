@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Web Frontend
 Bundle-SymbolicName: com.abstratt.mdd.frontend.web;singleton:=true
-Bundle-Version: 2.1.201501.qualifier
+Bundle-Version: 2.2.201606.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: javax.servlet;version="2.4.0",
@@ -18,13 +18,13 @@ Require-Bundle: org.restlet,
  com.fasterxml.jackson.core.jackson-core;visibility:=reexport,
  com.fasterxml.jackson.core.jackson-annotations;visibility:=reexport,
  com.fasterxml.jackson.core.jackson-databind;visibility:=reexport,
- com.abstratt.mdd.frontend.core;bundle-version="2.1.201501",
- com.abstratt.mdd.frontend.textuml.core;bundle-version="2.1.201501",
+ com.abstratt.mdd.frontend.core;bundle-version="2.2.201606",
+ com.abstratt.mdd.frontend.textuml.core;bundle-version="2.2.201606",
  com.abstratt.mdd.target.core,
  com.abstratt.mdd.target.doc,
- com.abstratt.mdd.modelrenderer;bundle-version="2.1.201501",
- com.abstratt.mdd.modelrenderer.uml2dot;bundle-version="2.1.201501",
- com.abstratt.graphviz;bundle-version="2.1.201501",
+ com.abstratt.mdd.modelrenderer;bundle-version="2.2.201606",
+ com.abstratt.mdd.modelrenderer.uml2dot;bundle-version="2.2.201606",
+ com.abstratt.graphviz;bundle-version="2.2.201606",
  org.apache.commons.collections,
  org.apache.commons.lang,
  org.apache.commons.logging,
