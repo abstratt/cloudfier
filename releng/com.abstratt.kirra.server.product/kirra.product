@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" useFeatures="false" includeLaunchers="true">
+<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" version="2.2.201606.latest" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -48,8 +48,8 @@
       <plugin id="com.abstratt.kirra.mdd.rest.impl.v2"/>
       <plugin id="com.abstratt.kirra.mdd.runtime"/>
       <plugin id="com.abstratt.kirra.mdd.schema"/>
-      <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.mdd.target.base"/>
+      <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.populator"/>
       <plugin id="com.abstratt.kirra.populator.compiler"/>
       <plugin id="com.abstratt.kirra.rest.client"/>
@@ -59,8 +59,8 @@
       <plugin id="com.abstratt.mdd.core"/>
       <plugin id="com.abstratt.mdd.frontend.core"/>
       <plugin id="com.abstratt.mdd.frontend.orion"/>
-      <plugin id="com.abstratt.mdd.frontend.textuml.grammar"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.core"/>
+      <plugin id="com.abstratt.mdd.frontend.textuml.grammar"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.renderer"/>
       <plugin id="com.abstratt.mdd.frontend.web"/>
       <plugin id="com.abstratt.mdd.modelrenderer"/>
@@ -69,14 +69,14 @@
       <plugin id="com.abstratt.mdd.runtime.core"/>
       <plugin id="com.abstratt.mdd.target.base"/>
       <plugin id="com.abstratt.mdd.target.core"/>
-      <plugin id="com.abstratt.mdd.target.engine.gstring"/>
       <plugin id="com.abstratt.mdd.target.doc"/>
+      <plugin id="com.abstratt.mdd.target.engine.gstring"/>
       <plugin id="com.abstratt.mdd.target.jee"/>
       <plugin id="com.abstratt.mdd.target.jse"/>
       <plugin id="com.abstratt.mdd.target.mean"/>
       <plugin id="com.abstratt.nodestore"/>
       <plugin id="com.abstratt.nodestore.inmemory"/>
-      <plugin id="com.abstratt.nodestore.jdbc"/>      
+      <plugin id="com.abstratt.nodestore.jdbc"/>
       <plugin id="com.abstratt.pluginutils"/>
       <plugin id="com.abstratt.resman"/>
       <plugin id="com.abstratt.wrapped.postgresql"/>
