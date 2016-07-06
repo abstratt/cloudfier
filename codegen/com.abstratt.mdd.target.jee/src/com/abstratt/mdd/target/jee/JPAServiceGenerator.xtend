@@ -113,13 +113,33 @@ class JPAServiceGenerator extends ServiceGenerator {
 	}
 
     def generateCreate(Classifier entity) {
+    	val initDefaults = entity.entityRelationships.filter[hasDefault && !derived].map[ relationship |
+    		generateRelationshipDefaultInitialization(relationship)
+	    ].join('\n')
         '''
             public «entity.name» create(«entity.name» toCreate) {
+            	«initDefaults»
                 getEntityManager().persist(toCreate);
                 return toCreate;
             }
         '''
     }
+	
+	def generateRelationshipDefaultInitialization(Property relationship) {
+		val defaultExpression = if (relationship.defaultValue.behaviorReference)
+            behaviorGenerator.generateActivityAsExpression(relationship.defaultValue.resolveBehaviorReference as Activity) 
+        else
+            relationship.defaultValue.generateValue
+        val initDefaultsCore = '''toCreate.«relationship.generateSetterName»(«defaultExpression»);'''
+		if (relationship.readOnly) 
+		    initDefaultsCore
+		else
+    		'''
+    		if (toCreate.«relationship.generateAccessorName»() == null) {
+    			«initDefaultsCore»
+    		}
+    		'''
+	}
 
     def generateFind(Classifier entity) {
     	val entityAlias = entity.name.toFirstLower
