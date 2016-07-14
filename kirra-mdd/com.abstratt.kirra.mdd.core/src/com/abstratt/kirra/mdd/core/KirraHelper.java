@@ -1019,7 +1019,9 @@ public class KirraHelper {
                     names = NamedElementUtils.getNames(StateMachineUtils.getVertices(((StateMachine) enumOrStateMachine)));
 				else
 					names = Arrays.<String>asList();
-                return names.stream().collect(Collectors.toMap(name -> name, name -> getLabelFromSymbol(name)));
+                Map<String, String> result = new LinkedHashMap<>();
+                names.forEach(name -> result.put(name, getLabelFromSymbol(name)));
+				return result ;
             }
         });
     }
