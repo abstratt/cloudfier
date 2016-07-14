@@ -2,9 +2,11 @@ package com.abstratt.mdd.core.runtime.types;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.TimeZone;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
@@ -44,14 +46,14 @@ public class DateType extends PrimitiveType<Date> {
      */
     private static final long serialVersionUID = 1L;
 
-    private Date value;
+    private LocalDate value;
 
     private DateType(Date value) {
-        this.value = value;
+        this.value = value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
     }
     
     public DurationType difference(@SuppressWarnings("unused") ExecutionContext context, DateType end) {
-        return DurationType.fromValue(end.value.getTime() - this.value.getTime());
+        return DurationType.fromValue(ChronoUnit.DAYS.between(this.value, end.value) * (1000 * 60 * 60 * 24));
     }
 
     @Override
@@ -78,7 +80,7 @@ public class DateType extends PrimitiveType<Date> {
 
     @Override
     public Date primitiveValue() {
-        return value;
+        return Date.from(value.atStartOfDay(ZoneId.systemDefault()).toInstant());
     }
 
     @Override

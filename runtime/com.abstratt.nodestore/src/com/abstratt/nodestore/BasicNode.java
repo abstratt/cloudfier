@@ -126,6 +126,11 @@ public class BasicNode implements INode, Serializable {
     public boolean isPropertySet(String nodeProperty) {
         return this.properties.containsKey(nodeProperty);
     }
+    
+    @Override
+    public boolean isRelatedSet(String nodeProperty) {
+    	return this.related.containsKey(nodeProperty);
+    }
 
     @Override
     public boolean isTopLevel() {

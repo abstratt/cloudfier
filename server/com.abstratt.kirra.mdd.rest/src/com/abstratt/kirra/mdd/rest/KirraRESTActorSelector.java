@@ -22,7 +22,7 @@ public class KirraRESTActorSelector extends KirraActorSelector {
         }
         return cachedActor;
     }
-
+    
     @Override
     public String getUserMnemonic() {
         return KirraRESTUtils.getCurrentUserName();

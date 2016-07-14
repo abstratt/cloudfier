@@ -625,7 +625,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             «IF constraint != null»
             return «generatePredicate(constraint, false)»;
             «ELSE»
-            return false;
+            return «!hasAnyAccessConstraints(#[entity])»;
             «ENDIF»
         }'''
     }

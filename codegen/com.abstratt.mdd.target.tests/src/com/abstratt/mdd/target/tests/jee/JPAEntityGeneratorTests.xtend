@@ -39,6 +39,39 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
 		'''
 		parseAndCheck(source)
 	}
+	
+
+    @Test
+    def void testEntityGeneration_customClassName() {
+    	val settings = createDefaultSettings()
+        settings.put('mdd.generator.jpa.mapping.pack1.Class1', 'my_class1')    	
+        saveSettings(getRepositoryDir(), settings)
+    	
+    	buildModel()
+    	val entity = getClass('pack1::Class1')
+    	val generated = new JPAEntityGenerator(repository).generateEntityAnnotations(entity)
+		AssertHelper.assertStringsEqual(
+        '''
+        @Entity
+        @Table(schema="pack1", name="my_class1")
+		''', generated.toString)
+    }
+    
+    @Test
+    def void testEntityGeneration_customColumnName() {
+    	val settings = createDefaultSettings()
+        settings.put('mdd.generator.jpa.mapping.pack1.Class1.attr1', 'my_attr1')    	
+        saveSettings(getRepositoryDir(), settings)
+    	
+    	buildModel()
+    	val attrib1 = getProperty('pack1::Class1::attr1')
+    	val generated = new JPAEntityGenerator(repository).toJpaPropertyAnnotation(attrib1)
+		AssertHelper.assertStringsEqual(
+        '''
+        @Column(nullable=false,name="my_attr1")
+		''', generated.toString)
+    }	    	
+	
 	@Test
 	def void testEventGeneration_publicOperation() {
 		buildModel()
@@ -52,7 +85,6 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         }
 		''', generated.toString)
 	}
-
 
 	@Test
 	def void testEventGeneration_privateOperation() {

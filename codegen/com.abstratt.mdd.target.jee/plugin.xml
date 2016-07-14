@@ -3,8 +3,6 @@
 <plugin>
    <extension
          point="com.abstratt.mdd.target.core.targetPlatform" id="jee" name="JavaEE Platform">
-         <mapper artifactType="systemClass"
-               class="com.abstratt.mdd.target.jse.SystemMapper"/>
          <mapper artifactType="entity"
                class="com.abstratt.mdd.target.jee.JPAEntityMapper"/>
          <mapper artifactType="functionalTest"

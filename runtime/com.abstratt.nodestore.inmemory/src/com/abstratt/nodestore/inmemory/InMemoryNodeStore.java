@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
@@ -125,7 +127,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 				if (arg0 == null)
 					return null;
 				return new JsonPrimitive(
-						DateTimeFormatter.ISO_DATE_TIME.format(OffsetDateTime.ofInstant(arg0.toInstant(), ZoneOffset.UTC)));
+						DateTimeFormatter.ISO_DATE.format(arg0.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
 			}
 			
 		});
@@ -135,7 +137,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 					throws JsonParseException {
 				if (arg0 == null)
 					return null;
-				return new Date(OffsetDateTime.parse(arg0.getAsString(), DateTimeFormatter.ISO_DATE_TIME).toInstant().toEpochMilli());
+				return new Date(OffsetDateTime.parse(arg0.getAsString(), DateTimeFormatter.ISO_DATE).toInstant().toEpochMilli());
 			}
 		});
 		
@@ -197,12 +199,12 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	}
 	
 	private void removeOrphans(List<Relationship> relationships, NodeReference removedReference) {
-		Stream<INode> toDelete = nodes.values().stream().filter(node -> {
+		List<INode> toDelete = nodes.values().stream().filter(node -> {
 			Map<String, Collection<NodeReference>> related = node.getRelated();
 			return relationships.stream().anyMatch(relationship ->
 				related.getOrDefault(relationship.getName(), Collections.emptyList()).contains(removedReference)
 			);
-		});
+		}).collect(Collectors.toList());
 		toDelete.forEach(it -> deleteNode(it.getKey()));
 	}	
 
@@ -365,7 +367,16 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	public Collection<INodeKey> filter(Map<String, Collection<Object>> nodeCriteria, Integer limit) {
 		return nodes.values().stream().filter(node -> {
 			Map<String, Object> properties = node.getProperties();
-			return nodeCriteria.entrySet().stream().allMatch(criteria -> criteria.getValue().contains(properties.get(criteria.getKey())));
+			Map<String, Collection<NodeReference>> relationships = node.getRelated();
+			return nodeCriteria.entrySet().stream().allMatch(criteria -> (
+    			properties.containsKey(criteria.getKey()) 
+    				&& 
+				criteria.getValue().contains(properties.get(criteria.getKey()))
+			) || (
+    			relationships.containsKey(criteria.getKey()) 
+    				&& 
+				criteria.getValue().containsAll(relationships.get(criteria.getKey()))
+			));
 		}).map(it -> it.getKey()).collect(Collectors.toList());
 	}
 	

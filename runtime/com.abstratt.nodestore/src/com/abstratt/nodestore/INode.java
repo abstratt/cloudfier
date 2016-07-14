@@ -30,6 +30,8 @@ public interface INode extends Cloneable {
     public Map<String, Collection<NodeReference>> getRelated();
 
     public boolean isPropertySet(String nodeProperty);
+    
+    public boolean isRelatedSet(String nodeProperty);
 
     public boolean isTopLevel();
 

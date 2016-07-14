@@ -1,7 +1,9 @@
 package com.abstratt.mdd.core.runtime;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -29,6 +31,7 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BuiltInMetaClass;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
+import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStoreCatalog;
@@ -125,8 +128,26 @@ public class Runtime {
     }
 
     public RuntimeObject getCurrentActor() {
-        return actorSelector.getCurrentActor(this);
+        RuntimeObject currentActor = actorSelector.getCurrentActor(this);
+		return currentActor;
     }
+    
+    public RuntimeObject getRoleForActor(RuntimeObject actor, Classifier roleClass) {
+    	Property userProperty = FeatureUtils.findAttribute(roleClass, "user", false, true);
+    	Map<Property, List<BasicType>> criteria = Collections.singletonMap(userProperty, Arrays.asList(actor));
+    	return context.getRuntime().getRuntimeClass(roleClass).findOneInstance(criteria);
+    }
+    
+    public ActorSelector getActorSelector() {
+		return actorSelector;
+	}
+    
+    /**
+     * For testing only.
+     */
+    public void setActorSelector(ActorSelector newSelector) {
+		actorSelector = newSelector;
+	}
 
     public ExecutionContext getCurrentContext() {
         return context;

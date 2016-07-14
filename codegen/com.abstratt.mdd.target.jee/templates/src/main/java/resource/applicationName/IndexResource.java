@@ -35,7 +35,7 @@ public class IndexResource {
     	}
     	
         Map<String, Object> index = new LinkedHashMap<>();
-        index.put("applicationName", "Expenses Application");
+        index.put("applicationName", "{applicationLabel}");
         index.put("entities", uri.getBaseUri().resolve("entities/"));
         index.put("services", uri.getBaseUri().resolve("services/"));
         index.put("uri", uri.getRequestUri());

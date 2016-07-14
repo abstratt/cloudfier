@@ -8,6 +8,7 @@ public class AllTargetTests {
         TestSuite suite = new TestSuite(AllTargetTests.class.getName());
         suite.addTest(com.abstratt.mdd.target.tests.AllTests.suite());
         suite.addTest(com.abstratt.mdd.target.tests.jee.AllJEETests.suite());
+        suite.addTest(com.abstratt.mdd.importer.tests.jdbc.AllTests.suite());
         // see issue abstratt/cloudfier/#33
         //suite.addTest(com.abstratt.mdd.target.tests.mean.AllMeanTests.suite());
         return suite;

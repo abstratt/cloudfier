@@ -17,6 +17,9 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
 import com.abstratt.mdd.core.util.ClassifierUtils
+import com.abstratt.kirra.NamedElement
+import com.abstratt.kirra.TypeRef
+import java.util.Map
 
 class JPAEntityGenerator extends PlainEntityGenerator {
     protected String applicationName
@@ -50,10 +53,11 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     
     override generateEntityAnnotations(Class entity) {
     	val inInheritance = entity.superClasses.exists[it.entity] || ClassifierUtils.findAllSpecifics(repository, entity).exists[it.entity]
+    	val tableName = repository.properties.get('''mdd.generator.jpa.mapping.«TypeRef.sanitize(entity.qualifiedName)»'''.toString)
         '''
         @Entity
         «IF inInheritance»@Inheritance(strategy=InheritanceType.JOINED)«ENDIF»
-        @Table(schema="«repository.applicationName»")
+        @Table(schema="«repository.applicationName»"«IF tableName != null», name="«tableName»"«ENDIF»)
         '''
     }
     
@@ -65,7 +69,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
 		«super.generatePrefix(entity)»
 		'''
 	}
-    
+	
 	override generateRelationshipGetter(Property relationship) {
         '''
         «relationship.toJpaRelationshipAnnotation»
@@ -188,6 +192,8 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     }
 
     def toJpaPropertyAnnotation(Property property) {
+    	val columnName = repository.properties.get('''mdd.generator.jpa.mapping.«TypeRef.sanitize(property.qualifiedName)»'''.toString) as String
+    	
         // careful when using KirraHelper as this is about storing data, not user capabilities
         
         val nullable = !property.basicallyRequired
@@ -198,7 +204,12 @@ class JPAEntityGenerator extends PlainEntityGenerator {
         val values = #{'nullable' -> (nullable), 'updatable' -> (updatable), 'insertable' -> (insertable), 'unique' -> unique, 'length' -> length }
         val defaultValues = #{'nullable' -> true, 'updatable' -> true, 'insertable' -> true, 'unique' -> false, 'length' -> 255 }
         val nonDefaults = values.filter[ key, value | value != defaultValues.get(key) ]
-        val pairs = nonDefaults.entrySet.map['''«key»=«value»''']
+        val Map<String, CharSequence> columnAttributes = newLinkedHashMap()
+        nonDefaults.forEach[p1, p2 | columnAttributes.put(p1, p2.toString)]
+        if (columnName != null)
+            columnAttributes.put("name", '''"«columnName»"'''.toString)
+        
+        val pairs = columnAttributes.entrySet.map['''«key»=«value»''']
         '''
         @Column«IF !pairs.empty»(«pairs.join(', ')»)«ENDIF»
         «IF property.type.enumeration»@Enumerated(EnumType.STRING)«ENDIF»

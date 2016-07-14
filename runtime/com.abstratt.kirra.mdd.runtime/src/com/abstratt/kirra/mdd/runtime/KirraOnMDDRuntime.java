@@ -281,6 +281,10 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     
     @Override
     public InstanceCapabilities getInstanceCapabilities(Entity entity, String objectId) {
+//        RuntimeObject found = findRuntimeObject(namespace, name, externalId);
+//        if (found == null) 
+//        	return null;
+//        found.getObjectCapabilities();
     	InstanceCapabilities capabilities = new InstanceCapabilities();
     	Stream<com.abstratt.kirra.Operation> instanceActions = entity.getOperations().stream().filter(it -> it.getKind() == OperationKind.Action && it.isInstanceOperation());
     	capabilities.setActions(instanceActions.collect(Collectors.toMap(it -> it.getName(), it -> Arrays.asList(AccessCapability.Call.name()))));

@@ -48,6 +48,7 @@
       <plugin id="com.abstratt.kirra.mdd.rest.impl.v2"/>
       <plugin id="com.abstratt.kirra.mdd.runtime"/>
       <plugin id="com.abstratt.kirra.mdd.schema"/>
+      <plugin id="com.abstratt.kirra.mdd.modelimporter.jdbc"/>
       <plugin id="com.abstratt.kirra.mdd.target.base"/>
       <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.populator"/>

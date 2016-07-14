@@ -81,6 +81,10 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     
     def override CharSequence generateCallOperationAction(CallOperationAction action) {
         switch (action.operation.owningClassifier.name) {
+        	case 'System' : return switch (action.operation.name) {
+    		    case 'user' : ':systemUser'
+    		    default : unsupportedElement(action, action.operation.name)
+        	} 
             case 'Date' : return switch (action.operation.name) {
                 case 'today' : 'CURRENT_DATE'
                 case 'now' : 'CURRENT_TIMESTAMP'

@@ -52,7 +52,8 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Serializa
     public final boolean equals(Object another) {
         if (!(another instanceof PrimitiveType))
             return false;
-        return another != null && primitiveValue().equals(((PrimitiveType) another).primitiveValue());
+        boolean result = another != null && primitiveValue().equals(((PrimitiveType) another).primitiveValue());
+		return result;
     }
 
     @SuppressWarnings("unchecked")

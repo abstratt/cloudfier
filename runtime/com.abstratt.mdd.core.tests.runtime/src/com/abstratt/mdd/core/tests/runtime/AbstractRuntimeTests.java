@@ -198,7 +198,7 @@ public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
         super.tearDown();
     }
 
-    Runtime getRuntime() {
+    public Runtime getRuntime() {
         return Runtime.get();
     }
 }

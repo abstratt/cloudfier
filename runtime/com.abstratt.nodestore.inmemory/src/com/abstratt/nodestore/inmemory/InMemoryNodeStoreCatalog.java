@@ -2,11 +2,8 @@ package com.abstratt.nodestore.inmemory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -15,7 +12,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 
 import com.abstratt.kirra.Entity;
-import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
@@ -31,7 +27,7 @@ import com.abstratt.nodestore.NodeReference;
  */
 public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 	
-	protected static final File REPOSITORY_ROOT = new File(new File(System.getProperty("nodestore.file.base", System.getProperty("java.io.tmpdir"))), "nodestore");
+	protected static final File REPOSITORY_ROOT = new File(new File(System.getProperty("nodestore.file.base", ".")), "nodestore");
 
     private SchemaManagement metadata;
 
@@ -105,7 +101,8 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     }
 
 	protected File getStorePath(TypeRef typeRef) {
-		return new File(getCatalogPath(), typeRef.getFullName());
+		File storePath = new File(getCatalogPath(), typeRef.getFullName());
+		return storePath;
 	}
 
 	private File getCatalogPath() {

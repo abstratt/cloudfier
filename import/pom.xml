@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.abstratt.mdd.kirra</groupId>
+	<artifactId>import</artifactId>
+	<version>2.2.201606-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<artifactId>plugins</artifactId>
+    	<groupId>com.abstratt.mdd.kirra</groupId>
+		<version>2.2.201606-SNAPSHOT</version>
+	</parent>
+	<modules>
+		<module>com.abstratt.mdd.modelimporter.jdbc</module>
+	</modules>
+</project>
+

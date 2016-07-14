@@ -10,6 +10,7 @@ public class AllKirraMDDRuntimeTests {
         suite.addTest(new TestSuite(RepositoryServiceTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeResourceTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeSchemaTests.class));
+        suite.addTest(new TestSuite(KirraMDDRuntimeActorTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeDataTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeActionTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeRelationshipTests.class));

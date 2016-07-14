@@ -381,7 +381,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 	
 	def generateSystemUserCall(CallOperationAction action) {
-		'''null /* TBD */'''
+		'''null /* System.user() TBD */'''
 	}
     
     def generateGroupingOperationCall(CallOperationAction action) {
@@ -402,7 +402,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             case 'today':
                 'java.sql.Date.valueOf(java.time.LocalDate.now())'
             case 'now':
-                'new Date()'
+                'java.sql.Date.valueOf(java.time.LocalDate.now())'
             case 'transpose': '''new Date(«generateAction(action.target)».getTime() + «generateAction(
                 action.arguments.head)»)'''
             case 'difference': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(

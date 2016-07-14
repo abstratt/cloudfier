@@ -22,6 +22,7 @@ import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.RuntimeObjectNode;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
+import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
@@ -37,8 +38,19 @@ public class RuntimeStructuredActivityNode extends CompositeRuntimeAction {
         if (MDDExtensionUtils.isCast(instance)) {
             // fUML Beta A.4.13 - A type cast is mapped to a structured
             // activity node that simply copies its input to its output
-            RuntimeObjectNode source = this.getRuntimeObjectNode(instance.getStructuredNodeInputs().get(0));
-            addResultValue(instance.getStructuredNodeOutputs().get(0), source.getValue());
+            InputPin input = instance.getStructuredNodeInputs().get(0);
+            Classifier inputClassifier = (Classifier) input.getType();
+            OutputPin output = instance.getStructuredNodeOutputs().get(0);
+            Classifier outputClassifier = (Classifier) output.getType();
+            RuntimeObjectNode source = this.getRuntimeObjectNode(input);
+            
+            BasicType sourceValue = source.getValue();
+			if (MDDExtensionUtils.isRoleClass(outputClassifier) && MDDExtensionUtils.isSystemUserClass(inputClassifier)) {
+            	// special case: casting user to role 
+				addResultValue(output, context.getRuntime().getRoleForActor((RuntimeObject) sourceValue, outputClassifier));
+            } else {
+            	addResultValue(output, sourceValue);
+            }
             return;
         }
         // support for tuple literals

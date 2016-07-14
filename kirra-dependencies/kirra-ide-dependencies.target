@@ -30,7 +30,8 @@
 			<unit id="org.apache.commons.beanutils" version="0.0.0" />
 			<unit id="org.apache.commons.fileupload" version="0.0.0" />
             <unit id="org.apache.commons.collections" version="0.0.0" />	
-            <unit id="org.apache.commons.httpclient" version="0.0.0" />			
+            <unit id="org.apache.commons.httpclient" version="0.0.0" />
+            <unit id="com.thoughtworks.xstream" version="0.0.0" />			
 			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/" />
 		</location>
 				

@@ -105,8 +105,10 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         Map<String, Collection<Object>> nodeCriteria = new LinkedHashMap<String, Collection<Object>>();
         for (Entry<Property, List<BasicType>> entry : criteria.entrySet()) {
             Collection<Object> values = new LinkedHashSet<Object>();
-            for (BasicType basicType : entry.getValue())
-                values.add(RuntimeObject.toExternalValue(basicType));
+            for (BasicType basicType : entry.getValue()) {
+            	Object basicValue = (basicType instanceof RuntimeObject) ? ((RuntimeObject) basicType).nodeReference() : RuntimeObject.toExternalValue(basicType); 
+                values.add(basicValue);
+            }
             nodeCriteria.put(entry.getKey().getName(), values);
         }
         Collection<RuntimeObject> runtimeObjects = nodesToRuntimeObjects(getNodeStore().filter(nodeCriteria, limit));

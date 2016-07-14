@@ -23,6 +23,10 @@ public class DatabaseAuthenticationService implements AuthenticationService {
 		List<Entity> userDataEntities = repository.getAllEntities().stream().filter(e -> e.isUser()).collect(Collectors.toList());
 		List<Operation> finders = userDataEntities.stream().map(e -> e.getOperation("findByUsernameAndPassword")).filter(it -> it != null).collect(Collectors.toList());
 		List<Instance> results = new LinkedList<>();
+		List<Instance> allInstances = repository.getInstances("userprofile", "Profile", false);
+		if (!allInstances.isEmpty()) {
+			System.out.println("Not empty!");
+		}
 		finders.forEach(finder -> repository.executeOperation(finder, null, Arrays.asList(username, password)).forEach(match -> results.add((Instance) match)));
 		if (results.size() != 1)	
 			return false;

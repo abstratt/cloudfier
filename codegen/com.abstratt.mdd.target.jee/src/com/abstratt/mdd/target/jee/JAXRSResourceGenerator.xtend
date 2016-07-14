@@ -394,7 +394,12 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                         «entity.instanceActions.map[ action |
                             val accessConstraint = findAccessConstraint(#[action, action.class_], AccessCapability.Call, roleClass)
                             if (accessConstraint == null)
-                                return ''
+                                return if (hasAnyAccessConstraints(#[action, action.class_]))
+                                    ''
+                                else
+                                	'''
+                                	actions.get("«action.name»").add("Call");
+                                	'''
                             '''
                             // «action.name»
                             if («entity.name».Permissions.is«action.name.toFirstUpper»AllowedFor(as«roleClass.name», found)) {

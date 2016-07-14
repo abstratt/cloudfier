@@ -46,6 +46,7 @@ Require-Bundle: com.abstratt.kirra.api,
  com.abstratt.mdd.frontend.web,
  com.fasterxml.jackson.core.jackson-core,
  com.fasterxml.jackson.core.jackson-databind,
- com.fasterxml.jackson.core.jackson-annotations
+ com.fasterxml.jackson.core.jackson-annotations,
+ org.eclipse.xtext.xbase.lib;bundle-version="2.7.0"
 Export-Package: com.abstratt.kirra.tests.mdd.runtime
 Bundle-ActivationPolicy: lazy

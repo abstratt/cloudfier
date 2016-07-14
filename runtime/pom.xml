@@ -17,9 +17,9 @@
 		<module>com.abstratt.nodestore.jdbc</module>
 		<module>com.abstratt.mdd.runtime.core</module>
 		<module>com.abstratt.kirra.mdd.runtime</module>
+		<module>com.abstratt.kirra.populator.compiler</module>
 		<module>com.abstratt.nodestore.tests</module>
 		<module>com.abstratt.mdd.core.tests.runtime</module>
-		<module>com.abstratt.kirra.populator.compiler</module>
 		<module>com.abstratt.kirra.tests.mdd.runtime</module>
 	</modules>
 </project>

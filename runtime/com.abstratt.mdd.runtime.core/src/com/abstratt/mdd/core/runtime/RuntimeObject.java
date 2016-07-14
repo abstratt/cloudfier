@@ -321,6 +321,8 @@ public class RuntimeObject extends BasicType {
     public RuntimeClass getRuntimeClass() {
         return runtimeClass;
     }
+    
+    
 
     public BasicType getValue(Property property) {
         if (property instanceof Port)
@@ -542,7 +544,6 @@ public class RuntimeObject extends BasicType {
      */
     public void setValue(Property property, BasicType value) {
         Assert.isTrue(isActive());
-        Assert.isTrue(!isPersisted || !(property.getType() instanceof StateMachine));
         if (isAssociationEnd(property) && isPersistable) {
             Collection<RuntimeObject> newPeers;
             if (property.isMultivalued()) {
@@ -694,11 +695,11 @@ public class RuntimeObject extends BasicType {
         return inMemoryState;
     }
 
-    INodeKey nodeKey() {
+    public INodeKey nodeKey() {
         return this.key;
     }
 
-    NodeReference nodeReference() {
+    public NodeReference nodeReference() {
         return runtimeObjectToNodeReference();
     }
 
@@ -826,7 +827,8 @@ public class RuntimeObject extends BasicType {
     }
 
     private boolean isInitialized(Property property) {
-        return getNode().isPropertySet(nodeProperty(property));
+        String nodeProperty = nodeProperty(property);
+		return getNode().isPropertySet(nodeProperty) || getNode().isRelatedSet(nodeProperty);
     }
 
     private boolean isInState(List<Vertex> states) {
@@ -885,7 +887,8 @@ public class RuntimeObject extends BasicType {
             return ((PrimitiveType<?>) value).primitiveValue();
         return value;
     }
-    
-    
 
+//	public Map<String> getActionCapabilities() {
+//		return Collections.
+//	}
 }

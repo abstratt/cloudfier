@@ -87,7 +87,7 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
 			// an action that returns a value - we need an opportunity to flush before returning
 			'''
 			«action.value.toJavaType» «resultVar» = «generateAddVariableValueActionCore(action)»;
-			flush();
+			/*1*/flush();
 			return «resultVar»
 			'''
 		} else {
@@ -96,61 +96,61 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
 	}
 	
     override generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
-        val core = super.generateStructuredActivityNodeAsBlock(node)
+        val core = super.generateStructuredActivityNodeAsBlock(node).toString.trim
         
-        if (node == node.owningActivity.rootAction || node.shouldIsolate) {
-            val nonQueryOperation = node == node.owningActivity.rootAction && node.owningActivity.operation != null && !node.owningActivity.operation.query
-            val nonQueryOperationWithResult = nonQueryOperation && node.findStatements.last?.returnAction
+        if (node != node.owningActivity.rootAction && !node.shouldIsolate)
+        	return core
+        	
+        val nonQueryOperation = node == node.owningActivity.rootAction && node.owningActivity.operation != null && !node.owningActivity.operation.query
+        val nonQueryOperationWithResult = nonQueryOperation && node.findStatements.last?.returnAction
 
-            // objects created are hopefully assigned to a local variable - gotta persist those objects via their corresponding vars
-            val creationVars = node.findMatchingActions(Literals.CREATE_OBJECT_ACTION)
-                .map[it as CreateObjectAction]
-                .filter[
-                    classifier.entity && 
-                    targetAction instanceof AddVariableValueAction && 
-                    !targetAction.returnAction
-                ]
-                .map[(targetAction as AddVariableValueAction).variable.name].toSet
-                                  
-            val writtenVars = node.findMatchingActions(UMLPackage.Literals.ADD_VARIABLE_VALUE_ACTION)
-                .map[it as AddVariableValueAction]
-                .filter[
-                    variable.type.entity && !returnAction
-                ]
-                .map[variable.name].toSet
-                                    
-            // any objects we access in this block but that we did not create here need to be refetched (in JPA, refreshed)    
-            val readVars = node.findMatchingActions(UMLPackage.Literals.READ_VARIABLE_ACTION)
-                .map[it as ReadVariableAction]
-                .filter[
-                    variable.type.entity
-                ]
-                .map[variable.name].toSet
-            val refetchVars = readVars.filter[!creationVars.contains(it) && !writtenVars.contains(it)]
-                
-            '''
-            «IF node.shouldIsolate && !refetchVars.empty»
-            refresh(«refetchVars.join(', ')»);
-            «ENDIF»
-            «core»
-            «IF node.shouldIsolate || nonQueryOperation»
-            «IF !creationVars.empty»
-            persist(«creationVars.join(', ')»);
-            «ENDIF»
-            «IF node.shouldIsolate»
-            // flush persisted local vars
+        // objects created are hopefully assigned to a local variable - gotta persist those objects via their corresponding vars
+        val creationVars = node.findMatchingActions(Literals.CREATE_OBJECT_ACTION)
+            .map[it as CreateObjectAction]
+            .filter[
+                classifier.entity && 
+                targetAction instanceof AddVariableValueAction && 
+                !targetAction.returnAction
+            ]
+            .map[(targetAction as AddVariableValueAction).variable.name].toSet
+                              
+        val writtenVars = node.findMatchingActions(UMLPackage.Literals.ADD_VARIABLE_VALUE_ACTION)
+            .map[it as AddVariableValueAction]
+            .filter[
+                variable.type.entity && !returnAction
+            ]
+            .map[variable.name].toSet
+                                
+        // any objects we access in this block but that we did not create here need to be refetched (in JPA, refreshed)    
+        val readVars = node.findMatchingActions(UMLPackage.Literals.READ_VARIABLE_ACTION)
+            .map[it as ReadVariableAction]
+            .filter[
+                variable.type.entity
+            ]
+            .map[variable.name].toSet
+        val refetchVars = readVars.filter[!creationVars.contains(it) && !writtenVars.contains(it)]
+            
+        '''
+        «IF node.shouldIsolate && !refetchVars.empty»
+        refresh(«refetchVars.join(', ')»);
+        «ENDIF»
+        «core»
+        «IF node.shouldIsolate || nonQueryOperation»
+        «IF !creationVars.empty»
+        persist(«creationVars.join(', ')»);
+        «ENDIF»
+        «IF node.shouldIsolate»
+        flush();
+        «ENDIF»
+        «ENDIF»
+        «IF nonQueryOperationWithResult»
+            «super.generateStatement(node.findStatements.last)»
+        «ELSEIF node.owningActivity.operation?.action»
+            «IF !node.shouldIsolate && !nonQueryOperation»
             flush();
             «ENDIF»
-            «ENDIF»
-            «IF nonQueryOperationWithResult»
-                «super.generateStatement(node.findStatements.last)»
-            «ELSEIF node.owningActivity.operation?.action»
-            // flush after action
-            flush();
-            «ENDIF»
-            '''
-        } else 
-            core
+        «ENDIF»
+        '''
     }
 
     override generateStatement(Action statementAction) {

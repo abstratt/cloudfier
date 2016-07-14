@@ -3,8 +3,6 @@
 <plugin>
    <extension
          point="com.abstratt.mdd.target.core.targetPlatform" id="jse" name="JavaSE Platform">
-         <mapper artifactType="systemClass"
-               class="com.abstratt.mdd.target.jse.SystemMapper"/>
          <mapper artifactType="entity"
                class="com.abstratt.mdd.target.jse.EntityMapper"/>
          <mapper artifactType="functionalTest"

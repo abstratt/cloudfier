@@ -13,8 +13,10 @@ Require-Bundle: com.abstratt.mdd.core.tests.harness,
  com.abstratt.mdd.target.mean,
  com.abstratt.mdd.target.jee,
  com.abstratt.mdd.target.jse,
+ com.abstratt.mdd.modelimporter.jdbc,
  com.abstratt.mdd.target.engine.gstring,
  org.apache.commons.lang,
  org.apache.commons.io,
- com.abstratt.kirra.mdd.core
+ com.abstratt.kirra.mdd.core,
+ com.abstratt.wrapped.schemacrawler
 Export-Package: com.abstratt.mdd.target.tests

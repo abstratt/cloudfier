@@ -40,6 +40,7 @@
 	    <!-- first so target gets updated/rebuilt first -->
     	<module>kirra-dependencies</module>
     	<module>kirra-mdd</module>    	
+		<module>import</module>
 		<module>runtime</module>
 		<module>codegen</module>
 		<module>server</module>
