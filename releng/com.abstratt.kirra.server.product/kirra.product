@@ -48,7 +48,6 @@
       <plugin id="com.abstratt.kirra.mdd.rest.impl.v2"/>
       <plugin id="com.abstratt.kirra.mdd.runtime"/>
       <plugin id="com.abstratt.kirra.mdd.schema"/>
-      <plugin id="com.abstratt.kirra.mdd.modelimporter.jdbc"/>
       <plugin id="com.abstratt.kirra.mdd.target.base"/>
       <plugin id="com.abstratt.kirra.mdd.ui"/>
       <plugin id="com.abstratt.kirra.populator"/>
@@ -64,6 +63,7 @@
       <plugin id="com.abstratt.mdd.frontend.textuml.grammar"/>
       <plugin id="com.abstratt.mdd.frontend.textuml.renderer"/>
       <plugin id="com.abstratt.mdd.frontend.web"/>
+      <plugin id="com.abstratt.mdd.importer.jdbc"/>
       <plugin id="com.abstratt.mdd.modelrenderer"/>
       <plugin id="com.abstratt.mdd.modelrenderer.dot"/>
       <plugin id="com.abstratt.mdd.modelrenderer.uml2dot"/>
