@@ -5,9 +5,9 @@
 	<persistence-unit name="{applicationName}-local">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<properties>
-			<property name="javax.persistence.jdbc.url" value="{jdbc.url}" />
-			<property name="javax.persistence.jdbc.user" value="{jdbc.user}" />
-			<property name="javax.persistence.jdbc.password" value="{jdbc.password}" />
+			<property name="javax.persistence.jdbc.url" value="{jdbc.production.url}" />
+			<property name="javax.persistence.jdbc.user" value="{jdbc.production.user}" />
+			<property name="javax.persistence.jdbc.password" value="{jdbc.production.password}" />
 
 			<property name="hibernate.show_sql" value="true" />
 			<property name="hibernate.format_sql" value="true" />
@@ -19,9 +19,9 @@
 	<persistence-unit name="{applicationName}-schema-init">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<properties>
-			<property name="javax.persistence.jdbc.url" value="{jdbc.url}" />
-			<property name="javax.persistence.jdbc.user" value="{jdbc.user}" />
-			<property name="javax.persistence.jdbc.password" value="{jdbc.password}" />
+			<property name="javax.persistence.jdbc.url" value="{jdbc.production.url}" />
+			<property name="javax.persistence.jdbc.user" value="{jdbc.production.user}" />
+			<property name="javax.persistence.jdbc.password" value="{jdbc.production.password}" />
 
 			<property name="javax.persistence.schema-generation.database.action"
 				value="drop-and-create" />
@@ -47,9 +47,9 @@
 	<persistence-unit name="{applicationName}-schema-data-init">
 		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 		<properties>
-			<property name="javax.persistence.jdbc.url" value="{jdbc.url}" />
-			<property name="javax.persistence.jdbc.user" value="{jdbc.user}" />
-			<property name="javax.persistence.jdbc.password" value="{jdbc.password}" />
+			<property name="javax.persistence.jdbc.url" value="{jdbc.production.url}" />
+			<property name="javax.persistence.jdbc.user" value="{jdbc.production.user}" />
+			<property name="javax.persistence.jdbc.password" value="{jdbc.production.password}" />
 
 			<property name="javax.persistence.schema-generation.database.action"
 				value="drop-and-create" />
@@ -73,6 +73,35 @@
 		</properties>
 
 	</persistence-unit>
+	
+	<persistence-unit name="{applicationName}-test">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<properties>
+			<property name="javax.persistence.jdbc.url" value="{jdbc.test.url}" />
+			<property name="javax.persistence.jdbc.user" value="{jdbc.test.user}" />
+			<property name="javax.persistence.jdbc.password" value="{jdbc.test.password}" />
+
+			<property name="javax.persistence.schema-generation.database.action"
+				value="drop-and-create" />
+			<property
+				name="javax.persistence.schema-generation.create-database-schemas"
+				value="true" />
+			<property name="javax.persistence.schema-generation.create-source"
+				value="script-then-metadata" />
+			<property name="javax.persistence.schema-generation.create-script-source"
+				value="META-INF/sql/create.sql" />
+			<property name="javax.persistence.schema-generation.drop-source"
+				value="script" />
+			<property name="javax.persistence.schema-generation.drop-script-source"
+				value=" META-INF/sql/drop.sql" />
+
+			<property name="hibernate.show_sql" value="true" />
+			<property name="hibernate.format_sql" value="true" />
+			<property name="hibernate.id.new_generator_mappings" value="true" />
+		</properties>
+
+	</persistence-unit>
+	
 
 
 </persistence>

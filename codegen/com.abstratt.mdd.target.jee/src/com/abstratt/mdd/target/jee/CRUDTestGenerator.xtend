@@ -44,7 +44,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             
                 @Before
                 public void initEM() {
-                    this.em = util.PersistenceHelper.createSchema();
+                    this.em = util.PersistenceHelper.createTestSchema();
                     util.PersistenceHelper.setEntityManager(em);
                     this.tx = this.em.getTransaction();
                     this.tx.begin();

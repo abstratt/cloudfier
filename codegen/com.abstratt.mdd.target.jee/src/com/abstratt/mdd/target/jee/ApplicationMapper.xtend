@@ -1,37 +1,59 @@
 package com.abstratt.mdd.target.jee
 
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.spi.TargetUtils
+
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
     override mapAll(IRepository repository) {
         val result = super.mapAll(repository)
+        val properties = repository.properties
         val applicationName = repository.applicationName
-        val templates = #[
-            'src/main/resources/META-INF/persistence.xml', 
-            'src/main/resources/META-INF/orm.xml',
-            'src/main/resources/META-INF/sql/create.sql',
-            'src/main/resources/META-INF/sql/drop.sql',
-            'src/main/resources/log4j.properties',
-            'src/main/assemble/assembly.xml',
-            'src/main/java/util/PersistenceHelper.java',
-            'src/main/java/resource/util/StandaloneRequestResponseFilter.java',
-            'src/main/java/resource/util/LoginLogoutResource.java',
-            'src/main/java/resource/util/Authenticator.java',
-            'src/main/java/resource/util/ContainerRequestResponseFilter.java',            
-            'src/main/java/resource/util/EntityManagerProvider.java',
-            'src/main/java/resource/util/EntityResourceHelper.java'            
-        ]
+        val jdbcProductionUsername = properties.getProperty("mdd.generator.jpa.jdbc.production.username", "cloudfier")
+        val jdbcProductionPassword = properties.getProperty("mdd.generator.jpa.jdbc.production.password", "password")
+        val jdbcTestUsername = properties.getProperty("mdd.generator.jpa.jdbc.test.username", jdbcProductionUsername)
+        val jdbcTestPassword = properties.getProperty("mdd.generator.jpa.jdbc.test.password", jdbcProductionPassword)
+        val defaultJdbcProductionUrl = '''jdbc:hsqldb:mem:«applicationName»;user=«jdbcProductionUsername»;password=«jdbcProductionPassword»'''
+        val defaultJdbcTestUrl = '''jdbc:hsqldb:mem:«applicationName»;user=«jdbcTestUsername»;password=«jdbcTestPassword»'''
+        
+        val explicitJdbcProductionUrl = properties.getProperty("mdd.generator.jpa.jdbc.production.url")
+        val explicitJdbcTestUrl = properties.getProperty("mdd.generator.jpa.jdbc.test.url")
+		val jdbcProductionUrl = explicitJdbcProductionUrl ?: defaultJdbcProductionUrl
+		val jdbcTestUrl = explicitJdbcTestUrl ?: defaultJdbcTestUrl
+        val preserveSchema = Boolean.valueOf(properties.getProperty("mdd.generator.jpa.preserveSchema", Boolean.toString(explicitJdbcProductionUrl == null)))
+        val preserveData = Boolean.valueOf(properties.getProperty("mdd.generator.jpa.preserveData", Boolean.toString(explicitJdbcProductionUrl == null)))
+        val templates = #{
+            'src/main/resources/META-INF/persistence.xml' -> null, 
+            'src/main/resources/META-INF/orm.xml' -> null,
+            'src/main/resources/log4j.properties' -> null,
+            'src/main/assemble/assembly.xml' -> null,
+            'src/main/java/util/PersistenceHelper.java' -> null,
+            'src/main/java/resource/util/StandaloneRequestResponseFilter.java' -> null,
+            'src/main/java/resource/util/LoginLogoutResource.java' -> null,
+            'src/main/java/resource/util/Authenticator.java' -> null,
+            'src/main/java/resource/util/ContainerRequestResponseFilter.java' -> null,            
+            'src/main/java/resource/util/EntityManagerProvider.java' -> null,
+            'src/main/java/resource/util/EntityResourceHelper.java' -> null,
+        	'src/main/java/resource/applicationName/RESTServer.java' -> '''src/main/java/resource/«applicationName»/RESTServer.java''',
+        	'src/main/resources/META-INF/sql/create.sql' -> null,
+	        'src/main/resources/META-INF/sql/drop.sql' -> null
+        }
 		val replacements = newLinkedHashMap(
             'applicationName' -> applicationName,
-            //'jdbc.url' -> 'jdbc:postgresql://127.0.0.1:5432/cloudfier',
-            'jdbc.url' -> '''jdbc:hsqldb:mem:«applicationName»;user=cloudfier;password=password''',
-            'jdbc.user' -> 'cloudfier',
-            'jdbc.password' -> 'password'
+            'jdbc.production.url' -> jdbcProductionUrl,
+            'jdbc.production.user' -> jdbcProductionUsername,
+            'jdbc.production.password' -> jdbcProductionPassword,
+            'jdbc.test.url' -> jdbcTestUrl,
+            'jdbc.test.user' -> jdbcTestUsername,
+            'jdbc.test.password' -> jdbcTestPassword,
+            'jpa.preserveSchema' -> Boolean.toString(preserveSchema),
+            'jpa.preserveData' -> Boolean.toString(preserveData)
         )
         
-        result.putAll(templates.toInvertedMap[name|TargetUtils.merge(getTemplateContents(name), replacements)])
+        templates.forEach[templatePath, outputPath | 
+        	result.put(outputPath ?: templatePath, TargetUtils.merge(getTemplateContents(templatePath), replacements))
+        ]
         return result
     }
 }

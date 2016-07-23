@@ -46,7 +46,6 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         mappings.putAll(allResourceEntities.toMap[generateSchemaRepresentationFileName(it)].mapValues[apiSchemaGenerator.generateEntityRepresentation(it)])
         
         val templates = #{
-        	'''src/main/java/resource/«applicationName»/RESTServer.java'''.toString -> null,
         	'''src/main/java/resource/«applicationName»/IndexResource.java'''.toString -> null,
             '''src/main/java/resource/«applicationName»/EntityResource.java'''.toString -> null,        	
         	'''src/main/java/resource/«applicationName»/ConversionException.java'''.toString -> null,

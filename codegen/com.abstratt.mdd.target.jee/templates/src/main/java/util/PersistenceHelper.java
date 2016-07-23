@@ -49,6 +49,11 @@ public class PersistenceHelper {
             getEntityManager().persist(object);
         }
     }
+    
+    public static EntityManager createTestSchema() {
+        return Persistence.createEntityManagerFactory("{applicationName}-test").createEntityManager();
+    }
+    
     public static EntityManager createSchema() {
         return Persistence.createEntityManagerFactory("{applicationName}-schema-init").createEntityManager();
     }

@@ -25,12 +25,18 @@ var buildOrionContentLocation = function(original) {
     return "/file/"+ user + "-OrionContent/" + components[2];
 }
 
-var buildProjectPath = function (args, context) {
-    var path = args.application.file ? args.application.file.path : args.application.path;
+var buildProjectPath = function (args, context, slot) {
+    slot = slot || 'application';
+    var path = args[slot].file ? args[slot].file.path : args[slot].path;
     var current = context.cwd;
-
-    current = current.replace('.', '/').replace('-OrionContent', '');
-    path = path.replace('.', '/').replace('-OrionContent', '');
+    
+    if (path === '.') {
+        path = '';
+    } else if (path.startsWith('./') && path.length > 2) {
+        path = path.substring(2); 
+    }
+    current = current.replace('-OrionContent', '');
+    path = path.replace('-OrionContent', '');
     if (current.indexOf('/workspace/') == 0)
         // workaround for Orion bug #420829
         return path;
@@ -109,8 +115,12 @@ var computeProposals = function(prefix, buffer, selection) {
     ];
 };
 
-var locationToWorkspace = function(location, file) {
-    return location.replace('/file/','').replace('-OrionContent','').replace('/' + file,'').replace(/\/$/g, '').replace(/\//g, '-');
+var locationToWorkspace = function(location) {
+    return removeOrionPathPrefix(location).replace(/\/$/g, '').replace(/\//g, '-');
+};
+
+var removeOrionPathPrefix = function(location) {
+    return location.replace('/file/','').replace('-OrionContent','')
 };
 
 /*** SHELL commands */
@@ -123,12 +133,15 @@ var standardApplicationError = function(projectPath) {
         } else if (error.status == 400) {
             return JSON.parse(error.responseText).message;
         }
-        try { 
-            var parsedMessage = JSON.parse(error.responseText).message;
+        var parsedMessage;
+        try {
+            var parsedErrorResponse = JSON.parse(error.responseText);
+            parsedMessage = parsedErrorResponse.message;
         } catch (e) {
             console.log("Error parsing error message: " + e);
-            parsedMessage = "no further detail";
-        }
+            console.log("Original error message: " + error.responseText);
+            parsedMessage = error.responseText;
+        } 
         return "Unexpected error: " + parsedMessage + " (" + error.status + ")";
     };
 };
@@ -298,26 +311,53 @@ var shellGenerate = function(args, context) {
     return xhr.get(url, {
          handleAs: 'arraybuffer',
          headers: { "Accept" : "application/zip" }, 
-    }).then(function(result) {
-            var zip = new JSZip(result);
-            var files = zip.files;
-            var newFiles = [];
-            for (var name in files) {
-                if (name.lastIndexOf("/") === (name.length - 1)) {
-                    /* represents a directory */
-                    newFiles.push({path: "gen/" + name.substring(0, name.length - 1), isDirectory: true});
-                } else {
-                    var file = zip.file(name);
-                    newFiles.push({path: "gen/" + name, blob: file.asArrayBuffer()});
-                }
-            };
-            return newFiles;
-    }, function(error) {
-             if (error.status == 404) {
-                 return "No application is deployed yet at \"" + projectPath + "\". Use 'cloudfier full-deploy <application-dir>' to deploy it first";
-             }
-             return "Unexpected error: " + JSON.parse(error.responseText).message + " (" + error.status + ")";
+    }).then(unzip('gen'), function(error) {
+         if (error.status == 404) {
+             return "No application is deployed yet at \"" + projectPath + "\". Use 'cloudfier full-deploy <application-dir>' to deploy it first";
+         }
+         return "Unexpected error: " + JSON.parse(error.responseText).message + " (" + error.status + ")";
     });
+};
+
+var unzip = function(baseDir) {
+    return function(result) {
+	    var zip = new JSZip(result);
+	    var files = zip.files;
+	    var newFiles = [];
+	    for (var name in files) {
+	        if (isDirPath(name)) {
+	            /* represents a directory */
+	            newFiles.push({path: asDirPath(baseDir) + name.substring(0, name.length - 1), isDirectory: true});
+	        } else {
+	            var file = zip.file(name);
+	            newFiles.push({path: asDirPath(baseDir) + name, blob: file.asArrayBuffer()});
+	        }
+	    };
+	    return newFiles;
+    };
+};
+
+var asDirPath = function(path) {
+    if (isDirPath(path)) {
+        return path;
+    }
+    return path + "/";
+};
+
+var isDirPath = function(path) {
+    return path && (path.lastIndexOf("/") === (path.length - 1));
+};
+
+var shellSchemaCrawlerImport = function(args, context) {
+    var cwd = context.cwd;
+    var projectPath = buildProjectPath(args, context);
+    var snapshotPath = removeOrionPathPrefix(buildProjectPath(args, context, 'schema-crawler-snapshot'));
+    var appName = locationToWorkspace(projectPath);
+    var url = "/services/importer/" + appName + "/source/schema-crawler?snapshot=" + snapshotPath;
+    return xhr.get(url, {
+         handleAs: 'arraybuffer',
+         headers: { "Accept" : "application/zip" }, 
+    }).then(unzip('.'), standardApplicationError(cwd));
 };
 
 var insertNewLines = function(lines) {
@@ -566,6 +606,24 @@ provider.registerServiceProvider("orion.shell.command", { callback: shellGenerat
         returnType: "[file]"
     }
 );
+
+provider.registerServiceProvider("orion.shell.command", { callback: shellSchemaCrawlerImport }, 
+    {   
+        name: "cloudfier import-schema-crawler",
+        description: "Imports a database schema as Cloudfier application",
+        parameters: [{
+            name: "application",
+            type: "file",
+            description: "Application to import into"
+        },{
+            name: "schema-crawler-snapshot",
+            type: "file",
+            description: "Database snapshot to import (schema snapshot file generated with SchemaCrawler)"
+        }],
+        returnType: "[file]"
+    }
+);
+
 
 
 provider.registerServiceProvider("orion.shell.command", { callback: shellCreateProject }, {   

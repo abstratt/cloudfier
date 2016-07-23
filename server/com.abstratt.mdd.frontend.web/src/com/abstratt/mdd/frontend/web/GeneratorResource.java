@@ -12,6 +12,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.eclipse.uml2.uml.Classifier;
+import org.restlet.Request;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.engine.adapter.HttpRequest;
@@ -67,28 +68,10 @@ public class GeneratorResource extends AbstractWorkspaceResource {
                 return result;
 		    }
         });
-		
-		String expectedContentType = ((HttpRequest) getRequest()).getHttpCall()
-		.getRequestHeaders().getValues(
-				HeaderConstants.HEADER_ACCEPT);
-		boolean zipFormat = (MediaType.ALL.getName().equals(expectedContentType) && result.size() > 1) 
-		        || MediaType.APPLICATION_OCTET_STREAM.getName()
-				    .equals(expectedContentType)
-				|| MediaType.APPLICATION_ZIP.getName().equals(
-						expectedContentType)
-				|| (expectedContentType == null && result.size() > 1);
-
-		if (zipFormat) {
-			String fileName = "generated-" +platformId;
-			if (artifactType != null)
-			    fileName += "-" + artifactType;
-            return ResourceUtils.createZip(result, fileName);
-		}
-		StringBuffer resultString = new StringBuffer();
-		for (byte[] each : result.values()) {
-			resultString.append("\n");
-			resultString.append(new String(each));
-		}
-		return new StringRepresentation(resultString.toString());
+		String fileName = "generated-" +platformId;
+		if (artifactType != null)
+		    fileName += "-" + artifactType;
+		return ResourceUtils.buildMultiFileResult(getRequest(), fileName, result);
 	}
+
 }

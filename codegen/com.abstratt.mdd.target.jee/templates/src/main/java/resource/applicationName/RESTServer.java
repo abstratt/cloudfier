@@ -22,6 +22,9 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import util.PersistenceHelper;
 
 public class RESTServer extends AbstractHandler {
+	
+	private static boolean PRESERVE_SCHEMA = {jpa.preserveSchema};
+	private static boolean PRESERVE_DATA = {jpa.preserveData};
 
     public void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response) throws IOException,
             ServletException {
@@ -38,9 +41,15 @@ public class RESTServer extends AbstractHandler {
 		boolean run = commands.contains("run");
 		if (initData) {
 			System.out.println("*** initData");
+			if (PRESERVE_DATA) {
+				throw new IllegalArgumentException("initData not allowed");
+			}
 			PersistenceHelper.createSchemaAndInitData().close();
 		} else if (createSchema) {
 			System.out.println("*** createSchema");
+			if (PRESERVE_SCHEMA) {
+				throw new IllegalArgumentException("createSchema not allowed");
+			}
 			PersistenceHelper.createSchema().close();
 		}
 		if (run || (!createSchema && !initData)) {

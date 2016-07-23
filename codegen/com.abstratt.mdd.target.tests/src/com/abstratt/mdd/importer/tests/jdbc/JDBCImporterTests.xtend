@@ -1,7 +1,7 @@
 package com.abstratt.mdd.importer.tests.jdbc
 
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
-import com.abstratt.mdd.modelimporter.jdbc.JDBCImporter
+import com.abstratt.mdd.importer.jdbc.JDBCImporter
 import java.util.Properties
 import org.junit.Test
 import schemacrawler.schema.Catalog
@@ -21,7 +21,7 @@ class JDBCImporterTests extends AbstractRepositoryBuildingTests {
 		val reader = null as Reader
 		val jdbcImporterProperties = new Properties()
 		val Catalog catalog = new XmlSerializedCatalog(reader)
-    	val generated = new JDBCImporter(jdbcImporterProperties).generateTextUMLModel(catalog)
+    	val generated = new JDBCImporter(jdbcImporterProperties).importModel(catalog)
     	assertNotNull(generated.get('mdd.properties')) 	
     }
 }

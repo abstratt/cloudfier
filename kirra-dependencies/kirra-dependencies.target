@@ -13,7 +13,7 @@
 			<unit id="org.eclipse.ocl.all.sdk.feature.group" version="0.0.0" />
             <unit id="org.eclipse.uml2.sdk.feature.group" version="0.0.0" />			
             <!-- Specific release to avoid Eclipse bug 430375 -->
-			<repository location="http://download.eclipse.org/releases/mars" />
+			<repository location="http://download.eclipse.org/releases/mars/201602261000/" />
 		</location>
 		
 		<location includeAllPlatforms="false" includeMode="planner"
@@ -34,7 +34,7 @@
             <unit id="org.apache.commons.httpclient" version="0.0.0" />
             <unit id="com.thoughtworks.xstream" version="0.0.0" />
             	
-			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20150519210750/repository/" />
+			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository/" />
 		</location>
 				
         <location includeAllPlatforms="false" includeMode="planner"

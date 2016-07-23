@@ -10,6 +10,7 @@ public interface WebFrontEnd {
     String VALIDATOR_SEGMENT = "/validator/";
     String DIAGRAM_SEGMENT = "/diagram/";
     String PUBLISHER_SEGMENT = "/publisher/";
+    String IMPORTER_SEGMENT = "/importer/";
     String GENERATOR_SEGMENT = "/generator/";
     String PLATFORM_SEGMENT = "platform";
     String MAPPER_SEGMENT = "mapper";
