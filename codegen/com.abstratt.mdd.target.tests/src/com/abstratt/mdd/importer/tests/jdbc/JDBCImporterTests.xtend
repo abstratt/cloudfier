@@ -2,11 +2,9 @@ package com.abstratt.mdd.importer.tests.jdbc
 
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests
 import com.abstratt.mdd.importer.jdbc.JDBCImporter
+import java.io.InputStreamReader
 import java.util.Properties
 import org.junit.Test
-import schemacrawler.schema.Catalog
-import schemacrawler.tools.integration.serialization.XmlSerializedCatalog
-import java.io.Reader
 
 class JDBCImporterTests extends AbstractRepositoryBuildingTests {
 	
@@ -17,11 +15,13 @@ class JDBCImporterTests extends AbstractRepositoryBuildingTests {
 	
     @Test
     def void testBasic() {
-    	//TODO-RC working here
-		val reader = null as Reader
-		val jdbcImporterProperties = new Properties()
-		val Catalog catalog = new XmlSerializedCatalog(reader)
-    	val generated = new JDBCImporter(jdbcImporterProperties).importModel(catalog)
-    	assertNotNull(generated.get('mdd.properties')) 	
+    	val snapshotContents = new InputStreamReader(JDBCImporterTests.getResourceAsStream("schemacrawler.data"))
+    	try {
+			val jdbcImporterProperties = new Properties()
+	    	val generated = new JDBCImporter(jdbcImporterProperties).importModelFromSnapshot(snapshotContents)
+	    	assertNotNull(generated.get('mdd.properties')) 	
+    	} finally {
+    		snapshotContents.close()
+    	}
     }
 }

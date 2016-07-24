@@ -1,11 +1,8 @@
 .settings
 .project
-*/.settings
-*/.project
-*/*/.settings
-*/*/.project
-*/*/.classpath
-*/*/xtend-gen
-*/*/target
-*/*/bin
-/qooxdoo
+.classpath
+bin
+target
+xtend-gen
+qooxdoo
+*~
