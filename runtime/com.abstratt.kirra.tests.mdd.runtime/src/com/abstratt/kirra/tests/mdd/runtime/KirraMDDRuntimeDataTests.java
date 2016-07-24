@@ -1,15 +1,17 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
+
+import junit.framework.TestCase;
 
 public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
 
@@ -247,8 +249,8 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         newInstance2.setEntityName("MyClass2");
         newInstance2.setEntityNamespace("mypackage");
         newInstance2.setValue("attr3", true);
-        Date now = new Date();
-        newInstance2.setValue("attr4", now);
+        Date today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        newInstance2.setValue("attr4", today);
         newInstance2.setValue("attr5", "value2");
         Instance created2 = kirra.createInstance(newInstance2);
 
@@ -257,7 +259,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertFalse(loaded2.isNew());
 
         TestCase.assertEquals(true, loaded2.getValue("attr3"));
-        TestCase.assertEquals(now, loaded2.getValue("attr4"));
+        TestCase.assertEquals(today, loaded2.getValue("attr4"));
         TestCase.assertEquals("value2", loaded2.getValue("attr5"));
     }
 
