@@ -90,7 +90,7 @@
             <unit id="com.abstratt.mdd.frontend.core.feature.feature.group" version="0.0.0"/>   
             <unit id="com.abstratt.mdd.frontend.ui.feature.feature.group" version="0.0.0"/>
             <unit id="com.abstratt.mdd.frontend.ui.diagram.feature.feature.group" version="0.0.0"/>   
-			
+            <unit id="com.abstratt.mdd.importer.jdbc.feature.feature.group" version="0.0.0"/>   
 			<repository
 				location="jar:http://repository-textuml.forge.cloudbees.com/snapshot/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.2/com.abstratt.mdd.oss.repository-2.2.zip!/" />
 		</location>		
