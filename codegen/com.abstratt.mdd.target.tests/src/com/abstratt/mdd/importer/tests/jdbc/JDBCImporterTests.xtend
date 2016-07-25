@@ -7,10 +7,7 @@ import java.io.InputStreamReader
 import java.util.Properties
 import org.apache.commons.io.IOUtils
 import org.junit.Test
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
-@RunWith(JUnit4)
 class JDBCImporterTests extends AbstractRepositoryBuildingTests {
 
 	new(String name) {

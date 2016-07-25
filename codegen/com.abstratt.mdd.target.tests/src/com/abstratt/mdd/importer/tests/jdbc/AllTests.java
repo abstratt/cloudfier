@@ -7,6 +7,7 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite(AllTests.class.getName());
         suite.addTest(new TestSuite(JDBCImporterTests.class));
+        suite.addTest(new TestSuite(JDBCImporterNamingTests.class));
         return suite;
     }
 }

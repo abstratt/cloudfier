@@ -51,31 +51,21 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 	
 	def testCurrentUser_AsRole() {
 		parseAndCheck(model)
-		val Instance newProfile = new Instance()
-		newProfile.setEntityName("Profile")
-		newProfile.setEntityNamespace("userprofile")
-		newProfile.setValue("username", "peter.jones")
-		newProfile.setValue("email", "peter@abstratt.com")
-		newProfile.setValue("password", "pass")
-		val Instance createdProfile = kirra.createInstance(newProfile)
+		val Instance newUser = new Instance()
+		newUser.setEntityName("User")
+		newUser.setEntityNamespace("todo")
+		newUser.setValue("name", "Peter")
+		newUser.setRelated("user", kirra.currentUser)
+		val Instance createdUser = kirra.createInstance(newUser)
 
-		assertEquals(createdProfile.reference, kirra.currentUser.reference)
+		val Instance newTask = new Instance()
+		newTask.setEntityName("Task")
+		newTask.setEntityNamespace("todo")
+		newTask.setValue("description", "something to do")
+		val Instance createdTask = kirra.createInstance(newTask)
+
+		assertNotNull(createdTask.getRelated("creator"))
+		assertEquals(createdUser.reference, createdTask.getRelated("creator").reference)
 	}
-//		val Instance newUser = new Instance()
-//		newUser.setEntityName("User")
-//		newUser.setEntityNamespace("todo")
-//		newUser.setValue("name", "Peter")
-//		newUser.setRelated("user", createdProfile)
-//		val Instance createdUser = kirra.createInstance(newUser)
-//
-//		val Instance newTask = new Instance()
-//		newTask.setEntityName("Task")
-//		newTask.setEntityNamespace("todo")
-//		newTask.setValue("description", "something to do")
-//		val Instance createdTask = kirra.createInstance(newTask)
-//
-//		assertNotNull(createdTask.getRelated("creator"))
-//		assertEquals(createdUser.reference, createdTask.getRelated("creator").reference)
-//	}
 
 }

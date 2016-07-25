@@ -2,13 +2,10 @@ package com.abstratt.mdd.importer.tests.jdbc
 
 import com.abstratt.mdd.importer.jdbc.JDBCImporter
 import java.util.Properties
+import junit.framework.TestCase
 import org.junit.Test
-import static org.junit.Assert.*
-import org.junit.runner.RunWith
-import org.junit.runners.JUnit4
 
-@RunWith(JUnit4)
-class JDBCImporterNamingTests {
+class JDBCImporterNamingTests extends TestCase {
 
 	@Test
 	def void testTableRename() {
