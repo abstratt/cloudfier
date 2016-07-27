@@ -2,6 +2,8 @@ package com.abstratt.mdd.target.jee
 
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.kirra.mdd.core.KirraMDDConstants
+import com.abstratt.kirra.mdd.core.KirraMDDCore
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.spi.TargetUtils
 import java.util.List

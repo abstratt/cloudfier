@@ -396,7 +396,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 		'''
         public void set«attribute.name.toFirstUpper»(«attribute.generateStaticModifier»«attribute.toJavaType» new«attribute.name.toFirstUpper») {
             «generateAttributeInvariants(attribute)»            
-            this.«attribute.name» = new«attribute.name.toFirstUpper»;
+            this.«generateAttributeNameAsJavaSymbol(attribute)» = new«attribute.name.toFirstUpper»;
         }
         '''
 	}
@@ -404,7 +404,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 	def generateAttributeGetter(Property attribute) {
 		'''
         public «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.generateAccessorName»() {
-            return this.«attribute.name»;
+            return this.«generateAttributeNameAsJavaSymbol(attribute)»;
         }
 		'''
 	}
@@ -412,7 +412,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     def generateAttributePerSe(Property attribute) {
         val defaultValue = attribute.generateAttributeDefaultValue
     	'''
-    	protected «attribute.generateStaticModifier»«attribute.toJavaType» «attribute.name»«if (defaultValue != null) ''' = «defaultValue»'''»;
+    	protected «attribute.generateStaticModifier»«attribute.toJavaType» «generateAttributeNameAsJavaSymbol(attribute)»«if (defaultValue != null) ''' = «defaultValue»'''»;
     	'''
     }
     
@@ -448,14 +448,14 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 	
 	def generateRelationshipAttribute(Property relationship) {
 		'''
-		protected «relationship.generateStaticModifier»«relationship.generateRelationshipType» «relationship.name»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;
+		protected «relationship.generateStaticModifier»«relationship.generateRelationshipType» «generateAttributeNameAsJavaSymbol(relationship)»«IF relationship.multivalued» = new «relationship.toJavaCollection»<>()«ENDIF»;
 		'''
 	}
 
 	def generateRelationshipSetter(Property relationship) {
 		'''
         public «relationship.generateStaticModifier»void set«relationship.name.toFirstUpper»(«relationship.generateRelationshipType» new«relationship.name.toFirstUpper») {
-            this.«relationship.name» = new«relationship.name.toFirstUpper»;
+            this.«generateAttributeNameAsJavaSymbol(relationship)» = new«relationship.name.toFirstUpper»;
         }
 		'''
 	}
@@ -464,7 +464,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 	def generateRelationshipAdder(Property relationship) {
 		'''
         public «relationship.generateStaticModifier»void addTo«relationship.name.toFirstUpper»(«relationship.type.toJavaType» new«relationship.name.toFirstUpper») {
-            this.«relationship.name».add(new«relationship.name.toFirstUpper»);
+            this.«generateAttributeNameAsJavaSymbol(relationship)».add(new«relationship.name.toFirstUpper»);
         }
 		'''
 	}
@@ -472,7 +472,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 	def generateRelationshipRemover(Property relationship) {
 		'''
         public «relationship.generateStaticModifier»void removeFrom«relationship.name.toFirstUpper»(«relationship.type.toJavaType» existing«relationship.name.toFirstUpper») {
-            this.«relationship.name».remove(existing«relationship.name.toFirstUpper»);
+            this.«generateAttributeNameAsJavaSymbol(relationship)».remove(existing«relationship.name.toFirstUpper»);
         }
 		'''
 	}
@@ -480,7 +480,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 	def generateRelationshipGetter(Property relationship) {
 		'''
     		public «relationship.generateStaticModifier»«relationship.generateRelationshipType» get«relationship.name.toFirstUpper»() {
-    			return this.«relationship.name»;
+    			return this.«generateAttributeNameAsJavaSymbol(relationship)»;
     		}
 		'''
 	}

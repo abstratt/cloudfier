@@ -2,6 +2,7 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
+import java.util.Set
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
@@ -42,9 +43,18 @@ import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.isVertexLit
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.resolveVertexLiteral
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 
-abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBehaviorGenerator {
+abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.AbstractGenerator implements IBasicBehaviorGenerator {
+    
+    public static Set<String> JAVA_KEYWORDS = #{ "abstract", "assert", "boolean",
+                "break", "byte", "case", "catch", "char", "class", "const",
+                "continue", "default", "do", "double", "else", "extends", "false",
+                "final", "finally", "float", "for", "goto", "if", "implements",
+                "import", "instanceof", "int", "interface", "long", "native",
+                "new", "null", "package", "private", "protected", "public",
+                "return", "short", "static", "strictfp", "super", "switch",
+                "synchronized", "this", "throw", "throws", "transient", "true",
+                "try", "void", "volatile", "while" }
     
     new(IRepository repository) {
         super(repository)
@@ -221,7 +231,7 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
                     case 'String': 'String'
                     case 'Memo': 'String'
                     case 'Boolean': if (nullable) 'Boolean' else 'boolean'
-                    default: '''UNEXPECTED PRIMITIVE TYPE: «type.name»'''
+                    default: '''String'''
                 }
             case null: switch (type) {
                 case type instanceof Interface && type.isSignature : (type as Interface).toJavaClosureType
@@ -244,7 +254,12 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
     }
     
     def generateAttributeName(Property property) {
-        if (property.name != null) property.name else '''«property.type?.name?.toFirstLower»'''.toString;
+        return if (property.name != null) property.name else '''«property.type?.name?.toFirstLower»'''.toString;
+    }
+    
+    def generateAttributeNameAsJavaSymbol(Property property) {
+        val candidate = property.generateAttributeName
+        return if (JAVA_KEYWORDS.contains(candidate)) '_' + candidate else candidate
     }
     
     def toJavaClosureType(Activity activity) {
@@ -288,20 +303,20 @@ abstract class PlainJavaGenerator extends AbstractGenerator implements IBasicBeh
         public «IF !topLevel»static «ENDIF»class «dataTypeName» {
         	private static final long serialVersionUID = 1L;
             «dataType.getAllAttributes().generateMany['''
-                public final «toJavaType» «generateAttributeName»;
+                public final «toJavaType» «generateAttributeNameAsJavaSymbol»;
             ''']»
             
             public «dataTypeName»(«dataType.getAllAttributes().generateMany([
-                '''«toJavaType» «generateAttributeName»'''
+                '''«toJavaType» «generateAttributeNameAsJavaSymbol»'''
             ], ', ')») {
                 «dataType.getAllAttributes().generateMany([
-                  '''this.«generateAttributeName» = «generateAttributeName»;'''  
+                  '''this.«generateAttributeNameAsJavaSymbol» = «generateAttributeNameAsJavaSymbol»;'''  
                 ])»
             }
             
             «dataType.getAllAttributes().generateMany['''
                 public «toJavaType» get«generateAttributeName.toFirstUpper»() {
-                    return «generateAttributeName»;
+                    return «generateAttributeNameAsJavaSymbol»;
                 }    
             ''']» 
         }

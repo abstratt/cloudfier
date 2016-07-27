@@ -12,7 +12,7 @@ import org.restlet.data.Method;
 import org.restlet.engine.header.Header;
 import org.restlet.util.Series;
 
-import com.abstratt.kirra.mdd.runtime.KirraMDDConstants;
+import com.abstratt.kirra.mdd.core.KirraMDDConstants;
 import com.abstratt.kirra.rest.common.Paths;
 
 public interface KirraAuthenticationContext {
@@ -71,5 +71,9 @@ public interface KirraAuthenticationContext {
 
 	default boolean isOptional() {
 		return IS_OPTIONAL.get();
+	}
+	
+	default boolean isLoginRequired() {
+		return LOGIN_REQUIRED.get();
 	}
 }

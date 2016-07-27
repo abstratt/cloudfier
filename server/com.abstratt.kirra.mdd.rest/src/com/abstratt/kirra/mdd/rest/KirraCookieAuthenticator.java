@@ -96,7 +96,8 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
 
     @Override
     protected int unauthenticated(Request request, Response response) {
-    	return super.unauthenticated(request, response);
+    	super.unauthenticated(request, response);
+    	return LOGIN_REQUIRED.get() ? STOP : CONTINUE; 
     }
     @Override
     public boolean isOptional() {

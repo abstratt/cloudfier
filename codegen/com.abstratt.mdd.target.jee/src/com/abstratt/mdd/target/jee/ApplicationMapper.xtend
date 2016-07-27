@@ -4,6 +4,7 @@ import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.spi.TargetUtils
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import com.abstratt.kirra.mdd.core.KirraMDDConstants
 
 class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
     override mapAll(IRepository repository) {
@@ -16,6 +17,8 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
         val jdbcTestPassword = properties.getProperty("mdd.generator.jpa.jdbc.test.password", jdbcProductionPassword)
         val defaultJdbcProductionUrl = '''jdbc:hsqldb:mem:«applicationName»;user=«jdbcProductionUsername»;password=«jdbcProductionPassword»'''
         val defaultJdbcTestUrl = '''jdbc:hsqldb:mem:«applicationName»;user=«jdbcTestUsername»;password=«jdbcTestPassword»'''
+        
+        val loginRequired = Boolean.parseBoolean(repository.properties.getOrDefault(KirraMDDConstants.LOGIN_REQUIRED, Boolean.toString(false)) as String)
         
         val explicitJdbcProductionUrl = properties.getProperty("mdd.generator.jpa.jdbc.production.url")
         val explicitJdbcTestUrl = properties.getProperty("mdd.generator.jpa.jdbc.test.url")
@@ -48,7 +51,8 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
             'jdbc.test.user' -> jdbcTestUsername,
             'jdbc.test.password' -> jdbcTestPassword,
             'jpa.preserveSchema' -> Boolean.toString(preserveSchema),
-            'jpa.preserveData' -> Boolean.toString(preserveData)
+            'jpa.preserveData' -> Boolean.toString(preserveData),
+            "loginRequired" -> Boolean.toString(loginRequired)
         )
         
         templates.forEach[templatePath, outputPath | 

@@ -61,6 +61,7 @@ import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.mdd.core.KirraHelper;
+import com.abstratt.kirra.mdd.core.KirraMDDConstants;
 import com.abstratt.kirra.mdd.schema.SchemaManagementOperations;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.NamedElementLookupCache;

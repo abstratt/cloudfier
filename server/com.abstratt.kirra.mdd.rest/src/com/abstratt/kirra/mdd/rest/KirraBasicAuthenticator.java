@@ -30,11 +30,7 @@ public class KirraBasicAuthenticator extends ChallengeAuthenticator implements K
     
     @Override
     protected int unauthenticated(Request request, Response response) {
-    	return super.unauthenticated(request, response);
-    }
-
-    @Override
-    public boolean isOptional() {
-    	return KirraAuthenticationContext.super.isOptional();
+    	super.unauthenticated(request, response);
+    	return LOGIN_REQUIRED.get() ? STOP : CONTINUE; 
     }
 }

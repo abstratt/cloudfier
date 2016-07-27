@@ -35,6 +35,7 @@ import util.SecurityHelper;
 
 @Priority(Priorities.AUTHORIZATION)
 public class StandaloneRequestResponseFilter implements ContainerRequestFilter, ContainerResponseFilter {
+	private static final boolean LOGIN_REQUIRED = {loginRequired};
 	private static final Collection<String> MUTATION_METHODS = Arrays.asList("PUT", "POST", "DELETE");
 	private EntityManagerFactory entityManagerFactory;
 
@@ -56,7 +57,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 			request.abortWith(Response.status(Response.Status.UNAUTHORIZED).header("WWW-Authenticate", "Custom realm=\"Basic realm\"").build());
 		} else {
 			SecurityContext securityContext = request.getSecurityContext();
-			if (securityContext != null)
+			if (securityContext != null && securityContext.getUserPrincipal() != null)
 				SecurityHelper.setCurrentUsername(securityContext.getUserPrincipal().getName());
 		}
 	}
@@ -78,13 +79,13 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 		Cookie authCookie = request.getCookies().get("Custom-Authentication");
 		String username;
 		String password;
-		if (authCookie != null) {
+		if (authCookie != null) {	
 			username = authCookie.getValue();
 			password = null;
 		} else {
 			String authorization = request.getHeaderString("Authorization");
 			if (authorization == null || !authorization.startsWith("Custom "))
-				return false;
+				return !LOGIN_REQUIRED;
 			String encodedUserPassword = authorization.replaceFirst("Custom ", "");
 			String usernameAndPassword = new String(Base64.getDecoder().decode(encodedUserPassword));
 			StringTokenizer tokenizer = new StringTokenizer(usernameAndPassword, ":");
