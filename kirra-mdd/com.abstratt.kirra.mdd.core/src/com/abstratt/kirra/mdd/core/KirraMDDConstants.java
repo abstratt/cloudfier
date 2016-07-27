@@ -1,4 +1,4 @@
-package com.abstratt.kirra.mdd.runtime;
+package com.abstratt.kirra.mdd.core;
 
 public interface KirraMDDConstants {
 
