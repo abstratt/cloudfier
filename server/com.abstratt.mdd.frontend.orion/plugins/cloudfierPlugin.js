@@ -379,7 +379,8 @@ var shellCreateProject = function(args, context) {
         'mdd.enableLibraries=true',
         'mdd.enableTypes=true',
         'mdd.extendBaseObject=true',
-        'mdd.application.allowAnonymous=true'
+        'mdd.application.allowAnonymous=true',
+        'mdd.application.loginRequired=false'
     ];
     var result = {path: "mdd.properties", isDirectory: false, blob: new Blob(insertNewLines(propertiesFile))};
     console.log(result);
