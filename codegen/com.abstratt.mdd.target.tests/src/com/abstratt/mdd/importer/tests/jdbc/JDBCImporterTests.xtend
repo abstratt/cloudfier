@@ -19,7 +19,7 @@ class JDBCImporterTests extends AbstractRepositoryBuildingTests {
 		val jdbcImporterProperties = new Properties()
 		jdbcImporterProperties.put("mdd.importer.jdbc.schema", "BOOKS")
 		importSnapshot(jdbcImporterProperties)
-		val bookClass = getClass("books::Books")
+		getClass("books::Books")
 	}
 
 	def importSnapshot(Properties jdbcImporterProperties) {
@@ -27,8 +27,8 @@ class JDBCImporterTests extends AbstractRepositoryBuildingTests {
 		val snapshotContents = new InputStreamReader(new ByteArrayInputStream(IOUtils.toByteArray(resourceAsStream)))
 		resourceAsStream.close()
 		val generated = new JDBCImporter(jdbcImporterProperties).importModelFromSnapshot(snapshotContents)
-		val String[] sources = generated.values.map[it.toString].toList.toArray(newArrayOfSize(0))
+		val sources = generated.filter[key, value | key.endsWith(".tuml")].values.map[it.toString].toList
 		sources.forEach[println(it)]
-		parseAndCheck(sources)
+		parseAndCheck(sources.toList.toArray(newArrayOfSize(0)))
 	}
 }
