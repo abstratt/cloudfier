@@ -506,7 +506,7 @@ var showLinks = function(projectPath, packages) {
     var applicationName = locationToWorkspace(projectPath);
     packages = packages || [];
     var mobileUiUrl = "http:/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
-    var newUiUrl = "http:/kirra-api/kirra-ng/?app-path=/services/api-v2/" + applicationName + "/";
+    var newUiUrl = "http:/kirra-api/kirra-ng/?theme=&app-path=/services/api-v2/" + applicationName + "/";
     var api2Url = "http:/services/api-v2/" + applicationName + "/";
     var appInfo = "\nStart [new desktop UI](" + newUiUrl + ")" +
         "\nStart [mobile UI (work in progress)](" + mobileUiUrl + ")" +        
