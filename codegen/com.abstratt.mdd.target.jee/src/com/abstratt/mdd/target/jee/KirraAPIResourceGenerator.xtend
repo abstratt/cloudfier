@@ -2,7 +2,6 @@ package com.abstratt.mdd.target.jee
 
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
-import com.abstratt.mdd.target.jse.AbstractGenerator
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
@@ -11,6 +10,7 @@ import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ClassifierUtils.*
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
     
@@ -23,6 +23,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         val mnemonicProperty = entity.mnemonic
         val entityProperties = entity.properties
         val entityRelationships = entity.entityRelationships
+        val entityDataElements = entity.propertiesAndRelationships
         val superEntities = entity.generals.filter[it.entity]
         val subEntities = repository.findAllSpecifics(entity).filter[it.entity]
         '''
@@ -65,6 +66,9 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             ],
             "subTypes": [
             	«subEntities.map[getTypeRefRepresentation].join(',\n')»
+            ],
+            "orderedDataElements": [
+            	«(entityDataElements).map['''"«name»"'''].join(',\n')»
             ]
         }
         '''
