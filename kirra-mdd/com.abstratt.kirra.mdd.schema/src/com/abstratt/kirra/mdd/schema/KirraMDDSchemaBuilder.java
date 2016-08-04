@@ -18,6 +18,7 @@ import org.eclipse.uml2.uml.StateMachine;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.VisibilityKind;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.NamedElement;
@@ -105,13 +106,16 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setNamespace(getNamespace(umlClass));
         setName(umlClass, entity);
         entity.setProperties(getEntityProperties(umlClass));
+        entity.setRelationships(getEntityRelationships(umlClass));
         org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(umlClass);
         if (mnemonic != null) {
-        	entity.setMnemonicProperty(mnemonic.getName());
-        	entity.getProperty(mnemonic.getName()).setMnemonic(true);
+        	entity.setMnemonicSlot(mnemonic.getName());
+        	if (KirraHelper.isRelationship(mnemonic)) 
+        		entity.getRelationship(mnemonic.getName()).setMnemonic(true);
+        	else 
+        		entity.getProperty(mnemonic.getName()).setMnemonic(true);
         }
         entity.setOperations(getEntityOperations(umlClass));
-        entity.setRelationships(getEntityRelationships(umlClass));
         entity.setConcrete(KirraHelper.isConcrete(umlClass));
         entity.setInstantiable(KirraHelper.isInstantiable(umlClass));
         entity.setTopLevel(KirraHelper.isTopLevel(umlClass));
@@ -119,6 +123,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         entity.setRole(KirraHelper.isRole(umlClass));
         entity.setUser(KirraHelper.isUser(umlClass));
         entity.setUserVisible(KirraHelper.isUserVisible(umlClass));
+        entity.setOrderedDataElements(KirraHelper.getOrderedDataElements(umlClass));
         Stream<Classifier> superEntities = umlClass.getGenerals().stream().filter(g -> KirraHelper.isEntity(g)); 
         List<TypeRef> superTypes = superEntities.map(superEntity -> KirraHelper.convertType(superEntity)).collect(Collectors.toList());
         entity.setSuperTypes(superTypes);

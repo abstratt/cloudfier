@@ -17,6 +17,7 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
@@ -633,6 +634,11 @@ public class KirraHelper {
             if (attribute.getName() != null && isPublic(attribute) && attribute.eClass() == UMLPackage.Literals.PROPERTY)
                 tupleProperties.add(attribute);
     }
+    
+	public static List<String> getOrderedDataElements(Class umlClass) {
+		return getPropertiesAndRelationships(umlClass).stream().map(it -> KirraHelper.getName(it))
+				.collect(Collectors.toList());
+	}
 
     public static List<Property> getPropertiesAndRelationships(final Classifier umlClass) {
         return get(umlClass, "getPropertiesAndRelationships", new Callable<List<Property>>() {
@@ -758,7 +764,7 @@ public class KirraHelper {
         return get(clazz, "getMnemonic", new Callable<Property>() {
             @Override
             public Property call() throws Exception {
-                List<Property> properties = getProperties(clazz);
+                List<Property> properties = getPropertiesAndRelationships(clazz);
                 return properties.isEmpty() ? null : properties.get(0);
             }
         });

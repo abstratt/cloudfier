@@ -30,8 +30,8 @@ import java.util.stream.Stream;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.Validate;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
-import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.TypeRef;
@@ -240,7 +240,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		return keys.incrementAndGet();
 	}
 	
-	private Object generateUniqueValue(Property property) {
+	private Object generateUniqueValue(DataElement property) {
 		if (property.getType().equals("String"))
 			return "" + generateUniqueValue();
 		if (property.getType().equals("Integer"))

@@ -12,6 +12,7 @@ import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Stereotype;
 import org.eclipse.uml2.uml.UMLPackage;
 
+import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
@@ -568,7 +569,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         Repository kirra = getKirra();
 
         Entity entity = kirra.getEntity("mypackage", "MyClass");
-        Property attr1 = findNamedElement(entity.getProperties(), "attr1");
+        DataElement attr1 = findNamedElement(entity.getProperties(), "attr1");
         TestCase.assertEquals("Enum1", attr1.getTypeRef().getTypeName());
         TestCase.assertEquals(TypeKind.Enumeration, attr1.getTypeRef().getKind());
         TestCase.assertEquals(3, attr1.getEnumerationLiterals().size());

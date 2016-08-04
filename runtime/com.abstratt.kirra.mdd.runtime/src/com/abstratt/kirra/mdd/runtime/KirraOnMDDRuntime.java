@@ -777,7 +777,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             }
             org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
             if (mnemonic != null) {
-                Object shorthand = kirraInstance.getValue(KirraHelper.getName(mnemonic));
+            	Object shorthand; 
+            	if (KirraHelper.isRelationship(mnemonic)) {
+            		Instance related = kirraInstance.getRelated(KirraHelper.getName(mnemonic));
+					shorthand = related == null ? null : related.getShorthand();
+            	} else
+                    shorthand = kirraInstance.getValue(KirraHelper.getName(mnemonic));
                 kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             }
             if (source.isPersisted()) {
