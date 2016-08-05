@@ -9,9 +9,11 @@ import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
+import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.RealType;
+import com.abstratt.mdd.core.runtime.types.StringType;
 
 public class ExpressionTests extends AbstractRuntimeTests {
 
@@ -31,6 +33,7 @@ public class ExpressionTests extends AbstractRuntimeTests {
         ExpressionTests.structure += "static operation staticOperateOnInteger(value :  Integer) : Integer;\n";
         ExpressionTests.structure += "static operation staticOperateOnTwoIntegers(value1 :  Integer, value2 : Integer) : Integer;\n";
         ExpressionTests.structure += "static operation staticOperateOnBoolean(value :  Boolean) : Boolean;\n";
+        ExpressionTests.structure += "static operation staticOperateOnObject(value :  Object) : Boolean;\n";
         ExpressionTests.structure += "static operation staticOperateOnTwoBooleans(value1 :  Boolean, value2 : Boolean) : Boolean;\n";
         ExpressionTests.structure += "static operation staticDoubleNumber(number : Integer) : Integer;\n";
         ExpressionTests.structure += "static operation staticCheckObject(value : Object) : Boolean;\n";
@@ -270,6 +273,22 @@ public class ExpressionTests extends AbstractRuntimeTests {
         TestCase.assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", b1, b1));
         TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticCompareTwoObjects", a1, b1));
     }
+    
+    public void testNotNull() throws CoreException {
+        getRepository().getProperties().put(IRepository.EXTEND_BASE_OBJECT, "true");
+
+        String behavior = "";
+        behavior += "model tests;\n";
+        behavior += "operation Simple.staticOperateOnObject;\n";
+        behavior += "begin\n";
+        behavior += "return ?value;\n";
+        behavior += "end;\n";
+        behavior += "end.";
+        parseAndCheck(ExpressionTests.structure, behavior);
+        TestCase.assertEquals(BooleanType.TRUE, runStaticOperation("tests::Simple", "staticOperateOnObject", new StringType("")));
+        TestCase.assertEquals(BooleanType.FALSE, runStaticOperation("tests::Simple", "staticOperateOnObject", (BasicType) null));
+    }
+    
 
     private void createBinaryExpressionMethod(String operationName, String operator) throws CoreException {
         String behavior = "";
