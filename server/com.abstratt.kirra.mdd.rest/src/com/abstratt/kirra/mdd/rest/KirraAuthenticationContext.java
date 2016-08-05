@@ -48,8 +48,8 @@ public interface KirraAuthenticationContext {
     	String workspace = path.isEmpty() ? KirraRESTUtils.getWorkspaceFromProjectPath(request) : path.segment(0);
         WORKSPACE_NAME.set(workspace);
         Properties properties = KirraRESTUtils.getProperties(workspace);
-        LOGIN_REQUIRED.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.LOGIN_REQUIRED, "true")));
-        ALLOWS_ANONYMOUS.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS, "false")));
+        LOGIN_REQUIRED.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.LOGIN_REQUIRED, Boolean.FALSE.toString())));
+        ALLOWS_ANONYMOUS.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS, Boolean.FALSE.toString())));
         PROTECTED.set(isProtectedPath(path.removeFirstSegments(1)));
         IS_OPTIONAL.set(request.getMethod().equals(Method.OPTIONS) || !PROTECTED.get());
     	String requestedWith = ((Series<Header>) request.getAttributes().get("org.restlet.http.headers")).getFirstValue("X-Requested-With"); 
