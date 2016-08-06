@@ -53,10 +53,6 @@ public class EnumerationType extends BasicType implements ComparableType, Serial
     public MetaClass<EnumerationType> getMetaClass() {
         return new MetaClass<EnumerationType>() {
             @Override
-            public void handleEvent(RuntimeEvent runtimeEvent) {
-            }
-
-            @Override
             public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
                 return BasicType.runNativeOperation(context, EnumerationType.class, target, operation, arguments);
             }

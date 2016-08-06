@@ -56,7 +56,6 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
 		return result;
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public BooleanType greaterThan(ExecutionContext context, ComparableType other) {
         return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(((PrimitiveType<?>) other).primitiveValue()) > 0);
@@ -73,15 +72,15 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
     }
 
     @Override
+    public BooleanType lowerThan(ExecutionContext context, ComparableType other) {
+        return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(((PrimitiveType<?>) other).primitiveValue()) < 0);
+    }
+    
+    @Override
     public final int hashCode() {
         return primitiveValue().hashCode();
     }
 
-    @Override
-	@SuppressWarnings("unchecked")
-    public BooleanType lowerThan(ExecutionContext context, ComparableType other) {
-        return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(((PrimitiveType<?>) other).primitiveValue()) < 0);
-    }
     
     public abstract T primitiveValue();
 

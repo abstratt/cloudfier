@@ -10,16 +10,14 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 public interface MetaClass<T> {
     MetaClass<?> NOT_IMPLEMENTED = new MetaClass<Object>() {
         @Override
-        public void handleEvent(RuntimeEvent runtimeEvent) {
-        }
-
-        @Override
         public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
             throw new UnsupportedOperationException();
         }
     };
 
-    public void handleEvent(RuntimeEvent runtimeEvent);
+    public default void handleEvent(RuntimeEvent runtimeEvent) {
+    	
+    }
 
     /**
      * Invokes the given class operation for this metaclass.

@@ -37,10 +37,6 @@ public enum BuiltInMetaClass implements MetaClass<BuiltInClass> {
     }
 
     @Override
-    public void handleEvent(RuntimeEvent runtimeEvent) {
-    }
-
-    @Override
     public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
         return BasicType.runNativeOperation(context, javaClass, target, operation, arguments);
     }

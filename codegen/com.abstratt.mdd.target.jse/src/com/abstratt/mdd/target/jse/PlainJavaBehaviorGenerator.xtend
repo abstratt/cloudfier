@@ -292,11 +292,11 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 case 'Basic':
                     switch (operation.name) {
                         case 'notNull': '''«op1» != null'''
+                        case 'toString': '''Objects.toString(«op1»)'''
                         default: unsupported('''Basic operation «operation.name»''')
                     }
-                case 'Primitive': 
-                {
-                    switch (operation.name) {
+                case 'ComparableBasic':
+                	switch (operation.name) {
                         case 'equals': 
                             if (op1Optional) {
                         	    if (op2Optional) 
@@ -318,8 +318,11 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                         case 'lowerOrEquals': '''«op1».compareTo(«op2») >= 0'''
                         case 'greaterOrEquals': '''«op1».compareTo(«op2») > 0'''
                         default: unsupported('''Primitive operation «operation.name»''')
+                    } 
+                case 'Primitive': 
+                    switch (operation.name) {
+                        default: unsupported('''Primitive operation «operation.name»''')
                     }
-                }
                 case 'Date':
                     generateDateOperationCall(action)
                 case 'Duration': {

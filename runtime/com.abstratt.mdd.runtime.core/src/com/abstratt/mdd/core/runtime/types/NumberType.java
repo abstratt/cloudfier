@@ -24,16 +24,22 @@ public abstract class NumberType<T extends Number> extends PrimitiveType<T> {
 
     @Override
     public BooleanType equals(ExecutionContext context, Type other) {
+    	if (other == null) 
+    		return BooleanType.FALSE;
         return BooleanType.fromValue(other != null && asReal().primitiveValue().compareTo(((NumberType<?>) other).asReal().primitiveValue()) == 0);
     }
 
     @Override
     public BooleanType greaterThan(ExecutionContext context, ComparableType other) {
+    	if (other == null) 
+    		return BooleanType.FALSE;
         return BooleanType.fromValue(asReal().primitiveValue().compareTo(((NumberType<?>) other).asReal().primitiveValue()) > 0);
     }
 
     @Override
     public BooleanType lowerThan(ExecutionContext context, ComparableType other) {
+    	if (other == null) 
+    		return BooleanType.FALSE;
         return BooleanType.fromValue(asReal().primitiveValue().compareTo(((NumberType<?>) other).asReal().primitiveValue()) < 0);
     }
 
