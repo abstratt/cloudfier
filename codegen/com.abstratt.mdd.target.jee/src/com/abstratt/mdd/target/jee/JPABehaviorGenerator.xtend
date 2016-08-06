@@ -60,7 +60,7 @@ class JPABehaviorGenerator extends PlainJavaBehaviorGenerator {
     }
     
 	override generateSystemUserCall(CallOperationAction action) {
-		'''getCurrentUser()'''
+		'''getCurrentProfile()'''
 	}
     
     override generateReadExtentAction(ReadExtentAction action) {

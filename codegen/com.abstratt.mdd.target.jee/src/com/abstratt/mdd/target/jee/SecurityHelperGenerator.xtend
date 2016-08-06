@@ -31,18 +31,18 @@ import userprofile.ProfileService;
 ].join»
 
 public class SecurityHelper {
-    public static ThreadLocal<String> currentUser = new ThreadLocal<>();
+    public static ThreadLocal<String> currentUsername = new ThreadLocal<>();
     
-    public static Profile getCurrentUser() {
+    public static Profile getCurrentProfile() {
         return new ProfileService().findByUsername(getCurrentUsername());
     }
 
     public static String getCurrentUsername() {
-        return currentUser.get();
+        return currentUsername.get();
     }
 
     public static void setCurrentUsername(String username) {
-    	currentUser.set(username);
+    	currentUsername.set(username);
     }
     
     public static List<String> getRoles(Profile user) {
@@ -68,7 +68,7 @@ public class SecurityHelper {
     }
     
     public static «roleClass.name» getCurrent«roleClass.name»() {
-        return as«roleClass.name»(getCurrentUser());
+        return as«roleClass.name»(getCurrentProfile());
     }
     '''	
     ].join»
