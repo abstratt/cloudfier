@@ -508,8 +508,8 @@ var showLinks = function(projectPath, packages) {
     var mobileUiUrl = "http:/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
     var newUiUrl = "http:/kirra-api/kirra-ng/?theme=&app-path=/services/api-v2/" + applicationName + "/";
     var api2Url = "http:/services/api-v2/" + applicationName + "/";
-    var appInfo = "\nStart [new desktop UI](" + newUiUrl + ")" +
-        "\nStart [mobile UI (work in progress)](" + mobileUiUrl + ")" +        
+    var appInfo = "\nStart [desktop browser UI](" + newUiUrl + ")" +
+        "\nStart [mobile browser UI (work in progress)](" + mobileUiUrl + ")" +        
         "\nBrowse [REST API (v2)](" + api2Url + ")";
     for (var i in packages) {
         appInfo += "\nClass diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showClasses=true&showOperations=true&showAttributes=true&showEnumerations=true&showDataTypes=true&showSignals=true)"; 
