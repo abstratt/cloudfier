@@ -206,7 +206,6 @@ public class KirraModelWeaver implements IModelWeaver {
 					otherEnd.setIsDerived(property.isDerived());
 					otherEnd.setIsReadOnly(property.isReadOnly());
 					otherEnd.setLower(0);
-					System.out.println("*** Creating " + otherEnd.getName() + " opposite to " + entity.getName() + "." + property.getName() + " : " + property.getType().getName());
 					return otherEnd;
 				}
 			}

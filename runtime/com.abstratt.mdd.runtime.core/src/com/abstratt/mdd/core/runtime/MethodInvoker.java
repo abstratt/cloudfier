@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 import org.eclipse.uml2.uml.Operation;
 
-import com.abstratt.mdd.core.runtime.types.BasicType;
+import com.abstratt.mdd.core.runtime.types.Type;
 
 public class MethodInvoker {
     /**
@@ -16,7 +16,7 @@ public class MethodInvoker {
         Class<?>[] argumentTypes = new Class[arguments.length + 1];
         argumentTypes[0] = ExecutionContext.class;
         for (int i = 0; i < arguments.length; i++)
-            argumentTypes[i + 1] = arguments[i] == null ? BasicType.class : arguments[i].getClass();
+            argumentTypes[i + 1] = arguments[i] == null ? Type.class : arguments[i].getClass();
         Object[] enhancedArguments = new Object[arguments.length + 1];
         enhancedArguments[0] = context;
         System.arraycopy(arguments, 0, enhancedArguments, 1, arguments.length);

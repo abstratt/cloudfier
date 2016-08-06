@@ -14,7 +14,7 @@ import com.abstratt.pluginutils.LogUtils;
 /**
  * A basic ancestor for all runtime types.
  */
-public abstract class BasicType {
+public abstract class BasicType implements Type {
 
     // public abstract ITypeInfo getTypeInfo();
 
@@ -34,21 +34,11 @@ public abstract class BasicType {
             LogUtils.logWarning(Runtime.ID, "Null was dereferenced", e);
             throw new ModelExecutionException("Null was dereferenced", operation, null);
         } catch (NoSuchMethodException e) {
+        	LogUtils.logWarning(Runtime.ID, "Method not found", e);
             throw new RuntimeException(e.getMessage() + "(" + StringUtils.join(arguments) + ") in " + javaClass.getName());
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    /**
-     * Returns whether this object is equal to the given object
-     * 
-     * @param context
-     * @param another
-     * @return
-     */
-    public BooleanType equals(ExecutionContext context, BasicType another) {
-        return BooleanType.fromValue(this.equals(another));
     }
 
     public abstract String getClassifierName();
@@ -63,7 +53,13 @@ public abstract class BasicType {
         return false;
     }
 
-    public BooleanType notEquals(ExecutionContext context, BasicType another) {
+    @Override
+    public BooleanType equals(ExecutionContext context, Type another) {
+        return BooleanType.fromValue(this.equals(another));
+    }
+    
+    @Override
+    public BooleanType notEquals(ExecutionContext context, Type another) {
         return equals(context, another).not(context);
     }
 

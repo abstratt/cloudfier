@@ -7,7 +7,7 @@ import org.eclipse.uml2.uml.Type;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
-public abstract class PrimitiveType<T> extends BuiltInClass implements Serializable {
+public abstract class PrimitiveType<T> extends BuiltInClass implements ComparableType, Serializable {
     public static BasicType convertToBasicType(Classifier converterType, Object original) {
         String packageName = ValueConverter.class.getPackage().getName();
         String converterName = packageName + '.' + converterType.getName() + "Converter";
@@ -23,11 +23,11 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Serializa
         }
         return valueConverter.convertToBasicType(original);
     }
-
+    
     public static <T extends BasicType> T fromStringValue(Type basicType, String stringValue) {
         return (T) PrimitiveType.convertToBasicType((Classifier) basicType, stringValue);
     }
-
+    
     public static <T extends PrimitiveType> T fromValue(Type basicType, Object value) {
         return (T) PrimitiveType.convertToBasicType((Classifier) basicType, value);
     }
@@ -57,13 +57,19 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Serializa
     }
 
     @SuppressWarnings("unchecked")
-    public BooleanType greaterOrEquals(ExecutionContext context, PrimitiveType<?> other) {
-        return BooleanType.fromValue(greaterThan(context, other).primitiveValue() || equals(context, other).primitiveValue());
+    @Override
+    public BooleanType greaterThan(ExecutionContext context, ComparableType other) {
+        return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(((PrimitiveType<?>) other).primitiveValue()) > 0);
     }
-
-    @SuppressWarnings("unchecked")
-    public BooleanType greaterThan(ExecutionContext context, PrimitiveType<?> other) {
-        return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(other.primitiveValue()) > 0);
+    
+    @Override
+    public BooleanType greaterOrEquals(ExecutionContext context, ComparableType other) {
+    	return greaterThan(context, other).or(context, equals(context, other));
+    }
+    
+    @Override
+    public BooleanType lowerOrEquals(ExecutionContext context, ComparableType other) {
+    	return lowerThan(context, other).or(context, equals(context, other));
     }
 
     @Override
@@ -71,16 +77,12 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Serializa
         return primitiveValue().hashCode();
     }
 
-    @SuppressWarnings("unchecked")
-    public BooleanType lowerOrEquals(ExecutionContext context, PrimitiveType<?> other) {
-        return lowerThan(context, other).or(context, equals(context, other));
+    @Override
+	@SuppressWarnings("unchecked")
+    public BooleanType lowerThan(ExecutionContext context, ComparableType other) {
+        return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(((PrimitiveType<?>) other).primitiveValue()) < 0);
     }
-
-    @SuppressWarnings("unchecked")
-    public BooleanType lowerThan(ExecutionContext context, PrimitiveType<?> other) {
-        return BooleanType.fromValue(other != null && ((Comparable) this.primitiveValue()).compareTo(other.primitiveValue()) < 0);
-    }
-
+    
     public abstract T primitiveValue();
 
     @Override
