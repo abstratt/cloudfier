@@ -49,7 +49,7 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         sampleModel += "reference myClass2 : MyClass2[0,1];\n";
         sampleModel += "attribute myClass3s : MyClass3[*] {nonunique};\n";
         sampleModel += "attribute myClass4 : MyClass4[0,1];\n";
-        sampleModel += "attribute myClass5 : MyClass5[*];\n";
+        sampleModel += "attribute myClass5s : MyClass5[*];\n";
         sampleModel += "derived attribute myClass3Duplicated : MyClass3[*] {nonunique} := {self.myClass3s.union(self.myClass3s)};\n";
         sampleModel += "end;\n";
         sampleModel += "class MyClass2\n";
@@ -72,7 +72,7 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         sampleModel += "attribute single : Integer[0,1];\n";
         sampleModel += "end;\n";
         sampleModel += "association role MyClass1.myClass4; role myClass1 : MyClass1; end;\n";
-        sampleModel += "association role MyClass1.myClass5; role myClass1 : MyClass1; end;\n";
+        sampleModel += "association role MyClass1.myClass5s; role myClass1 : MyClass1; end;\n";
         sampleModel += "composition role MyClass6.myClass7s; navigable role myClass6 : MyClass6; end;\n";
         sampleModel += "association role MyClass1.myClass3s; navigable role myClass1 : MyClass1; end;\n";
         sampleModel += "end.";
@@ -198,6 +198,29 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         TestCase.assertTrue(createdClass1.isFull());
         TestCase.assertNotNull(createdClass1.getRelated("myClass2"));
         TestCase.assertEquals(createdClass2.getObjectId(), createdClass1.getRelated("myClass2").getObjectId());
+    }
+    
+    public void testAddSecondLink() throws CoreException {
+        parseAndCheck(sampleModel);
+        Repository kirra = getKirra();
+
+        Instance createdClass1 = kirra.createInstance(new Instance("mypackage", "MyClass1"));
+
+        Instance newMyClass5a = new Instance("mypackage", "MyClass5");
+        newMyClass5a.setRelated("myClass1", createdClass1);
+		Instance createdClass5a = kirra.createInstance(newMyClass5a);
+
+		TestCase.assertEquals(Arrays.asList(createdClass5a.getReference()), toReferences(kirra.getRelatedInstances(createdClass1, "myClass5s", false)));
+		
+		Instance newMyClass5b = new Instance("mypackage", "MyClass5");
+		newMyClass5b.setRelated("myClass1", createdClass1);
+        Instance createdClass5b = kirra.createInstance(newMyClass5a);
+
+        TestCase.assertEquals(Arrays.asList(createdClass5a.getReference(), createdClass5b.getReference()), toReferences(kirra.getRelatedInstances(createdClass1, "myClass5s", false)));
+    }
+    
+    List<InstanceRef> toReferences(List<Instance> instances) {
+    	return instances.stream().map(it -> it.getReference()).collect(Collectors.toList());
     }
 
     public void testDefault() throws CoreException {
