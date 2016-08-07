@@ -14,7 +14,6 @@ class UserLoginServiceGenerator extends AbstractGenerator {
 
 	def CharSequence generate() {
 		val applicationName = KirraHelper.getApplicationName(repository)
-		val roleClasses = entities.filter[roleClass]
 		'''
 package resource.«applicationName»;
 

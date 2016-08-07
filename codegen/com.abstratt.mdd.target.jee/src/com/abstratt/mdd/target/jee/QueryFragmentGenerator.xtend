@@ -22,7 +22,11 @@ class QueryFragmentGenerator extends AbstractJavaBehaviorGenerator {
     def generateReadPropertyActionViaDerivation(ReadStructuralFeatureAction action) {
         val property = action.structuralFeature as Property
         val derivation = property.defaultValue.resolveBehaviorReference as Activity
-        ActivityContext.generateInNewContext(derivation, action.object.source as OutputPin, [
+        derivation.generateDerivation(action.object.source as OutputPin)
+    }
+    
+    def generateDerivation(Activity derivation, OutputPin self) {
+    	ActivityContext.generateInNewContext(derivation, self, [
 			generateAction(derivation.findSingleStatement)
 		])
     }

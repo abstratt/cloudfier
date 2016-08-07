@@ -1,6 +1,5 @@
 package com.abstratt.mdd.target.jee
 
-import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.target.jse.AbstractGenerator
 
@@ -13,7 +12,6 @@ class SecurityHelperGenerator extends AbstractGenerator {
     }
 
 	def CharSequence generate() {
-		val applicationName = KirraHelper.getApplicationName(repository)
 		val roleClasses = entities.filter[roleClass]
 		'''
 package util;

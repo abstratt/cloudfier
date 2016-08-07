@@ -37,7 +37,7 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     	if (!end.derived)
         	'''«target.generateAction».«end.name»'''
     	else
-    	    '''«end.derivation.generateActivityAsExpression»'''
+    	    '''«end.derivation.generateDerivation(target.source as OutputPin)»'''
     }
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {

@@ -17,13 +17,10 @@ import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BinaryOperator;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Path;
-import org.eclipse.emf.ecore.EObject;
-import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioralFeature;
@@ -58,7 +55,6 @@ import com.abstratt.mdd.core.util.AssociationUtils;
 import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
-import com.abstratt.mdd.core.util.TypeUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.NamedElementUtils;
@@ -967,8 +963,8 @@ public class KirraHelper {
         Properties repositoryProperties = repository.getProperties();
         String applicationName = repositoryProperties.getProperty(IRepository.APPLICATION_NAME);
         if (applicationName == null)
-        	applicationName = new Path(repository.getBaseURI().path()).lastSegment();
-        return applicationName.replaceAll("[^a-zA-Z0-9]","_");
+        	applicationName = "app";
+		return applicationName.replaceAll("[^a-zA-Z0-9]","_");
     }
     
     public static String getApplicationLabel(IRepository repository) {
