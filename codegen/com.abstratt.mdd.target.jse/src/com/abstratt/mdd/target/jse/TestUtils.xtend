@@ -50,13 +50,20 @@ class TestUtils {
             case 'isNotNull': '''assertNotNull(«actionGenerator.apply(action.arguments.head.sourceAction)»)'''
             case 'isTrue': '''assertTrue(«actionGenerator.apply(action.arguments.head.sourceAction)»)'''
             case 'areEqual': {
-                val operands = action.arguments.map[actionGenerator.apply(it.sourceAction)]
-                if (action.arguments.forall[source.type.name == 'Double' || source.type.name == 'Integer'] && action.arguments.exists[source.type.name == 'Double'])
+                val operands = action.arguments
+                val generatedOperands = operands.map[actionGenerator.apply(it.sourceAction)]
+                val includesDouble = operands.exists[source.type.name == 'Double']
+                val includesInteger = operands.exists[source.type.name == 'Integer']
+                if (includesDouble) {
                     // special FP comparison
-                    '''assertEquals(«operands.get(0)», «operands.get(1)», 0D)'''
-                else
+                    '''assertEquals(«generatedOperands.get(0)», «generatedOperands.get(1)», 0D)'''
+                } else if (includesInteger) {
+                    // sometimes we map to primitive long, sometimes to wrapper Long, cast to common type to avoid ambiguity
+                    val longType = 'long'
+                	'''assertEquals((«longType») «generatedOperands.get(0)», («longType») «generatedOperands.get(1)»)'''
+                } else 
                     // default
-                    '''assertEquals(«operands.get(0)», «operands.get(1)»)'''
+                    '''assertEquals(«generatedOperands.get(0)», «generatedOperands.get(1)»)'''
             }
             case 'areSame': {
                 val operands = action.arguments.map[actionGenerator.apply(it.sourceAction)]
