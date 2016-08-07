@@ -83,7 +83,7 @@ public interface INodeStore {
      * @param related
      *            references to related nodes
      */
-    public void linkMultipleNodes(INodeKey key, String relationship, Collection<NodeReference> related);
+    public void linkMultipleNodes(INodeKey key, String relationship, Collection<NodeReference> related, boolean replace);
 
     public void linkNodes(INodeKey key, String relationship, NodeReference related);
 

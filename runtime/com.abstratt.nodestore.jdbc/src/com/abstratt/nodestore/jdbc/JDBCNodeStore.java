@@ -310,13 +310,13 @@ public class JDBCNodeStore implements INodeStore {
     }
 
     @Override
-    public void linkMultipleNodes(INodeKey key, String relationshipName, Collection<NodeReference> related) {
+    public void linkMultipleNodes(INodeKey key, String relationshipName, Collection<NodeReference> related, boolean replace) {
         Relationship relationship = clazz.getRelationship(relationshipName);
         if (related.isEmpty() && relationship.isRequired())
             throw new NodeStoreException("Relationship " + relationshipName + " is required");
         if (related.size() > 1 && !relationship.isMultiple())
             throw new NodeStoreException("Relationship " + relationshipName + " accepts only one related instance");
-        perform(getGenerator().generateSetRelated(relationship, keyToId(key), collectReferences(related), true), false, true);
+        perform(getGenerator().generateSetRelated(relationship, keyToId(key), collectReferences(related), replace), false, true);
     }
 
     @Override

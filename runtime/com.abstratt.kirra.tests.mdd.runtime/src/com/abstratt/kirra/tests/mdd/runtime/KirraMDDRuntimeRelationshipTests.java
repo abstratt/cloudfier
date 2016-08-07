@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.CoreException;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.InstanceRef;
+import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.core.KirraMDDCore;
 import com.abstratt.mdd.core.IRepository;
@@ -200,7 +201,7 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
         TestCase.assertEquals(createdClass2.getObjectId(), createdClass1.getRelated("myClass2").getObjectId());
     }
     
-    public void testAddSecondLink() throws CoreException {
+    public void testAddSecondLink_setRelated() throws CoreException {
         parseAndCheck(sampleModel);
         Repository kirra = getKirra();
 
@@ -218,6 +219,24 @@ public class KirraMDDRuntimeRelationshipTests extends AbstractKirraMDDRuntimeTes
 
         TestCase.assertEquals(Arrays.asList(createdClass5a.getReference(), createdClass5b.getReference()), toReferences(kirra.getRelatedInstances(createdClass1, "myClass5s", false)));
     }
+    
+    public void testAddSecondLink_linkInstances() throws CoreException {
+        parseAndCheck(sampleModel);
+        Repository kirra = getKirra();
+
+        Instance createdClass1 = kirra.createInstance(new Instance("mypackage", "MyClass1"));
+		Instance createdClass5a = kirra.createInstance(new Instance("mypackage", "MyClass5"));
+		Instance createdClass5b = kirra.createInstance(new Instance("mypackage", "MyClass5"));
+		
+		Relationship myClass5s = kirra.getEntity(createdClass1.getTypeRef()).getRelationship("myClass5s");
+
+		kirra.linkInstances(myClass5s, createdClass1.getObjectId(), createdClass5a.getReference());
+		TestCase.assertEquals(Arrays.asList(createdClass5a.getReference()), toReferences(kirra.getRelatedInstances(createdClass1, "myClass5s", false)));
+		
+		kirra.linkInstances(myClass5s, createdClass1.getObjectId(), createdClass5b.getReference());
+		TestCase.assertEquals(Arrays.asList(createdClass5a.getReference(), createdClass5b.getReference()), toReferences(kirra.getRelatedInstances(createdClass1, "myClass5s", false)));
+    }
+    
     
     List<InstanceRef> toReferences(List<Instance> instances) {
     	return instances.stream().map(it -> it.getReference()).collect(Collectors.toList());

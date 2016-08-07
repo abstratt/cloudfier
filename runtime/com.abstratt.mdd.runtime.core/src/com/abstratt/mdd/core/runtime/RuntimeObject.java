@@ -1,6 +1,7 @@
 package com.abstratt.mdd.core.runtime;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -449,7 +450,7 @@ public class RuntimeObject extends BasicType {
         for (RuntimeObject peer : peers)
             peer.attach();
         prepareForLinking();
-        getNodeStore().linkMultipleNodes(RuntimeObject.this.getKey(), end.getName(), RuntimeObject.this.nodeReferences(peers));
+        getNodeStore().linkMultipleNodes(RuntimeObject.this.getKey(), end.getName(), RuntimeObject.this.nodeReferences(peers), true);
     }
 
     /**
@@ -466,7 +467,11 @@ public class RuntimeObject extends BasicType {
         this.attach();
         other.attach();
         prepareForLinking();
-        getNodeStore().linkNodes(getKey(), end.getName(), other.nodeReference());
+        if (end.isMultivalued()) {
+        	getNodeStore().linkMultipleNodes(getKey(), end.getName(), Arrays.asList(other.nodeReference()), false);
+        } else {
+        	getNodeStore().linkNodes(getKey(), end.getName(), other.nodeReference());
+        }
     }
 
     public void load() {

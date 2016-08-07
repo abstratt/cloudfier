@@ -306,16 +306,20 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	}
 
 	@Override
-	public void linkMultipleNodes(INodeKey key, String relationshipName, Collection<NodeReference> related) {
+	public void linkMultipleNodes(INodeKey key, String relationshipName, Collection<NodeReference> newRelated, boolean replace) {
 		INode node = basicGetNode(key);
 		Entity entity = getEntity();
 		Relationship relationship = entity.getRelationship(relationshipName);
 		if (relationship.isPrimary()) {
 			Map<String, Collection<NodeReference>> allRelated = node.getRelated();
-			allRelated.put(relationshipName, related);
+			Collection<NodeReference> existing = allRelated.get(relationshipName);
+			if (existing != null && !replace)
+				existing.addAll(newRelated);
+			else
+				allRelated.put(relationshipName, newRelated);
 			node.setRelated(allRelated);
 		} else {
-			related.forEach(it -> {
+			newRelated.forEach(it -> {
 				getCatalog().getStore(it.getStoreName()).linkNodes(it.getKey(), relationship.getOpposite(), new NodeReference(getName(), key));
 			});
 		}
