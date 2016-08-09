@@ -147,11 +147,11 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
         val generated = new CriteriaQueryActionGenerator(repository).generateAction(root)
         AssertHelper.assertStringsEqual(
             '''
-                !(cq.distinct(true)
+                !((cq.distinct(true)
                     .where(
                         cb.isTrue(customer_.get("vip"))
                     )
-					.select(cb.count(customer_)) == 0)
+					.select(cb.count(customer_)) == 0))
             ''', generated.toString)
     }
     
