@@ -20,6 +20,7 @@ import org.restlet.resource.Post;
 import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.Status;
 import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
@@ -74,22 +75,17 @@ public class TestResource extends AbstractTestRunnerResource {
     }
 
     private List<TestCase> collectTestCases() {
-        return KirraRESTUtils.runInKirraRepository(getRequest(), new ISharedContextRunnable<IRepository, List<TestCase>>() {
+    	IRepository repository = RepositoryService.DEFAULT.getCurrentRepository();
+        List<Operation> testCaseOperations = repository.findAll(new EObjectCondition() {
             @Override
-            public List<TestCase> runInContext(IRepository context) {
-                List<Operation> testCaseOperations = context.findAll(new EObjectCondition() {
-                    @Override
-                    public boolean isSatisfied(EObject eObject) {
-                        if (UMLPackage.Literals.OPERATION != eObject.eClass())
-                            return false;
-                        Operation op = (Operation) eObject;
-                        return MDDExtensionUtils.isTestCase(op);
-                    }
-                }, true);
-                return testCaseOperations.stream().map(operation -> asTestCase(operation)).collect(Collectors.toList());
+            public boolean isSatisfied(EObject eObject) {
+                if (UMLPackage.Literals.OPERATION != eObject.eClass())
+                    return false;
+                Operation op = (Operation) eObject;
+                return MDDExtensionUtils.isTestCase(op);
             }
-
-        });
+        }, true);
+        return testCaseOperations.stream().map(operation -> asTestCase(operation)).collect(Collectors.toList());
     }
     private TestCase asTestCase(Operation testCaseOperation) {
         TestCase testCase = new TestCase();

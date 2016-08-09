@@ -20,6 +20,7 @@ import org.restlet.util.Series;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
+import com.abstratt.kirra.rest.common.KirraContext;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.runtime.Runtime;
@@ -98,6 +99,8 @@ public class KirraRESTUtils {
         try {
             boolean safe = method.equals(Method.GET) || method.equals(Method.HEAD) || method.equals(Method.OPTIONS);
             KirraRESTTaskModeSelector.setTaskMode(safe ? Mode.ReadOnly : Mode.ReadWrite);
+            String environment = KirraContext.getEnvironment();
+            KirraRESTTaskModeSelector.setTaskEnvironment(environment);
             return RepositoryService.DEFAULT.runInRepository(ResourceUtils.getRepositoryURI(workspace), runnable);
         } catch (KirraException e) {
             ResourceUtils.fail(e, org.restlet.data.Status.CLIENT_ERROR_BAD_REQUEST);

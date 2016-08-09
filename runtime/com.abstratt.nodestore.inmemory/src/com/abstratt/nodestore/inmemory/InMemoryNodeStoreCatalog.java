@@ -33,9 +33,11 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     private String catalogName;
 
-    private Map<String, InMemoryNodeStore> stores;
+    private Map<String, Map<String, InMemoryNodeStore>> storeSet = new LinkedHashMap<>();
 
 	private boolean readOnly;
+
+	private String environment;
 
     public InMemoryNodeStoreCatalog(String name, SchemaManagement schema) {
         Validate.isTrue(schema != null);
@@ -53,22 +55,27 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     @Override
     public void commitTransaction() {
-    	stores.values().forEach(it -> InMemoryNodeStore.save(it));
+    	getStoreSet().values().forEach(it -> InMemoryNodeStore.save(it));
     }
+    
+    public Map<String, InMemoryNodeStore> getStoreSet() {
+		return storeSet.computeIfAbsent(environment, e -> new LinkedHashMap<>());
+	}
     
     @Override
     public void beginTransaction() {
     	try {
 			FileUtils.forceMkdir(getCatalogPath());
+			System.out.println("beginTransaction: " + getCatalogPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-    	stores = new LinkedHashMap<>();
+    	getStoreSet().clear();
     }
     
     @Override
     public void abortTransaction() {
-    	stores = null;
+    	getStoreSet().clear();
     }
 
     @Override
@@ -106,18 +113,17 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 	}
 
 	private File getCatalogPath() {
-		return new File(REPOSITORY_ROOT, catalogName);
+		return new File(new File(REPOSITORY_ROOT, environment), catalogName);
 	}
     
     @Override
     public INodeStore getStore(String storeName) {
     	String sanitizedStoreName = TypeRef.sanitize(storeName);
-    	return stores.computeIfAbsent(sanitizedStoreName, it -> loadStore(sanitizedStoreName));
+    	return getStoreSet().computeIfAbsent(sanitizedStoreName, it -> loadStore(sanitizedStoreName));
     }
 
 	private InMemoryNodeStore loadStore(String storeName) {
-		String sanitizedStoreName = TypeRef.sanitize(storeName);
-		return InMemoryNodeStore.load(this, new TypeRef(sanitizedStoreName, TypeKind.Entity));
+		return InMemoryNodeStore.load(this, new TypeRef(storeName, TypeKind.Entity));
 	}
 
     @Override
@@ -156,10 +162,14 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     public void zap() {
         // zap should not require metadata (repository may not be available)
     	FileUtils.deleteQuietly(getCatalogPath());
-    	stores = new LinkedHashMap<>();
+    	getStoreSet().clear();
     }
 
     public void setReadOnly(boolean readOnly) {
         this.readOnly = readOnly;
     }
+
+	public void setEnvironment(String environment) {
+		this.environment = environment;
+	}
 }

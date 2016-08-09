@@ -1,5 +1,6 @@
 package com.abstratt.kirra.mdd.rest;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -12,8 +13,10 @@ import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
+import org.restlet.engine.header.Header;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
+import org.restlet.util.Series;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
@@ -29,14 +32,21 @@ import com.abstratt.pluginutils.LogUtils;
  * A filter that sets the current runtime.
  */
 public class KirraRepositoryFilter extends Filter {
-    public KirraRepositoryFilter(Restlet next) {
+    private String environment;
+
+	public KirraRepositoryFilter(Restlet next, String environment) {
         this.setNext(next);
+        this.environment = StringUtils.defaultString(environment, "default");
+    }
+	public KirraRepositoryFilter(Restlet next) {
+        this(next, null);
     }
 
     @Override
     protected int doHandle(final Request request, final Response response) {
         StopWatch watch = new StopWatch();
         watch.start();
+        KirraContext.setEnvironment(environment);
         String workspace = getWorkspace(request);
         try {
             int result = KirraRESTUtils.runInKirraWorkspace(workspace, new ISharedContextRunnable<IRepository, Integer>() {
@@ -45,8 +55,9 @@ public class KirraRepositoryFilter extends Filter {
                     Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
                     KirraContext.setInstanceManagement(kirraRepository);
                     KirraContext.setSchemaManagement(kirraRepository);
-                    KirraContext.setBaseURI(KirraReferenceUtils.getBaseReference(request, request.getResourceRef(),
-                            Paths.API_V2).toUri());
+                    URI baseURI = KirraReferenceUtils.getBaseReference(request, request.getResourceRef(),
+                            Paths.API_V2).toUri();
+					KirraContext.setBaseURI(baseURI);
                     try {
                         int result = KirraRepositoryFilter.super.doHandle(request, response);
                         return result;

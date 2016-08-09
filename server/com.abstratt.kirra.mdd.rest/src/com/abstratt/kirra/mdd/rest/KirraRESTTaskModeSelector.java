@@ -1,6 +1,7 @@
 package com.abstratt.kirra.mdd.rest;
 
-import com.abstratt.kirra.mdd.core.KirraHelper;
+import org.apache.commons.lang.StringUtils;
+
 import com.abstratt.resman.FeatureProvider;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.TaskModeSelector;
@@ -11,12 +12,25 @@ import com.abstratt.resman.TaskModeSelector;
 public class KirraRESTTaskModeSelector implements TaskModeSelector, FeatureProvider {
 
     private static ThreadLocal<Mode> currentMode = new ThreadLocal<TaskModeSelector.Mode>();
+    private static ThreadLocal<String> currentEnvironment = new ThreadLocal<String>();
 
     @Override
     public Mode getMode() {
         return currentMode.get();
     }
+    
+    @Override
+    public String getEnvironment() {
+    	return StringUtils.defaultString(currentEnvironment.get(), "default");
+    }
 
+    public static void setTaskEnvironment(String newEnvironment) {
+        if (newEnvironment != null)
+            currentEnvironment.set(newEnvironment);
+        else
+            currentEnvironment.remove();
+    }
+    
     public static void setTaskMode(Mode newMode) {
         if (newMode != null)
             currentMode.set(newMode);
@@ -26,6 +40,10 @@ public class KirraRESTTaskModeSelector implements TaskModeSelector, FeatureProvi
 
     public static Mode getTaskMode() {
         return currentMode.get();
+    }
+    
+    public static String getTaskEnvironment() {
+        return currentEnvironment.get();
     }
     
     @Override

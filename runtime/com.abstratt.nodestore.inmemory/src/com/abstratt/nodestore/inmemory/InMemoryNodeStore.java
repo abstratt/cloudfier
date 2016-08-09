@@ -151,6 +151,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 			FileUtils.forceMkdir(storeFile.getParentFile());
 			String asString = getGson().toJson(store);
 			FileUtils.write(storeFile, asString);
+			System.out.println("Saving data to " + storeFile);
 		} catch (IOException e) {
 			throw new NodeStoreException("Error saving " + typeRef, e);
 		}
