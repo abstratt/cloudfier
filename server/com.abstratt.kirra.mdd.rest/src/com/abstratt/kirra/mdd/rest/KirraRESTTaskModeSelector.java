@@ -1,7 +1,6 @@
 package com.abstratt.kirra.mdd.rest;
 
 import org.apache.commons.lang.StringUtils;
-
 import com.abstratt.resman.FeatureProvider;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.TaskModeSelector;
