@@ -434,30 +434,26 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         List<Instance> created = testUpdateInstanceSetup();
         URI sessionURI = getWorkspaceURI();
         URI uri1 = sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId());
-        URI uri2 = sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(1).getObjectId());
+        URI uri2 = sessionURI.resolve("instances/mypackage.MyClass2/" + created.get(1).getObjectId());
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
                 new GetMethod(uri1.toString()));
-        ObjectNode links = jsonNodeFactory.objectNode();
-        jsonInstance1.put("links", links);
-        
         ObjectNode myClass2 = jsonNodeFactory.objectNode();
-        links.put("myClass2", myClass2);
+        ((ObjectNode) jsonInstance1.get("values")).put("myClass2", myClass2);  
         myClass2.set("uri", new TextNode(uri2.toString()));
 
         PutMethod putMethod = new PutMethod(uri1.toString());
         putMethod.setRequestEntity(new StringRequestEntity(jsonInstance1.toString(), "application/json", "UTF-8"));
 
         ObjectNode updated = (ObjectNode) executeJsonMethod(200, putMethod);
-        assertNotNull(updated.get("links"));
-        assertNotNull(updated.get("links").get("myClass2"));
-        TestCase.assertEquals(uri2.toString(), updated.get("links").get("myClass2").get("uri").asText());
+        assertNotNull(updated.get("values").get("myClass2"));
+        TestCase.assertEquals(uri2.toString(), updated.get("values").get("myClass2").get("uri").asText());
         
         ObjectNode retrieved = executeJsonMethod(200,
                 new GetMethod(jsonInstance1.get("uri").textValue()));
-        assertNotNull(retrieved.get("links"));
-        assertNotNull(retrieved.get("links").get("myClass2"));
-        TestCase.assertEquals(uri2.toString(), retrieved.get("links").get("myClass2").get("uri").asText());
+        assertNotNull(retrieved.get("values"));
+        assertNotNull(retrieved.get("values").get("myClass2"));
+        TestCase.assertEquals(uri2.toString(), retrieved.get("values").get("myClass2").get("uri").asText());
     }    
 
 	private List<Instance> testUpdateInstanceSetup() throws IOException, CoreException {
