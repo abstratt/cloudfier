@@ -1,7 +1,5 @@
 package com.abstratt.nodestore.inmemory;
 
-import java.net.URI;
-
 import com.abstratt.kirra.KirraApplication;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.nodestore.INodeStoreCatalog;
@@ -14,13 +12,17 @@ public class InMemoryNodeStoreProvider implements ActivatableFeatureProvider {
     @Override
     public void activateContext(Resource<?> resource) {
         InMemoryNodeStoreCatalog contextCatalog = (InMemoryNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
-        boolean readOnly = resource.getFeature(TaskModeSelector.class).getMode() == Mode.ReadOnly;
+        TaskModeSelector taskModeSelector = resource.getFeature(TaskModeSelector.class);
+		boolean readOnly = taskModeSelector.getMode() == Mode.ReadOnly;
+        String environment = taskModeSelector.getEnvironment().toLowerCase();
         contextCatalog.setReadOnly(readOnly);
+        contextCatalog.setEnvironment(environment);
     }
 
     @Override
     public void deactivateContext(Resource<?> resource, boolean operationSucceeded) {
         InMemoryNodeStoreCatalog contextCatalog = (InMemoryNodeStoreCatalog) resource.getFeature(INodeStoreCatalog.class);
+        contextCatalog.setEnvironment(null);
     }
 
     @Override

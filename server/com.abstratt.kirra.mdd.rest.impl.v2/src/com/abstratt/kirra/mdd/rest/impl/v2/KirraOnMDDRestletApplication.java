@@ -1,18 +1,14 @@
 package com.abstratt.kirra.mdd.rest.impl.v2;
 
-import java.util.List;
-import java.util.function.Predicate;
-
 import org.restlet.Component;
 import org.restlet.Request;
 import org.restlet.Restlet;
-import org.restlet.data.Method;
 import org.restlet.ext.jaxrs.JaxRsApplication;
 import org.restlet.service.LogService;
 
-import com.abstratt.kirra.mdd.rest.KirraCookieAuthenticator;
 import com.abstratt.kirra.mdd.rest.KirraBasicAuthenticator;
 import com.abstratt.kirra.mdd.rest.KirraCORSFilter;
+import com.abstratt.kirra.mdd.rest.KirraCookieAuthenticator;
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
 import com.abstratt.kirra.mdd.rest.KirraStatusService;
 import com.abstratt.kirra.rest.resources.KirraJaxRsApplication;

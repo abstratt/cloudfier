@@ -22,6 +22,7 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.pluginutils.ISharedContextRunnable;
 
 public abstract class AbstractTestRunnerResource extends AbstractKirraRepositoryResource {
@@ -74,23 +75,14 @@ public abstract class AbstractTestRunnerResource extends AbstractKirraRepository
     }
     
     protected TestResult runTestCaseAndRollback(final TestCase testCase) {
-        final TestResult[] testResult = { null };
+    	IRepository repository = RepositoryService.DEFAULT.getCurrentRepository();
+        Operation testCaseOperation = repository.findNamedElement(testCase.testClass.replace(".", NamedElement.SEPARATOR) + NamedElement.SEPARATOR
+                + testCase.testCase, UMLPackage.Literals.OPERATION, null);
         try {
-            KirraRESTUtils.runInKirraRepository(getRequest(), new ISharedContextRunnable<IRepository, Representation>() {
-                @Override
-                public Representation runInContext(IRepository context) {
-                    Operation testCaseOperation = context.findNamedElement(testCase.testClass.replace(".", NamedElement.SEPARATOR) + NamedElement.SEPARATOR
-                            + testCase.testCase, UMLPackage.Literals.OPERATION, null);
-                    testResult[0] = runTestCase(testCaseOperation);
-                    // avoid saving
-                    throw new RuntimeException();
-                }
-            });
-        } catch (RuntimeException e) {
-            if (testResult[0] == null)
-                throw e;
+        	return runTestCase(testCaseOperation);
+        } finally {
+        	RepositoryService.DEFAULT.getFeature(INodeStoreCatalog.class).zap();
         }
-        return testResult[0];
     }
 
     protected TestResult runTestCase(Operation testCase) {

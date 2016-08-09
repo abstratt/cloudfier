@@ -64,9 +64,9 @@ public class LegacyKirraMDDRestletApplication extends Application {
         // takes path in query
         attachTo(router, "/", createFinder(IndexResource.class));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.DATA, createRestlet(DataResource.class, false, true));
-        attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS, createRestlet(TestResource.class, false, false));
+        attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS, createRestlet(TestResource.class, false, true));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS + "/{testClassName}/{testCaseName}",
-                createRestlet(TestCaseRunnerResource.class, false, false));
+                createRestlet(TestCaseRunnerResource.class, false, true, "tests"));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.SIGNUP, createRestlet(SignupResource.class, false, false));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.PASSWORD_RESET,
                 createRestlet(PasswordResetResource.class, false, false));
@@ -108,14 +108,18 @@ public class LegacyKirraMDDRestletApplication extends Application {
     }
 
     public Restlet createRestlet(Class<?> clazz) {
-        return createRestlet(clazz, true, true);
+        return createRestlet(clazz, true, true, null);
     }
 
     public Restlet createRestlet(Class<?> clazz, boolean authenticated, boolean repository) {
+    	return createRestlet(clazz, authenticated, repository, null);
+    }
+    
+    public Restlet createRestlet(Class<?> clazz, boolean authenticated, boolean repository, String environment) {
         Restlet created = createFinder((Class<? extends ServerResource>) clazz);
         created = new KirraSetExpirationFilter(created);
         if (repository) {
-            created = new KirraRepositoryFilter(created);
+            created = new KirraRepositoryFilter(created, environment);
         }
         if (authenticated) {
             created = new KirraCookieAuthenticator(created);
