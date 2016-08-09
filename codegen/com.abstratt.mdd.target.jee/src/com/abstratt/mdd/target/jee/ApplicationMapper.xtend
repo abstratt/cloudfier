@@ -24,8 +24,10 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
         val explicitJdbcTestUrl = properties.getProperty("mdd.generator.jpa.jdbc.test.url")
 		val jdbcProductionUrl = explicitJdbcProductionUrl ?: defaultJdbcProductionUrl
 		val jdbcTestUrl = explicitJdbcTestUrl ?: defaultJdbcTestUrl
-        val preserveSchema = Boolean.valueOf(properties.getProperty("mdd.generator.jpa.preserveSchema", Boolean.toString(explicitJdbcProductionUrl == null)))
-        val preserveData = Boolean.valueOf(properties.getProperty("mdd.generator.jpa.preserveData", Boolean.toString(explicitJdbcProductionUrl == null)))
+		val jpaPreserveSchema = properties.getProperty("mdd.generator.jpa.preserveSchema", Boolean.toString(explicitJdbcProductionUrl != null))
+		val jpaPreserveData = properties.getProperty("mdd.generator.jpa.preserveData", Boolean.toString(explicitJdbcProductionUrl != null))
+        val preserveSchema = Boolean.valueOf(jpaPreserveSchema)
+        val preserveData = Boolean.valueOf(jpaPreserveData)
         val templates = #{
             'src/main/resources/META-INF/persistence.xml' -> null, 
             'src/main/resources/META-INF/orm.xml' -> null,

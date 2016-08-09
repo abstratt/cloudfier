@@ -321,7 +321,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         behaviorGenerator.runInContext(newContext, [
 	        '''
 	        if («generatePredicate(constraint, true)») {
-	            throw new «IF constraint.name?.length > 0»«constraint.name»«ELSE»ConstraintViolationException("«KirraHelper.getDescription(constraint).toLowerCase.toFirstUpper»")«ENDIF»;
+	            throw new «IF constraint.name?.length > 0»«constraint.name»Exception()«ELSE»ConstraintViolationException("«KirraHelper.getDescription(constraint).toLowerCase.toFirstUpper»")«ENDIF»;
 	        }
 	        '''
         ])
