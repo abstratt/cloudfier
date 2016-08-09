@@ -281,7 +281,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             switch (action.arguments.size()) {
                 // unary operator
                 case 0:
-                    '''«operator»«op1»'''.parenthesize(action)
+                    '''«operator»(«op1»)'''.parenthesize(action)
                 case 1:
                     '''«op1» «operator» «op2»'''.
                         parenthesize(action)
