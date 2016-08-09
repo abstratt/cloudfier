@@ -27,7 +27,7 @@ import com.abstratt.nodestore.NodeReference;
  */
 public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 	
-	protected static final File REPOSITORY_ROOT = new File(new File(System.getProperty("nodestore.file.base", ".")), "nodestore");
+	protected static final File REPOSITORY_ROOT = new File(new File(System.getProperty("nodestore.file.base", System.getProperty("user.dir", "."))), "nodestore");
 
     private SchemaManagement metadata;
 
@@ -154,8 +154,13 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     @Override
     public void validateConstraints() {
-        for (Entity entity : this.metadata.getAllEntities())
-        	getStore(entity.getTypeRef()).validateConstraints();
+        for (Entity entity : this.metadata.getAllEntities()) {
+			InMemoryNodeStore store = getStore(entity.getTypeRef());
+			if (store == null)
+				System.out.println("No store found for " + entity.getTypeRef());
+			else
+				store.validateConstraints();
+		}
     }
 
     @Override

@@ -288,6 +288,7 @@ public class Runtime {
     }
 
     public void zap() {
+    	getCurrentContext().clearWorkingSet();
         nodeStoreCatalog.zap();
     }
 

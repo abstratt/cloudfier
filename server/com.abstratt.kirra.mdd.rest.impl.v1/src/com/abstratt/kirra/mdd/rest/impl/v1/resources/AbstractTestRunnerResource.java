@@ -81,7 +81,7 @@ public abstract class AbstractTestRunnerResource extends AbstractKirraRepository
         try {
         	return runTestCase(testCaseOperation);
         } finally {
-        	RepositoryService.DEFAULT.getFeature(INodeStoreCatalog.class).zap();
+        	RepositoryService.DEFAULT.getFeature(Runtime.class).zap();
         }
     }
 
