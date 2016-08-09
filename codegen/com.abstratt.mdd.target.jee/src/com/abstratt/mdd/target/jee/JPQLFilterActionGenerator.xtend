@@ -1,11 +1,14 @@
 package com.abstratt.mdd.target.jee
 
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.target.jse.PlainJavaBehaviorGenerator
 import org.eclipse.uml2.uml.Action
-import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddVariableValueAction
 import org.eclipse.uml2.uml.CallOperationAction
+import org.eclipse.uml2.uml.Clause
+import org.eclipse.uml2.uml.ConditionalNode
 import org.eclipse.uml2.uml.InputPin
+import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.LiteralNull
 import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.OutputPin
@@ -13,6 +16,7 @@ import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
+import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
@@ -21,10 +25,6 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
-import org.eclipse.uml2.uml.ConditionalNode
-import org.eclipse.uml2.uml.Clause
-import org.eclipse.uml2.uml.StructuredActivityNode
-import org.eclipse.uml2.uml.LiteralBoolean
 
 /** Builds a query based on a filter closure. */
 class JPQLFilterActionGenerator extends QueryFragmentGenerator {
@@ -34,10 +34,12 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override generateTraverseRelationshipAction(InputPin target, Property end) {
-    	if (!end.derived)
-        	'''«target.generateAction».«end.name»'''
-    	else
-    	    '''«end.derivation.generateDerivation(target.source as OutputPin)»'''
+    	if (end.derived) {
+	        if (!end.static)
+	    	    return '''«end.derivation.generateDerivation(target.source as OutputPin)»'''
+	    	return '''«end.otherEnd.type.name».«new PlainJavaBehaviorGenerator(repository).generateAccessorName(end)»()'''
+    	}
+    	return '''«target.generateAction».«end.name»'''
     }
     
     def override CharSequence generateReadPropertyAction(ReadStructuralFeatureAction action) {
