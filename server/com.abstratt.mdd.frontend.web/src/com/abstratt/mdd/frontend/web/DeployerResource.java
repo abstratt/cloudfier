@@ -12,7 +12,6 @@ import java.util.Properties;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.filesystem.IFileStore;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
@@ -27,17 +26,13 @@ import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
 import com.abstratt.mdd.core.IProblem;
+import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
-import com.abstratt.mdd.core.IProblem.Severity;
 import com.abstratt.mdd.core.util.MDDUtil;
 
 public class DeployerResource extends AbstractBuildDirectoryResource {
 
-    /**
-     * Validates a local project (as opposed to contents provided by the
-     * request). Will only report problems on the relevant file.
-     */
     @Post
     public Representation deploy(Representation request) {
         IPath userPath = getUserPath();
@@ -97,10 +92,6 @@ public class DeployerResource extends AbstractBuildDirectoryResource {
         return new StringRepresentation(JsonHelper.renderAsJson(info), MediaType.APPLICATION_JSON);
     }
 
-    /**
-     * Validates a local project (as opposed to contents provided by the
-     * request). Will only report problems on the relevant file.
-     */
     @Delete
     public Representation undeploy(Representation request) {
         IPath userPath = getUserPath();
