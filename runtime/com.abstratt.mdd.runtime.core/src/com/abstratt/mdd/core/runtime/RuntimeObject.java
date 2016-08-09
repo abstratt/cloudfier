@@ -289,8 +289,8 @@ public class RuntimeObject extends BasicType {
         Collection<RuntimeObject> candidates = propertyRuntimeClass.getAllInstances();
         candidateLoop: for (BasicType candidate : candidates) {
             for (Constraint constraint : constraints) {
-                Behavior behavior = ActivityUtils.resolveBehaviorReference(constraint.getSpecification());
-                behavior.getOwnedParameters();
+            	// simulate what the object would look like with the proposed value
+            	setValue(property, candidate);
                 if (!isConstraintSatisfied(constraint))
                     continue candidateLoop;
             }

@@ -8,8 +8,10 @@ import java.util.Properties;
 import java.util.function.BiConsumer;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Operation;
+import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.UMLPackage;
 
 import com.abstratt.mdd.core.IRepository;
@@ -57,6 +59,7 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "    end;\n";
         RuntimeObjectTests.model += "  end;\n";        
         RuntimeObjectTests.model += "  class Company specializes Party\n";
+        RuntimeObjectTests.model += "    attribute founder : Person[0,1] invariant { self.founder == null or self.founder.personRole == Role#OWNER };\n";
         RuntimeObjectTests.model += "  end;\n";
         RuntimeObjectTests.model += "  class Person specializes Party\n";
         RuntimeObjectTests.model += "    attribute active : Boolean := true;\n";
@@ -235,6 +238,34 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         assertEquals.accept(Arrays.asList(company), companyClass);
         assertEquals.accept(Arrays.asList(person, company), partyClass);
         assertEquals.accept(Arrays.asList(person, company, thing), namedInterface);
+    }
+
+    public void testGetPropertyDomain() throws CoreException {
+        String[] sources = { RuntimeObjectTests.model };
+        parseAndCheck(sources);
+        Enumeration role = getRepository().findNamedElement("tests::Role", UMLPackage.Literals.ENUMERATION, null);
+        RuntimeClass personClass = getRuntimeClass("tests::Person");
+        RuntimeClass companyClass = getRuntimeClass("tests::Company");
+        
+        RuntimeObject person1 = personClass.newInstance();
+        RuntimeObject person2 = personClass.newInstance();
+        RuntimeObject person3 = personClass.newInstance();
+        
+        writeAttribute(person1, "personRole", new EnumerationType(role.getOwnedLiteral("EMPLOYEE")));
+        writeAttribute(person2, "personRole", new EnumerationType(role.getOwnedLiteral("OWNER")));
+        
+        person1.save();
+        person2.save();
+        person3.save();
+        
+        RuntimeObject company = companyClass.newInstance();
+        Property founderProperty = getProperty("tests::Company::founder");
+		Collection<RuntimeObject> domain = company.getPropertyDomain(founderProperty, (Classifier) founderProperty.getType());
+		
+		assertEquals(domain.toString(), 1, domain.size());
+        assertTrue(!domain.contains(person1));
+        assertTrue(domain.contains(person2));
+        assertTrue(!domain.contains(person3));
     }
 
     
