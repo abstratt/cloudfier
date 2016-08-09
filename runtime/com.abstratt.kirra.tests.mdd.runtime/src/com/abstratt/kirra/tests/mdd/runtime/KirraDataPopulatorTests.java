@@ -39,13 +39,14 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         KirraDataPopulatorTests.accountModel += "  role Person.accounts;\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
         KirraDataPopulatorTests.accountModel += "class Person\n";
-        KirraDataPopulatorTests.accountModel += "  attribute employer: Company[*];\n";
+        KirraDataPopulatorTests.accountModel += "  attribute employer: Company[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  attribute name : String;\n";
         KirraDataPopulatorTests.accountModel += "  attribute accounts : Account[*];\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
         KirraDataPopulatorTests.accountModel += "class Company\n";
-        KirraDataPopulatorTests.accountModel += "  attribute employee: Person[*];\n";
         KirraDataPopulatorTests.accountModel += "  attribute name : String;\n";
+        KirraDataPopulatorTests.accountModel += "  attribute employee: Person[*];\n";
+        KirraDataPopulatorTests.accountModel += "  attribute manager : Person[0,1];\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
         KirraDataPopulatorTests.accountModel += "association\n";
         KirraDataPopulatorTests.accountModel += "  role Company.employee;\n";
@@ -168,6 +169,48 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("Mary", accounts.get("DEF").getSingleRelated("owner").getValue("name"));
     }
 
+    public void testGraph_WithCycle() throws CoreException {
+        parseAndCheck(KirraDataPopulatorTests.accountModel);
+
+        String contents = "";
+        contents += "{\n";
+        contents += "  banking: {\n";
+        contents += "    Company: [\n";
+        contents += "      { name: 'Acme Inc.'},\n";
+        contents += "      { name: 'Acme Corp.', manager: 'Person@1'},\n";
+        contents += "      { name: 'Acme LLC', manager: 'Person@2'}\n";
+        contents += "    ],\n";
+        contents += "    Person: [\n";
+        contents += "      { name: 'John', employer: 'Company@2'},\n";
+        contents += "      { name: 'Martha', employer: 'Company@3'},\n";
+        contents += "      { name: 'Mary', employer: 'Company@3'},\n";
+        contents += "      { name: 'Paul', employer: 'Company@1'}\n";
+        contents += "    ]\n";        
+        contents += "  }\n";
+        contents += "}\n";
+
+        FixtureHelper.assertCompilationSuccessful(parseData(contents));
+
+        Repository kirra = getKirra();
+
+        DataPopulator populator = new DataPopulator(kirra);
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        TestCase.assertEquals(3 + 4, status);
+
+        Map<String, Instance> companies = toMap(kirra.getInstances("banking", "Company", false), "name");
+        TestCase.assertEquals(companies.keySet(), new HashSet<String>(Arrays.asList("Acme Inc.", "Acme Corp.", "Acme LLC")));
+
+        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", false), "name");
+        TestCase.assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Martha", "Mary", "Paul")));
+
+        TestCase.assertNull(companies.get("Acme Inc.").getSingleRelated("manager"));
+        TestCase.assertNotNull(companies.get("Acme Corp.").getSingleRelated("manager"));
+        TestCase.assertEquals("John", companies.get("Acme Corp.").getSingleRelated("manager").getValue("name"));
+        TestCase.assertNotNull(companies.get("Acme LLC").getSingleRelated("manager"));
+        TestCase.assertEquals("Martha", companies.get("Acme LLC").getSingleRelated("manager").getValue("name"));
+    }
+
+    
     public void testIgnoreUnknownSlots() throws CoreException {
         parseAndCheck(KirraDataPopulatorTests.accountModel);
         Repository kirra = getKirra();
