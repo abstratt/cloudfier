@@ -17,6 +17,7 @@ public class AllKirraMDDRuntimeTests {
         suite.addTest(new TestSuite(KirraMDDRuntimeValidationTests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeExternalServiceTests.class));
         suite.addTest(new TestSuite(KirraUIHelperTests.class));
+        suite.addTest(new TestSuite(KirraMDDRuntimeRest2Tests.class));
         suite.addTest(new TestSuite(KirraMDDRuntimeRestTests.class));
         suite.addTest(new TestSuite(KirraDataPopulatorTests.class));
         return suite;

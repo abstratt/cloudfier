@@ -25,5 +25,7 @@ public interface WebFrontEnd {
     String STATUS_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.BASE_PATH + WebFrontEnd.STATUS_SEGMENT;
 
     String APP_API_SEGMENT = BASE_PATH + "/"+ Paths.API + "/";
+    String APP_API2_SEGMENT = BASE_PATH + "/"+ Paths.API_V2 + "/";
     String APP_API_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.APP_API_SEGMENT;
+    String APP_API2_PATH = ":" + WebFrontEnd.PORT + WebFrontEnd.APP_API2_SEGMENT;
 }

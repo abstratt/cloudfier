@@ -6,8 +6,11 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -17,6 +20,7 @@ import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.eclipse.core.runtime.CoreException;
 import org.osgi.framework.ServiceRegistration;
@@ -29,17 +33,22 @@ import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.frontend.web.JsonHelper;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.Task;
+import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.TextNode;
 
 public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
 
     Map<String, String> authorized = new HashMap<String, String>();
+    
+    private JsonNodeFactory jsonNodeFactory = JsonNodeFactory.withExactBigDecimals(false);
 
     protected ServiceRegistration<AuthenticationService> authenticatorRegistration;
-
+    
     public KirraMDDRuntimeRestTests(String name) {
         super(name);
     }
@@ -378,6 +387,111 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         }
     }
 
+    public void testUpdateInstance() throws CoreException, IOException {
+        List<Instance> created = testUpdateInstanceSetup();
+        URI sessionURI = getWorkspaceURI();
+        
+        ObjectNode jsonInstance1 = executeJsonMethod(200,
+                new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId()).toASCIIString()));
+        
+        ((ObjectNode) jsonInstance1.get("values")).set("attr1", new TextNode("value 1a"));
+        ((ObjectNode) jsonInstance1.get("values")).set("attr2", new TextNode("value 2a"));
+
+        PutMethod putMethod = new PutMethod(jsonInstance1.get("uri").textValue());
+        putMethod.setRequestEntity(new StringRequestEntity(jsonInstance1.toString(), "application/json", "UTF-8"));
+
+        ObjectNode updated = (ObjectNode) executeJsonMethod(200, putMethod);
+        TestCase.assertEquals("value 1a", updated.get("values").get("attr1").asText());
+        TestCase.assertEquals("value 2a", updated.get("values").get("attr2").asText());
+        
+        ObjectNode retrieved = executeJsonMethod(200,
+                new GetMethod(jsonInstance1.get("uri").textValue()));
+        TestCase.assertEquals("value 1a", retrieved.get("values").get("attr1").asText());
+        TestCase.assertEquals("value 2a", retrieved.get("values").get("attr2").asText());
+    }
+    
+    public void testUpdateInstance_ClearValue() throws CoreException, IOException {
+        List<Instance> created = testUpdateInstanceSetup();
+        URI sessionURI = getWorkspaceURI();
+        
+        ObjectNode jsonInstance1 = executeJsonMethod(200,
+                new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId()).toASCIIString()));
+        
+        ((ObjectNode) jsonInstance1.get("values")).set("attr1", new TextNode(""));
+
+        PutMethod putMethod = new PutMethod(jsonInstance1.get("uri").textValue());
+        putMethod.setRequestEntity(new StringRequestEntity(jsonInstance1.toString(), "application/json", "UTF-8"));
+
+        ObjectNode updated = (ObjectNode) executeJsonMethod(200, putMethod);
+        TestCase.assertEquals("", updated.get("values").get("attr1").asText());
+        
+        ObjectNode retrieved = executeJsonMethod(200,
+                new GetMethod(jsonInstance1.get("uri").textValue()));
+        TestCase.assertEquals("", retrieved.get("values").get("attr1").asText());
+    }
+    
+    public void testUpdateInstance_SetLink() throws CoreException, IOException {
+        List<Instance> created = testUpdateInstanceSetup();
+        URI sessionURI = getWorkspaceURI();
+        URI uri1 = sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId());
+        URI uri2 = sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(1).getObjectId());
+        
+        ObjectNode jsonInstance1 = executeJsonMethod(200,
+                new GetMethod(uri1.toString()));
+        ObjectNode links = jsonNodeFactory.objectNode();
+        jsonInstance1.put("links", links);
+        
+        ObjectNode myClass2 = jsonNodeFactory.objectNode();
+        links.put("myClass2", myClass2);
+        myClass2.set("uri", new TextNode(uri2.toString()));
+
+        PutMethod putMethod = new PutMethod(uri1.toString());
+        putMethod.setRequestEntity(new StringRequestEntity(jsonInstance1.toString(), "application/json", "UTF-8"));
+
+        ObjectNode updated = (ObjectNode) executeJsonMethod(200, putMethod);
+        assertNotNull(updated.get("links"));
+        assertNotNull(updated.get("links").get("myClass2"));
+        TestCase.assertEquals(uri2.toString(), updated.get("links").get("myClass2").get("uri").asText());
+        
+        ObjectNode retrieved = executeJsonMethod(200,
+                new GetMethod(jsonInstance1.get("uri").textValue()));
+        assertNotNull(retrieved.get("links"));
+        assertNotNull(retrieved.get("links").get("myClass2"));
+        TestCase.assertEquals(uri2.toString(), retrieved.get("links").get("myClass2").get("uri").asText());
+    }    
+
+	private List<Instance> testUpdateInstanceSetup() throws IOException, CoreException {
+		String model = "";
+        model += "package mypackage;\n";
+        model += "apply kirra;\n";
+        model += "import base;\n";
+        model += "class MyClass1\n";
+        model += "    attribute attr1 : String[0,1];\n";
+        model += "    attribute attr2 : String[0,1];\n";
+        model += "    attribute myClass2 : MyClass2[0,1];\n";
+        model += "end;\n";
+        model += "class MyClass2\n";
+        model += "    attribute attr2 : String[0,1];\n";
+        model += "end;\n";
+        model += "end.";
+        buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
+        return RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<List<Instance>>() {
+        	@Override
+        	public List<Instance> run(Resource<?> resource) {
+        		List<Instance> created = new LinkedList<>();
+        		Repository repository = resource.getFeature(Repository.class);
+        		Instance instance1 = repository.newInstance("mypackage", "MyClass1");
+        		instance1.setValue("attr1", "value1");
+        		created.add(repository.createInstance(instance1));
+        		Instance instance2 = repository.newInstance("mypackage", "MyClass2");
+        		instance2.setValue("attr2", "value2");
+        		created.add(repository.createInstance(instance2));
+        		return created;
+        	}
+        });
+	}
+
+    
     public void testGetServiceList() throws CoreException, IOException {
         String source = "";
         source += "model tests;\n";
