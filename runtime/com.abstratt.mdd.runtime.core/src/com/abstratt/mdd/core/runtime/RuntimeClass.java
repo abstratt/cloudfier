@@ -140,8 +140,6 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     public INodeStore getNodeStore() {
         String storeName = getNodeStoreName();
         INodeStore nodeStore = getNodeStoreCatalog().getStore(storeName);
-        if (nodeStore == null)
-            nodeStore = getNodeStoreCatalog().createStore(storeName);
         return nodeStore;
     }
 

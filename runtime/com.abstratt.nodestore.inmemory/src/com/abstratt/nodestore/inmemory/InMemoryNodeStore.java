@@ -74,7 +74,8 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		try {
 			byte[] contentArray = FileUtils.readFileToByteArray(catalog.getStorePath(typeRef));
 			ByteArrayInputStream contents = new ByteArrayInputStream(contentArray);
-			return getGson().fromJson(new InputStreamReader(contents, StandardCharsets.UTF_8), InMemoryNodeStore.class);
+			InMemoryNodeStore fromJson = getGson().fromJson(new InputStreamReader(contents, StandardCharsets.UTF_8), InMemoryNodeStore.class);
+			return fromJson;
 		} catch (FileNotFoundException e) {
 			// no file
 			return new InMemoryNodeStore(typeRef);

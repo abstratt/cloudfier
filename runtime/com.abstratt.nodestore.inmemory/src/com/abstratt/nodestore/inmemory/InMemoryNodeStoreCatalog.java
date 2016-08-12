@@ -43,6 +43,8 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
         Validate.isTrue(schema != null);
         this.catalogName = name;
         this.metadata = schema;
+        if (name.indexOf('-') == -1)
+        	new Throwable("Creating node store catalog as " + name).printStackTrace(System.out);
     }
     
     SchemaManagement getMetadata() {
@@ -119,7 +121,12 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     @Override
     public INodeStore getStore(String storeName) {
     	String sanitizedStoreName = TypeRef.sanitize(storeName);
-    	return getStoreSet().computeIfAbsent(sanitizedStoreName, it -> loadStore(sanitizedStoreName));
+    	InMemoryNodeStore store = getStoreSet().get(sanitizedStoreName);
+    	if (store == null) {
+    		store = loadStore(sanitizedStoreName);
+    		getStoreSet().put(sanitizedStoreName, store);
+    	}
+		return store;
     }
 
 	private InMemoryNodeStore loadStore(String storeName) {

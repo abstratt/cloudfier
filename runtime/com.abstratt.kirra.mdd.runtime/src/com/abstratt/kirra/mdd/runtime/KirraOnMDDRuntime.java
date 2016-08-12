@@ -124,9 +124,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     // cache of converted objects - avoids infinite loops when converting a
     // graph of RuntimeObjects into a graph of Instances
-    private Map<RuntimeObject, Instance> convertedToInstance = new HashMap<RuntimeObject, Instance>();
+    private Map<RuntimeObject, Tuple> convertedToInstance = new HashMap<RuntimeObject, Tuple>();
 
-    private static Map<Instance, RuntimeObject> convertedToRuntimeObject = new HashMap<Instance, RuntimeObject>();
+    private Map<Instance, RuntimeObject> convertedToRuntimeObject = new HashMap<Instance, RuntimeObject>();
+    
+    private boolean convertingTuple = false;
 
     private static Log log = LogFactory.getLog(KirraOnMDDRuntime.class);
 
@@ -210,7 +212,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     public void flush() {
         convertedToInstance.clear();
-        KirraOnMDDRuntime.convertedToRuntimeObject.clear();
+        convertedToRuntimeObject.clear();
     }
 
     @Override
@@ -231,6 +233,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     @Override
     public String getApplicationName() {
         return getSchemaManagement().getApplicationName();
+    }
+    
+    @Override
+    public String getApplicationLabel() {
+    	return getSchemaManagement().getApplicationLabel();
     }
 
     @Override
@@ -679,8 +686,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             BasicType result = getRuntime().runOperation(null, target, operation, convertedArguments);
             if (result == null)
                 return Collections.emptyList();
-            if (KirraHelper.isFinder(operation))
-                return filterValidInstances(((CollectionType) result).getBackEnd());
+            if (KirraHelper.isFinder(operation)) {
+            	Classifier resultType = (Classifier) operation.getReturnResult().getType();
+            	if (KirraHelper.isMultiple(operation.getReturnResult()))
+        			return ((CollectionType) result).getBackEnd().stream().map(it -> convertFromBasicType(it, resultType)).collect(Collectors.toList());
+        		return Arrays.asList(convertFromBasicType(result, resultType));
+            }
             Classifier operationType = (Classifier) operation.getType();
             return asList(convertFromBasicType(result, operationType));
         } catch (ModelExecutionException rre) {
@@ -738,13 +749,13 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     private Tuple convertFromRuntimeObject(RuntimeObject source) {
         if (source == null)
             return null;
-        if (source.isTuple())
-            return convertToTuple(source);
         final boolean first = convertedToInstance.isEmpty();
+        Tuple alreadyConverted = convertedToInstance.get(source);
+        if (alreadyConverted != null)
+        	return alreadyConverted;
+        if (convertingTuple || source.isTuple())
+            return convertToTuple(source);
         try {
-            Instance alreadyConverted = convertedToInstance.get(source);
-            if (alreadyConverted != null)
-                return alreadyConverted;
             RuntimeClass class_ = source.getRuntimeClass();
             Instance kirraInstance = new Instance();
             convertedToInstance.put(source, kirraInstance);
@@ -775,16 +786,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     kirraInstance.setValue(KirraHelper.getName(property), converted);
                 }
             }
-            org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
-            if (mnemonic != null) {
-            	Object shorthand; 
-            	if (KirraHelper.isRelationship(mnemonic)) {
-            		Instance related = kirraInstance.getRelated(KirraHelper.getName(mnemonic));
-					shorthand = related == null ? null : related.getShorthand();
-            	} else
-                    shorthand = kirraInstance.getValue(KirraHelper.getName(mnemonic));
-                kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
-            }
+            Object shorthand = extractShorthand(kirraInstance, modelClassifier);
+            kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             if (source.isPersisted()) {
                 List<Association> allAssociations = AssociationUtils.allAssociations(modelClassifier);
                 for (Association association : allAssociations) {
@@ -819,6 +822,36 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         }
     }
 
+	private Object extractShorthand(Instance kirraInstance, Classifier modelClassifier) {
+		org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
+		if (mnemonic != null) {
+			Object shorthand; 
+			if (KirraHelper.isRelationship(mnemonic)) {
+				Instance related = kirraInstance.getRelated(KirraHelper.getName(mnemonic));
+				shorthand = related == null ? null : related.getShorthand();
+			} else
+		        shorthand = kirraInstance.getValue(KirraHelper.getName(mnemonic));
+		    return shorthand;
+		}
+		return null;
+	}
+	private Object extractShorthand(RuntimeObject object, Classifier modelClassifier) {
+		org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
+		if (mnemonic != null) {
+			Object shorthand; 
+			BasicType mnemonicValue = object.getValue(mnemonic);
+			if (mnemonicValue == null)
+				return null;
+			if (KirraHelper.isRelationship(mnemonic)) {
+				RuntimeObject related = (RuntimeObject) mnemonicValue;
+				shorthand = extractShorthand(related, related.getRuntimeClass().getModelClassifier());
+			} else
+		        shorthand = mnemonicValue.toString();
+		    return shorthand;
+		}
+		return null;
+	}
+
     private BasicType convertSingleToBasicType(org.eclipse.uml2.uml.NamedElement targetElement, Object value, Classifier targetType) {
         if (value == null)
             return null;
@@ -850,10 +883,10 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private RuntimeObject convertToRuntimeObject(Instance instance) {
-        final boolean first = KirraOnMDDRuntime.convertedToRuntimeObject.isEmpty();
+        final boolean first = convertedToRuntimeObject.isEmpty();
         Entity entity = getEntity(instance.getEntityNamespace(), instance.getEntityName());
         try {
-            RuntimeObject alreadyConverted = KirraOnMDDRuntime.convertedToRuntimeObject.get(instance);
+            RuntimeObject alreadyConverted = convertedToRuntimeObject.get(instance);
             if (alreadyConverted != null)
                 return alreadyConverted;
             final RuntimeClass runtimeClass = getRuntimeClass(instance);
@@ -866,7 +899,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 if (target == null)
                     throw new KirraException(instance.getEntityName() + " id " + instance.getObjectId() + " not found", null, Kind.ENTITY);
             }
-            KirraOnMDDRuntime.convertedToRuntimeObject.put(instance, target);
+            convertedToRuntimeObject.put(instance, target);
             
             // note that below we ignore attempts to modify read only properties/links
             // but allow them to be set on creation to support data snapshot loading 
@@ -904,23 +937,35 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             return target;
         } finally {
             if (first)
-                KirraOnMDDRuntime.convertedToRuntimeObject.clear();
+                convertedToRuntimeObject.clear();
         }
     }
 
     private Tuple convertToTuple(RuntimeObject source) {
-        Classifier modelClassifier = source.getRuntimeClass().getModelClassifier();
-        Tuple tuple = new Tuple(KirraHelper.convertType(modelClassifier));
-        EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
-        for (org.eclipse.uml2.uml.Property property : allAttributes) {
-            BasicType value = source.getValue(property);
-            if (value == null)
-                continue;
-            // convert to client format
-            Object converted = convertFromBasicType(value, (Classifier) property.getType());
-            tuple.setValue(KirraHelper.getName(property), converted);
-        }
-        return tuple;
+    	boolean wasConvertingTuple = convertingTuple;
+    	convertingTuple = true;
+    	try {
+	        Classifier modelClassifier = source.getRuntimeClass().getModelClassifier();
+	        Tuple tuple = new Tuple(KirraHelper.convertType(modelClassifier));
+	        convertedToInstance.put(source, tuple);
+	        EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
+	        for (org.eclipse.uml2.uml.Property property : allAttributes) {
+	        	if (!KirraHelper.isDerived(property)) {
+		            BasicType value = source.getValue(property);
+		            if (value == null)
+		                continue;
+		            Object converted;
+		            if (value instanceof RuntimeObject && !((RuntimeObject) value).isTuple())
+		            	converted = extractShorthand((RuntimeObject) value, (Classifier) property.getType());
+		            else
+		            	converted = convertFromBasicType(value, (Classifier) property.getType());
+		            tuple.setValue(KirraHelper.getName(property), converted);
+	        	}
+	        }
+	        return tuple;
+    	} finally {
+			convertingTuple = wasConvertingTuple;
+    	}
     }
 
     private RuntimeObject convertToValueObject(Tuple instance) {
