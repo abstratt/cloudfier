@@ -167,6 +167,16 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     	}
     	return min;
     }
+    
+    public BasicType average(ExecutionContext context, ElementReferenceType reference) {
+    	if (backEnd.isEmpty()) {
+    		return RealType.fromValue(1);
+    	}
+    	
+        NumberType<?> sum = sum(context, reference);
+        return sum.divide(context, IntegerType.fromValue(backEnd.size()));
+
+    }
 
     public CollectionType collect(ExecutionContext context, ElementReferenceType reference) {
         Parameter closureReturnParameter = ActivityUtils.getClosureReturnParameter((Activity) reference.getElement());
@@ -290,10 +300,10 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     }
 
     public NumberType<?> sum(ExecutionContext context, ElementReferenceType reference) {
-        NumberType<?> sum = null;
+        NumberType<?> sum = IntegerType.fromValue(0);
         for (BasicType current : backEnd) {
             NumberType<?> mapped = (NumberType<?>) CollectionType.runClosureBehavior(context, reference, current);
-            sum = sum == null ? mapped : sum.add(context, mapped);
+            sum = sum.add(context, mapped);
         }
         return sum;
     }
