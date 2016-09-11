@@ -49,7 +49,8 @@ public class DurationType extends PrimitiveType<Long> {
     }
     
     public IntegerType toDays(ExecutionContext context) {
-        return IntegerType.fromValue(toUnit(24 * 60 * 60));
+        IntegerType toDays = IntegerType.fromValue(toUnit(24 * 60 * 60));
+		return toDays;
     }
     
     public IntegerType toHours(ExecutionContext context) {

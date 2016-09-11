@@ -19,6 +19,18 @@ public abstract class NumberType<T extends Number> extends PrimitiveType<T> {
     public final double asDouble() {
         return value.doubleValue();
     }
+    
+    protected RealType asReal() {
+        return new RealType(asDouble());
+    }
+    
+    public RealType asDouble(ExecutionContext context) {
+    	return asReal();
+    }
+    
+    public IntegerType asInteger(ExecutionContext context) {
+    	return new IntegerType(value.longValue());
+    }
 
     public abstract NumberType<?> divide(ExecutionContext context, NumberType<?> number);
 
@@ -48,8 +60,4 @@ public abstract class NumberType<T extends Number> extends PrimitiveType<T> {
     public abstract NumberType<?> subtract(ExecutionContext context);
 
     public abstract NumberType<?> subtract(ExecutionContext context, NumberType<?> another);
-
-    protected RealType asReal() {
-        return new RealType(asDouble());
-    }
 }
