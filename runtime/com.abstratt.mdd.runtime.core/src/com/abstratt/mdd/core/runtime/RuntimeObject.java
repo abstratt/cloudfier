@@ -867,7 +867,7 @@ public class RuntimeObject extends BasicType {
         commitAll();
     }
 
-    private BasicType readPort(Port port) {
+    protected BasicType readPort(Port port) {
         return runtimeClass.getRuntime().getProviderInstance(port);
     }
 

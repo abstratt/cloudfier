@@ -3,6 +3,7 @@ package com.abstratt.mdd.core.runtime;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.eclipse.uml2.uml.Port;
 import org.eclipse.uml2.uml.Property;
 
 import com.abstratt.mdd.core.runtime.types.BasicType;
@@ -24,9 +25,11 @@ public class RuntimeClassObject extends RuntimeObject {
     public Map<Property, BasicType> getSlots() {
         return new HashMap<Property, BasicType>(slots);
     }
-
+    
     @Override
     public BasicType getValue(Property attribute) {
+        if (attribute instanceof Port)
+            return readPort((Port) attribute);
         if (attribute.isDerived() && attribute.getDefaultValue() != null)
             return derivedValue(attribute);
         return slots.get(attribute);
