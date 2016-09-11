@@ -445,7 +445,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     @Override
     public Service getService(TypeRef typeRef) {
-        return getService(typeRef);
+        return getService(typeRef.getEntityNamespace(), typeRef.getTypeName());
     }
 
     @Override
