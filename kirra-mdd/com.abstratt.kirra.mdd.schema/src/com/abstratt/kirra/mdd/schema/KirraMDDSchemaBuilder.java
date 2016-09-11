@@ -141,7 +141,6 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         Operation entityOperation = basicGetOperation(umlOperation);
         entityOperation.setKind(KirraHelper.isFinder(umlOperation) ? Operation.OperationKind.Finder : Operation.OperationKind.Action);
         entityOperation.setInstanceOperation(entityOperation.getKind() == OperationKind.Action && !umlOperation.isStatic());
-        entityOperation.setMultiple(umlOperation.getReturnResult() != null && umlOperation.getReturnResult().isMultivalued());
         return entityOperation;
     }
 
@@ -289,8 +288,11 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     private Operation basicGetOperation(org.eclipse.uml2.uml.BehavioralFeature umlOperation) {
         Operation basicOperation = new Operation();
         setName(umlOperation, basicOperation);
-        if (umlOperation instanceof org.eclipse.uml2.uml.Operation)
+        if (umlOperation instanceof org.eclipse.uml2.uml.Operation) {
+        	org.eclipse.uml2.uml.Operation asOperation = (org.eclipse.uml2.uml.Operation) umlOperation; 
             setTypeInfo(basicOperation, ((org.eclipse.uml2.uml.Operation) umlOperation).getType());
+            basicOperation.setMultiple(asOperation.getReturnResult() != null && asOperation.getReturnResult().isMultivalued());
+        }
 
         basicOperation.setOwner(KirraHelper.convertType((Type) umlOperation.getOwner()));
         List<Parameter> entityOperationParameters = new ArrayList<Parameter>();
