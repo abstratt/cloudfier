@@ -81,6 +81,7 @@
       <plugin id="com.abstratt.pluginutils"/>
       <plugin id="com.abstratt.resman"/>
       <plugin id="com.abstratt.wrapped.postgresql"/>
+      <plugin id="com.abstratt.wrapped.schemacrawler"/>
       <plugin id="com.fasterxml.jackson.core.jackson-annotations"/>
       <plugin id="com.fasterxml.jackson.core.jackson-core"/>
       <plugin id="com.fasterxml.jackson.core.jackson-databind"/>
