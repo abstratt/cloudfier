@@ -33,7 +33,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         val applicationLabel = KirraHelper.getApplicationLabel(repository)
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
-        val jaxbSerializationGenerator = new JAXBSerializationGenerator(repository)
+        val jaxbSerializationGenerator = new JAXRSSerializationGenerator(repository)
         val apiSchemaGenerator = new KirraAPIResourceGenerator(repository)
         val mappings = super.mapAll(repository)
         val entityNames = persistentEntities.map[ TypeRef.sanitize(qualifiedName) ]

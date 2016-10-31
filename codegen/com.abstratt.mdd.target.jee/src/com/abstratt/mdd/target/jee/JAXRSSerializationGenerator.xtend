@@ -14,7 +14,7 @@ import org.eclipse.uml2.uml.Operation
 import com.abstratt.kirra.TypeRef
 import org.eclipse.uml2.uml.MultiplicityElement
 
-class JAXBSerializationGenerator extends BehaviorlessClassGenerator {
+class JAXRSSerializationGenerator extends BehaviorlessClassGenerator {
     
     PlainEntityGenerator entityGenerator
     
