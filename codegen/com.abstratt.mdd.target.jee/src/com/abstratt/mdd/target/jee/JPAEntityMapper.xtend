@@ -33,13 +33,13 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         val applicationLabel = KirraHelper.getApplicationLabel(repository)
         val crudTestGenerator = new CRUDTestGenerator(repository)
         val jaxRsResourceGenerator = new JAXRSResourceGenerator(repository)
-        val jaxbSerializationGenerator = new JAXRSSerializationGenerator(repository)
+        val jaxRsSerializationGenerator = new JAXRSSerializationGenerator(repository)
         val apiSchemaGenerator = new KirraAPIResourceGenerator(repository)
         val mappings = super.mapAll(repository)
         val entityNames = persistentEntities.map[ TypeRef.sanitize(qualifiedName) ]
         mappings.putAll(persistentEntities.filter[concrete].toMap[generateCRUDTestFileName].mapValues[crudTestGenerator.generateCRUDTestClass(it)])
         mappings.putAll(allResourceEntities.toMap[generateJAXRSResourceFileName].mapValues[jaxRsResourceGenerator.generateResource(it)])
-        mappings.putAll(allRepresentationEntities.toMap[generateJAXBSerializationFileName].mapValues[jaxbSerializationGenerator.generateHelpers(it)])
+        mappings.putAll(allRepresentationEntities.toMap[generateJAXRSSerializationFileName].mapValues[jaxRsSerializationGenerator.generateHelpers(it)])
         mappings.put(generateJAXRSApplicationFileName(applicationName), new JAXRSApplicationGenerator(repository).generate())
         mappings.put(generateUserLoginServiceFileName(applicationName), new UserLoginServiceGenerator(repository).generate())
         mappings.put(generateSecurityHelperFileName(applicationName), new SecurityHelperGenerator(repository).generate())
@@ -90,8 +90,8 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         '''src/main/java/resource/«entityClass.namespace.name»/«entityClass.name»Resource.java'''.toString
     }
     
-    def generateJAXBSerializationFileName(Classifier entityClass) {
-        '''src/main/java/resource/«entityClass.namespace.name»/«entityClass.name»JAXBSerialization.java'''.toString
+    def generateJAXRSSerializationFileName(Classifier entityClass) {
+        '''src/main/java/resource/«entityClass.namespace.name»/«entityClass.name»JAXRSSerialization.java'''.toString
     }
     
     def generateJAXRSApplicationFileName(String applicationName) {

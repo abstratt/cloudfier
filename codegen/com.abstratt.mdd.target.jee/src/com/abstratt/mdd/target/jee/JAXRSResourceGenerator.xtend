@@ -441,15 +441,15 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             }
             
             private static Map<String, Object> toExternalRepresentation(«entity.name» toRender, URI instancesURI) {
-                return «entity.name»JAXBSerialization.toExternalRepresentation(toRender, instancesURI, «entity.name»JAXBSerialization.Feature.Values, «entity.name»JAXBSerialization.Feature.Links);
+                return «entity.name»JAXRSSerialization.toExternalRepresentation(toRender, instancesURI, «entity.name»JAXRSSerialization.Feature.Values, «entity.name»JAXRSSerialization.Feature.Links);
             }
             
-            private static Map<String, Object> toFullExternalRepresentation(«entity.name» toRender, URI instancesURI, «entity.name»JAXBSerialization.Feature... featureOptions) {
-                return «entity.name»JAXBSerialization.toExternalRepresentation(toRender, instancesURI, «entity.name»JAXBSerialization.Feature.values());
+            private static Map<String, Object> toFullExternalRepresentation(«entity.name» toRender, URI instancesURI, «entity.name»JAXRSSerialization.Feature... featureOptions) {
+                return «entity.name»JAXRSSerialization.toExternalRepresentation(toRender, instancesURI, «entity.name»JAXRSSerialization.Feature.values());
             }
             
             private static void updateFromExternalRepresentation(«entity.name» toUpdate, Map<String, Object> external) {
-                «entity.name»JAXBSerialization.updateFromExternalRepresentation(toUpdate, external);
+                «entity.name»JAXRSSerialization.updateFromExternalRepresentation(toUpdate, external);
             }
             «ENDIF»
         }

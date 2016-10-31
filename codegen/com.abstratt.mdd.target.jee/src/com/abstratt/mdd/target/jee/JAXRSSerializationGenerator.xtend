@@ -52,7 +52,7 @@ class JAXRSSerializationGenerator extends BehaviorlessClassGenerator {
         	'''
         ].join()»
         
-        public class «entity.name»JAXBSerialization {
+        public class «entity.name»JAXRSSerialization {
             private static final String[] DATE_FORMATS = { "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", "yyyy-MM-dd'T'HH:mm:ss'Z'", "yyyy-MM-dd'T'HH:mm'Z'", "yyyy-MM-dd", "yyyy/MM/dd" };
 
             public static enum Feature {
@@ -99,7 +99,7 @@ class JAXRSSerializationGenerator extends BehaviorlessClassGenerator {
                         Map<String, Object> «relationshipName»Link = null;
                         if (toRender.«accessor» != null) {
                             URI «relationshipInstancesURI» = instancesURI.resolve("../..").resolve("«typeRef.fullName»/instances"); 
-                            «relationshipName»Link = «relationship.type.name»JAXBSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI»);
+                            «relationshipName»Link = «relationship.type.name»JAXRSSerialization.toExternalRepresentation(toRender.«accessor», «relationshipInstancesURI»);
                         }    
                         links.put("«relationshipName»", «relationshipName»Link);
                         '''
