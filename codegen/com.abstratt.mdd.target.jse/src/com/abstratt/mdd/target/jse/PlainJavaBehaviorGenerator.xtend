@@ -216,8 +216,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def generateOperationCall(CharSequence target, CallOperationAction action) {
         val returnParameter = action.operation.ownedParameters.returnParameter
         val hasResult = (returnParameter != null)
-        val optionalTarget = action.target.lower == 0
         val core = '''«target».«action.operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
+        if (action.target == null)
+            return core
+        val optionalTarget = action.target.lower == 0
         if (!optionalTarget) return core
         if (hasResult) {
             val defaultValue = returnParameter.generateDefaultValue
@@ -770,8 +772,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val targetExpression = if(target == null) clazz.name else generateAction(target)
         val featureAccess = '''«feature.generateAccessorName»()'''
         val core = '''«targetExpression».«featureAccess»'''
+        if (target == null)
+            return core
         val optionalObject = target.lower == 0
-        val optionalResult = !feature.required
+        val optionalResult = feature.lower == 0
         val optionalResultSink = target.owningAction.outputs.head.targetInput.lower == 0
         val typeDefaultValue = feature.type.generateDefaultValue
         return if (optionalObject) {

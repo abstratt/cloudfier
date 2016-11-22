@@ -13,6 +13,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
         var source = '''
             model mymodel;
                 class MyClass
+                    derived attribute aDerivedAttribute : Integer := { 1 };
                     attribute anAttribute : Integer;
                     attribute anOptionalAttribute : Integer[0,1];
                     query aQuery() : Integer;
@@ -55,6 +56,34 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
             '''
         )
     }
+
+    def testPrecondition_RequiredDerivedAttribute() {
+        testBodyGeneration('''
+            operation op1() 
+                precondition { self.aDerivedAttribute >= 0 };
+            ''',
+            '''
+            if (!(this.getADerivedAttribute() >= 0L)) {
+                throw new ConstraintViolationException();
+            }
+            '''
+        )
+    }
+
+
+    def testPrecondition_RequiredAttribute() {
+        testBodyGeneration('''
+            operation op1() 
+                precondition { self.anAttribute >= 0 };
+            ''',
+            '''
+            if (!(this.getAnAttribute() >= 0L)) {
+                throw new ConstraintViolationException();
+            }
+            '''
+        )
+    }
+    
     def testDateToday() {
         testBodyGeneration('''
             operation op1();
