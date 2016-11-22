@@ -23,6 +23,7 @@ import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.Pin
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
@@ -40,9 +41,12 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.Pin
 
 class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
+    
+    enum OperatorFamily {
+        Arithmetic, Relational, Logical
+    }
 
     new(IRepository repository) {
         super(repository)
@@ -61,16 +65,13 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         '''
     }
 
-    def generateStatement(Action statementAction) {
-        val isBlock = if (statementAction instanceof StructuredActivityNode)
-                !MDDExtensionUtils.isCast(statementAction) && !statementAction.objectInitialization
-        val generated = generateAction(statementAction)
+    def CharSequence generateStatement(Action statementAction) {
+        val generated = generateAction(statementAction)?.toString?.trim
         if (generated == null || generated.length == 0)
             return ''
-        if (isBlock)
-            // actually a block
+        val needsSemicolon = !generated.endsWith('}') && !generated.endsWith(';')
+        if (!needsSemicolon)
             return generated
-        // else generate as a statement
         return '''«generated.toString.trim»;'''
     }
 
@@ -95,7 +96,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def generateAddVariableValueActionAsAssignment(AddVariableValueAction action) {
-        '''«action.variable.toJavaType» «action.variable.name» = «generateAddVariableValueActionCore(action)»'''
+        '''«action.value.toJavaType()» «action.variable.name» = «generateAddVariableValueActionCore(action)»'''
     }    
 
     def override generateTestIdentityAction(TestIdentityAction action) {
@@ -194,7 +195,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         if (isBasicTypeOperation(operation))
             generateBasicTypeOperationCall(action)
         else {
-            val target = 
+            val targetExpression = 
                 if(operation.static) {
                     val targetClassifier = action.operationTarget
                     if (targetClassifier.entity)
@@ -203,7 +204,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                         targetClassifier.name 
                 } else 
                     generateAction(action.target)
-            generateOperationCall(target, action)
+                    
+            generateOperationCall(targetExpression, action)
         }
     }
     
@@ -212,9 +214,59 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def generateOperationCall(CharSequence target, CallOperationAction action) {
-        '''«target».«action.operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
+        val returnParameter = action.operation.ownedParameters.returnParameter
+        val hasResult = (returnParameter != null)
+        val optionalTarget = action.target.lower == 0
+        val core = '''«target».«action.operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
+        if (!optionalTarget) return core
+        if (hasResult) {
+            val defaultValue = returnParameter.generateDefaultValue
+            '''(«target» == null ? «defaultValue» : «core»)''' 
+        }
+        else 
+            '''
+            if («target» != null) {
+                «core»;
+            }
+            '''
+    }
+    
+    def OperatorFamily findOperatorFamily(Operation operation) {
+        return switch (operation.name) {
+            case 'add':
+                OperatorFamily.Arithmetic
+            case 'subtract':
+                OperatorFamily.Arithmetic
+            case 'multiply':
+                OperatorFamily.Arithmetic
+            case 'divide':
+                OperatorFamily.Arithmetic
+            case 'minus':
+                OperatorFamily.Arithmetic
+            case 'and':
+                OperatorFamily.Logical
+            case 'or':
+                OperatorFamily.Logical
+            case 'not':
+                OperatorFamily.Logical
+            case 'lowerThan':
+                OperatorFamily.Relational
+            case 'greaterThan':
+                OperatorFamily.Relational
+            case 'lowerOrEquals':
+                OperatorFamily.Relational
+            case 'greaterOrEquals':
+                OperatorFamily.Relational
+            case 'same':
+                OperatorFamily.Relational
+            case 'equals':
+                OperatorFamily.Relational
+            default:
+                null
+        }
     }
 
+    @Deprecated
     def findOperator(Type type, Operation operation) {
         return switch (operation.name) {
             case 'add':
@@ -256,7 +308,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val targetAction = action.targetAction
         return if (targetAction instanceof CallOperationAction)
             // operators require the expression to be wrapped in parentheses
-            targetAction.operation.isBasicTypeOperation && findOperator(targetAction.operationTarget, targetAction.operation) != null
+            targetAction.operation.isBasicTypeOperation && findOperatorFamily(targetAction.operation) != null
         else
             false
     }
@@ -269,6 +321,31 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             toWrap
     }
 
+    def private CharSequence generateSafeUnaryOperatorExpression(CharSequence operator, CharSequence op, boolean opOptional, CharSequence defaultValue) {
+        val safeOp = if (opOptional) '''«op» == null ? «defaultValue» : «op»''' else op
+        return '''«operator» «safeOp»'''
+    }    
+    
+    def private CharSequence generateSafeBinaryOperatorExpression(CharSequence operator, CharSequence op1, CharSequence op2, boolean op1Optional, boolean op2Optional, CharSequence defaultValue1, CharSequence defaultValue2) {
+        val safeOp1 = if (op1Optional) '''(«op1» == null ? «defaultValue1» : «op1»)''' else op1
+        val safeOp2 = if (op2Optional) '''(«op2» == null ? «defaultValue2» : «op2»)''' else op2
+        return '''«safeOp1» «operator» «safeOp2»'''
+    }    
+    
+    def private CharSequence generateSafeComparison(CharSequence op1, CharSequence op2, boolean op1Optional, boolean op2Optional, boolean javaPrimitives, CharSequence primitiveComparisonOp) {
+        if (javaPrimitives && !op1Optional && !op2Optional)
+            return '''«op1» «primitiveComparisonOp» «op2»''' 
+        val core = '''«op1».compareTo(«op2») «primitiveComparisonOp» 0'''
+        if (op1Optional && op2Optional) {
+            '''(«op1» != null && «op2» != null && «core»)'''
+        } else if (op1Optional) {
+            '''(«op1» != null && «core»)'''
+        } else if (op2Optional) {
+            '''(«op2» != null && «core»)'''
+        } else 
+            core    
+    }
+
     def CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
         val targetType = action.operationTarget
         val operation = action.operation
@@ -276,110 +353,129 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val op2 = action.arguments.head?.generateAction
         val op1Optional = action.target != null && (action.target.source as Pin).lowerBound == 0
         val op2Optional = !action.arguments.empty && (action.arguments.head.source as Pin).lowerBound == 0
-        val operator = findOperator(action.operationTarget, action.operation)
-        if (operator != null) {
-            switch (action.arguments.size()) {
-                // unary operator
-                case 0:
-                    '''«operator»(«op1»)'''.parenthesize(action)
-                case 1:
-                    '''«op1» «operator» «op2»'''.
-                        parenthesize(action)
-                default: unsupported('''operation «action.operation.name»''')
-            }
-        } else {
-            switch (action.operation.owningClassifier.name) {
-                case 'Basic':
-                    switch (operation.name) {
-                        case 'notNull': '''«op1» != null'''
-                        case 'toString': '''Objects.toString(«op1»)'''
-                        default: unsupported('''Basic operation «operation.name»''')
+        val noArgs = action.arguments.empty
+        
+//        if (operator != null) {
+//            switch (action.arguments.size()) {
+//                // unary operator
+//                case 0:
+//                    '''«operator»(«op1»)'''.parenthesize(action)
+//                case 1:
+//                    '''«op1» «operator» «op2»'''.
+//                        parenthesize(action)
+//                default: unsupported('''operation «action.operation.name»''')
+//            }
+//        } else {
+        switch (action.operation.owningClassifier.name) {
+            case 'Basic':
+                switch (operation.name) {
+                    case 'notNull': '''«op1» != null'''
+                    case 'toString': '''Objects.toString(«op1»)'''
+                    default: unsupported('''Basic operation «operation.name»''')
+                }
+            case 'ComparableBasic':
+            	switch (operation.name) {
+                    case 'equals': generateSafeComparison(op1, op2, op1Optional, op2Optional, targetType.javaPrimitive, '==')
+                    case 'notEquals': generateSafeComparison(op1, op2, op1Optional, op2Optional, targetType.javaPrimitive, '!=')
+                    case 'lowerThan': generateSafeComparison(op1, op2, op1Optional, op2Optional, targetType.javaPrimitive, '<')
+                    case 'greaterThan': generateSafeComparison(op1, op2, op1Optional, op2Optional, targetType.javaPrimitive, '>')
+                    case 'lowerOrEquals': generateSafeComparison(op1, op2, op1Optional, op2Optional, targetType.javaPrimitive, '<=')
+                    case 'greaterOrEquals': generateSafeComparison(op1, op2, op1Optional, op2Optional, targetType.javaPrimitive, '>=')
+                    default: unsupported('''Primitive operation «operation.name»''')
+                }
+            case 'Boolean':
+                switch (operation.name) {
+                    case 'not': generateSafeUnaryOperatorExpression('!', op1, op1Optional, 'false')
+                    case 'and': generateSafeBinaryOperatorExpression('&&', op1, op2, op1Optional, op2Optional, 'false', 'false')
+                    case 'or': generateSafeBinaryOperatorExpression('||', op1, op2, op1Optional, op2Optional, 'false', 'false')
+                    default: unsupported('''Boolean operation «operation.name»''')
+                }
+            case 'Integer':
+                generateNumericOperationExpression(operation, noArgs, op1, op2, op1Optional, op2Optional)
+            case 'Double':
+                generateNumericOperationExpression(operation, noArgs, op1, op2, op1Optional, op2Optional) 
+            case 'String':
+                switch (operation.name) {
+                    case 'add': generateSafeBinaryOperatorExpression('+', op1, op2, op1Optional, op2Optional, '', '')
+                    default: unsupported('''String operation «operation.name»''')
+                }                                          
+            case 'Primitive': 
+                switch (operation.name) {
+                    default: unsupported('''Primitive operation «operation.name»''')
+                }
+            case 'Date':
+                generateDateOperationCall(action)
+            case 'Duration': {
+                if (operation.static) {
+                    val period = switch (operation.name) {
+                        case 'days': ' * (1000 * 60 * 60 * 24)'
+                        case 'hours': ' * (1000 * 60 * 60)'
+                        case 'minutes': ' * (1000 * 60)'
+                        case 'seconds': ' * 1000'
+                        case 'milliseconds': ''
+                        default: unsupported('''Duration operation: «operation.name»''')
                     }
-                case 'ComparableBasic':
-                	switch (operation.name) {
-                        case 'equals': 
-                            if (op1Optional) {
-                        	    if (op2Optional) 
-                        		    '''(«op1» == null && «op2» == null) || («op1» != null && «op1».equals(«op2»))'''
-                    		    else
-                    		        '''«op2».equals(«op1»)'''
-                            } else 
-                                '''«op1».equals(«op2»)'''
-                        case 'notEquals': 
-                            if (op1Optional) {
-                            	if (op2Optional)
-                                	'''(«op1» == null && «op2» != null) || («op1» != null && !«op1».equals(«op2»))'''
-                            	else
-                            	    '''!«op2».equals(«op1»)''' 
-                            } else 
-                                '''!«op1».equals(«op2»)'''
-                        case 'lowerThan': '''«op1».compareTo(«op2») < 0'''
-                        case 'greaterThan': '''«op1».compareTo(«op2») <= 0'''
-                        case 'lowerOrEquals': '''«op1».compareTo(«op2») >= 0'''
-                        case 'greaterOrEquals': '''«op1».compareTo(«op2») > 0'''
-                        default: unsupported('''Primitive operation «operation.name»''')
-                    } 
-                case 'Primitive': 
-                    switch (operation.name) {
-                        default: unsupported('''Primitive operation «operation.name»''')
+                    '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
+                } else {
+                    val period = switch (operation.name) {
+                        case 'toDays': ' / (1000 * 60 * 60 * 24)'
+                        case 'toHours': ' / (1000 * 60 * 60)'
+                        case 'toMinutes': ' / (1000 * 60)'
+                        case 'toSeconds': ' / 1000'
+                        case 'toMilliseconds': ''
                     }
-                case 'Date':
-                    generateDateOperationCall(action)
-                case 'Duration': {
-                    if (operation.static) {
-                        val period = switch (operation.name) {
-                            case 'days': ' * (1000 * 60 * 60 * 24)'
-                            case 'hours': ' * (1000 * 60 * 60)'
-                            case 'minutes': ' * (1000 * 60)'
-                            case 'seconds': ' * 1000'
-                            case 'milliseconds': ''
+                    if (period != null)
+                        '''«generateAction(action.target)»«period» /*«operation.name»*/'''
+                    else
+                        switch (operation.name) {
+                            case 'difference' : '''«generateAction(action.target)».getTime() - «generateAction(action.arguments.head)».getTime()'''
                             default: unsupported('''Duration operation: «operation.name»''')
-                        }
-                        '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
-                    } else {
-                        val period = switch (operation.name) {
-                            case 'toDays': ' / (1000 * 60 * 60 * 24)'
-                            case 'toHours': ' / (1000 * 60 * 60)'
-                            case 'toMinutes': ' / (1000 * 60)'
-                            case 'toSeconds': ' / 1000'
-                            case 'toMilliseconds': ''
-                        }
-                        if (period != null)
-                            '''«generateAction(action.target)»«period» /*«operation.name»*/'''
-                        else
-                            switch (operation.name) {
-                                case 'difference' : '''«generateAction(action.target)».getTime() - «generateAction(action.arguments.head)».getTime()'''
-                                default: unsupported('''Duration operation: «operation.name»''')
-                            } 
-                    }
+                        } 
                 }
-                case 'Memo': {
-                    switch (operation.name) {
-                        case 'fromString': generateAction(action.arguments.head)
-                        default: unsupported('''Memo operation: «operation.name»''')
-                    }
-                }
-                case 'Collection': {
-                    generateCollectionOperationCall(action)
-                }
-                case 'Sequence': {
-                    switch (operation.name) {
-                        case 'head': '''«generateAction(action.target)».stream().findFirst().«IF action.operation.
-                            getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
-                        default: '''«if(operation.getReturnResult != null) 'null' else ''» /*«unsupported('''Sequence operation: «operation.name»''')»*/'''
-                    }
-                }
-                case 'Grouping': {
-                    generateGroupingOperationCall(action)
-                }
-                case 'System': {
-                    switch (operation.name) {
-                        case 'user': generateSystemUserCall(action)
-                        default: unsupported('''System operation: «operation.name»''')
-                    }
-                }
-                default: unsupported('''classifier «targetType.name» - operation «operation.name»''')
             }
+            
+            case 'Memo': {
+                switch (operation.name) {
+                    case 'fromString': generateAction(action.arguments.head)
+                    default: unsupported('''Memo operation: «operation.name»''')
+                }
+            }
+            case 'Collection': {
+                generateCollectionOperationCall(action)
+            }
+            case 'Sequence': {
+                switch (operation.name) {
+                    case 'head': '''«generateAction(action.target)».stream().findFirst().«IF action.operation.
+                        getReturnResult.lowerBound == 0»orElse(null)«ELSE»get()«ENDIF»'''
+                    default: '''«if(operation.getReturnResult != null) 'null' else ''» /*«unsupported('''Sequence operation: «operation.name»''')»*/'''
+                }
+            }
+            case 'Grouping': {
+                generateGroupingOperationCall(action)
+            }
+            case 'System': {
+                switch (operation.name) {
+                    case 'user': generateSystemUserCall(action)
+                    default: unsupported('''System operation: «operation.name»''')
+                }
+            }
+            default: unsupported('''classifier «targetType.name» - operation «operation.name»''')
+        }
+    }
+    
+    protected def CharSequence generateNumericOperationExpression(Operation operation, boolean noArgs, CharSequence op1, CharSequence op2, boolean op1Optional, boolean op2Optional) {
+        switch (operation.name) {
+            case 'add': if (noArgs)
+                    op1
+                else 
+                    generateSafeBinaryOperatorExpression('+', op1, op2, op1Optional, op2Optional, '0', '0')
+            case 'subtract': if (noArgs)
+                    generateSafeUnaryOperatorExpression('-', op1, op1Optional, '0')
+                else 
+                    generateSafeBinaryOperatorExpression('-', op1, op2, op1Optional, op2Optional, '0', '0')
+            case 'multiply': generateSafeBinaryOperatorExpression('*', op1, op2, op1Optional, op2Optional, '0', '0')
+            case 'divide': generateSafeBinaryOperatorExpression('/', op1, op2, op1Optional, op2Optional, '0', '1')
+            default: unsupported('''Number operation «operation.name»''')
         }
     }
 	
@@ -671,9 +767,29 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     
     def generateFeatureAccess(InputPin target, Property feature, boolean computed) {
         val clazz = feature.owningClassifier
-        val targetString = if(target == null) clazz.name else generateAction(target)
+        val targetExpression = if(target == null) clazz.name else generateAction(target)
         val featureAccess = '''«feature.generateAccessorName»()'''
-        '''«targetString».«featureAccess»'''
+        val core = '''«targetExpression».«featureAccess»'''
+        val optionalObject = target.lower == 0
+        val optionalResult = !feature.required
+        val optionalResultSink = target.owningAction.outputs.head.targetInput.lower == 0
+        val typeDefaultValue = feature.type.generateDefaultValue
+        return if (optionalObject) {
+            if (optionalResult)
+                if (optionalResultSink)
+                    '''(«targetExpression» == null ? «typeDefaultValue» : «core»)'''
+                else 
+                    '''((«targetExpression» == null || «core» == null) ? «typeDefaultValue» : «core»)'''
+            else
+                '''(«targetExpression» == null ? «typeDefaultValue» : «core»)'''
+        } else
+            if (optionalResult)
+                if (optionalResultSink)
+                    core
+                else
+                    '''(«core» == null ? «typeDefaultValue» : «core»)'''
+            else
+                core 
     }
 
     def override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
@@ -686,7 +802,17 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 action.generateAddStructuralFeatureValueActionAsUnlinking
             else
                 action.generateAddStructuralFeatureValueActionAsLinking
-        '''«generateAction(target)».set«featureName.toFirstUpper»(«generateAction(value)»)'''
+        val targetExpression = generateAction(target)
+        val core = '''«targetExpression».set«featureName.toFirstUpper»(«generateAction(value)»)'''
+        val optionalTarget = target.lower == 0
+        return if (optionalTarget)
+                '''
+                if («targetExpression» != null) {
+                     «core»;
+                }'''
+            else
+                core 
+        
     }
 
     def generateAddStructuralFeatureValueActionAsLinking(AddStructuralFeatureValueAction action) {

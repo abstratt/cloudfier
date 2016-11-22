@@ -74,7 +74,7 @@ class TestUtils {
         }
     }
     
-    static def generateStatement(Action statementAction, Function<Action, CharSequence> statementGenerator) {
+    static def CharSequence generateStatement(Action statementAction, Function<Action, CharSequence> statementGenerator) {
         if (statementAction.assertion) {
             val siblings = statementAction.owningBlock.findTerminals
             val index = siblings.indexOf(statementAction)

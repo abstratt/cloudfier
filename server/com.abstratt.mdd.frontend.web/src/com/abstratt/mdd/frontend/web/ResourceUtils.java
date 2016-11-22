@@ -310,7 +310,7 @@ public class ResourceUtils {
         String projectName = projectPath == null ? projectDir.getName() : BuildDirectoryUtils.getWorkspaceNameFromPath(projectPath);
         ResourceUtils.ensure(projectDir.isDirectory(), null, org.restlet.data.Status.CLIENT_ERROR_NOT_FOUND);
         File tmpBaseDir = ResourceUtils.createTempDir("kirra");
-        File tmpProjectDir = new File(tmpBaseDir, projectName);
+        File tmpProjectDir = new File(tmpBaseDir, "tmp-" + projectName);
         FileUtils.copyDirectory(projectDir, tmpProjectDir);
         return tmpProjectDir;
     }

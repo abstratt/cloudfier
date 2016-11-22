@@ -372,17 +372,6 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             '''return «attribute.type.generateDefaultValue»;'''
     }
     
-    def generateAttributeDefaultValue(Property attribute) {
-        if (attribute.defaultValue != null) {
-            if (attribute.defaultValue.behaviorReference)
-                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsExpression 
-            else
-                attribute.defaultValue.generateValue
-        } else if (attribute.required || attribute.type.enumeration)
-            // enumeration covers state machines as well
-            attribute.type.generateDefaultValue
-    }
-    
     def generateAttribute(Property attribute) {
         
         '''
@@ -656,15 +645,26 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val predicateActivity = constraint.specification.resolveBehaviorReference as Activity
         
         val parameterless = predicateActivity.closureInputParameters.empty
-        val selfReference = predicateActivity.rootAction.findFirstMatchingAction([it instanceof ReadSelfAction]) != null 
+        val optionalParameters = predicateActivity.closureInputParameters.filter[!required]
+        val selfReference = predicateActivity.rootAction.findFirstMatchingAction([it instanceof ReadSelfAction]) != null
+        val innerCore = '''
+        if («generatePredicate(constraint, true)») {
+            throw new «if (constraint.name?.length > 0) constraint.name else 'ConstraintViolation'»Exception();
+        }
+        '''
+        
+        val core = if (optionalParameters.empty) innerCore else '''
+        if («optionalParameters.map['''«it.name» != null'''].join(' && ')») {
+            «innerCore»
+        }
+        '''
+         
         '''
         «IF parameterless && !selfReference»
         // TBD: support for global-data based preconditions
         /*
         «ENDIF»
-        if («generatePredicate(constraint, true)») {
-            throw new «if (constraint.name?.length > 0) constraint.name else 'ConstraintViolation'»Exception();
-        }
+        «core»
         «IF parameterless && !selfReference»
         */
         «ENDIF»

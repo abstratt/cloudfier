@@ -148,12 +148,11 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
         AssertHelper.assertStringsEqual(
             '''
 				!(
-					(cq.distinct(true)
+					cq.distinct(true)
 						.where(
 							cb.isTrue(customer_.get("vip"))
 						)
 						.select(cb.count(customer_)) == 0
-					)
 				)
             ''', generated.toString)
     }

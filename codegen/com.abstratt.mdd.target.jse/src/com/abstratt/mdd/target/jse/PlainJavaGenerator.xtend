@@ -375,6 +375,22 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
         }
     }
     
+    def CharSequence generateAttributeDefaultValue(Property attribute) {
+        if (attribute.defaultValue != null) {
+            return if (attribute.defaultValue.behaviorReference)
+                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsExpression 
+            else
+                attribute.defaultValue.generateValue
+        } else if (attribute.required || attribute.type.enumeration)
+            // enumeration covers state machines as well
+            attribute.type.generateDefaultValue
+    }
+
+    def generateDefaultValue(TypedElement typed) {
+        //TODO-RC probably should be taking multiplicity into account
+        generateDefaultValue(typed.type)
+    }
+    
     def generateDefaultValue(Type type) {
         switch (type) {
             StateMachine : '''«type.stateMachineContext.name».«type.name».«type.initialVertex.name»'''
