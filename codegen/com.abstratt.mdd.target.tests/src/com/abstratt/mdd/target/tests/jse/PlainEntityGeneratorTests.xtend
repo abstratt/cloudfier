@@ -8,15 +8,6 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
-    private def testBodyGeneration(CharSequence parameters, CharSequence vars, CharSequence input, CharSequence expected) {
-        testBodyGeneration(
-            parameters, 
-            '', 
-            vars, 
-            input, 
-            expected
-        )
-    }
     
     private def testBodyGeneration(CharSequence operation, CharSequence expected) {
         var source = '''
@@ -36,16 +27,6 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
         AssertHelper.assertStringsEqual(
             expected.toString, generated.toString)
     }    
-
-    private def testBodyGeneration(CharSequence parameters, CharSequence precondition, CharSequence vars, CharSequence input, CharSequence expected) {
-        testBodyGeneration('''
-            operation op1(«parameters»)«precondition»;
-            begin
-                «vars»
-                «input»
-            end;    
-         ''', expected)
-    }
 
     /** See #179 and related issues. */
     def testPrecondition_RequiredParameter() {
