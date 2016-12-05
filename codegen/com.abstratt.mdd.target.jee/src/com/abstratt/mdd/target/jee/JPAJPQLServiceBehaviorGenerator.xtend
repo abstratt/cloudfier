@@ -64,7 +64,7 @@ class JPAJPQLServiceBehaviorGenerator extends JPABehaviorGenerator {
 			}
 			'''
 				getEntityManager().createQuery(
-				    "«core.toString().trim().replaceAll('[\n\t ]+', ' ')»", «input.type.toJavaType».class
+				    «core.toJavaStringLiteral», «input.type.toJavaType».class
 				)«parameters.entrySet.map['''.setParameter("«it.key»", «it.value»)'''].join()».«generateQueryExecutionMethod(output)»
 			'''
 		} else
