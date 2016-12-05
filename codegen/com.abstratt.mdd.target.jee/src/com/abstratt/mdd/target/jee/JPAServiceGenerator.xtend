@@ -248,7 +248,7 @@ class JPAServiceGenerator extends ServiceGenerator {
                 '''
                 public List<«parameter.type.name»> getParameterDomainFor«parameter.name.toFirstUpper»To«action.name.toFirstUpper»(«entity.name» «context») {
                     return getEntityManager().createQuery(
-                        "«generateActionParameterDomainQuery(entity, context, parameter)»", «parameter.type.name».class
+                        «generateActionParameterDomainQuery(entity, context, parameter).toJavaStringLiteral», «parameter.type.name».class
                     ).setParameter("«context»", «context»).getResultList(); 
                 }
                 '''
