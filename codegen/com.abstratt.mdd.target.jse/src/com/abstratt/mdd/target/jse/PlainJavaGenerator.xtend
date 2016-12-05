@@ -403,7 +403,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
                 case 'String' : '""'
                 case 'Memo' : '""'
             }
-            default : null
+            default : 'null'
         }
     }
     
@@ -431,5 +431,9 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
     def generateSetterName(Property attribute) {
         val prefix = "set"
         '''«prefix»«attribute.name.toFirstUpper»'''
+    }
+    
+    def CharSequence toJavaStringLiteral(CharSequence toConvert) {
+        '''"«toConvert.toString().trim().replaceAll('[\n\t ]+', ' ')»"'''
     }
 }
