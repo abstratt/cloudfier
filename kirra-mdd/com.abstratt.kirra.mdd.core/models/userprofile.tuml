@@ -5,8 +5,8 @@ apply kirra;
 import mdd_types;
 
 class Profile
+    (* Often an email address *)
     readonly id attribute username : String;
-    attribute email : String;
     attribute password : String;
     static query findByUsernameAndPassword(username : String, password : String) : Profile[*];
     begin

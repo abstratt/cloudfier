@@ -183,10 +183,12 @@ public class KirraHelper {
             public List<Property> call() throws Exception {
                 Collection<Property> entityRelationships = new LinkedHashSet<Property>();
                 for (org.eclipse.uml2.uml.Property attribute : modelClass.getAllAttributes())
-                    if (isRelationship(attribute) && attribute.getVisibility() == VisibilityKind.PUBLIC_LITERAL)
-                        entityRelationships.add(attribute);
+                    if (isRelationship(attribute)) 
+                    	if (attribute.getVisibility() == VisibilityKind.PUBLIC_LITERAL)
+                    		entityRelationships.add(attribute);
                 addAssociationOwnedRelationships(modelClass, navigableOnly, entityRelationships);
-                return removeDuplicates(entityRelationships, propertySelector(modelClass));
+                List<Property> relationships = removeDuplicates(entityRelationships, propertySelector(modelClass));
+				return relationships;
             }
         });
     }
@@ -222,7 +224,7 @@ public class KirraHelper {
         List<Classifier> allLevels = new ArrayList<Classifier>(modelClass.allParents());
         allLevels.add(modelClass);
         for (Classifier level : allLevels)
-            for (Association association : level.getAssociations()) 
+            for (Association association : AssociationUtils.getOwnAssociations(level)) 
                 for (Property forwardReference : AssociationUtils.getMemberEnds(association, level))
                     if (forwardReference != null && isRelationship(forwardReference, navigableOnly))
                         entityRelationships.add(forwardReference);

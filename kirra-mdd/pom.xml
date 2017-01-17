@@ -12,7 +12,8 @@
 	</parent>
 	<modules>
 		<module>com.abstratt.kirra.mdd.schema</module>
-        <module>com.abstratt.kirra.mdd.core</module>		
+        <module>com.abstratt.kirra.mdd.core</module>	
+     	<module>com.abstratt.kirra.mdd.feature</module>   
 	</modules>
 </project>
 
