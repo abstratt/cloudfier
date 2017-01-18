@@ -32,7 +32,6 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 		newProfile.setEntityName("Profile")
 		newProfile.setEntityNamespace("userprofile")
 		newProfile.setValue("username", "peter.jones")
-		newProfile.setValue("email", "peter@abstratt.com")
 		newProfile.setValue("password", "pass")
 		kirra.createInstance(newProfile)
 		
