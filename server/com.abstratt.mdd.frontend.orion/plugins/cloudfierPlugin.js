@@ -729,7 +729,7 @@ provider.registerService("orion.page.link.category", null, {
         order: 1001
 });
 
-provider.registerServiceProvider("orion.page.link.related", {}, {
+provider.registerServiceProvider("orion.page.link", null, {
     id: "orion.cloudfier.content.examples",
     tooltip: "Check out existing projects from the Cloudfier example repository.",
     name: "Get Cloudfier examples",
@@ -737,7 +737,7 @@ provider.registerServiceProvider("orion.page.link.related", {}, {
     uriTemplate: "{+OrionHome}/git/git-repository.html#,cloneGitRepository=https://github.com/abstratt/cloudfier-examples.git"
 });
 
-provider.registerServiceProvider("orion.page.link.related", {}, {
+provider.registerServiceProvider("orion.page.link", null, {
     id: "orion.cloudfier.content.documentation",
     tooltip: "Learn how to write Cloudfier programs.",
     name: "Cloudfier documentation",
