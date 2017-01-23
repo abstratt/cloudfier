@@ -4,6 +4,10 @@
     <bundle id="com.abstratt.resman"/>
     <bundle id="com.abstratt.pluginutils"/>
     <bundle id="com.abstratt.mdd.core"/>
+    <bundle id="com.abstratt.mdd.frontend.core"/>
+    <bundle id="com.abstratt.mdd.frontend.textuml.grammar"/>
+    <bundle id="com.abstratt.mdd.frontend.textuml.core"/>
+    <bundle id="org.apache.commons.beanutils"/>
     <bundle id="com.abstratt.kirra.mdd.core"/>
     <bundle id="com.abstratt.kirra.mdd.schema"/>
 </site>
