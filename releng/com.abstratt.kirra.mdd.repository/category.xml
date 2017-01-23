@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
     <bundle id="com.abstratt.kirra.api"/>
+    <bundle id="com.abstratt.resman"/>
+    <bundle id="com.abstratt.pluginutils"/>
     <bundle id="com.abstratt.mdd.core"/>
     <bundle id="com.abstratt.kirra.mdd.core"/>
     <bundle id="com.abstratt.kirra.mdd.schema"/>
