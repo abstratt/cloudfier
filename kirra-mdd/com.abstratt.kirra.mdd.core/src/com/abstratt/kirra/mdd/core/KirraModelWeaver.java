@@ -167,13 +167,13 @@ public class KirraModelWeaver implements IModelWeaver {
 //				asRoleClass.setIsReadOnly(true);
 //				asRoleClass.setLower(0);
 				
-				Property user = roleClass.createOwnedAttribute("user", profileClass);
-				user.setIsReadOnly(true);
-				user.setLower(0);
+				Property userProfile = roleClass.createOwnedAttribute("userProfile", profileClass);
+				userProfile.setIsReadOnly(true);
+				userProfile.setLower(0);
 				
-				Property otherEnd = buildAssociationForAttribute(roleClass, user, "roleAs" + roleClass.getName(), false);
+				Property otherEnd = buildAssociationForAttribute(roleClass, userProfile, "roleAs" + roleClass.getName(), false);
 				otherEnd.setIsNavigable(true);
-				user.setIsNavigable(true);
+				userProfile.setIsNavigable(true);
 			});
 		}
 

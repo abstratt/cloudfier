@@ -57,11 +57,11 @@ public class SecurityHelper {
     
     «roleClasses.map[ roleClass |
     '''
-    public static «roleClass.name» as«roleClass.name»(Profile user) {
-    	if (user == null) {
+    public static «roleClass.name» as«roleClass.name»(Profile userProfile) {
+    	if (userProfile == null) {
     		return null;
         }
-    	«roleClass.name» asRole = new «roleClass.name»Service().findRoleByUser(user);
+    	«roleClass.name» asRole = new «roleClass.name»Service().findRoleAs«roleClass.name»ByUserProfile(userProfile);
         return asRole;
     }
     
