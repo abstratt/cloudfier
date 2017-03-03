@@ -649,7 +649,7 @@ public class RuntimeObject extends BasicType {
     protected StateMachineType getStateMachineValue(StateMachine stateMachine, Object value) {
         Vertex vertex = null;
         if (value != null)
-            vertex = StateMachineUtils.getVertex(stateMachine, value.toString());
+            vertex = StateMachineUtils.getState(stateMachine, value.toString());
         if (vertex == null)
             vertex = StateMachineUtils.getInitialVertex(stateMachine);
         return vertex == null ? null : new StateMachineType(vertex);

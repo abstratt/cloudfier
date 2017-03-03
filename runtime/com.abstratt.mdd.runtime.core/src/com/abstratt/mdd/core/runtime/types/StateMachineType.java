@@ -13,6 +13,7 @@ import org.eclipse.uml2.uml.Vertex;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.MetaClass;
+import com.abstratt.mdd.core.util.StateMachineUtils;
 
 public class StateMachineType extends BasicType implements Serializable, ComparableType {
 
@@ -56,7 +57,7 @@ public class StateMachineType extends BasicType implements Serializable, Compara
 		StateMachine stateMachine = this.value.containingStateMachine();
 		if (stateMachine != otherValue.value.containingStateMachine())
 			return BooleanType.FALSE;
-		List<Vertex> allVertices = stateMachine.getRegions().stream().flatMap(it -> it.getSubvertices().stream()).collect(Collectors.toList());
+		List<State> allVertices = StateMachineUtils.getStates(stateMachine);
 		
 		int myIndex = allVertices.indexOf(value);
 		int otherIndex = allVertices.indexOf(otherValue.value);

@@ -81,7 +81,7 @@ public class RuntimeStateMachineTests extends AbstractRuntimeTests {
                 order[0] = getRuntimeClass(clazz.getQualifiedName()).newInstance();
                 StateMachine stateMachine = (StateMachine) clazz.getOwnedBehavior("Status");
                 TestCase.assertTrue(BooleanType.FALSE.equals(runOperation(order[0], "isShipping")));
-                writeAttribute(order[0], "status", new StateMachineType(StateMachineUtils.getVertex(stateMachine, "Shipping")));
+                writeAttribute(order[0], "status", new StateMachineType(StateMachineUtils.getState(stateMachine, "Shipping")));
                 StateMachineType state = (StateMachineType) readAttribute(order[0], "status");
                 TestCase.assertEquals("Shipping", state.getValue().getName());
                 TestCase.assertEquals(BooleanType.TRUE, runOperation(order[0], "isShipping"));

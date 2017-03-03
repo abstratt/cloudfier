@@ -1021,7 +1021,7 @@ public class KirraHelper {
                 if (enumOrStateMachine instanceof Enumeration)
                 	names = NamedElementUtils.getNames(((Enumeration) enumOrStateMachine).getOwnedLiterals());
 				else if (enumOrStateMachine instanceof StateMachine)
-                    names = NamedElementUtils.getNames(StateMachineUtils.getVertices(((StateMachine) enumOrStateMachine)));
+                    names = NamedElementUtils.getNames(StateMachineUtils.getStates(((StateMachine) enumOrStateMachine)));
 				else
 					names = Arrays.<String>asList();
                 Map<String, String> result = new LinkedHashMap<>();
