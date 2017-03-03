@@ -36,6 +36,7 @@ import org.eclipse.uml2.uml.VisibilityKind
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.core.util.ElementUtils.*
 import static extension com.abstratt.mdd.core.util.DataTypeUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
@@ -80,8 +81,9 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
     }
     
     def generateComment(Element element) {
-        if (!element.ownedComments.empty) {
-            val reformattedParagraphs = element.ownedComments.head.body.replaceAll('\\s+', ' ').wrap(120, '<br>', false).
+        val comments = element.comments
+        if (!comments.empty) {
+            val reformattedParagraphs = comments.head.body.replaceAll('\\s+', ' ').wrap(120, '<br>', false).
                 split('<br>').map['''* «it»'''].join('\n')
             '''
                 /**
@@ -409,7 +411,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
     
     def generateSampleValue(Type type) {
         switch (type) {
-            StateMachine : '''«type.stateMachineContext.name».«type.name».«(if (type.vertices.size > 1) type.vertices.findFirst[!it.initial] else type.initialVertex).name»'''
+            StateMachine : '''«type.stateMachineContext.name».«type.name».«(if (type.states.size > 1) type.states.findFirst[!it.initial] else type.initialVertex).name»'''
             Enumeration : '''«type.name».«type.ownedLiterals.last.name»'''
             Class : switch (type.name) {
                 case 'Boolean' : 'true'
