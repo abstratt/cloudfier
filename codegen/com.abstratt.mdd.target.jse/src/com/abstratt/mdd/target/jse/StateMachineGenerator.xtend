@@ -131,7 +131,7 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
         '''
         «stateMachine.generateComment»
         public enum «stateMachine.name» {
-            «stateMachine.vertices.map[
+            «stateMachine.states.map[
                 generateState(it, stateMachine, entity).toString.trim
             ].join(',\n')»;
             «generateBaseMethods(stateMachine, entity, stateAttribute)»
