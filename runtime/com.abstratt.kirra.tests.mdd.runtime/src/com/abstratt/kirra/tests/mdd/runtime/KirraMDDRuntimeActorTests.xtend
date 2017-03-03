@@ -54,7 +54,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 		newUser.setEntityName("User")
 		newUser.setEntityNamespace("todo")
 		newUser.setValue("name", "Peter")
-		newUser.setRelated("user", kirra.currentUser)
+		newUser.setRelated("userProfile", kirra.currentUser)
 		val Instance createdUser = kirra.createInstance(newUser)
 
 		val Instance newTask = new Instance()

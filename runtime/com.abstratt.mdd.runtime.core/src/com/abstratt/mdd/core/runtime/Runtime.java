@@ -133,7 +133,7 @@ public class Runtime {
     }
     
     public RuntimeObject getRoleForActor(RuntimeObject actor, Classifier roleClass) {
-    	Property userProperty = FeatureUtils.findAttribute(roleClass, "user", false, true);
+    	Property userProperty = FeatureUtils.findAttribute(roleClass, "userProfile", false, true);
     	Map<Property, List<BasicType>> criteria = Collections.singletonMap(userProperty, Arrays.asList(actor));
     	return context.getRuntime().getRuntimeClass(roleClass).findOneInstance(criteria);
     }
