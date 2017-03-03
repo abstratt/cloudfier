@@ -44,7 +44,6 @@ import com.abstratt.kirra.EntityCapabilities;
 import com.abstratt.kirra.ExternalService;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.InstanceCapabilities;
-import com.abstratt.kirra.InstanceManagement;
 import com.abstratt.kirra.InstanceRef;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
@@ -244,6 +243,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     public String getBuild() {
         return getSchemaManagement().getBuild();
     }
+//    
+//    @Override
+//    public Instance createUser(Instance userInfo) {
+//    	throw new UnsupportedOperationException();
+//    }
 
     @Override
     public Instance getCurrentUser() {
@@ -864,7 +868,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             return ownedLiteral == null ? null : new EnumerationType(ownedLiteral);
         }
         if (targetType instanceof StateMachine) {
-            Vertex vertex = StateMachineUtils.getVertex((StateMachine) targetType, (String) value);
+            Vertex vertex = StateMachineUtils.getState((StateMachine) targetType, (String) value);
             return vertex == null ? null : new StateMachineType(vertex);
         }
         try {
