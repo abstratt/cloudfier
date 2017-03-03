@@ -145,7 +145,7 @@ public class KirraModelWeaver implements IModelWeaver {
 			List<Class> roleEntities = entities.stream().filter(it -> KirraHelper.isRole(it)).collect(Collectors.toList());
 			if (roleEntities.isEmpty())
 				return;
-			Package kirraProfilePackage = repository.findPackage("userprofile", null);
+			Package kirraProfilePackage = repository.findPackage(KirraMDDConstants.USER_PROFILE_MODEL, null);
 			if (kirraProfilePackage == null)
 				throw new IllegalStateException("No package for user profiles");
 			
@@ -167,7 +167,7 @@ public class KirraModelWeaver implements IModelWeaver {
 //				asRoleClass.setIsReadOnly(true);
 //				asRoleClass.setLower(0);
 				
-				Property userProfile = roleClass.createOwnedAttribute("userProfile", profileClass);
+				Property userProfile = roleClass.createOwnedAttribute(KirraMDDConstants.USER_PROFILE_ASSOCIATION_END, profileClass);
 				userProfile.setIsReadOnly(true);
 				userProfile.setLower(0);
 				
