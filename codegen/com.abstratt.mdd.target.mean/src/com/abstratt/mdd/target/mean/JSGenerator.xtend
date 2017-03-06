@@ -44,6 +44,7 @@ import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 import org.eclipse.uml2.uml.Variable
 
+import static extension com.abstratt.mdd.core.util.ElementUtils.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
@@ -67,8 +68,9 @@ class JSGenerator {
     }
     
     def generateComment(Element element) {
-        if(!element.ownedComments.empty) {
-            val reformattedParagraphs = element.ownedComments.head.body.replaceAll('\\s+', ' ').wrap(120, '<br>', false).split('<br>').map[ '''* «it»''' ].join('\n')
+        val comments = element.comments
+        if(!comments.empty) {
+            val reformattedParagraphs = comments.head.body.replaceAll('\\s+', ' ').wrap(120, '<br>', false).split('<br>').map[ '''* «it»''' ].join('\n')
             '''
             /**
              «reformattedParagraphs»

@@ -756,7 +756,7 @@ class ModelGenerator extends AsyncJSGenerator {
         val triggersPerEvent = stateMachine.findTriggersPerEvent
         val events = triggersPerEvent.keySet
         val schemaVar = getSchemaVar(entity)
-        val needsGuard = stateMachine.vertices.exists[it.outgoings.exists[it.guard != null]]
+        val needsGuard = stateMachine.states.exists[it.outgoings.exists[it.guard != null]]
         '''
             «schemaVar».methods.handleEvent = function (event) {
                 «IF (needsGuard)»
