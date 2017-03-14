@@ -27,7 +27,17 @@ import com.abstratt.nodestore.NodeReference;
  */
 public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 	
-	protected static final File REPOSITORY_ROOT = new File(new File(System.getProperty("nodestore.file.base", System.getProperty("user.dir", "."))), "nodestore");
+	static final String NODESTORE_FILE_BASE_KEY = "nodestore.file.base";
+
+	private static final String NODESTORE_FILE_BASE = System.getProperty(NODESTORE_FILE_BASE_KEY);
+
+	protected static final File REPOSITORY_ROOT = computeRepositoryDataRoot();
+
+	private static File computeRepositoryDataRoot() {
+		if (NODESTORE_FILE_BASE == null)
+			return null;
+		return new File(NODESTORE_FILE_BASE);
+	}
 
     private SchemaManagement metadata;
 
@@ -43,8 +53,6 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
         Validate.isTrue(schema != null);
         this.catalogName = name;
         this.metadata = schema;
-        if (name.indexOf('-') == -1)
-        	new Throwable("Creating node store catalog as " + name).printStackTrace(System.out);
     }
     
     SchemaManagement getMetadata() {
@@ -57,10 +65,16 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     @Override
     public void commitTransaction() {
-    	getStoreSet().values().forEach(it -> InMemoryNodeStore.save(it));
+    	if (isDirty()) { 
+    		getStoreSet().values().forEach(it -> InMemoryNodeStore.save(it));
+    	}
     }
     
-    public Map<String, InMemoryNodeStore> getStoreSet() {
+	private boolean isDirty() {
+		return storeSet.values().stream().flatMap(it -> it.values().stream()).anyMatch(it -> it.isDirty());
+	}
+
+	public Map<String, InMemoryNodeStore> getStoreSet() {
 		return storeSet.computeIfAbsent(environment, e -> new LinkedHashMap<>());
 	}
     

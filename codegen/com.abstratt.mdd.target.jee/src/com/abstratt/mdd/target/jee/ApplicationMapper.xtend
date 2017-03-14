@@ -54,7 +54,7 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
             'jdbc.test.password' -> jdbcTestPassword,
             'jpa.preserveSchema' -> Boolean.toString(preserveSchema),
             'jpa.preserveData' -> Boolean.toString(preserveData),
-            "loginRequired" -> Boolean.toString(loginRequired)
+            'loginRequired' -> Boolean.toString(loginRequired)
         )
         
         templates.forEach[templatePath, outputPath | 

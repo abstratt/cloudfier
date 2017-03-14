@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 import junit.framework.TestCase;
 
 import org.apache.commons.collections.IteratorUtils;
+import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -41,7 +42,7 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
 
-public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
+public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
 
     Map<String, String> authorized = new HashMap<String, String>();
     
@@ -167,8 +168,6 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         model += "import base;\n";
         model += "role class User\n";
         model += "    readonly id attribute username : String;\n";
-        // this catches a stack overflow error with a derived property that
-        // causes a lookup
         model += "    static derived attribute current : User := { (System#user() as User) };\n";
         model += "end;\n";
         model += "end.";
@@ -674,8 +673,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestTests {
         TestCase.assertEquals(42L, asArray.get(0).longValue());
     }
 
-    //TODO-RC disabled until sign-up is implemented in the new model
-    public void _testSignup() throws CoreException, IOException {
+    public void testSignup() throws CoreException, IOException {
         String model = "";
         model += "package mypackage;\n";
         model += "apply kirra;\n";

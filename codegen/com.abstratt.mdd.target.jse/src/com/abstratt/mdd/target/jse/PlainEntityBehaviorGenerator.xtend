@@ -65,7 +65,9 @@ class PlainEntityBehaviorGenerator extends PlainJavaBehaviorGenerator {
         val targetClassifier = action.target.type as Classifier
         if (targetClassifier.entity && !targetClassifier.findStateProperties.empty) {
             val stateMachine = targetClassifier.findStateProperties.head 
-            '''«action.target.generateAction».handleEvent(«action.target.toJavaType».«stateMachine.name.toFirstUpper»Event.«signalName»)'''
+            val generated = '''«action.target.generateAction».handleEvent(«action.target.toJavaType».«stateMachine.name.toFirstUpper»Event.«signalName»)'''
+            return generated
         }
+        return ''
     }   
 }    

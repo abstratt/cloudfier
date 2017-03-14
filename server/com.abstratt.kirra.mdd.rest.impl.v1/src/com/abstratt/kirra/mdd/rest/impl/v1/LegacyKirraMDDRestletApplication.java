@@ -67,7 +67,7 @@ public class LegacyKirraMDDRestletApplication extends Application {
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS, createRestlet(TestResource.class, false, true));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.TESTS + "/{testClassName}/{testCaseName}",
                 createRestlet(TestCaseRunnerResource.class, false, true, "tests"));
-        attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.SIGNUP, createRestlet(SignupResource.class, false, false));
+        attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.SIGNUP, createRestlet(SignupResource.class, false, true));
         attachTo(router, "/{workspace}/" + com.abstratt.mdd.frontend.web.Paths.PASSWORD_RESET,
                 createRestlet(PasswordResetResource.class, false, false));
         Restlet loginLogout = createRestlet(LoginLogoutResource.class, true, false);

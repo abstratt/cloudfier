@@ -80,10 +80,10 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
                         break;
                     ''' 
                 ]»
-                default : break; // unexpected events are silently ignored 
+                default : break; /* unexpected events are silently ignored */ 
             }
             «ELSE»
-            // this is a final state
+            /* this is a final state */
             «ENDIF»     
         }                       
         '''
@@ -156,18 +156,18 @@ class StateMachineGenerator extends BehaviorlessClassGenerator {
     def generateBaseMethods(StateMachine stateMachine, Class entity, Property stateAttribute) {
         '''
             void onEntry(«entity.name» instance) {
-                // no entry behavior by default
+                /* no entry behavior by default */
             }
             void onExit(«entity.name» instance) {
-                // no exit behavior by default
+                /* no exit behavior by default */
             }
             /** Each state implements handling of events. */
             abstract void handleEvent(«entity.name» instance, «stateMachine.name»Event event);
             /** 
-                Performs a transition.
-                @param instance the instance to update
-                @param newState the new state to transition to 
-            */
+             *  Performs a transition.
+             *  @param instance the instance to update
+             *  @param newState the new state to transition to 
+             */
             final void doTransitionTo(«entity.name» instance, «stateMachine.name» newState) {
                 instance.«stateAttribute.name».onExit(instance);
                 instance.«stateAttribute.name» = newState;

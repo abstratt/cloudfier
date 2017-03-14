@@ -3,6 +3,8 @@ package com.abstratt.kirra.mdd.rest;
 import java.util.Base64;
 import java.util.StringTokenizer;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
@@ -10,10 +12,11 @@ import org.restlet.data.ChallengeResponse;
 import org.restlet.data.ChallengeScheme;
 import org.restlet.data.CookieSetting;
 import org.restlet.data.Method;
-import org.restlet.data.Status;
 import org.restlet.engine.header.Header;
 import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.util.Series;
+
+import com.abstratt.kirra.rest.resources.ResourceHelper;
 
 public class KirraCookieAuthenticator extends CookieAuthenticator implements KirraAuthenticationContext {
 
@@ -97,7 +100,8 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     @Override
     protected int unauthenticated(Request request, Response response) {
     	super.unauthenticated(request, response);
-    	return LOGIN_REQUIRED.get() ? STOP : CONTINUE; 
+    	ResourceHelper.ensure(!PROTECTED.get() || !LOGIN_REQUIRED.get(), "Login required", Status.FORBIDDEN);
+    	return CONTINUE; 
     }
     @Override
     public boolean isOptional() {

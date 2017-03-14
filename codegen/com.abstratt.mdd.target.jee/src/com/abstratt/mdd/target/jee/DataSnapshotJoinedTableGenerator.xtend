@@ -75,11 +75,12 @@ class DataSnapshotJoinedTableGenerator extends DataSnapshotGenerator {
 	}	
 	
 	override def Iterable<String> generateAlterSequences(Map<String, AtomicLong> ids, String namespace, Map<String, Class> entities) {
-		return ids.entrySet.filter[!entities.get(it.key).superClasses.exists[it.entity]].map [ pair |
+		val generated = ids.entrySet.filter[!entities.get(it.key).superClasses.exists[it.entity]].map [ pair |
 			val entity = entities.get(pair.key)
 			val nextValue = pair.value.get + 1
-			'''«generateAlterSequenceStatement(namespace, entity, nextValue)»'''
+			'''«generateAlterSequenceStatement(applicationName, entity, nextValue)»'''
 		]
+		return generated
 	}
 	def private Set<Class> collectAllSuperClasses(Class current, Set<Class> collected) {
 		val superClasses = current.superClasses

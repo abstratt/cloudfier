@@ -149,23 +149,13 @@ public class KirraModelWeaver implements IModelWeaver {
 			if (kirraProfilePackage == null)
 				throw new IllegalStateException("No package for user profiles");
 			
-//			Package userProfilePackage = EcoreUtil.copy(kirraProfilePackage);
-//			repository.addTopLevelPackage(userProfilePackage, "userprofile", null);
-//			copyStereotypes(kirraProfilePackage, userProfilePackage);
 			Class profileClass = (Class) repository.findNamedElement("userprofile::Profile", UMLPackage.Literals.CLASS, null);
-//			profileClass.setName("Profile");
-//			profileClass.setVisibility(VisibilityKind.PUBLIC_LITERAL);
-//			profileClass.setIsAbstract(false);
 			
 			// if there are any role classes in this package, create relationships to the profile class
 			// (ignore role classes that specialize other role classes)
 			List<Class> nonDerivedRoleEntities = roleEntities.stream().filter(it -> !roleEntities.stream().anyMatch(other -> it != other && ClassifierUtils.isKindOf(it,  other))).collect(Collectors.toList());
 			nonDerivedRoleEntities.stream().forEach(roleClass -> {
-//				PackageUtils.importPackage(userProfilePackage, it.getNearestPackage()).setVisibility(VisibilityKind.PRIVATE_LITERAL);
 				PackageUtils.importPackage(roleClass.getNearestPackage(), kirraProfilePackage).setVisibility(VisibilityKind.PRIVATE_LITERAL);
-//				Property asRoleClass = profileClass.createOwnedAttribute(StringUtils.uncapitalize(it.getName()), it);
-//				asRoleClass.setIsReadOnly(true);
-//				asRoleClass.setLower(0);
 				
 				Property userProfile = roleClass.createOwnedAttribute(KirraMDDConstants.USER_PROFILE_ASSOCIATION_END, profileClass);
 				userProfile.setIsReadOnly(true);

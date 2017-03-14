@@ -8,8 +8,12 @@ class AllJEETests {
         val suite = new TestSuite(AllJEETests.getName())
         suite.addTestSuite(JPQLQueryActionGeneratorTests)
 		suite.addTestSuite(CriteriaQueryActionGeneratorTests)
+		suite.addTestSuite(JPAEntityGeneratorTests)
+		suite.addTestSuite(JPAServiceGeneratorTests)
+		suite.addTestSuite(JPAEntityBehaviorGenerationTests)
 		suite.addTestSuite(JPACriteriaServiceBehaviorGeneratorTests)
 		suite.addTestSuite(JAXRSAccessControlGeneratorTests)
+		suite.addTestSuite(DataFlowAnalyzerTests)
         return suite
     }     
 }

@@ -137,6 +137,8 @@
       <plugin id="org.eclipse.uml2.uml.profile.standard"/>
       <plugin id="org.eclipse.uml2.uml.resources"/>
       <plugin id="org.eclipse.xtext.xbase.lib"/>
+      <plugin id="org.eclipse.xtend.lib"/>
+      <plugin id="org.eclipse.xtend.lib.macro"/>
       <plugin id="org.hamcrest.core"/>
       <plugin id="org.json"/>
       <plugin id="org.junit"/>

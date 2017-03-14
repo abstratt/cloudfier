@@ -2,6 +2,8 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.core.util.AccessCapability
+import com.abstratt.mdd.core.util.MDDExtensionUtils
 import com.abstratt.mdd.core.util.MDDUtil
 import com.abstratt.mdd.target.base.DelegatingBehaviorGenerator
 import com.abstratt.mdd.target.base.IBehaviorGenerator
@@ -26,21 +28,19 @@ import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.Signal
 import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.uml2.uml.StructuredActivityNode
 import org.eclipse.uml2.uml.UMLPackage
 import org.eclipse.uml2.uml.VisibilityKind
 
 import static com.abstratt.mdd.target.jse.PlainJavaGenerator.*
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.mdd.core.util.AccessControlUtils.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import static extension com.abstratt.mdd.core.util.AccessControlUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
-import com.abstratt.mdd.core.util.AccessCapability
-import org.eclipse.uml2.uml.StructuredActivityNode
-import com.abstratt.mdd.core.util.MDDExtensionUtils
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -144,8 +144,6 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val sequenceAttributes = entity.properties.filter[sequence && !isInherited(entity)]
         val derivedRelationships = entity.entityRelationships.filter[relationshipDerived && !isInherited(entity)]
         val privateOperations = entity.operations.filter[!action && !finder && !isInherited(entity)]
-        val stateProperty = entity.findStateProperties.head
-        val stateMachine = stateProperty?.type as StateMachine
         val ports = entity.getAllAttributes().filter(typeof(Port)).filter[!isInherited(entity)]
         val signals = findTriggerableSignals(actionOperations)
         
@@ -211,16 +209,26 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
                     
                     «generateMany(privateOperations, [generatePrivateOperation])»
                 «ENDIF»
-                «IF stateMachine != null»
-                    /*************************** STATE MACHINE ********************/
-                    
-                    «stateMachineGenerator.generateStateMachine(stateMachine, entity)»
-                «ENDIF»
+                «generateStateMachine(entity)»
                 /*************************** PERMISSIONS ********************/
                 «generatePermissions(entity)»
                 
                 «entity.generateSuffix»
             }
+        '''
+    }
+    
+    def CharSequence generateStateMachine(Class entity) {
+        val stateProperty = entity.findStateProperties.head
+        val stateMachine = stateProperty?.type as StateMachine
+        if (stateMachine == null)
+            return ''
+        '''
+        «IF stateMachine != null»
+            /*************************** STATE MACHINE ********************/
+            
+            «stateMachineGenerator.generateStateMachine(stateMachine, entity)»
+        «ENDIF»
         '''
     }
     
@@ -301,9 +309,11 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         operation.generateOperation(VisibilityKind.PUBLIC_LITERAL)
     }
 
-    def generateAttributeInvariants(Property attribute) {
+    def CharSequence generateAttributeInvariants(Property attribute) {
         val constraints = attribute.findInvariantConstraints
-        constraints.map[generateAttributeInvariant(attribute, it)].join()
+        if (constraints.empty)
+            return ''
+        return constraints.map[generateAttributeInvariant(attribute, it)].join()
     }
     
     def generateAttributeInvariant(Property attribute, Constraint constraint) {
@@ -311,8 +321,10 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
             
             override generateAction(Action action, boolean delegate) {
                 if (action instanceof ReadStructuralFeatureAction && ((action as ReadStructuralFeatureAction).structuralFeature == attribute))
-                    '''new«attribute.name.toFirstUpper»'''      
-                else          
+                    // rewrite attribute references so they refer to the parameter holding the new value being set 
+                    '''new«attribute.name.toFirstUpper»'''
+                else
+                    // default behavior       
                     super.generateAction(action, false)
             }
             
@@ -321,6 +333,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         behaviorGenerator.runInContext(newContext, [
 	        '''
 	        if («generatePredicate(constraint, true)») {
+	            // invariant violated
 	            throw new «IF constraint.name?.length > 0»«constraint.name»Exception()«ELSE»ConstraintViolationException("«KirraHelper.getDescription(constraint).toLowerCase.toFirstUpper»")«ENDIF»;
 	        }
 	        '''
@@ -384,7 +397,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
 	def generateAttributeSetter(Property attribute) {
 		'''
         public void set«attribute.name.toFirstUpper»(«attribute.generateStaticModifier»«attribute.toJavaType» new«attribute.name.toFirstUpper») {
-            «generateAttributeInvariants(attribute)»            
+            «generateAttributeInvariants(attribute)»
             this.«generateAttributeNameAsJavaSymbol(attribute)» = new«attribute.name.toFirstUpper»;
         }
         '''
@@ -534,7 +547,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         
         val sourceStates = if (stateMachine != null) stateMachine.findStatesForCalling(actionOperation) else #[]
 		'''
-		public boolean is«actionOperation.name.toFirstUpper»Enabled() {
+		public boolean is«actionOperation.name.toFirstUpper»ActionEnabled() {
 			«IF sourceStates.size > 1»
 			if (!EnumSet.of(«sourceStates.generateMany([ '''«stateProperty.type.toJavaType».«name»''' ], ', ')»).contains(«stateProperty.generateAccessorName»())) {
 				return false;
@@ -649,7 +662,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val selfReference = predicateActivity.rootAction.findFirstMatchingAction([it instanceof ReadSelfAction]) != null
         val innerCore = '''
         if («generatePredicate(constraint, true)») {
-            throw new «if (constraint.name?.length > 0) constraint.name else 'ConstraintViolation'»Exception();
+            throw new «if (constraint.name?.length > 0) constraint.name else '''«applicationName».ConstraintViolation'''»Exception();
         }
         '''
         

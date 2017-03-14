@@ -4,15 +4,35 @@ import com.abstratt.mdd.core.tests.harness.AssertHelper
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import com.abstratt.mdd.target.tests.AbstractGeneratorTest
 
-class PlainEntityGeneratorTests extends AbstractGeneratorTest {
+class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
     
-    private def testBodyGeneration(CharSequence operation, CharSequence expected) {
+    protected def testBodyGeneration(CharSequence operation, CharSequence expected) {
         var source = '''
             model mymodel;
-                class MyClass
+            
+                association ManyMyClass1OneMyClass2
+                    role MyClass2.related1B;
+                    role MyClass1.optionalRelated1;
+                end;
+                
+                association ManyMyClass2OneMyClass1
+                    role MyClass2.related1C;
+                    role MyClass1.optionalRelated2;
+                end;
+                
+                class MyClass2
+                    attribute related1A : MyClass1[*];
+                    attribute related1B : MyClass1[*];
+                    attribute related1C : MyClass1[1];
+                end;
+            
+                class MyClass1
+                    reference related : MyClass2[1,1] opposite related1A;
+                    attribute optionalRelated1 : MyClass2[0,1];
+                    attribute optionalRelated2 : MyClass2[0,*];
                     derived attribute aDerivedAttribute : Integer := { 1 };
                     attribute anAttribute : Integer;
                     attribute anOptionalAttribute : Integer[0,1];
@@ -23,10 +43,14 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
             end.
          '''
         parseAndCheck(source)
-        val op1 = getOperation('mymodel::MyClass::op1') 
-        val generated = new PlainEntityGenerator(repository).generateOperationBody(op1)
+        val op1 = getOperation('mymodel::MyClass1::op1') 
+        val generated = (createEntityGenerator()).generateOperationBody(op1)
         AssertHelper.assertStringsEqual(
             expected.toString, generated.toString)
+    }
+    
+    protected def PlainEntityGenerator createEntityGenerator() {
+        new PlainEntityGenerator(repository)
     }    
 
     /** See #179 and related issues. */
@@ -56,7 +80,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
             '''
         )
     }
-
+    
     def testPrecondition_RequiredDerivedAttribute() {
         testBodyGeneration('''
             operation op1() 
@@ -261,13 +285,61 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
         )
     }
     
+
+    def testUnlink_Required() {
+        //TODO-RC shouldn't this be just prevented at compilation time?
+        val textuml = '''
+            operation op1();
+            begin
+                self.related := null;
+            end;
+            '''
+        val java = '''
+            if (this.related != null) {
+                this.related.removeFromRelated1A(this);
+                this.setRelated(null);
+            }
+            '''    
+        testBodyGeneration(textuml, java)
+    }
+    
+    def testUnlink_OptionalCurrent() {
+        testBodyGeneration('''
+        
+            operation op1();
+            begin
+                unlink ManyMyClass1OneMyClass2(related1B := self, optionalRelated1 := self.optionalRelated1);
+            end;
+            ''', 
+            '''
+            if (this.optionalRelated1 != null) {
+                this.optionalRelated1.removeFromRelated1B(this);
+                this.setOptionalRelated1(null);
+            }
+            '''
+        )
+    }
+
+    def testReplace_OptionalGiven() {
+        testBodyGeneration('''
+            operation op1(given : MyClass2);
+            begin
+                unlink ManyMyClass2OneMyClass1(related1C := self, optionalRelated2 := given);
+            end;
+            ''', 
+            '''
+            if (given != null) {
+                this.removeFromOptionalRelated2(given);
+                given.setRelated1C(null);
+            }
+            '''
+        )
+    }
+
       
-    /**
-     * See: #157.
-     */
     def testSafeQueryInvocation() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass[0,1]);
+            operation op1(val1 : MyClass1[0,1]);
             begin 
                 var result;
                 result := val1.aQuery();
@@ -277,7 +349,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testSafeActionInvocation() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass[0,1]);
+            operation op1(val1 : MyClass1[0,1]);
             begin
                 val1.anAction();
             end;
@@ -291,7 +363,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testAttributeRead() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass);
+            operation op1(val1 : MyClass1);
             begin
                 var result : Integer;
                 result := val1.anAttribute;
@@ -302,7 +374,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testAttributeReadOptionalValue() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass);
+            operation op1(val1 : MyClass1);
             begin
                 var result : Integer;
                 result := val1.anOptionalAttribute;
@@ -313,7 +385,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testAttributeRead_OptionalSink() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass);
+            operation op1(val1 : MyClass1);
             begin
                 var result : Integer[0,1];
                 result := val1.anAttribute;
@@ -324,7 +396,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testAttributeReadOptionalValue_OptionalSink() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass);
+            operation op1(val1 : MyClass1);
             begin
                 var result : Integer[0,1];
                 result := val1.anOptionalAttribute;
@@ -335,7 +407,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testAttributeWrite() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass);
+            operation op1(val1 : MyClass1);
             begin
                 val1.anAttribute := 1;
             end;
@@ -345,7 +417,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testAttributeWriteOptionalValue() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass);
+            operation op1(val1 : MyClass1);
             begin
                 val1.anAttribute := val1.anOptionalAttribute;
             end;
@@ -355,7 +427,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testSafeAttributeReadOptionalValue() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass[0,1]);
+            operation op1(val1 : MyClass1[0,1]);
             begin
                 var result : Integer;
                 result := val1.anOptionalAttribute;
@@ -366,7 +438,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testSafeAttributeReadRequiredValue() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass[0,1]);
+            operation op1(val1 : MyClass1[0,1]);
             begin
                 var result : Integer;
                 result := val1.anAttribute;
@@ -377,7 +449,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     }
     def testSafeAttributeWriteOptionalValue() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass[0,1]);
+            operation op1(val1 : MyClass1[0,1]);
             begin
                 val1.anAttribute := val1.anOptionalAttribute;
             end;
@@ -392,7 +464,7 @@ class PlainEntityGeneratorTests extends AbstractGeneratorTest {
     
     def testSafeAttributeWriteRequiredValue() {
         testBodyGeneration('''
-            operation op1(val1 : MyClass[0,1]);
+            operation op1(val1 : MyClass1[0,1]);
             begin
                 val1.anAttribute := 1;
             end;

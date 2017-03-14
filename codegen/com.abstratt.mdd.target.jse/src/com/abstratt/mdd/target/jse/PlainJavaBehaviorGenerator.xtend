@@ -122,7 +122,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     def generateLinkDestruction(CharSequence otherEndAction, Property thisEnd, CharSequence thisEndAction, Property otherEnd) {
     	val bothNavigable = thisEnd.navigable && otherEnd.navigable
     	val tmpVarRequired = bothNavigable && thisEnd.lowerBound == 1
-    	'''
+    	val thisEndExpression = if (tmpVarRequired) '''tmp«thisEnd.name.toFirstUpper»''' else thisEndAction
+    	val core = '''
     	«IF thisEnd.navigable»
     	«IF tmpVarRequired»
     	«otherEnd.type.toJavaType» tmp«thisEnd.name.toFirstUpper» = «otherEndAction».get«thisEnd.name.toFirstUpper»(); 
@@ -130,9 +131,16 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     	«generateLinkDestructionForOneEnd(otherEndAction, thisEnd, thisEndAction, otherEnd, bothNavigable)»
     	«ENDIF»
     	«IF otherEnd.navigable»
-    	«generateLinkDestructionForOneEnd(if (tmpVarRequired) '''tmp«thisEnd.name.toFirstUpper»''' else thisEndAction, otherEnd, otherEndAction, thisEnd, false)»
+    	«generateLinkDestructionForOneEnd(thisEndExpression, otherEnd, otherEndAction, thisEnd, false)»
     	«ENDIF»
     	'''
+    	
+    	val guardCondition = otherEndAction
+    	
+    	wrapAsSafeStatement(
+            guardCondition,
+            '''«core.trim»;'''
+        )
     }
     
     def generateLinkDestructionForOneEnd(CharSequence targetObject, Property thisEnd, CharSequence otherObject, Property otherEnd, boolean addSemiColon) {
@@ -226,11 +234,15 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             '''(«target» == null ? «defaultValue» : «core»)''' 
         }
         else 
-            '''
-            if («target» != null) {
-                «core»;
-            }
-            '''
+            wrapAsSafeStatement(target, '''«core»;''')
+    }
+    
+    def CharSequence wrapAsSafeStatement(CharSequence guardCondition, CharSequence guardedRegion) {
+        '''
+        if («guardCondition» != null) {
+            «guardedRegion»
+        }
+        '''
     }
     
     def OperatorFamily findOperatorFamily(Operation operation) {
@@ -347,6 +359,29 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         } else 
             core    
     }
+    
+    def private JavaExpression generateSafeComparisonExpression(JavaExpression op1, JavaExpression op2, boolean op1Optional, boolean op2Optional, boolean javaPrimitives, CharSequence primitiveComparisonOp) {
+        if (javaPrimitives && !op1Optional && !op2Optional)
+            return new BinaryOperatorExpression(op1, primitiveComparisonOp.toString(), op2) 
+        val core = '''«op1».compareTo(«op2») «primitiveComparisonOp» 0'''
+        if (op1Optional && op2Optional) {
+            new MultipleOperandExpression('&&', #[new BinaryOperatorExpression(op1, '!=', new OpaqueExpression('null')), new OpaqueExpression(core)])
+        } else if (op1Optional) {
+            new BinaryOperatorExpression(
+                new BinaryOperatorExpression(op1, '!=', new OpaqueExpression('null')),
+                '&&',
+                new OpaqueExpression(core)                
+            )
+        } else if (op2Optional) {
+            new BinaryOperatorExpression(
+                new BinaryOperatorExpression(op2, '!=', new OpaqueExpression('null')),
+                '&&',
+                new OpaqueExpression(core)                
+            )
+        } else 
+            new OpaqueExpression(core)
+    }
+    
 
     def CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
         val targetType = action.operationTarget
@@ -746,8 +781,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         // TODO - this is a temporary implementation
         val targetClassifier = action.target.type as Classifier
         if (targetClassifier.entity && !targetClassifier.findStateProperties.empty) {
-            val stateMachine = targetClassifier.findStateProperties.head 
-            '''«action.target.generateAction».handleEvent(«action.target.toJavaType».«stateMachine.name.toFirstUpper»Event.«signalName»)'''
+            val stateMachineProperty = targetClassifier.findStateProperties.head
+            val stateMachineType = stateMachineProperty.type
+            val generated = '''/*sendSignal*/«action.target.generateAction».handleEvent(«action.target.toJavaType».«stateMachineType.name.toFirstUpper»Event.«signalName»)'''
+            return generated
         } else 
             ''
     }
@@ -810,10 +847,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val core = '''«targetExpression».set«featureName.toFirstUpper»(«generateAction(value)»)'''
         val optionalTarget = target.lower == 0
         return if (optionalTarget)
-                '''
-                if («targetExpression» != null) {
-                     «core»;
-                }'''
+                wrapAsSafeStatement(targetExpression, '''«core»;''')
             else
                 core 
         

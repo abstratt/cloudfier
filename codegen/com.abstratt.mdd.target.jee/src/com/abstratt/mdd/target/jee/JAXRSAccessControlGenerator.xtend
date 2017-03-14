@@ -5,15 +5,12 @@ import com.abstratt.mdd.core.util.AccessCapability
 import com.abstratt.mdd.target.jse.AbstractGenerator
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
-import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.NamedElement
-
-import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
-import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import org.eclipse.uml2.uml.CallOperationAction
-import org.eclipse.uml2.uml.ReadSelfAction
-import java.util.Map
 import org.eclipse.uml2.uml.Operation
+
+import static extension com.abstratt.mdd.core.util.AccessControlUtils.*
+import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
+import java.util.Collection
 
 class JAXRSAccessControlGenerator extends AbstractGenerator {
 	
@@ -26,12 +23,15 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 	 * Generates an endpoint-level access control annotation for the required capability.
 	 */
 	def CharSequence generateEndpointAnnotation(AccessCapability requiredCapability,
-		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts) {
+		Collection<Class> allRoleClasses, Collection<NamedElement> accessConstraintContexts) {
 		if (allRoleClasses.empty)
 			// no role classes in this app
 			return '''@PermitAll'''
 			
-		val capabilitiesPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts).mapValues[it.keySet]
+		val capabilitiesPerRole = computeConstraintsPerRoleClass(
+		    allRoleClasses,
+		    accessConstraintContexts
+		).mapValues[it.keySet]
 		
 		if (capabilitiesPerRole.empty) {
 			// no access constraints
@@ -50,12 +50,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		'''
 	}
 	
-	def private boolean isAllTautologies(Map<? extends Classifier, Map<AccessCapability, Constraint>> constraintsPerRole, AccessCapability requiredCapability) {
-		val allTautologies = !constraintsPerRole.empty && constraintsPerRole.values.forall[it.get(requiredCapability)?.tautology]
-		return allTautologies
-	}
-	
-	def CharSequence generateSecurityContextParameter(Iterable<Class> allRoleClasses, AccessCapability requiredCapability, Iterable<NamedElement> accessConstraintContexts, CharSequence suffix) {
+	def CharSequence generateSecurityContextParameter(Collection<Class> allRoleClasses, AccessCapability requiredCapability, Collection<NamedElement> accessConstraintContexts, CharSequence suffix) {
 		val constraintsPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts)
 		// note that here we only care for constraints explicitly provided, we ignore those roles without constraints
 		if (!constraintsPerRole.isAllTautologies(requiredCapability))
@@ -65,12 +60,12 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 
 
 	def CharSequence generateInstanceAccessChecks(String current, AccessCapability requiredCapability,
-		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement) {
+		Collection<Class> allRoleClasses, Collection<NamedElement> accessConstraintContexts, CharSequence failStatement) {
 		generateAccessChecks(current, requiredCapability, allRoleClasses, accessConstraintContexts, failStatement, false)
 	}
 	
 	def CharSequence generateStaticAccessChecks(AccessCapability requiredCapability,
-		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
+		Collection<Class> allRoleClasses, Collection<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
 		generateAccessChecks(null, requiredCapability, allRoleClasses, accessConstraintContexts, failStatement, true)
 	}
 	
@@ -80,7 +75,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 	 * Ignores constraints that do not define a condition.  
 	 */
 	def CharSequence generateAccessChecks(String current, AccessCapability requiredCapability,
-		Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
+		Collection<Class> allRoleClasses, Collection<NamedElement> accessConstraintContexts, CharSequence failStatement, boolean exhaustive) {
 		val explicitConstraintsPerRole = computeConstraintsPerRoleClass(allRoleClasses, accessConstraintContexts)
 
 		if (explicitConstraintsPerRole.empty) {
@@ -137,27 +132,5 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 			// no further checks
 		}
 		'''
-	}
-
-	def Map<Classifier, Map<AccessCapability, Constraint>> computeConstraintsPerRoleClass(Iterable<Class> allRoleClasses, Iterable<NamedElement> accessConstraintContexts) {
-		val accessConstraintLayers = accessConstraintContexts.map[it.findConstraints.filter[access]]
-		val Map<Classifier, Map<AccessCapability, Constraint>> constraintsPerRole = newLinkedHashMap()
-		accessConstraintLayers.forEach [ layer |
-			layer.forEach [ constraint |
-				val applicableRoles = if (constraint.accessRoles.empty) allRoleClasses else constraint.accessRoles 
-				applicableRoles.forEach [ roleClass |
-					constraintsPerRole.remove(roleClass)
-					val constraintsByCapabilities = newLinkedHashMap()
-					constraintsPerRole.put(roleClass, constraintsByCapabilities)
-					constraint.allowedCapabilities.forEach [ capability |
-						constraintsByCapabilities.put(capability, constraint)
-						capability.getImplied(false).forEach[ implied |
-							constraintsByCapabilities.putIfAbsent(implied, constraint)
-						]
-					]
-				]
-			]
-		]
-		return constraintsPerRole
 	}
 }

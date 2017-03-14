@@ -20,9 +20,10 @@ import org.eclipse.core.runtime.CoreException;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.tests.mdd.runtime.AbstractKirraRestTests;
+import com.abstratt.kirra.tests.mdd.runtime.AbstractKirraRestV1Tests;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class InstancePerformanceTests extends AbstractKirraRestTests {
+public class InstancePerformanceTests extends AbstractKirraRestV1Tests {
 
     public InstancePerformanceTests(String name) {
         super(name);

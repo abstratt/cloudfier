@@ -7,11 +7,13 @@ import mdd_types;
 class Profile
     (* Often an email address *)
     readonly id attribute username : String;
-    attribute password : String;
-    static query findByUsernameAndPassword(username : String, password : String) : Profile[*];
+    private attribute password : String;
+/*
+    private static query findByUsernameAndPassword(username : String, password : String) : Profile[*];
     begin
         return Profile extent.select((u : Profile) : Boolean { (u.username = username) and (u.password = password) });
     end;
+*/    
 end;
 
 end.

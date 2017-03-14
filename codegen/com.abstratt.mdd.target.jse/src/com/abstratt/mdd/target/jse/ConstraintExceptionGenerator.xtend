@@ -11,7 +11,7 @@ class ConstraintExceptionGenerator extends BehaviorlessClassGenerator {
     
     def generateConstraintException(Constraint constraint) {
         '''
-        package «constraint.packagePrefix»;
+        package «applicationName»;
         
         public class «constraint.name»Exception extends ConstraintViolationException {
             private static final long serialVersionUID = 1L;

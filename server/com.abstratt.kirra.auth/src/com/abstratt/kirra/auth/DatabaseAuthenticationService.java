@@ -1,6 +1,8 @@
 package com.abstratt.kirra.auth;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -9,6 +11,8 @@ import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Repository;
+import com.abstratt.kirra.TypeRef;
+import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.resman.ResourceManager;
 
 /**
@@ -19,29 +23,60 @@ public class DatabaseAuthenticationService implements AuthenticationService {
 
 	@Override
 	public boolean authenticate(String username, String password) {
-		Repository repository = ResourceManager.getCurrentResourceManager().getCurrentResource().getFeature(Repository.class);
-		List<Entity> userDataEntities = repository.getAllEntities().stream().filter(e -> e.isUser()).collect(Collectors.toList());
-		List<Operation> finders = userDataEntities.stream().map(e -> e.getOperation("findByUsernameAndPassword")).filter(it -> it != null).collect(Collectors.toList());
-		List<Instance> results = new LinkedList<>();
-		List<Instance> allInstances = repository.getInstances("userprofile", "Profile", false);
-		if (!allInstances.isEmpty()) {
-			System.out.println("Not empty!");
-		}
-		finders.forEach(finder -> repository.executeOperation(finder, null, Arrays.asList(username, password)).forEach(match -> results.add((Instance) match)));
-		if (results.size() != 1)	
-			return false;
-		return true;
+		Instance found = findUser(username, password);
+		return found != null;
+	}
+
+	private Instance findUser(String username, String password) {
+		Repository repository = getRepository();
+		Entity userEntity = getUserEntity(repository);
+		if (userEntity == null)
+			return null;
+		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "Profile", false);
+		if (!found.isEmpty() && password.equals(found.get(0).getValue("password")))
+			return found.get(0);
+		return null;
+	}
+	
+	@Override
+	public List<String> getRoleNames(String username) {
+		Repository repository = getRepository();
+		Entity userEntity = getUserEntity(repository);
+		if (userEntity == null)
+			return null;
+		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "Profile", false);
+		if (found.isEmpty())
+			return Collections.emptyList();
+		Instance profile = found.get(0);
+		Collection<Entity> roleEntities = repository.getRoleEntities();
+		return roleEntities.stream()
+				.filter(role -> profile.getValue("roleAs" + role.getName()) != null)
+				.map(role -> role.getTypeRef().getFullName())
+				.collect(Collectors.toList());
+	}
+
+	private Entity getUserEntity(Repository repository) {
+		Entity userEntity = repository.getEntity(new TypeRef("userprofile", "Profile", TypeKind.Entity));
+		return userEntity;
+	}
+
+	private Repository getRepository() {
+		return ResourceManager.getCurrentResourceManager().getCurrentResource().getFeature(Repository.class);
 	}
 
 	@Override
 	public boolean createUser(String username, String password) {
-		// TODO Auto-generated method stub
-		return false;
+		Repository repository = getRepository();
+		Entity userEntity = getUserEntity(repository);
+		Instance newUser = new Instance(userEntity.getTypeRef(), null);
+		newUser.setValue("username", username);
+		newUser.setValue("password", password);
+		Instance createdUser = repository.createInstance(newUser);
+		return true;
 	}
 
 	@Override
 	public boolean resetPassword(String username) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

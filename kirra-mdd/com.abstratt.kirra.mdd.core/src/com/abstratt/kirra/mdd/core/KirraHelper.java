@@ -275,13 +275,20 @@ public class KirraHelper {
         return false;
     }
     
+    @Deprecated
+    // use getUserClass instead
     public static Collection<Class> getUserClasses() {
+    	Class userClass = getUserClass();
+    	return userClass != null ? Arrays.asList(userClass) : Collections.emptyList();
+    }
+    
+    public static Class getUserClass() {
     	IRepository mddRepository = RepositoryService.DEFAULT.getCurrentResource().getFeature(IRepository.class);
-    	return get(mddRepository.getBaseURI().toString(), "getUserClasses", new Callable<Collection<Class>>() {
+    	return get(mddRepository.getBaseURI().toString(), "getUserClass", new Callable<Class>() {
             @Override
-            public Collection<Class> call() throws Exception {
+            public Class call() throws Exception {
             	Class userProfileClass = mddRepository.findNamedElement("userprofile::Profile", UMLPackage.Literals.CLASS, null);
-            	return Arrays.asList(userProfileClass);
+            	return userProfileClass;
             }
         });
     }
@@ -984,6 +991,10 @@ public class KirraHelper {
                 if (KirraHelper.isEntity(type))
                     result.add((Class) type);
         return result;
+    }
+    
+    public static List<Class> getRoleEntities(Collection<Package> applicationPackages) {
+        return getEntities(applicationPackages).stream().filter(e -> isRole(e)).collect(Collectors.toList());
     }
     
     public static List<Class> getServices(Collection<Package> applicationPackages) {

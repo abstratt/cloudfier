@@ -28,7 +28,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
     def generateResource(Class entity) {
         val typeRef = entity.convertType
         val entityFullName = typeRef.fullName
-        val allRoleClasses = appPackages.entities.filter[ role ]
+        val allRoleClasses = appPackages.entities.filter[ role ].toList
         val entityRelationships = entity.entityRelationships
         
         val accessControlGenerator = new JAXRSAccessControlGenerator(repository)

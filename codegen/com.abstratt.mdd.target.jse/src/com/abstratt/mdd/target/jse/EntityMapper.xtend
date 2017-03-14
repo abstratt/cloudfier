@@ -54,9 +54,8 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name»Event.java'''.toString
     }
     
-    def generateConstraintExceptionFileName(Constraint constraint) {
-        val namespace = constraint.nearestPackage
-        '''src/main/java/«namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«constraint.name»Exception.java'''.toString
+    def generateConstraintExceptionFileName(String applicationPackageName, Constraint constraint) {
+        '''src/main/java/«applicationPackageName»/«constraint.name»Exception.java'''.toString
     }
 
     def generateServiceFileName(Classifier classifier) {
@@ -102,7 +101,7 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
         val preconditions = appPackages.entities.map[allOperations.filter[!query].map[ownedRules.filter[name != null]].flatten].flatten
         val constraints = invariants + preconditions
         val constraintExceptionGenerator = new ConstraintExceptionGenerator(repository)
-        result.putAll(constraints.toMap[generateConstraintExceptionFileName].mapValues[constraintExceptionGenerator.generateConstraintException(it)])
+        result.putAll(constraints.toMap[generateConstraintExceptionFileName(applicationName, it)].mapValues[constraintExceptionGenerator.generateConstraintException(it)])
         
         val templates = #{
         	'''src/main/java/«applicationName»/ConstraintViolationException.java'''.toString -> "/templates/src/main/java/application/ConstraintViolationException.java"

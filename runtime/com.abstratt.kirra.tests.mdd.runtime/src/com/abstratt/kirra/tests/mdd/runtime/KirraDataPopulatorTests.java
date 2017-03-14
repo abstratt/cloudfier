@@ -32,16 +32,16 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         KirraDataPopulatorTests.accountModel += "  attribute number : String[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  attribute balance : Double[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  attribute status : Status[0,1];\n";
-        KirraDataPopulatorTests.accountModel += "  attribute owner : Person[0,1];\n";
+        KirraDataPopulatorTests.accountModel += "  readonly attribute owner : Person[0,1];\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
         KirraDataPopulatorTests.accountModel += "association AccountOwner\n";
         KirraDataPopulatorTests.accountModel += "  role Account.owner;\n";
         KirraDataPopulatorTests.accountModel += "  role Person.accounts;\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
-        KirraDataPopulatorTests.accountModel += "class Person\n";
+        KirraDataPopulatorTests.accountModel += "role class Person\n";
         KirraDataPopulatorTests.accountModel += "  attribute employer: Company[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  attribute name : String;\n";
-        KirraDataPopulatorTests.accountModel += "  attribute accounts : Account[*];\n";
+        KirraDataPopulatorTests.accountModel += "  readonly attribute accounts : Account[*];\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
         KirraDataPopulatorTests.accountModel += "class Company\n";
         KirraDataPopulatorTests.accountModel += "  attribute name : String;\n";
@@ -168,6 +168,7 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("Mary", accounts.get("ABC").getSingleRelated("owner").getValue("name"));
         TestCase.assertEquals("Mary", accounts.get("DEF").getSingleRelated("owner").getValue("name"));
     }
+    
 
     public void testGraph_WithCycle() throws CoreException {
         parseAndCheck(KirraDataPopulatorTests.accountModel);

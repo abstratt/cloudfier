@@ -4,9 +4,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.Action;
@@ -30,9 +34,11 @@ import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BuiltInMetaClass;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
+import com.abstratt.mdd.core.util.TypeUtils;
 import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.pluginutils.LogUtils;
@@ -132,10 +138,31 @@ public class Runtime {
 		return currentActor;
     }
     
+    public List<RuntimeObject> getRolesForActor(RuntimeObject actor) {
+    	if (actor == null)
+    		return Collections.emptyList();
+    	Classifier actorClass = actor.getRuntimeClass().getModelClassifier();
+    	
+    	// role classes are those 
+    	Collection<Class> roleClasses = actorClass.getAssociations().stream()
+    			.flatMap(association -> association.getOwnedEnds().stream())
+				.filter(end -> MDDExtensionUtils.isRoleClass(end.getType()))
+				.map(end -> (Classifier) end.getType())
+				.flatMap(roleClass -> Stream.concat(Stream.of(roleClass), ClassifierUtils.findAllSpecifics(repository, roleClass).stream()))
+				.map(it -> (Class) it)
+				.collect(Collectors.toCollection(() -> new LinkedHashSet<>()));
+    	
+    	Collection<RuntimeObject> roles = roleClasses.stream().map(roleClass -> getRoleForActor(actor, roleClass)).filter(it -> it != null).collect(Collectors.toList());
+    	List<RuntimeObject> result = roles.stream().collect(Collectors.toList());
+		return result;
+    }
+    
     public RuntimeObject getRoleForActor(RuntimeObject actor, Classifier roleClass) {
     	Property userProperty = FeatureUtils.findAttribute(roleClass, "userProfile", false, true);
     	Map<Property, List<BasicType>> criteria = Collections.singletonMap(userProperty, Arrays.asList(actor));
-    	return context.getRuntime().getRuntimeClass(roleClass).findOneInstance(criteria);
+    	RuntimeClass runtimeRoleClass = context.getRuntime().getRuntimeClass(roleClass);
+		RuntimeObject role = runtimeRoleClass.findOneInstance(criteria);
+		return role;
     }
     
     public ActorSelector getActorSelector() {

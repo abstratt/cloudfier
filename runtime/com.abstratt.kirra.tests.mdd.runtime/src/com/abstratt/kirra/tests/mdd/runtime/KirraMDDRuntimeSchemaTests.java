@@ -106,14 +106,15 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         source += "package mypackage;\n";
         source += "import datatypes;\n";
         source += "apply kirra;\n";
-        source += "role class MyUserClass attribute singleAttribute : Integer; end;\n";
+        source += "role class MyUserClass1 attribute singleAttribute : Integer; end;\n";
+        source += "role class MyUserClass2 attribute singleAttribute : Integer; end;\n";        
         source += "class MyClass attribute singleAttribute : Integer; end;\n";
         source += "end.";
         parseAndCheck(KirraMDDRuntimeSchemaTests.library, source);
         Repository kirra = getKirra();
 
         List<Entity> entities = kirra.getEntities("mypackage");
-        TestCase.assertEquals(2, entities.size());
+        TestCase.assertEquals(3, entities.size());
 
         // ensure order by entity name for ease of testing
         sortNamedElements(entities);
@@ -122,12 +123,18 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("MyClass", entities.get(0).getName());
 
         TestCase.assertEquals("mypackage", entities.get(1).getEntityNamespace());
-        TestCase.assertEquals("MyUserClass", entities.get(1).getName());
+        TestCase.assertEquals("MyUserClass1", entities.get(1).getName());
+
+        TestCase.assertEquals("mypackage", entities.get(2).getEntityNamespace());
+        TestCase.assertEquals("MyUserClass2", entities.get(2).getName());
         
-        kirra.getEntity("mypackage", "MyUserClass");
+        kirra.getEntity("mypackage", "MyUserClass1");
         kirra.getEntity("mypackage", "MyClass");
         Entity userData = kirra.getEntity("userprofile", "Profile");
         assertTrue(userData.isUserVisible());
+        
+        List<Relationship> relationships = userData.getRelationships();
+        assertTrue(!relationships.isEmpty());
     }
 
     public void testEntityAggregationRelationships() throws CoreException {

@@ -18,7 +18,8 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         class Class1
             attribute attr1 : String;
             attribute attr2 : StateMachine1;
-            attribute attr3 : Integer[0,1] invariant { (self.attr3 > 0) };
+            attribute attr3 : Integer invariant { (self.attr3 > 0) };
+            attribute attr4 : Integer[0,1] invariant { (self.attr4 > 0) };
             operation op1();
             private operation op2();
             statemachine StateMachine1
@@ -49,8 +50,8 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         val generated = new JPAEntityGenerator(repository).generateAttributeSetter(attr3)
         AssertHelper.assertStringsEqual(
         '''
-        public void setAttr3(Long newAttr3) {
-            if ((newAttr3 != null) && !(newAttr3 > 0L)) {
+        public void setAttr3(long newAttr3) {
+            if (!(newAttr3 > 0L)) {
                 throw new ConstraintViolationException("");
             }
             this.attr3 = newAttr3;
@@ -58,7 +59,26 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         ''', generated.toString)
         
     }
-
+    
+    @Test
+    def void testEntityGeneration_setterConstraint_NullableAttribute() {
+        buildModel()
+        val attr4 = getProperty('pack1::Class1::attr4')
+        
+        val generated = new JPAEntityGenerator(repository).generateAttributeSetter(attr4)
+        AssertHelper.assertStringsEqual(
+        '''
+        public void setAttr4(Long newAttr4) {
+            if (newAttr4 != null) {
+                if (!(newAttr4 != null && newAttr4.compareTo(0L) > 0)) {                
+                    throw new ConstraintViolationException("");
+                }
+            }
+            this.attr4 = newAttr4;
+        }
+        ''', generated.toString)
+    }
+    
     @Test
     def void testEntityGeneration_customClassName() {
         val settings = createDefaultSettings()
@@ -115,6 +135,20 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         '''
         private void op2() {
             this.handleEvent(StateMachine1Event.Op2);
+        }
+        ''', generated.toString)
+    }
+    
+    @Test
+    def void testStateMachineGeneration() {
+        buildModel()
+        val op1 = getOperation('pack1::Class1::op1')
+        
+        val generated = new JPAEntityGenerator(repository).generateOperation(op1)
+        AssertHelper.assertStringsEqual(
+        '''
+        public void op1() {
+            this.handleEvent(StateMachine1Event.Op1);
         }
         ''', generated.toString)
     }

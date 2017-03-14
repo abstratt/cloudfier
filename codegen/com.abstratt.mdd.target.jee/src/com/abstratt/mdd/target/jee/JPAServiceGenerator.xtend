@@ -89,7 +89,8 @@ class JPAServiceGenerator extends ServiceGenerator {
     }
 
     override generateServiceOperation(Operation serviceOperation) {
-        behaviorGenerator.generateJavaMethod(serviceOperation, serviceOperation.visibility, false)
+        val visibility = if (serviceOperation.visibility == VisibilityKind.PUBLIC_LITERAL) VisibilityKind.PUBLIC_LITERAL else VisibilityKind.PACKAGE_LITERAL
+        behaviorGenerator.generateJavaMethod(serviceOperation, visibility, false)
     }
 
     override generateStandardImports() {

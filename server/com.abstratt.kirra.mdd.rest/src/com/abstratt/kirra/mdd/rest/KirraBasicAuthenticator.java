@@ -1,10 +1,15 @@
 package com.abstratt.kirra.mdd.rest;
 
+import javax.ws.rs.core.Response.Status;
+
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
+import org.restlet.representation.StringRepresentation;
 import org.restlet.security.ChallengeAuthenticator;
+
+import com.abstratt.kirra.rest.resources.ResourceHelper;
 
 public class KirraBasicAuthenticator extends ChallengeAuthenticator implements KirraAuthenticationContext {
 
@@ -31,6 +36,7 @@ public class KirraBasicAuthenticator extends ChallengeAuthenticator implements K
     @Override
     protected int unauthenticated(Request request, Response response) {
     	super.unauthenticated(request, response);
-    	return LOGIN_REQUIRED.get() ? STOP : CONTINUE; 
+    	ResourceHelper.ensure(!PROTECTED.get() || !LOGIN_REQUIRED.get(), "Login required", Status.FORBIDDEN);
+    	return CONTINUE; 
     }
 }

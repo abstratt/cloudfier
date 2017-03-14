@@ -115,7 +115,7 @@ class JAXRSSerializationGenerator extends BehaviorlessClassGenerator {
                 if (features.contains(Feature.ActionEnablement)) {
                     Map<String, String> disabledActions = new LinkedHashMap<>();
                     «FOR action : instanceActions»
-                        if (!toRender.is«action.name.toFirstUpper»Enabled())
+                        if (!toRender.is«action.name.toFirstUpper»ActionEnabled())
                             disabledActions.put("«action.name»", "");
                     «ENDFOR»
                     result.put("disabledActions", disabledActions);

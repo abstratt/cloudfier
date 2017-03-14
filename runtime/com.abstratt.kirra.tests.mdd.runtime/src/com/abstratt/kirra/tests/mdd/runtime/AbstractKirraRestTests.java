@@ -19,7 +19,7 @@ import com.abstratt.mdd.frontend.web.BuildDirectoryUtils;
 import com.abstratt.mdd.frontend.web.tests.RestHelper;
 import com.fasterxml.jackson.databind.JsonNode;
 
-public class AbstractKirraRestTests extends AbstractRepositoryTests {
+public abstract class AbstractKirraRestTests extends AbstractRepositoryTests {
 
     protected RestHelper restHelper;
 
@@ -87,20 +87,6 @@ public class AbstractKirraRestTests extends AbstractRepositoryTests {
         return restHelper.getApiUri();
     }
 
-    protected void login(String username, String password) throws HttpException, IOException {
-        URI sessionURI = getWorkspaceURI();
-        PostMethod loginMethod = new PostMethod(sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.LOGIN).toString());
-        loginMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
-                "application/x-www-form-urlencoded", "UTF-8"));
-        restHelper.executeMethod(204, loginMethod);
-    }
-
-    protected void logout() throws HttpException, IOException {
-        URI sessionURI = getWorkspaceURI();
-        PostMethod logoutMethod = new PostMethod(sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.LOGOUT).toString());
-        restHelper.executeMethod(200, logoutMethod);
-    }
-
     @Override
     protected void setUp() throws Exception {
         super.setUp();
@@ -111,13 +97,12 @@ public class AbstractKirraRestTests extends AbstractRepositoryTests {
         signUp(username, password, 204);
     }
 
-    protected void signUp(String username, String password, int expected) throws HttpException, IOException {
-        URI sessionURI = getWorkspaceURI();
-        PostMethod signUpMethod = new PostMethod(sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.SIGNUP).toString());
-        signUpMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
-                "application/x-www-form-urlencoded", "UTF-8"));
-        restHelper.executeMethod(expected, signUpMethod);
-    }
+    protected abstract void signUp(String username, String password, int expected) throws HttpException, IOException;
+    
+    protected abstract void login(String username, String password) throws HttpException, IOException;
+
+    protected abstract void logout() throws HttpException, IOException;
+    
 
     @Override
     protected void tearDown() throws Exception {

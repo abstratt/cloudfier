@@ -2,9 +2,11 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import org.eclipse.uml2.uml.Class
-import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Operation
+
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import org.eclipse.uml2.uml.VisibilityKind
 
 class ServiceGenerator extends PlainEntityGenerator {
     
@@ -66,6 +68,7 @@ class ServiceGenerator extends PlainEntityGenerator {
     }
     
     def generateServiceOperation(Operation serviceOperation) {
-        serviceOperation.generateJavaMethod(serviceOperation.visibility, false)
+        val visibility = if (serviceOperation.visibility == VisibilityKind.PUBLIC_LITERAL) VisibilityKind.PUBLIC_LITERAL else VisibilityKind.PACKAGE_LITERAL 
+        serviceOperation.generateJavaMethod(visibility, false)
     }
 }

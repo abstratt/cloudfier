@@ -1,8 +1,10 @@
 package com.abstratt.mdd.target.jee
 
+import com.abstratt.kirra.InstanceRef
 import com.abstratt.kirra.NamedElement
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil
 import com.fasterxml.jackson.core.JsonFactory
@@ -25,6 +27,7 @@ import java.io.Reader
 import java.io.StringWriter
 import java.util.List
 import java.util.Map
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.concurrent.atomic.AtomicLong
 import org.apache.commons.io.IOUtils
 import org.eclipse.uml2.uml.Activity
@@ -47,9 +50,6 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.isVertexLiteral
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.resolveVertexLiteral
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import java.util.concurrent.atomic.AtomicInteger
-import com.abstratt.kirra.InstanceRef
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 
 abstract class DataSnapshotGenerator extends AbstractGenerator {
     protected Map<String, Long> idMapping = newLinkedHashMap()
@@ -80,7 +80,8 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 		}
 		val jsonTree = parse(new InputStreamReader(new ByteArrayInputStream(contents.toByteArray))) as ObjectNode
 		
-		generateContents(jsonTree)
+		val generated = generateContents(jsonTree)
+        generated
 	}
 
 	def CharSequence generateContents(ObjectNode root) {
@@ -136,23 +137,23 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 	
 	def Iterable<CharSequence> generateNamespace(Map<String, Class> entities, Map<String, AtomicLong> ids,
 		String namespace, ObjectNode namespaceContents) {
-	    val defaultNamespace = entities.values.filter[it | !KirraHelper.isUser(it)].head.namespace.name
 		val inserts = generateDataInserts(namespaceContents, entities, namespace)
-		val alterSequences = generateAlterSequences(ids, defaultNamespace, entities)
+		val alterSequences = generateAlterSequences(ids, namespace, entities)
 		return inserts + alterSequences
 	}
 
 	def Iterable<String> generateAlterSequences(Map<String, AtomicLong> ids, String namespace, Map<String, Class> entities) {
-		return ids.entrySet.map [ pair |
+		val generated = ids.entrySet.map [ pair |
 			val entity = entities.get(pair.key)
 			val nextValue = pair.value.get + 1
-			'''«generateAlterSequenceStatement(namespace, entity, nextValue)»'''
+			'''«generateAlterSequenceStatement(applicationName, entity, nextValue)»'''
 		]
+		return generated
 	}
 	
-	def generateAlterSequenceStatement(String namespace, Class entity, long nextValue) {
+	def generateAlterSequenceStatement(String schemaName, Class entity, long nextValue) {
 		'''
-			ALTER SEQUENCE «namespace».«entity.name.toLowerCase»_id_seq RESTART WITH «nextValue»;
+			ALTER SEQUENCE «schemaName».«entity.name.toLowerCase»_id_seq RESTART WITH «nextValue»;
 		'''
 	}
 	
@@ -199,8 +200,6 @@ abstract class DataSnapshotGenerator extends AbstractGenerator {
 		sqlForeignKeys.
 			forEach[key, value|sqlValues.put(key + '_id', value)]
 			
-		val applicationName = KirraHelper.getApplicationName(repository)
-		
 		val columns = sqlValues.keySet
 		val values = sqlValues.keySet.map[sqlValues.get(it)] 
 		

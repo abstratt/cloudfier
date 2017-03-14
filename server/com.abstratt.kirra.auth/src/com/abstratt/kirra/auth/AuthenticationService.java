@@ -1,5 +1,7 @@
 package com.abstratt.kirra.auth;
 
+import java.util.List;
+
 public interface AuthenticationService {
     /**
      * Validates the given username/password combination.
@@ -20,4 +22,8 @@ public interface AuthenticationService {
     public boolean createUser(String username, String password);
 
     public boolean resetPassword(String username);
+    
+    public default List<String> getRoleNames(String username) {
+    	throw new UnsupportedOperationException();
+    }
 }

@@ -111,7 +111,9 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
             }
             nodeCriteria.put(entry.getKey().getName(), values);
         }
-        Collection<RuntimeObject> runtimeObjects = nodesToRuntimeObjects(getNodeStore().filter(nodeCriteria, limit));
+        INodeStore nodeStore = getNodeStore();
+		Collection<INodeKey> filtered = nodeStore.filter(nodeCriteria, limit);
+		Collection<RuntimeObject> runtimeObjects = nodesToRuntimeObjects(filtered);
         return runtimeObjects;
     }
     
@@ -140,6 +142,8 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     public INodeStore getNodeStore() {
         String storeName = getNodeStoreName();
         INodeStore nodeStore = getNodeStoreCatalog().getStore(storeName);
+        if (nodeStore == null)
+        	throw new IllegalStateException("No node store for " + storeName);
         return nodeStore;
     }
 

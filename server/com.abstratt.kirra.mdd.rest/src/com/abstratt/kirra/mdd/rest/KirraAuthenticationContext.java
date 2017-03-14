@@ -1,10 +1,7 @@
 package com.abstratt.kirra.mdd.rest;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.restlet.Request;
@@ -41,7 +38,7 @@ public interface KirraAuthenticationContext {
      */
     ThreadLocal<String> WORKSPACE_NAME = new ThreadLocal<String>();
     
-    static String[] PROTECTED_PATHS = { Paths.INSTANCES, Paths.FINDERS, Paths.LOGOUT, Paths.LOGIN };
+    static String[] PROTECTED_PATHS = { Paths.INSTANCES, Paths.FINDERS, Paths.SESSION, Paths.LOGOUT, Paths.LOGIN, Paths.SIGNUP };
     
     default void configure(Request request) {
     	IPath path = new Path(request.getResourceRef().getRemainingPart(true, false)).makeRelative();

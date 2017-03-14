@@ -18,6 +18,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.CoreException;
+import org.junit.Assert;
 import org.osgi.framework.ServiceRegistration;
 
 import com.abstratt.kirra.Instance;
@@ -37,6 +38,9 @@ import com.fasterxml.jackson.databind.node.TextNode;
 
 import junit.framework.TestCase;
 
+/**
+ * Tests for the Kirra-MDD-based REST API.
+ */
 public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
 
     Map<String, String> authorized = new HashMap<String, String>();
@@ -51,13 +55,10 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     
     @Override
     protected URI getWorkspaceURI() throws IOException, HttpException {
-    	URI workspaceURI = URI.create("http://localhost" + WebFrontEnd.APP_API2_PATH + "/");
+		URI workspaceURI = URI.create("http://localhost" + WebFrontEnd.APP_API2_PATH + "/");
 		return workspaceURI;
     }
     
-    @Override
-    protected void login(String username, String password) throws HttpException, IOException {
-    }
 
     public void testCreateInstance() throws CoreException, IOException {
         String model = "";
@@ -77,16 +78,15 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
-
-        GetMethod getTemplateInstance = new GetMethod(sessionURI.resolve(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName())).toString());
+        String templateUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", "mypackage.MyClass1"));
+		GetMethod getTemplateInstance = new GetMethod(templateUri);
 
         ObjectNode template = (ObjectNode) executeJsonMethod(200, getTemplateInstance);
 
         ((ObjectNode) template.get("values")).put("attr1", "foo");
         ((ObjectNode) template.get("values")).put("attr3", 100);
         ((ObjectNode) template.get("values")).put("attr4", (String) null);
-        PostMethod createMethod = new PostMethod(sessionURI.resolve(Paths.INSTANCES_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName())).toString());
+        PostMethod createMethod = new PostMethod(resolveApplicationURI(Paths.INSTANCES_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName())));
         createMethod.setRequestEntity(new StringRequestEntity(template.toString(), "application/json", "UTF-8"));
 
         ObjectNode created = (ObjectNode) executeJsonMethod(201, createMethod);
@@ -117,9 +117,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
 
-        URI sessionURI = getWorkspaceURI();
-        
-        URI entityUri = sessionURI.resolve(Paths.ENTITY_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName()));
+        String entityUri = resolveApplicationURI(Paths.ENTITY_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName()));
         GetMethod getEntity = new GetMethod(entityUri.toString());
         executeMethod(200, getEntity);
 
@@ -143,10 +141,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
         
-        URI sessionURI = getWorkspaceURI();
-        URI entitiesUri = sessionURI.resolve(Paths.ENTITIES_PATH.replace("{application}", getName()));
-        
-        GetMethod getDomainTypes = new GetMethod(entitiesUri.toASCIIString());
+        GetMethod getDomainTypes = new GetMethod(resolveApplicationURI(Paths.ENTITIES_PATH.replace("{application}", getName())));
         executeMethod(200, getDomainTypes);
 
         ArrayNode entities = (ArrayNode) JsonHelper.parse(new InputStreamReader(getDomainTypes.getResponseBodyAsStream()));
@@ -181,7 +176,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
 
         Instance created = RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Instance>() {
             @Override
@@ -196,7 +190,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         });
         
         ObjectNode jsonInstance = executeJsonMethod(200,
-                new GetMethod(sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.getObjectId()).replace("{application}", getName())).toString()));
+                new GetMethod(resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.getObjectId()).replace("{application}", getName()))));
 
         TestCase.assertNotNull(jsonInstance.get("uri"));
         executeMethod(200, new GetMethod(jsonInstance.get("uri").toString()));
@@ -231,8 +225,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
             }
         });
 
-        URI sessionURI = getWorkspaceURI();
-        URI instanceListUri = sessionURI.resolve(Paths.INSTANCES_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName()));
+        String instanceListUri = resolveApplicationURI(Paths.INSTANCES_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName()));
 
         GetMethod getInstances = new GetMethod(instanceListUri.toString());
         executeMethod(200, getInstances);
@@ -250,10 +243,9 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
 
     public void testUpdateInstance() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
-                new GetMethod(sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName())).toString()));
+                new GetMethod(resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()))));
         
         ((ObjectNode) jsonInstance1.get("values")).set("attr1", new TextNode("value 1a"));
         ((ObjectNode) jsonInstance1.get("values")).set("attr2", new TextNode("value 2a"));
@@ -273,10 +265,9 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     
     public void testUpdateInstance_ClearValue() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
 
         ObjectNode jsonInstance1 = executeJsonMethod(200,
-                new GetMethod(sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName())).toString()));
+                new GetMethod(resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()))));
         
         ((ObjectNode) jsonInstance1.get("values")).set("attr1", new TextNode(""));
 
@@ -293,9 +284,8 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     
     public void testUpdateInstance_SetLink() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
-        URI uri1 = sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", created.get(0).getTypeRef().getFullName()).replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
-        URI uri2 = sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", created.get(1).getTypeRef().getFullName()).replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));        
+        String uri1 = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", created.get(0).getTypeRef().getFullName()).replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
+        String uri2 = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", created.get(1).getTypeRef().getFullName()).replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));        
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
                 new GetMethod(uri1.toString()));
@@ -323,9 +313,8 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     
     public void testUpdateInstance_UnsetLink() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
-        URI uri1 = sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", created.get(0).getTypeRef().getFullName()).replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
-        URI uri2 = sessionURI.resolve(Paths.INSTANCE_PATH.replace("{entityName}", created.get(1).getTypeRef().getFullName()).replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));        
+        String uri1 = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", created.get(0).getTypeRef().getFullName()).replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
+        String uri2 = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", created.get(1).getTypeRef().getFullName()).replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));        
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
                 new GetMethod(uri1.toString()));
@@ -402,9 +391,8 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
 
-        URI templateUri = sessionURI.resolve(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName()));
+        String templateUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", "mypackage.MyClass1").replace("{application}", getName()));
 		GetMethod getTemplateInstance = new GetMethod(templateUri.toString());
         executeMethod(200, getTemplateInstance);
 
@@ -413,6 +401,56 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         TestCase.assertNull(((ObjectNode) jsonInstance.get("values")).get("attr1"));
         TestCase.assertEquals(5, ((ObjectNode) jsonInstance.get("values")).get("attr2").asLong());
     }
+    
+    public void testSignup() throws CoreException, IOException {
+        String model = "";
+        model += "package mypackage;\n";
+        model += "apply kirra;\n";
+        model += "import base;\n";
+        model += "role class User readonly id attribute attr1 : String; end;\n";
+        model += "end.";
+        buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
+
+        final String username = getName() + "@foo.com";
+
+        // first sign up should work
+        signUp(username, "pass", 204);
+
+        // double sign up should fail
+        signUp(username, "pass", 400);
+
+        // can login
+        login(username, "pass");
+    }
+    
+    @Override
+    protected void login(String username, String password) throws HttpException, IOException {
+        String loginURI = resolveApplicationURI(Paths.LOGIN_PATH);
+		PostMethod loginMethod = new PostMethod(loginURI);
+        loginMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
+                "application/x-www-form-urlencoded", "UTF-8"));
+        restHelper.executeMethod(204, loginMethod);
+    }
+
+	private String resolveApplicationURI(String toResolve) throws IOException, HttpException {
+		URI workspaceURI = getWorkspaceURI();
+		String placeholderFreeURI = workspaceURI.resolve(toResolve.replace("{application}", getName())).toString();
+		Assert.assertFalse(placeholderFreeURI.contains("{"));
+		return placeholderFreeURI;
+	}
+    
+    @Override
+    protected void logout() throws HttpException, IOException {
+    	// TODO Auto-generated method stub
+    	
+    }
+    
+    @Override
+    protected void signUp(String username, String password, int expected) throws HttpException, IOException {
+    	// TODO Auto-generated method stub
+    	
+    }
+
 
     @Override
     protected void tearDown() throws Exception {
