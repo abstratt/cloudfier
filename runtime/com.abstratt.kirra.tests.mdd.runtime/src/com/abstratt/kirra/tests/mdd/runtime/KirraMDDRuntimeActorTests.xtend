@@ -49,7 +49,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 		
 		class AnonymousComment
 		    allow User all;
-		    allow extent;
+		    allow extent, static call;
 		    attribute comment : Memo;
 		    operation reply(text : Memo);
 		    static operation newComment(text : Memo) : AnonymousComment;
