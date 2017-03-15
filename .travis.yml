@@ -4,11 +4,8 @@ jdk:
 install: 
     - mvn clean install
 before_script:
-  - DATABASE=cloudfier
-  - USERNAME=cloudfier
-  - PASSWORD=
-  - psql -d postgres -c "DROP DATABASE IF EXISTS ${DATABASE};"
-  - psql -d postgres -c "DROP USER IF EXISTS ${USERNAME};"
-  - psql -d postgres -c "CREATE USER ${USERNAME} WITH CREATEDB;"
-  - psql -d postgres -c "ALTER USER ${USERNAME} PASSWORD '${PASSWORD}';"
-  - psql -d postgres -c "CREATE DATABASE ${DATABASE} OWNER ${USERNAME};"
+  - psql -d postgres -c "DROP DATABASE IF EXISTS cloudfier;"
+  - psql -d postgres -c "DROP USER IF EXISTS cloudfier;"
+  - psql -d postgres -c "CREATE USER cloudfier WITH CREATEDB;"
+  - psql -d postgres -c "ALTER USER cloudfier PASSWORD '';"
+  - psql -d postgres -c "CREATE DATABASE cloudfier OWNER cloudfier;"
