@@ -1,11 +1,12 @@
 language: java
 jdk:
   - oraclejdk8
-install: 
-    - mvn clean install
-before_script:
+before_install:
   - psql -d postgres -c "DROP DATABASE IF EXISTS cloudfier;"
   - psql -d postgres -c "DROP USER IF EXISTS cloudfier;"
   - psql -d postgres -c "CREATE USER cloudfier WITH CREATEDB;"
   - psql -d postgres -c "ALTER USER cloudfier PASSWORD '';"
   - psql -d postgres -c "CREATE DATABASE cloudfier OWNER cloudfier;"
+script: 
+    - mvn clean install
+
