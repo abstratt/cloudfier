@@ -2,6 +2,7 @@ package com.abstratt.mdd.core.runtime.types;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 public class DateConverter implements ValueConverter {
@@ -10,8 +11,8 @@ public class DateConverter implements ValueConverter {
     public BasicType convertToBasicType(Object original) {
         if (original == null)
             return null;
-        if (original instanceof Date)
-            return DateType.fromValue((Date) original);
+        if (original instanceof LocalDateTime)
+            return DateType.fromValue((LocalDateTime) original);
         if (original instanceof String) {
             if (((String) original).trim().isEmpty())
                 return null;

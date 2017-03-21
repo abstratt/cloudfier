@@ -1,20 +1,20 @@
 package com.abstratt.mdd.core.tests.runtime;
 
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
-
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
 
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.DateType;
-import com.abstratt.mdd.core.runtime.types.DurationType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.RealType;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class RuntimeDateTests extends AbstractRuntimeTests {
 
@@ -119,8 +119,8 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
 
         DateType transposed = (DateType) runStaticOperation("tests::DateUtil", "dateTranspose", d1, RealType.fromValue(6));
         TestCase.assertEquals(d2.primitiveValue().getYear(), transposed.primitiveValue().getYear());
-        TestCase.assertEquals(d2.primitiveValue().getMonth(), transposed.primitiveValue().getMonth());
-        TestCase.assertEquals(d2.primitiveValue().getDate(), transposed.primitiveValue().getDate());
+        TestCase.assertEquals(d2.primitiveValue().getMonthValue(), transposed.primitiveValue().getMonthValue());
+        TestCase.assertEquals(d2.primitiveValue().getDayOfMonth(), transposed.primitiveValue().getDayOfMonth());
 
         TestCase.assertEquals(
                 10,
@@ -147,10 +147,10 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "end.";
 
         parseAndCheck(model);
-        Date created = ((DateType) runStaticOperation("tests::DateUtil", "createDate")).primitiveValue();
-        TestCase.assertEquals(2011 - 1900, created.getYear());
-        TestCase.assertEquals(7, created.getMonth());
-        TestCase.assertEquals(30, created.getDate());
+        LocalDateTime created = ((DateType) runStaticOperation("tests::DateUtil", "createDate")).primitiveValue();
+        TestCase.assertEquals(2011, created.getYear());
+        TestCase.assertEquals(8, created.getMonthValue());
+        TestCase.assertEquals(30, created.getDayOfMonth());
     }
 
     public void testMakeDate() throws CoreException {
@@ -166,10 +166,10 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "end.";
 
         parseAndCheck(model);
-        Date created = ((DateType) runStaticOperation("tests::DateUtil", "createDate")).primitiveValue();
-        TestCase.assertEquals(2011 - 1900, created.getYear());
-        TestCase.assertEquals(7, created.getMonth());
-        TestCase.assertEquals(30, created.getDate());
+        LocalDateTime created = ((DateType) runStaticOperation("tests::DateUtil", "createDate")).primitiveValue();
+        TestCase.assertEquals(2011, created.getYear());
+        TestCase.assertEquals(8	, created.getMonthValue());
+        TestCase.assertEquals(30, created.getDayOfMonth());
     }
 
     public void testToday() throws CoreException {
@@ -185,10 +185,10 @@ public class RuntimeDateTests extends AbstractRuntimeTests {
         model += "end.";
 
         parseAndCheck(model);
-        Date today = ((DateType) runStaticOperation("tests::DateUtil", "createToday")).primitiveValue();
-        TestCase.assertEquals(today.getYear(), new Date().getYear());
-        TestCase.assertEquals(today.getMonth(), new Date().getMonth());
-        TestCase.assertEquals(today.getDate(), new Date().getDate());
+        LocalDateTime today = ((DateType) runStaticOperation("tests::DateUtil", "createToday")).primitiveValue();
+        TestCase.assertEquals(today.getYear(), LocalDateTime.now().getYear());
+        TestCase.assertEquals(today.getMonthValue(), LocalDateTime.now().getMonthValue());
+        TestCase.assertEquals(today.getDayOfMonth(), LocalDateTime.now().getDayOfMonth());
     }
 
 }

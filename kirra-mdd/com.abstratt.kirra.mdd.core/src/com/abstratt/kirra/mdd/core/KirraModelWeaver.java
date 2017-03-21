@@ -178,8 +178,9 @@ public class KirraModelWeaver implements IModelWeaver {
 		private Property buildAssociationForAttribute(Class entity, Property property, String name, boolean memberOwned) {
 			if (KirraHelper.isRegularProperty(property)) {
 				Type propertyType = property.getType();
-				if (propertyType != null && KirraHelper.isEntity(propertyType)
-						&& property.getAssociation() == null) {
+				if (propertyType != null && KirraHelper.isEntity(propertyType)) {
+					if (property.getAssociation() != null)
+						return property;
 					Association newAssociation = (Association) entity.getNearestPackage()
 							.createPackagedElement(null, UMLPackage.Literals.ASSOCIATION);
 					newAssociation.setIsDerived(property.isDerived());

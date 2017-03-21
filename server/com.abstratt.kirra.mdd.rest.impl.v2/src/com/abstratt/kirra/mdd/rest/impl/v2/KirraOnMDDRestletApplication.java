@@ -3,7 +3,11 @@ package com.abstratt.kirra.mdd.rest.impl.v2;
 import org.restlet.Component;
 import org.restlet.Request;
 import org.restlet.Restlet;
+import org.restlet.Server;
+import org.restlet.data.MediaType;
+import org.restlet.data.Protocol;
 import org.restlet.ext.jaxrs.JaxRsApplication;
+import org.restlet.routing.Router;
 import org.restlet.service.LogService;
 
 import com.abstratt.kirra.mdd.rest.KirraBasicAuthenticator;
@@ -11,6 +15,8 @@ import com.abstratt.kirra.mdd.rest.KirraCORSFilter;
 import com.abstratt.kirra.mdd.rest.KirraCookieAuthenticator;
 import com.abstratt.kirra.mdd.rest.KirraRepositoryFilter;
 import com.abstratt.kirra.mdd.rest.KirraStatusService;
+import com.abstratt.kirra.mdd.rest.KirraUploadFilter;
+import com.abstratt.kirra.rest.common.Paths;
 import com.abstratt.kirra.rest.resources.KirraJaxRsApplication;
 
 public class KirraOnMDDRestletApplication extends JaxRsApplication {
@@ -33,6 +39,7 @@ public class KirraOnMDDRestletApplication extends JaxRsApplication {
     
     @Override
     public Restlet createInboundRoot() {
+    	getMetadataService().addExtension("multipart", MediaType.MULTIPART_FORM_DATA, true);
         Restlet baseInboundRoot = super.createInboundRoot();
         KirraBasicAuthenticator basicAuthenticator = new KirraBasicAuthenticator(baseInboundRoot);
         KirraCookieAuthenticator cookieAuthenticator = new KirraCookieAuthenticator(basicAuthenticator);
@@ -44,6 +51,7 @@ public class KirraOnMDDRestletApplication extends JaxRsApplication {
             }
         };
         KirraCORSFilter corsFilter = new KirraCORSFilter(repositoryFilter);
-        return corsFilter;
+        KirraUploadFilter uploadFilter = new KirraUploadFilter(corsFilter);
+        return uploadFilter;
     }
 }

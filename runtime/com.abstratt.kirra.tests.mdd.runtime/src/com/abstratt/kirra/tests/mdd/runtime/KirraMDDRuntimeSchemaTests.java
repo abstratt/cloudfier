@@ -5,8 +5,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Stereotype;
@@ -23,9 +21,12 @@ import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Schema;
+import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
+
+import junit.framework.TestCase;
 
 public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
@@ -181,7 +182,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
     public void testEntityAttributeIsReference() throws CoreException {
         String model = "";
         model += "package mypackage;\n";
-        model += "import mdd_types;\n";
+        model += "import base;\n";
         model += "class MyClass1\n";
         model += "attribute ref1 : MyClass2;\n";
         model += "attribute attr1 : String;\n";
@@ -215,7 +216,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         String model = "";
         model += "package mypackage;\n";
         model += "apply kirra;\n";
-        model += "import mdd_types;\n";
+        model += "import base;\n";
         model += "class MyClass1\n";
         model += "[Essential] attribute attr1 : Integer;\n";
         model += "[Essential] attribute attr2 : String;\n";
@@ -226,9 +227,10 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         model += "attribute attr3 : String[1, *];\n";
         model += "attribute attr4 : String[1, 1];\n";
         model += "derived attribute attr5 : String[1, 1] := { \"foo\" };\n";
+        model += "attribute attr6 : Picture[0, 1];\n";        
         model += "end;\n";
         model += "end.";
-        parseAndCheck(model, KirraMDDRuntimeSchemaTests.library);
+        parseAndCheck(model);
         Repository kirra = getKirra();
 
         Entity entity = kirra.getEntity("mypackage", "MyClass1");
@@ -245,7 +247,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         entity = kirra.getEntity("mypackage", "MyClass2");
         properties = entity.getProperties();
-        TestCase.assertEquals(5, properties.size());
+        TestCase.assertEquals(6, properties.size());
 
         sortNamedElements(properties);
 
@@ -273,6 +275,12 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertFalse(properties.get(4).isRequired());
         TestCase.assertFalse(properties.get(4).isMultiple());
         TestCase.assertTrue(properties.get(4).isDerived());
+        
+        TestCase.assertEquals("attr6", properties.get(5).getName());
+        TestCase.assertFalse(properties.get(5).isRequired());
+        TestCase.assertFalse(properties.get(5).isMultiple());
+        TestCase.assertFalse(properties.get(5).isDerived());
+        TestCase.assertEquals(new TypeRef("mdd_media::Picture", TypeKind.Primitive), properties.get(5).getTypeRef());
     }
 
     public void testEntityRelationships() throws CoreException {

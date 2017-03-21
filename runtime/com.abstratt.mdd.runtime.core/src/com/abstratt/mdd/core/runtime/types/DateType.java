@@ -2,15 +2,18 @@ package com.abstratt.mdd.core.runtime.types;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.Date;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
-public class DateType extends PrimitiveType<Date> {
+public class DateType extends PrimitiveType<LocalDateTime> {
     public static DateType fromString(@SuppressWarnings("unused") ExecutionContext context, StringType literal) {
         try {
             return new DateType(new SimpleDateFormat("yyyy/MM/dd").parse(literal.primitiveValue()));
@@ -20,6 +23,10 @@ public class DateType extends PrimitiveType<Date> {
     }
 
     public static DateType fromValue(Date original) {
+        return new DateType(original);
+    }
+    
+    public static DateType fromValue(LocalDateTime original) {
         return new DateType(original);
     }
 
@@ -46,10 +53,12 @@ public class DateType extends PrimitiveType<Date> {
      */
     private static final long serialVersionUID = 1L;
 
-    private LocalDate value;
-
     private DateType(Date value) {
-        this.value = value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        super(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
+    }
+    
+    private DateType(LocalDateTime value) {
+        super(value);
     }
     
     public DurationType difference(@SuppressWarnings("unused") ExecutionContext context, DateType end) {
@@ -67,31 +76,25 @@ public class DateType extends PrimitiveType<Date> {
     }
     
     public IntegerType year(@SuppressWarnings("unused") ExecutionContext context) {
-        return IntegerType.fromValue(1900 + this.primitiveValue().getYear());
+        return IntegerType.fromValue(this.primitiveValue().get(ChronoField.YEAR_OF_ERA));
     }
 
     public IntegerType month(@SuppressWarnings("unused") ExecutionContext context) {
-        return IntegerType.fromValue(1 + this.primitiveValue().getMonth());
+        return IntegerType.fromValue(this.primitiveValue().get(ChronoField.MONTH_OF_YEAR));
     }
     
     public IntegerType day(@SuppressWarnings("unused") ExecutionContext context) {
-        return IntegerType.fromValue(this.primitiveValue().getDate());
-    }
-
-    @Override
-    public Date primitiveValue() {
-        return Date.from(value.atStartOfDay(ZoneId.systemDefault()).toInstant());
+        return IntegerType.fromValue(this.primitiveValue().get(ChronoField.DAY_OF_MONTH));
     }
 
     @Override
     public StringType toString(ExecutionContext context) {
-        return new StringType(new SimpleDateFormat("yyyy/MM/dd").format(this.primitiveValue()));
+    	String asString = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(this.primitiveValue());
+        return new StringType(asString);
     }
 
     public DateType transpose(ExecutionContext context, DurationType delta) {
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(this.primitiveValue());
-        cal.add(Calendar.DATE, (int) (delta.primitiveValue() / 1000 / 60 / 60 / 24));
-        return new DateType(cal.getTime());
+    	LocalDateTime transposed = this.value.plus(Duration.ofMillis(delta.primitiveValue()));
+        return new DateType(transposed);
     }
 }

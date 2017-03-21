@@ -51,6 +51,9 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         KirraMDDRuntimeDataTests.model += "role MyClass3.myClass4;\n";
         KirraMDDRuntimeDataTests.model += "end;\n";
         KirraMDDRuntimeDataTests.model += "enumeration MyEnum value1; value2; value3; end;\n";
+        KirraMDDRuntimeDataTests.model += "[Entity] class MyClass6\n";
+        KirraMDDRuntimeDataTests.model += "attribute myImage : Picture;\n";
+        KirraMDDRuntimeDataTests.model += "end;\n";        
         KirraMDDRuntimeDataTests.model += "end.";
     }
 

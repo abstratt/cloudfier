@@ -1,5 +1,6 @@
 package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 
+import java.lang.reflect.Type;
 import java.util.Map;
 
 import org.restlet.data.MediaType;
@@ -12,8 +13,14 @@ import org.restlet.resource.Post;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.populator.DataPopulator;
 import com.abstratt.kirra.populator.DataRenderer;
-import com.abstratt.mdd.frontend.web.JsonHelper;
+import com.abstratt.kirra.populator.DataRenderer.LazyReference;
+import com.abstratt.kirra.rest.common.CommonHelper;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
 
 public class DataResource extends AbstractKirraRepositoryResource {
     @Post
@@ -36,6 +43,14 @@ public class DataResource extends AbstractKirraRepositoryResource {
         Repository repo = getRepository();
         repo.setFiltering(false);
         Map<String, Map<String, ?>> rendered = new DataRenderer(repo).render();
-        return new StringRepresentation(JsonHelper.renderAsJson(rendered), MediaType.APPLICATION_JSON);
+        GsonBuilder basicGsonBuilder = CommonHelper.buildBasicGson();
+        basicGsonBuilder.registerTypeAdapter(LazyReference.class, new JsonSerializer<LazyReference>() {
+        	@Override
+        	public JsonElement serialize(LazyReference lazyReference, Type arg1, JsonSerializationContext arg2) {
+        		String asString = lazyReference.getReference().getEntityNamespace() + '.' + lazyReference.getReference().getEntityName() + '@' + lazyReference.getSequenceNumber();
+				return new JsonPrimitive(asString);
+        	}
+		});
+		return new StringRepresentation(basicGsonBuilder.create().toJson(rendered), MediaType.APPLICATION_JSON);
     }
 }

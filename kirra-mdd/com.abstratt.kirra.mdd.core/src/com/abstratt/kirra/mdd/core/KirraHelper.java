@@ -256,6 +256,8 @@ public class KirraHelper {
             		return false;
 				if (typePackageName.equals(IRepository.TYPES_NAMESPACE))
             		return false;
+				if (typePackageName.equals(IRepository.MEDIA_NAMESPACE))
+            		return false;
 				if (type.getName() == null)
 					return false;
 				if (type.eClass() != UMLPackage.Literals.CLASS)
@@ -1082,6 +1084,10 @@ public class KirraHelper {
         return BasicTypeUtils.isBasicType(umlType);
     }
     
+    public static boolean isBlob(Type umlType) {
+        return BasicTypeUtils.isBlobType(umlType);
+    }
+    
     public static TypeRef.TypeKind getKind(Type umlType) {
         if (isEnumeration(umlType))
             return TypeKind.Enumeration;
@@ -1093,10 +1099,12 @@ public class KirraHelper {
             return TypeKind.Tuple;
         if (isPrimitive(umlType))
             return TypeKind.Primitive;
+        if (isBlob(umlType))
+            return TypeKind.Blob;
         return null;
     }
     
-    public static TypeRef convertType(Type umlType) {
+	public static TypeRef convertType(Type umlType) {
         if (umlType == null)
             return null;
         String mappedTypeName = mapToClientType(umlType.getQualifiedName());

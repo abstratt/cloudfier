@@ -17,7 +17,7 @@ public class RealType extends NumberType<Double> {
     private static final long serialVersionUID = 1L;
 
     public RealType(double value) {
-        this.value = value;
+        super(value);
     }
 
     /*

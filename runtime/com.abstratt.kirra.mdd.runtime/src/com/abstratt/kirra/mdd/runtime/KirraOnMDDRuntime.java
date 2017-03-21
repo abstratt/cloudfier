@@ -1,13 +1,13 @@
 package com.abstratt.kirra.mdd.runtime;
 
+import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toMap;
+import static java.util.stream.Collectors.toSet;
+
 import java.util.ArrayList;
 import java.util.Arrays;
-import static java.util.Arrays.*;
-import static java.util.Collections.*;
-
-import static java.util.stream.Collectors.*;
-
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,12 +16,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -46,6 +44,7 @@ import org.eclipse.uml2.uml.TypedElement;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.Vertex;
 
+import com.abstratt.kirra.Blob;
 import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.EntityCapabilities;
@@ -55,9 +54,7 @@ import com.abstratt.kirra.InstanceCapabilities;
 import com.abstratt.kirra.InstanceRef;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.KirraException.Kind;
-import com.abstratt.kirra.NamedElement;
 import com.abstratt.kirra.Namespace;
-import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
@@ -83,6 +80,8 @@ import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
+import com.abstratt.mdd.core.runtime.types.BlobInfo;
+import com.abstratt.mdd.core.runtime.types.BlobType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
@@ -198,6 +197,46 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         } catch (ModelExecutionException rre) {
             throw KirraOnMDDRuntime.convertModelExecutionException(rre, Kind.VALIDATION);
         }
+    }
+    
+    @Override
+    public void deleteBlob(TypeRef entityRef, String objectId, String blobPropertyName, String blobToken) {
+    	RuntimeObject toDelete = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
+        if (toDelete == null)
+            throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
+        Classifier modelClass = toDelete.getRuntimeClass().getModelClassifier();
+        org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
+        if (property == null)
+        	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
+        toDelete.setValue(property, null);
+        toDelete.save();
+    }
+    
+    @Override
+    public Blob addBlob(TypeRef entityRef, String objectId, String blobPropertyName, Blob newBlob) {
+    	RuntimeObject toUpdate = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
+        if (toUpdate == null)
+            throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
+        Classifier modelClass = toUpdate.getRuntimeClass().getModelClassifier();
+        org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
+        if (property == null)
+        	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
+        toUpdate.setValue(property, PrimitiveType.convertToBasicType((Classifier) property.getType(), newBlob.toMap()));
+        toUpdate.save();
+        return (Blob) convertFromBasicType(toUpdate.getValue(property), (Classifier) property.getType());
+    }
+    
+    @Override
+    public Blob getBlob(TypeRef entityRef, String objectId, String blobPropertyName, String blobToken) {
+    	RuntimeObject instanceFound = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
+        if (instanceFound == null)
+            throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
+        Classifier modelClass = instanceFound.getRuntimeClass().getModelClassifier();
+        org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
+        if (property == null)
+        	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
+        BasicType blobValue = instanceFound.getValue(property);
+		return (Blob) convertFromBasicType(blobValue, (Classifier) property.getType());
     }
 
     @Override
@@ -322,9 +361,9 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     	capabilities.setActions(computeOperationCapabilities.apply(allStaticActions));
     	capabilities.setQueries(computeOperationCapabilities.apply(allStaticQueries));
 		
-    	Map<Classifier, Map<AccessCapability, Constraint>> explicitConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(actualRoleClasses, asList(AccessCapability.Create, AccessCapability.List), asList(runtimeClass.getModelClassifier()));
+    	Map<Classifier, Map<AccessCapability, Constraint>> explicitConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(allRoleClasses, asList(AccessCapability.Create, AccessCapability.List), asList(runtimeClass.getModelClassifier()));
 		
-    	Set<AccessCapability> enabledEntityCapabilities = computeActualCapabilities(runtimeClass.getClassObject(),
+		Set<AccessCapability> enabledEntityCapabilities = computeActualCapabilities(runtimeClass.getClassObject(),
 				actualRoleClasses, asList(AccessCapability.Create, AccessCapability.List), explicitConstraintsPerRole);
 		capabilities.setEntity(enabledEntityCapabilities.stream().map(it -> it.name()).collect(toList()));
     	
@@ -332,13 +371,14 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
     
     @Override
-    public InstanceCapabilities getInstanceCapabilities(Entity entity, String objectId) {
-    	RuntimeClass runtimeClass = getRuntimeClass(entity.getNamespace(), entity.getName(), Literals.CLASS);
+    public InstanceCapabilities getInstanceCapabilities(TypeRef entity, String objectId) {
+    	RuntimeClass runtimeClass = getRuntimeClass(entity.getNamespace(), entity.getTypeName(), Literals.CLASS);
     	RuntimeObject targetObject = findRuntimeObject(runtimeClass, objectId);
     	if (targetObject == null)
     		return null;
     	List<RuntimeObject> actualRoles = getRuntime().getRolesForActor(getRuntime().getCurrentActor());
     	List<Class> actualRoleClasses = actualRoles.stream().map(role -> (Class) role.getRuntimeClass().getModelClassifier()).collect(Collectors.toList());
+    	List<Class> allRoleClasses = KirraHelper.getRoleEntities(KirraHelper.getApplicationPackages(getRepository().getTopLevelPackages(null)));    	
 
     	InstanceCapabilities capabilities = new InstanceCapabilities();
     	
@@ -348,7 +388,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     	List<AccessCapability> instanceCallCapabilities = asList(AccessCapability.Call);
     	Map<String, List<String>> availableActions = allInstanceActions.stream().collect(toMap(action -> action.getName(), action -> { 
 			Map<Classifier, Map<AccessCapability, Constraint>> actionConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(
-				actualRoleClasses, 
+				allRoleClasses, 
 				instanceCallCapabilities,
 				asList(runtimeClass.getModelClassifier(), action)
 			);
@@ -359,7 +399,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     	
     	List<AccessCapability> instanceCrudCapabilities = asList(AccessCapability.Delete, AccessCapability.Update, AccessCapability.Read);
 		Map<Classifier, Map<AccessCapability, Constraint>> explicitConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(
-    			actualRoleClasses,
+    			allRoleClasses,
     			instanceCrudCapabilities,
     			asList(runtimeClass.getModelClassifier())
 			);
@@ -848,7 +888,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private Object convertFromPrimitive(PrimitiveType<?> value) {
-        return value.primitiveValue();
+        Object primitiveValue = value.primitiveValue();
+    	if (primitiveValue instanceof BlobInfo) {
+    		BlobInfo asBlobInfo = (BlobInfo) primitiveValue;
+    		return new Blob(asBlobInfo.getToken(), asBlobInfo.getContentLength(), asBlobInfo.getContentsAsBytes(), asBlobInfo.getContentType(), asBlobInfo.getOriginalName());
+    	}
+		return primitiveValue;
     }
 
     private Tuple convertFromRuntimeObject(RuntimeObject source) {

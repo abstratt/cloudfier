@@ -1,6 +1,6 @@
 package com.abstratt.kirra.mdd.rest;
 
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.time.StopWatch;
 import org.eclipse.core.runtime.IStatus;
 import org.restlet.Request;
 import org.restlet.Response;

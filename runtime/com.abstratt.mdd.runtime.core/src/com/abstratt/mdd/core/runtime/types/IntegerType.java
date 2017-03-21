@@ -19,7 +19,7 @@ public class IntegerType extends NumberType<Long> {
     
 
     public IntegerType(long value) {
-        this.value = value;
+        super(value);
     }
 
     @Override

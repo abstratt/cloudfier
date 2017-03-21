@@ -47,7 +47,8 @@ public class RuntimeStructuredActivityNode extends CompositeRuntimeAction {
             BasicType sourceValue = source.getValue();
 			if (MDDExtensionUtils.isRoleClass(outputClassifier) && MDDExtensionUtils.isSystemUserClass(inputClassifier)) {
             	// special case: casting user to role 
-				addResultValue(output, context.getRuntime().getRoleForActor((RuntimeObject) sourceValue, outputClassifier));
+				RuntimeObject userAsRole = context.getRuntime().getRoleForActor((RuntimeObject) sourceValue, outputClassifier);
+				addResultValue(output, userAsRole);
             } else {
             	addResultValue(output, sourceValue);
             }

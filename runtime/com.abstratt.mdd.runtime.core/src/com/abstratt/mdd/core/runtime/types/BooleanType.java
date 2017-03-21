@@ -21,10 +21,8 @@ public class BooleanType extends PrimitiveType<Boolean> {
 
     public final static BooleanType TRUE = new BooleanType(true);
 
-    private boolean value;
-
     private BooleanType(boolean value) {
-        this.value = value;
+        super(value);
     }
 
     public BooleanType and(ExecutionContext context, BooleanType anotherBoolean) {
@@ -46,11 +44,6 @@ public class BooleanType extends PrimitiveType<Boolean> {
 
     public BooleanType or(ExecutionContext context, BooleanType anotherBoolean) {
         return BooleanType.fromValue(this.value || anotherBoolean.value);
-    }
-
-    @Override
-    public Boolean primitiveValue() {
-        return value;
     }
 
     public void readFrom(DataInput in) throws IOException {

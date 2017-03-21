@@ -12,10 +12,8 @@ public class StringType extends PrimitiveType<String> {
      */
     private static final long serialVersionUID = 1L;
 
-    protected java.lang.String value;
-
     public StringType(java.lang.String value) {
-        this.value = value;
+        super(value);
     }
 
     public StringType add(@SuppressWarnings("unused") ExecutionContext context, BasicType another) {
@@ -40,11 +38,6 @@ public class StringType extends PrimitiveType<String> {
     
     public BooleanType isEmpty(ExecutionContext context) {
         return BooleanType.fromValue(this.isEmpty());
-    }
-
-    @Override
-    public String primitiveValue() {
-        return value;
     }
 
     public IntegerType size(ExecutionContext context) {

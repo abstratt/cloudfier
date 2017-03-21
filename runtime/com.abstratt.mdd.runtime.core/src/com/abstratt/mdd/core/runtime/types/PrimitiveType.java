@@ -8,7 +8,7 @@ import org.eclipse.uml2.uml.Type;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public abstract class PrimitiveType<T> extends BuiltInClass implements ComparableType, Serializable {
-    public static BasicType convertToBasicType(Classifier converterType, Object original) {
+    public static BasicType convertToBasicType(Type converterType, Object original) {
         String packageName = ValueConverter.class.getPackage().getName();
         String converterName = packageName + '.' + converterType.getName() + "Converter";
         ValueConverter valueConverter;
@@ -25,11 +25,11 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
     }
     
     public static <T extends BasicType> T fromStringValue(Type basicType, String stringValue) {
-        return (T) PrimitiveType.convertToBasicType((Classifier) basicType, stringValue);
+        return (T) convertToBasicType((Classifier) basicType, stringValue);
     }
     
     public static <T extends PrimitiveType> T fromValue(Type basicType, Object value) {
-        return (T) PrimitiveType.convertToBasicType((Classifier) basicType, value);
+        return (T) convertToBasicType((Classifier) basicType, value);
     }
 
     public static boolean hasConverter(Classifier converterType) {
@@ -44,6 +44,17 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
     }
 
     private static final long serialVersionUID = 1L;
+    
+    protected T value;
+    
+    protected PrimitiveType(T value) {
+    	this.value = value;
+    }
+    
+    public T primitiveValue() {
+        return value;
+    }
+
 
     /**
      * @see BasicType#isEqualsTo
@@ -80,9 +91,6 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
     public final int hashCode() {
         return primitiveValue().hashCode();
     }
-
-    
-    public abstract T primitiveValue();
 
     @Override
     public java.lang.String toString() {

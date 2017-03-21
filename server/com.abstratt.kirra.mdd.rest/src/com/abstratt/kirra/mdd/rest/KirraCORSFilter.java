@@ -2,7 +2,6 @@ package com.abstratt.kirra.mdd.rest;
 
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;

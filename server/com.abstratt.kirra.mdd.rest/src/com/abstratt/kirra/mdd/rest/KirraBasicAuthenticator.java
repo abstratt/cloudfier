@@ -6,7 +6,6 @@ import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
 import org.restlet.data.ChallengeScheme;
-import org.restlet.representation.StringRepresentation;
 import org.restlet.security.ChallengeAuthenticator;
 
 import com.abstratt.kirra.rest.resources.ResourceHelper;
@@ -28,7 +27,7 @@ public class KirraBasicAuthenticator extends ChallengeAuthenticator implements K
     @Override
     protected int beforeHandle(final Request request, final Response response) {
     	configure(request);
-        if (IS_AJAX.get())
+        if (isAjax())
         	return CONTINUE;
         return super.beforeHandle(request, response);
     }

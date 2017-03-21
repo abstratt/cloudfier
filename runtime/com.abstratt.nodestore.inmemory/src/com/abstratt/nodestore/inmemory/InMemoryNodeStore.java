@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -97,7 +99,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	}
 
 	private static Gson getGson() {
-		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting();
+		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting().excludeFieldsWithModifiers(Modifier.STATIC);
 		gsonBuilder.registerTypeAdapter(INodeKey.class, new JsonDeserializer<INodeKey>() {
 			@Override
 			public INodeKey deserialize(JsonElement arg0, Type arg1, JsonDeserializationContext arg2)
@@ -111,47 +113,9 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 				return arg0 == null ? null : context.serialize(((IntegerKey)arg0).getValue());
 			}
 		});
-		gsonBuilder.registerTypeAdapter(INode.class, new JsonDeserializer<INode>() {
-			public INode deserialize(JsonElement jsonElement, Type arg1, JsonDeserializationContext context) throws JsonParseException {
-				BasicNode node = new BasicNode((INodeKey) null);
-				JsonObject asJsonObject = jsonElement.getAsJsonObject();
-				node.setKey(context.deserialize(asJsonObject.get("key"), INodeKey.class));
-				node.setProperties(context.deserialize(asJsonObject.get("properties"), new TypeToken<Map<String, Object>>() {}.getType()));
-				node.setRelated(context.deserialize(asJsonObject.get("related"), new TypeToken<Map<String, Collection<NodeReference>>>() {}.getType()));
-				node.setChildren(context.deserialize(asJsonObject.get("children"), new TypeToken<Map<String, Collection<NodeReference>>>() {}.getType()));
-				return node;
-			}
-		});
-		gsonBuilder.registerTypeAdapter(BasicNode.class, new JsonSerializer<BasicNode>() {
-			public JsonElement serialize(BasicNode node, Type arg1, JsonSerializationContext context) throws JsonParseException {
-				JsonObject jsonObject = new JsonObject();
-				jsonObject.add("key", context.serialize(node.getKey()));
-				jsonObject.add("properties", context.serialize(node.getProperties()));
-				jsonObject.add("related", context.serialize(node.getRelated()));
-				jsonObject.add("children", context.serialize(node.getChildren()));
-				return jsonObject;
-			}
-		});
-		gsonBuilder.registerTypeAdapter(Date.class, new JsonSerializer<Date>() {
-
-			@Override
-			public JsonElement serialize(Date arg0, Type arg1, JsonSerializationContext arg2) {
-				if (arg0 == null)
-					return null;
-				return new JsonPrimitive(
-						DateTimeFormatter.ISO_DATE.format(arg0.toInstant().atZone(ZoneId.systemDefault()).toLocalDate()));
-			}
-			
-		});
-		gsonBuilder.registerTypeAdapter(Date.class, new JsonDeserializer<Date>() {
-			@Override
-			public Date deserialize(JsonElement arg0, Type arg1, JsonDeserializationContext arg2)
-					throws JsonParseException {
-				if (arg0 == null)
-					return null;
-				return new Date(OffsetDateTime.parse(arg0.getAsString(), DateTimeFormatter.ISO_DATE).toInstant().toEpochMilli());
-			}
-		});
+		gsonBuilder.registerTypeAdapter(INode.class, new BasicNodeSerialization());
+		
+		gsonBuilder.registerTypeAdapter(LocalDateTime.class, new LocalDateTimeSerialization());
 		
 		return gsonBuilder.create();
 	}
@@ -455,5 +419,44 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 				}
 			});
 		});
+	}
+
+	public static class LocalDateTimeSerialization implements JsonDeserializer<LocalDateTime>, JsonSerializer<LocalDateTime> {
+		@Override
+		public JsonElement serialize(LocalDateTime arg0, Type arg1, JsonSerializationContext arg2) {
+			if (arg0 == null)
+				return null;
+			return new JsonPrimitive(
+					DateTimeFormatter.ISO_DATE.format(arg0));
+		}
+		
+		@Override
+		public LocalDateTime deserialize(JsonElement arg0, Type arg1, JsonDeserializationContext arg2)
+				throws JsonParseException {
+			if (arg0 == null)
+				return null;
+			return LocalDateTime.parse(arg0.getAsString(), DateTimeFormatter.ISO_DATE);
+		}
+	}
+
+	
+	public static class BasicNodeSerialization implements JsonDeserializer<BasicNode>, JsonSerializer<BasicNode> {
+		public BasicNode deserialize(JsonElement jsonElement, Type arg1, JsonDeserializationContext context) throws JsonParseException {
+			BasicNode node = new BasicNode((INodeKey) null);
+			JsonObject asJsonObject = jsonElement.getAsJsonObject();
+			node.setKey(context.deserialize(asJsonObject.get("key"), INodeKey.class));
+			node.setProperties(context.deserialize(asJsonObject.get("properties"), new TypeToken<Map<String, Object>>() {}.getType()));
+			node.setRelated(context.deserialize(asJsonObject.get("related"), new TypeToken<Map<String, Collection<NodeReference>>>() {}.getType()));
+			node.setChildren(context.deserialize(asJsonObject.get("children"), new TypeToken<Map<String, Collection<NodeReference>>>() {}.getType()));
+			return node;
+		}
+		public JsonElement serialize(BasicNode node, Type arg1, JsonSerializationContext context) throws JsonParseException {
+			JsonObject jsonObject = new JsonObject();
+			jsonObject.add("key", context.serialize(node.getKey()));
+			jsonObject.add("properties", context.serialize(node.getProperties()));
+			jsonObject.add("related", context.serialize(node.getRelated()));
+			jsonObject.add("children", context.serialize(node.getChildren()));
+			return jsonObject;
+		}
 	}
 }

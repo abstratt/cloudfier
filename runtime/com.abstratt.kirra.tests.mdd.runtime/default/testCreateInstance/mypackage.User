@@ -1,0 +1,11 @@
+{
+  "nodes": {},
+  "keys": {
+    "value": 0
+  },
+  "entityName": {
+    "entityNamespace": "mypackage",
+    "kind": "Entity",
+    "typeName": "User"
+  }
+}

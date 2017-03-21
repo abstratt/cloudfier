@@ -66,19 +66,12 @@ public class DurationType extends PrimitiveType<Long> {
     }
 
 
-    private long value;
-
     private DurationType(long value) {
-        this.value = value;
+        super(value);
     }
 
     @Override
     public String getClassifierName() {
         return "mdd_types::Duration";
-    }
-
-    @Override
-    public Long primitiveValue() {
-        return value;
     }
 }

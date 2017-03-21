@@ -1,6 +1,14 @@
 package com.abstratt.kirra.mdd.rest;
 
+import java.util.AbstractMap.SimpleEntry;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
@@ -9,7 +17,12 @@ import org.restlet.data.Method;
 import org.restlet.engine.header.Header;
 import org.restlet.util.Series;
 
+import com.abstratt.kirra.EntityCapabilities;
+import com.abstratt.kirra.InstanceCapabilities;
+import com.abstratt.kirra.TypeRef;
+import com.abstratt.kirra.TypeRef.TypeKind;
 import com.abstratt.kirra.mdd.core.KirraMDDConstants;
+import com.abstratt.kirra.rest.common.KirraContext;
 import com.abstratt.kirra.rest.common.Paths;
 
 public interface KirraAuthenticationContext {
@@ -25,6 +38,10 @@ public interface KirraAuthenticationContext {
      * Does this resource allow authentication? 
      */
     ThreadLocal<Boolean> PROTECTED = new ThreadLocal<Boolean>();
+    /** 
+     * Does this resource allow authentication? 
+     */
+    ThreadLocal<Boolean> AUTHORIZED = new ThreadLocal<Boolean>();    
     /** 
      * Does this application require authentication? 
      */
@@ -54,11 +71,11 @@ public interface KirraAuthenticationContext {
     }
     
 	default boolean isProtectedPath(IPath path) {
-		String[] segments = path.segments();
-		for (String protectedSegment : PROTECTED_PATHS)
-			for (String segment : segments)
-				if (protectedSegment.equals(segment))
-					return true;
+//		String[] segments = path.segments();
+//		for (String protectedSegment : PROTECTED_PATHS)
+//			for (String segment : segments)
+//				if (protectedSegment.equals(segment))
+//					return true;
 		return false;
 	}
 
@@ -72,5 +89,18 @@ public interface KirraAuthenticationContext {
 	
 	default boolean isLoginRequired() {
 		return LOGIN_REQUIRED.get();
+	}
+	
+	default boolean isProtected() {
+		return PROTECTED.get();
+	}
+	default boolean isAjax() {
+		return IS_AJAX.get();
+	}
+	default boolean allowsAnonymous() {
+		return ALLOWS_ANONYMOUS.get();
+	}
+	default boolean isAuthorized() {
+		return AUTHORIZED.get();
 	}
 }

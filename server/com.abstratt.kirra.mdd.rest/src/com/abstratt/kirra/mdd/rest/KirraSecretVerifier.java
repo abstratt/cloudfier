@@ -1,6 +1,6 @@
 package com.abstratt.kirra.mdd.rest;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.security.SecretVerifier;
@@ -28,7 +28,7 @@ public class KirraSecretVerifier extends SecretVerifier implements KirraAuthenti
                     + " failed, identifier not provided", null);
             return Verifier.RESULT_MISSING;
         }
-        if (ALLOWS_ANONYMOUS.get() && "guest".equalsIgnoreCase(identifier)) {
+        if (allowsAnonymous() && "guest".equalsIgnoreCase(identifier)) {
             LogUtils.logInfo(getClass().getPackage().getName(), "User authentication for " + WORKSPACE_NAME.get()
                     + " succeeded for: " + identifier, null);
             return Verifier.RESULT_VALID;

@@ -24,11 +24,6 @@ public class MemoType extends StringType {
     }
 
     @Override
-    public String primitiveValue() {
-        return value;
-    }
-
-    @Override
     protected StringType newInstance(String primitiveValue) {
         return new MemoType(primitiveValue);
     }

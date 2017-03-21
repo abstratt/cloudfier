@@ -5,18 +5,15 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.commons.lang.StringUtils;
-import org.apache.commons.lang.time.StopWatch;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.StopWatch;
 import org.eclipse.core.runtime.IStatus;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.Method;
 import org.restlet.data.Status;
-import org.restlet.engine.header.Header;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
-import org.restlet.util.Series;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
