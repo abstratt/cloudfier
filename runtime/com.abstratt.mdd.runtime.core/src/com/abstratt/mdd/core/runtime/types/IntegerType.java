@@ -35,6 +35,11 @@ public class IntegerType extends NumberType<Long> {
             return new RealType(this.asDouble() / another.asDouble());
         return new IntegerType(value / ((IntegerType) another).value);
     }
+    
+    public NumberType modulo(ExecutionContext context, NumberType another) {
+        return new IntegerType(value % ((IntegerType) another).value);
+    }
+
 
     @Override
     public String getClassifierName() {

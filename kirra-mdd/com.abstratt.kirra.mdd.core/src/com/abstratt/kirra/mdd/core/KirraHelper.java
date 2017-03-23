@@ -772,8 +772,7 @@ public class KirraHelper {
         return get(clazz, "getMnemonic", new Callable<Property>() {
             @Override
             public Property call() throws Exception {
-                List<Property> properties = getPropertiesAndRelationships(clazz);
-                return properties.isEmpty() ? null : properties.get(0);
+                return getPropertiesAndRelationships(clazz).stream().filter(it -> isUserVisible(it)).findAny().orElse(null);
             }
         });
     }

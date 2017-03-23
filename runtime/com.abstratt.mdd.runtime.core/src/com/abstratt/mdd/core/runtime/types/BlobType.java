@@ -9,6 +9,6 @@ public class BlobType extends PrimitiveType<BlobInfo> {
 	
 	@Override
 	public String getClassifierName() {
-		return "mdd_types::Blob";
+		return "mdd_media::Blob";
 	}
 }
