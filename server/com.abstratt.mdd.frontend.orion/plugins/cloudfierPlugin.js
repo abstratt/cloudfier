@@ -146,8 +146,13 @@ var standardApplicationError = function(projectPath) {
     };
 };
 
+var currentProtocol = function () {
+    return window.location.protocol;
+};
+
 var formatProblem = function(problem, projectPath) {
-    return problem.severity.toUpperCase() + ": " + problem.reason + " - [" + problem.file + " : " + problem.line + "](http:/edit/edit.html#" + buildOrionContentLocation(projectPath) + problem.file + ",line=" + problem.line + ")"
+    
+    return problem.severity.toUpperCase() + ": " + problem.reason + " - [" + problem.file + " : " + problem.line + "](" + currentProtocol() + "/edit/edit.html#" + buildOrionContentLocation(projectPath) + problem.file + ",line=" + problem.line + ")"
 };
 
 var formatTestResult = function(testResult, projectPath) {
@@ -156,7 +161,7 @@ var formatTestResult = function(testResult, projectPath) {
      var symbol = passed ? "\u2714": "\u2718";
      var linkToOperation
      if (testResult.testSourceLocation !== undefined) {     
-         linkToOperation = "http:/edit/edit.html#" + buildOrionContentLocation(projectPath) + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
+         linkToOperation = currentProtocol() + "/edit/edit.html#" + buildOrionContentLocation(projectPath) + testResult.testSourceLocation.filename + ",line=" + testResult.testSourceLocation.lineNumber;
          string += "[" + symbol + "](" + linkToOperation + ")";
      } else {
          string += symbol;
@@ -169,7 +174,7 @@ var formatTestResult = function(testResult, projectPath) {
          if (testResult.errorLocation) {
 	         for (j in testResult.errorLocation) {
 	             location = testResult.errorLocation[j];
- 	             string += "\t[" + location.frameName + " (" + location.filename + ":" + location.lineNumber + ")](http:/edit/edit.html#" + buildOrionContentLocation(projectPath) + location.filename + ",line=" + location.lineNumber + ")" + "\n"    
+ 	             string += "\t[" + location.frameName + " (" + location.filename + ":" + location.lineNumber + ")](" + currentProtocol() + "/edit/edit.html#" + buildOrionContentLocation(projectPath) + location.filename + ",line=" + location.lineNumber + ")" + "\n"    
 	         }  
          }
      }
@@ -505,15 +510,15 @@ var shellDbDeploy = function(args, context, message) {
 var showLinks = function(projectPath, packages) {
     var applicationName = locationToWorkspace(projectPath);
     packages = packages || [];
-    var mobileUiUrl = "http:/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
-    var newUiUrl = "http:/kirra-api/kirra-ng/?theme=&app-path=/services/api-v2/" + applicationName + "/";
-    var api2Url = "http:/services/api-v2/" + applicationName + "/";
+    var mobileUiUrl = "" + currentProtocol() + "/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
+    var newUiUrl = "" + currentProtocol() + "/kirra-api/kirra-ng/?theme=&app-path=/services/api-v2/" + applicationName + "/";
+    var api2Url = "" + currentProtocol() + "/services/api-v2/" + applicationName + "/";
     var appInfo = "\nStart [desktop browser UI](" + newUiUrl + ")" +
         "\nStart [mobile browser UI (work in progress)](" + mobileUiUrl + ")" +        
         "\nBrowse [REST API (v2)](" + api2Url + ")";
     for (var i in packages) {
-        appInfo += "\nClass diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showClasses=true&showOperations=true&showAttributes=true&showEnumerations=true&showDataTypes=true&showSignals=true)"; 
-        appInfo += "\nStatechart diagrams for package [" + packages[i] + "](http:/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showStateMachines=true)";
+        appInfo += "\nClass diagrams for package [" + packages[i] + "](" + currentProtocol() + "/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showClasses=true&showOperations=true&showAttributes=true&showEnumerations=true&showDataTypes=true&showSignals=true)"; 
+        appInfo += "\nStatechart diagrams for package [" + packages[i] + "](" + currentProtocol() + "/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showStateMachines=true)";
     }    
     return appInfo     
 }
@@ -742,7 +747,7 @@ provider.registerServiceProvider("orion.page.link", null, {
     tooltip: "Learn how to write Cloudfier programs.",
     name: "Cloudfier documentation",
     category: "cloudfier-documentation",
-    uriTemplate: "http://doc.cloudfier.com/"
+    uriTemplate: "https://doc.cloudfier.com/"
 });
 
 provider.registerServiceProvider("orion.edit.validator", { checkSyntax: checkSyntax }, { contentType: ["text/uml", "cloudfier/data-snapshot"] });
