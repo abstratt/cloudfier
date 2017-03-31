@@ -17,6 +17,7 @@ import org.restlet.routing.Filter;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
+import com.abstratt.kirra.mdd.core.KirraMDDConstants;
 import com.abstratt.kirra.mdd.runtime.KirraOnMDDRuntime;
 import com.abstratt.kirra.rest.common.KirraContext;
 import com.abstratt.kirra.rest.resources.KirraRestException;
@@ -52,6 +53,10 @@ public class KirraRepositoryFilter extends Filter {
                     Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
                     KirraContext.setInstanceManagement(kirraRepository);
                     KirraContext.setSchemaManagement(kirraRepository);
+                    boolean allowAnonymous = Boolean.TRUE.valueOf(context.getProperties().getProperty(KirraMDDConstants.ALLOW_ANONYMOUS));
+                    boolean isLoginRequired = !allowAnonymous;
+                    boolean isLoginAllowed = Boolean.TRUE.valueOf(context.getProperties().getProperty(KirraMDDConstants.LOGIN_REQUIRED));
+					KirraContext.setOptions(new KirraContext.Options(isLoginRequired, isLoginAllowed));
                     URI baseURI = KirraReferenceUtils.getBaseReference(request, request.getResourceRef(),
                             Paths.API_V2).toUri();
 					KirraContext.setBaseURI(baseURI);
@@ -62,6 +67,7 @@ public class KirraRepositoryFilter extends Filter {
                         KirraContext.setInstanceManagement(null);
                         KirraContext.setSchemaManagement(null);
                         KirraContext.setBaseURI(null);
+                        KirraContext.setOptions(null);
                     }
                 }
             }, request.getMethod());
