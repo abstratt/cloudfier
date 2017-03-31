@@ -109,7 +109,7 @@ var computeProposals = function(prefix, buffer, selection) {
             description: 'New operation' 
         },
         { 
-            proposal: "\tattribute status2 : SM1;\n\toperation action1();\n\toperation action2();\n\toperation action3();\n\tstatemachine SM1\n\t\tinitial state State0\n\t\t\ttransition on call(action1) to State1;\n\t\tend;\n\t\tstate State1\n\t\t\ttransition on call(action1) to State1\n\t\t\ttransition on call(action2) to State2;\n\t\tend;\n\t\tstate State2\n\t\t\ttransition  on call(action1) to State1\n\t\t\ttransition on call(action3) to State3;\n\t\tend;\n\t\tterminate state State3;\n\tend;\n\t\tend;\n",
+            proposal: "\tattribute status2 : SM1;\n\toperation action1();\n\toperation action2();\n\toperation action3();\n\tstatemachine SM1\n\t\tinitial state State0\n\t\t\ttransition on call(action1) to State1;\n\t\tend;\n\t\tstate State1\n\t\t\ttransition on call(action1) to State1;\n\t\t\ttransition on call(action2) to State2;\n\t\tend;\n\t\tstate State2\n\t\t\ttransition on call(action1) to State1;\n\t\t\ttransition on call(action3) to State3;\n\t\tend;\n\t\tterminate state State3;\n\tend;\n\t\tend;\n",
             description: 'New state machine' 
         }
     ];
