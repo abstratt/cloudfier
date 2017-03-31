@@ -576,6 +576,8 @@ public class KirraHelper {
      * A initializable property can be set at creation time only.
      */
     public static boolean isInitializable(org.eclipse.uml2.uml.Property umlAttribute) {
+    	if (isBlob(umlAttribute.getType()))
+    		return false;
         return !isReadOnly(umlAttribute, true);
     }
     
@@ -583,6 +585,8 @@ public class KirraHelper {
      * An editable property can be updated any time (creation or later).
      */
     public static boolean isEditable(org.eclipse.uml2.uml.Property umlAttribute) {
+    	if (isBlob(umlAttribute.getType()))
+    		return false;
         return !isReadOnly(umlAttribute, false);
     }
 
