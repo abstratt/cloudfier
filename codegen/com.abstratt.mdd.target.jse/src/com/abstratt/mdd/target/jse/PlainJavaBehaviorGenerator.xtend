@@ -445,6 +445,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             case 'Duration': {
                 if (operation.static) {
                     val period = switch (operation.name) {
+                        case 'years': ' * (1000 * 60 * 60 * 24 * 365)'
+                        case 'months': ' * (1000 * 60 * 60 * 24 * 12)'
                         case 'days': ' * (1000 * 60 * 60 * 24)'
                         case 'hours': ' * (1000 * 60 * 60)'
                         case 'minutes': ' * (1000 * 60)'
@@ -455,6 +457,8 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                     '''«generateAction(action.arguments.head)»«period» /*«operation.name»*/'''
                 } else {
                     val period = switch (operation.name) {
+                        case 'toYears': ' / (1000 * 60 * 60 * 24 * 365)'
+                        case 'toMonths': ' / (1000 * 60 * 60 * 24 * 12)'
                         case 'toDays': ' / (1000 * 60 * 60 * 24)'
                         case 'toHours': ' / (1000 * 60 * 60)'
                         case 'toMinutes': ' / (1000 * 60)'
@@ -512,6 +516,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                     generateSafeBinaryOperatorExpression('-', op1, op2, op1Optional, op2Optional, '0', '0')
             case 'multiply': generateSafeBinaryOperatorExpression('*', op1, op2, op1Optional, op2Optional, '0', '0')
             case 'divide': generateSafeBinaryOperatorExpression('/', op1, op2, op1Optional, op2Optional, '0', '1')
+            case 'modulo': generateSafeBinaryOperatorExpression('%', op1, op2, op1Optional, op2Optional, '0', '1')
             default: unsupported('''Number operation «operation.name»''')
         }
     }
@@ -543,7 +548,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
                 action.arguments.head)»)'''
             case 'difference': '''(«generateAction(action.arguments.head)».getTime() - «generateAction(
                 action.target)».getTime())'''
-            case 'make': '''new Date((int) «action.arguments.get(0).generateAction» - 1900, (int) «action.arguments.get(1).generateAction» - 1, (int) «action.arguments.get(2).generateAction»)'''    
+            case 'make': '''new Date((int) («action.arguments.get(0).generateAction» - 1900), (int) «action.arguments.get(1).generateAction» - 1, (int) «action.arguments.get(2).generateAction»)'''    
             default: unsupported('''Date operation «operation.name»''')
         }
     }
@@ -813,7 +818,9 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             return core
         val optionalObject = target.lower == 0
         val optionalResult = feature.lower == 0
-        val optionalResultSink = target.owningAction.outputs.head.targetInput.lower == 0
+        val targetOwningAction = target.owningAction
+        val targetOwningActionOutput = targetOwningAction.outputs.head
+        val optionalResultSink = targetOwningActionOutput.targetInput?.lower == 0
         val typeDefaultValue = feature.type.generateDefaultValue
         return if (optionalObject) {
             if (optionalResult)

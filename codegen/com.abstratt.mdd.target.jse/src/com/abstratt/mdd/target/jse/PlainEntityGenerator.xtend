@@ -41,6 +41,8 @@ import static extension com.abstratt.mdd.core.util.ConstraintUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.jse.KirraToJavaHelper.*
+import org.eclipse.uml2.uml.Type
+import com.abstratt.kirra.TypeRef.TypeKind
 
 class PlainEntityGenerator extends BehaviorlessClassGenerator {
 
@@ -662,7 +664,8 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val selfReference = predicateActivity.rootAction.findFirstMatchingAction([it instanceof ReadSelfAction]) != null
         val innerCore = '''
         if («generatePredicate(constraint, true)») {
-            throw new «if (constraint.name?.length > 0) constraint.name else '''«applicationName».ConstraintViolation'''»Exception();
+            // precondition violated
+            throw new «if (constraint.name?.length > 0) constraint.name else '''ConstraintViolation'''»Exception();
         }
         '''
         

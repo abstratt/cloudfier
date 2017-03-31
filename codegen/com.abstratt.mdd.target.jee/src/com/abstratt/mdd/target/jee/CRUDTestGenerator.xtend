@@ -108,7 +108,7 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             assertNotNull(retrieved);
             assertEquals(id, retrieved.getId());
             «FOR property : entityClass.requiredProperties»
-            «assertEquals(property.type, '''created.get«property.name.toFirstUpper»()''', '''retrieved.get«property.name.toFirstUpper»()''')»;
+            «assertEquals(property.type, '''created.«property.generateAccessorName»()''', '''retrieved.«property.generateAccessorName»()''')»;
             «ENDFOR»
         }
         '''
@@ -161,12 +161,12 @@ class CRUDTestGenerator extends PlainEntityGenerator {
             Object id = «entityClass.generateServiceReference».create(toCreate).getId();
             PersistenceHelper.flush(true);
             «entityClass.name» retrieved = «entityClass.generateServiceReference».find(id);
-            «property.toJavaType» originalValue = retrieved.get«property.name.toFirstUpper»();
+            «property.toJavaType» originalValue = retrieved.«property.generateAccessorName»();
             retrieved.set«property.name.toFirstUpper»(«newValue»);
             «entityClass.generateServiceReference».update(retrieved);
             PersistenceHelper.flush(true);
             «entityClass.name» updated = «entityClass.generateServiceReference».find(id); 
-            assertNotEquals(originalValue, updated.get«property.name.toFirstUpper»());
+            assertNotEquals(originalValue, updated.«property.generateAccessorName»());
         }
         '''
     }

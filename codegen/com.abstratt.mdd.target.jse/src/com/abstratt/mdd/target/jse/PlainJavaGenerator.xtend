@@ -75,6 +75,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
         val roleClassesToImport = appPackages.entities.filter[ role ].filter[it.package != namespaceContext]
         
         '''
+        import «applicationName».*;
         «modelImports»
         «roleClassesToImport.generateMany['''import «it.package.toJavaPackage».«it.name»;''']»
         '''
@@ -235,6 +236,8 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
                     case 'Boolean': if (nullable) 'Boolean' else 'boolean'
                     default: '''String'''
                 }
+            case Blob:
+                '''String'''
             case null: switch (type) {
                 case type instanceof Interface && type.isSignature : (type as Interface).toJavaClosureType
                 case type instanceof Activity : (type as Activity).generateActivityAsExpression(true).toString

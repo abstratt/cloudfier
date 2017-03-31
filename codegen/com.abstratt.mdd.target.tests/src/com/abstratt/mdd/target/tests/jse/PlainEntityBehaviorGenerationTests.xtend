@@ -8,8 +8,8 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
     }
-    
-    protected def testBodyGeneration(CharSequence operation, CharSequence expected) {
+
+    protected def buildModel(CharSequence fragment) {
         var source = '''
             model mymodel;
             
@@ -38,13 +38,27 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
                     attribute anOptionalAttribute : Integer[0,1];
                     query aQuery() : Integer;
                     operation anAction();
-                    «operation»
+                    «fragment»
                 end;
             end.
          '''
         parseAndCheck(source)
-        val op1 = getOperation('mymodel::MyClass1::op1') 
+    }
+    
+    protected def testBodyGeneration(CharSequence operation, CharSequence expected) {
+        testBodyGeneration(operation, expected, 'mymodel::MyClass1::op1')
+    }
+    protected def testBodyGeneration(CharSequence fragment, CharSequence expected, String operationName) {
+        buildModel(fragment)
+        val op1 = getOperation(operationName) 
         val generated = (createEntityGenerator()).generateOperationBody(op1)
+        AssertHelper.assertStringsEqual(
+            expected.toString, generated.toString)
+    }
+    protected def testBodyGenerationForDerivedAttribute(CharSequence fragment, CharSequence expected, String attributeName) {
+        buildModel(fragment)
+        val attr1 = getProperty(attributeName) 
+        val generated = (createEntityGenerator()).generateDerivedAttributeComputation(attr1)
         AssertHelper.assertStringsEqual(
             expected.toString, generated.toString)
     }
@@ -61,6 +75,7 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             ''',
             '''
             if (!(par1 >= 0L)) {
+                // precondition violated 
                 throw new ConstraintViolationException();
             }
             '''
@@ -74,6 +89,7 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             '''
             if (par1 != null) {
                 if (!((par1 != null && par1.compareTo(0L) >= 0))) {
+                    // precondition violated 
                     throw new ConstraintViolationException();
                 }
             }
@@ -88,6 +104,7 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             ''',
             '''
             if (!(this.getADerivedAttribute() >= 0L)) {
+                // precondition violated 
                 throw new ConstraintViolationException();
             }
             '''
@@ -102,6 +119,7 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             ''',
             '''
             if (!(this.getAnAttribute() >= 0L)) {
+                // precondition violated 
                 throw new ConstraintViolationException();
             }
             '''
@@ -474,6 +492,48 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
                 val1.setAnAttribute(1L);
             }
             '''
+        )
+    }
+    
+    def testIf() {
+        testBodyGeneration('''
+            attribute someValue : Integer;
+            query op1() : Boolean;
+            begin
+                if (self.someValue > 0) then
+                    return true
+                else
+                    return false;
+            end;
+            ''',
+            '''
+            if (this.getSomeValue() > 0L) {
+                return true;
+            } else {
+                return false;
+            }
+            '''
+        )
+    }
+    
+    def testIfInDerivedAttribute() {
+        testBodyGenerationForDerivedAttribute('''
+            attribute condition : Boolean;
+            derived attribute attr1 : Integer := {
+                if (self.condition) then
+                    return 1
+                else
+                    return 2;
+            };
+            ''',
+            '''
+            if (this.isCondition()) {
+                return 1L;
+            } else {
+                return 2L;
+            }
+            ''',
+            'mymodel::MyClass1::attr1'
         )
     }
     

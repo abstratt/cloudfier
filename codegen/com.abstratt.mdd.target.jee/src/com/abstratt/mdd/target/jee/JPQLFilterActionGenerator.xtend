@@ -21,10 +21,11 @@ import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.target.jee.JPAHelper.*
+import com.abstratt.mdd.core.util.MDDExtensionUtils
 
 /** Builds a query based on a filter closure. */
 class JPQLFilterActionGenerator extends QueryFragmentGenerator {
@@ -57,7 +58,19 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     }
     
 	override generateStructuredActivityNode(StructuredActivityNode action) {
-		action.findStatements.head.generateAction
+        if (action.objectInitialization) {
+            // unsupported until we understand the need
+            unsupported("object initialization in filter")
+        } else if (MDDExtensionUtils.isCast(action)) {
+            action.inputs.head.sourceAction.generateAction
+        } else if (action.rootAction) {
+            val singleStatement = action.findSingleStatement
+            if (!singleStatement.returnAction)
+                // unsupported until we understand the need
+                unsupported("filter requires a closure with a single statement that returns a value")
+            singleStatement.sourceAction.generateAction    
+        } else
+            unsupportedElement(action, "Unexpected kind")
 	}
     
 	override generateConditionalNode(ConditionalNode action) {
@@ -135,8 +148,10 @@ class JPQLFilterActionGenerator extends QueryFragmentGenerator {
     }
     
     def override CharSequence generateTestIdentityAction(TestIdentityAction action) {
-        var left = generateAction(action.first.sourceAction)
-        var right = generateAction(action.second.sourceAction)
+        val firstSourceAction = action.first.sourceAction
+        val secondSourceAction = action.second.sourceAction
+        var left = generateAction(firstSourceAction)
+        var right = generateAction(secondSourceAction)
         if ('NULL'.equals(left.toString)) {
         	val aux = right
         	right = left

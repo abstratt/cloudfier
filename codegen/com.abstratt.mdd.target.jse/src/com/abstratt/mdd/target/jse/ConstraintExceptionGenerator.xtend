@@ -11,9 +11,9 @@ class ConstraintExceptionGenerator extends BehaviorlessClassGenerator {
     
     def generateConstraintException(Constraint constraint) {
         '''
-        package «applicationName»;
+        package «constraint.packagePrefix»;
         
-        public class «constraint.name»Exception extends ConstraintViolationException {
+        public class «constraint.name»Exception extends «applicationName».ConstraintViolationException {
             private static final long serialVersionUID = 1L;
             public «constraint.name»Exception() {
                 //TODO support for message bundles 

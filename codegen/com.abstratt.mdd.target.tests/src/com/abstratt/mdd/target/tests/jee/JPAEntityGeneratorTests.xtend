@@ -15,8 +15,10 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         val source = '''
         package pack1;
         
+        import mdd_media;
+        
         class Class1
-            attribute attr1 : String;
+            attribute attr1 : String := "value 1";
             attribute attr2 : StateMachine1;
             attribute attr3 : Integer invariant { (self.attr3 > 0) };
             attribute attr4 : Integer[0,1] invariant { (self.attr4 > 0) };
@@ -37,10 +39,37 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
             end;
         end;
         
+        class Class2
+            attribute picture1 : Picture[0,1];
+            attribute video1 : Video[0,1];
+            attribute sound1 : Audio[0,1];
+            attribute doc1 : Document[0,1];
+        end;
+        
         end.
         '''
         parseAndCheck(source)
     }
+ 
+    @Test
+    def void testAttributeGeneration() {
+        buildModel()
+        val property1 = getProperty('pack1::Class1::attr1')
+        
+        val generated = new JPAEntityGenerator(repository).generateAttribute(property1)
+        AssertHelper.assertStringsEqual(
+        '''
+        protected String attr1 = "value 1";
+        @Column(nullable=false)
+        public String getAttr1(){ 
+            return this.attr1;
+        }
+        public void setAttr1(String newAttr1){
+            this.attr1=newAttr1;
+        }
+        ''', generated.toString)
+    }
+ 
     
     @Test
     def void testEntityGeneration_setterConstraint() {
@@ -52,6 +81,7 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         '''
         public void setAttr3(long newAttr3) {
             if (!(newAttr3 > 0L)) {
+                // invariant violated 
                 throw new ConstraintViolationException("");
             }
             this.attr3 = newAttr3;
@@ -70,7 +100,8 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         '''
         public void setAttr4(Long newAttr4) {
             if (newAttr4 != null) {
-                if (!(newAttr4 != null && newAttr4.compareTo(0L) > 0)) {                
+                if (!(newAttr4 != null && newAttr4.compareTo(0L) > 0)) {
+                    //invariant violated                 
                     throw new ConstraintViolationException("");
                 }
             }
@@ -149,6 +180,25 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         '''
         public void op1() {
             this.handleEvent(StateMachine1Event.Op1);
+        }
+        ''', generated.toString)
+    }
+ 
+    @Test
+    def void testPictureAttributeGeneration() {
+        buildModel()
+        val property1 = getProperty('pack1::Class2::picture1')
+        
+        val generated = new JPAEntityGenerator(repository).generateAttribute(property1)
+        AssertHelper.assertStringsEqual(
+        '''
+        protected String picture1;
+        @Column
+        public String getPicture1(){ 
+            return this.picture1;
+        }
+        public void setPicture1(String newPicture1){
+            this.picture1 = newPicture1;
         }
         ''', generated.toString)
     }

@@ -46,6 +46,7 @@ class JAXRSSerializationGenerator extends BehaviorlessClassGenerator {
         
         import java.net.URI;
         
+        import resource.«applicationName».*;
         «entity.entityRelationships.map[type.nearestPackage].toSet.filter[it != entity.package].map[
         	'''
         	import resource.«name».*;

@@ -35,31 +35,31 @@ class EntityMapper implements ITopLevelMapper<Classifier> {
     }
     
     def generateEnumerationFileName(Classifier classifier) {
-        '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name».java'''.toString
+        KirraToJavaHelper.getSourcePath(classifier)
     }
     
     def generateInterfaceFileName(Classifier classifier) {
-        '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name».java'''.toString
+        KirraToJavaHelper.getSourcePath(classifier)
     }
     
     def generateTupleFileName(Classifier classifier) {
-        '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name».java'''.toString
+        KirraToJavaHelper.getSourcePath(classifier)
     }
 
     def generateEntityFileName(Classifier classifier) {
-        '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name».java'''.toString
+        KirraToJavaHelper.getSourcePath(classifier)
     }
     
     def generateSignalFileName(Classifier classifier) {
-        '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name»Event.java'''.toString
+        KirraToJavaHelper.getSourcePath(classifier, 'Event')
     }
     
     def generateConstraintExceptionFileName(String applicationPackageName, Constraint constraint) {
-        '''src/main/java/«applicationPackageName»/«constraint.name»Exception.java'''.toString
+        KirraToJavaHelper.getSourcePath(constraint, 'Exception')
     }
 
     def generateServiceFileName(Classifier classifier) {
-        '''src/main/java/«classifier.namespace.qualifiedName.replace(NamedElement.SEPARATOR, "/")»/«classifier.name»Service.java'''.toString
+        KirraToJavaHelper.getSourcePath(classifier, 'Service')
     }
     
     def PlainEntityGenerator createEntityGenerator(IRepository repository) {

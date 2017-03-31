@@ -59,6 +59,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
         
         import java.net.URI;
         
+        import resource.«applicationName».*;
         import resource.userprofile.*;
         import userprofile.*;
         

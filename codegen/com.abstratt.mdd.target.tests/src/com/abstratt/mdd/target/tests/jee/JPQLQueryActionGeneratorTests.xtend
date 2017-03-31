@@ -321,7 +321,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 attribute name : String;
                 attribute vip : Boolean;
                 attribute salary : Double;
-                query findHighestGrossing(threshold : Double) : Customer[*];
+                static query findHighestGrossing(threshold : Double) : Customer[*];
                 begin
                     return Customer extent.select((c : Customer) : Boolean {
                         c.salary >= threshold
@@ -339,6 +339,37 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 SELECT DISTINCT customer_ FROM Customer customer_ WHERE customer_.salary >= :threshold
             ''', generated.toString)
     }
+
+    def void testSelectByCurrentUser() throws CoreException, IOException {
+        var source = '''
+            model expenses;
+            role class Employee
+                attribute name : String;
+            end;
+            class Expense
+                attribute description : String;
+                attribute amount : Double;
+                attribute employee : Employee;
+                static query myExpenses() : Expense[*];
+                begin
+                    return Expense extent.select((exp : Expense) : Boolean {
+                        exp.employee == (System#user() as Employee)
+                    });
+                end;
+            end;
+            end.
+        '''
+        parseAndCheck(source)
+        val op = getOperation('expenses::Expense::myExpenses')
+        val root = getStatementSourceAction(op)
+        val generated = new JPQLQueryActionGenerator(repository).generateAction(root)
+        AssertHelper.assertStringsEqual(
+            '''
+            SELECT DISTINCT expense_ FROM Expense expense_ 
+                WHERE expense_.employee = :systemUser
+            ''', generated.toString)
+    }
+
     
     def void testAny() throws CoreException, IOException {
         var source = '''
