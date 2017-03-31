@@ -72,7 +72,7 @@ public abstract class AbstractKirraRestTests extends AbstractRepositoryTests {
     }
 
     protected String getDefaultProperties() {
-        return "mdd.modelWeaver=kirraWeaver\nmdd.extendBaseObject=true\nmdd.enableLibraries=true\nmdd.enableExtensions=true\nmdd.application.allowAnonymous=true";
+        return "mdd.modelWeaver=kirraWeaver\nmdd.extendBaseObject=true\nmdd.enableLibraries=true\nmdd.enableExtensions=true\nmdd.enableMedia=true\nmdd.application.allowAnonymous=true";
     }
 
     protected URI getTestProjectURI() {
