@@ -344,12 +344,12 @@ public class KirraHelper {
         return get(property, "isRequiredProperty_" + creation, new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return property.isNavigable() && !isReadOnly(property, creation) && isBasicallyRequired(property);
+                return property.isNavigable() && !isReadOnly(property, creation) && isBasicallyRequired(property) && !isBlob(property.getType()) && !isGeolocation(property.getType());
             }
         });
     }
 
-    public static boolean isBasicallyRequired(final Property property) {
+	public static boolean isBasicallyRequired(final Property property) {
         return get(property, "isBasicallyRequiredProperty", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -1086,6 +1086,11 @@ public class KirraHelper {
     public static boolean isBlob(Type umlType) {
         return BasicTypeUtils.isBlobType(umlType);
     }
+    
+    public static boolean isGeolocation(Type type) {
+		return type.getName().equals("Geolocation");
+	}
+
     
     public static TypeRef.TypeKind getKind(Type umlType) {
         if (isEnumeration(umlType))
