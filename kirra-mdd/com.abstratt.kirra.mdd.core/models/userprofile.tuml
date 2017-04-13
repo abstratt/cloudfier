@@ -4,7 +4,7 @@ apply mdd_extensions;
 apply kirra;
 import mdd_types;
 
-class Profile
+class Profile specializes SystemUser
     (* Often an email address *)
     readonly id attribute username : String;
     private attribute password : String;

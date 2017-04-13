@@ -159,7 +159,7 @@ public class KirraModelWeaver implements IModelWeaver {
 				
 				Property userProfile = roleClass.createOwnedAttribute(KirraMDDConstants.USER_PROFILE_ASSOCIATION_END, profileClass);
 				userProfile.setIsReadOnly(true);
-				userProfile.setLower(0);
+				userProfile.setLower(1);
 				
 				Property otherEnd = buildAssociationForAttribute(roleClass, userProfile, "roleAs" + roleClass.getName(), false);
 				otherEnd.setIsNavigable(true);
