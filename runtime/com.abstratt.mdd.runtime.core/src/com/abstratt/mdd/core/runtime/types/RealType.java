@@ -56,6 +56,12 @@ public class RealType extends NumberType<Double> {
     public NumberType subtract(ExecutionContext context, NumberType another) {
         return new RealType(value - another.asDouble());
     }
+    
+    public RealType fractionalPart(ExecutionContext context) {
+        double absoluteValue = Math.abs(value);
+		double fractionalPart = absoluteValue - (long) absoluteValue;
+		return new RealType(fractionalPart);
+    }
 
     @Override
     protected RealType asReal() {

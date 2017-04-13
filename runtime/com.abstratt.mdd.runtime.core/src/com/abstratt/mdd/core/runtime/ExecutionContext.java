@@ -81,6 +81,10 @@ public class ExecutionContext {
             result = prime * result + (sourceFile == null ? 0 : sourceFile.hashCode());
             return result;
         }
+        @Override
+        public String toString() {
+        	return frameName + " - " + sourceFile + " - " + lineNumber;
+        }
     }
 
     public class Frame {

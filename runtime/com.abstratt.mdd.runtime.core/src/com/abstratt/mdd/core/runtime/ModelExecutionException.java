@@ -60,5 +60,9 @@ public class ModelExecutionException extends RuntimeException {
     private CallSite getLatestSite() {
         return callSites.isEmpty() ? null : callSites.get(0);
     }
-
+    
+    @Override
+    public String getMessage() {
+    	return super.getMessage() + " - " + getLatestSite();
+    }
 }
