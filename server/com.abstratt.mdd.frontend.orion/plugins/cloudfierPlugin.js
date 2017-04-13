@@ -510,11 +510,9 @@ var shellDbDeploy = function(args, context, message) {
 var showLinks = function(projectPath, packages) {
     var applicationName = locationToWorkspace(projectPath);
     packages = packages || [];
-    var mobileUiUrl = "" + currentProtocol() + "/kirra-api/kirra_qooxdoo/build/?app-path=/services/api-v2/" + applicationName + "/";
-    var newUiUrl = "" + currentProtocol() + "/kirra-api/kirra-ng/?theme=&app-path=/services/api-v2/" + applicationName + "/";
+    var uiUrl = "" + currentProtocol() + "/kirra-angular/?theme=&app-path=/services/api-v2/" + applicationName + "/";
     var api2Url = "" + currentProtocol() + "/services/api-v2/" + applicationName + "/";
-    var appInfo = "\nStart [desktop browser UI](" + newUiUrl + ")" +
-        "\nStart [mobile browser UI (work in progress)](" + mobileUiUrl + ")" +        
+    var appInfo = "\nStart [browser UI](" + uiUrl + ")" +
         "\nBrowse [REST API (v2)](" + api2Url + ")";
     for (var i in packages) {
         appInfo += "\nClass diagrams for package [" + packages[i] + "](" + currentProtocol() + "/services/diagram/" + applicationName + "/package/" + packages[i] + ".uml?showClasses=true&showOperations=true&showAttributes=true&showEnumerations=true&showDataTypes=true&showSignals=true)"; 
