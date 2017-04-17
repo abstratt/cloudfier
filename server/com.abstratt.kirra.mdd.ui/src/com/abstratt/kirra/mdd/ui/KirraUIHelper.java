@@ -12,6 +12,7 @@ import org.eclipse.uml2.uml.Type;
 
 import com.abstratt.kirra.mdd.core.KirraHelper;
 
+@Deprecated
 public class KirraUIHelper extends KirraHelper {
     public static List<Property> getChildTabRelationships(final Class it) {
         return KirraHelper.get(it, "getChildTabRelationships", new Callable<List<Property>>() {
@@ -95,13 +96,18 @@ public class KirraUIHelper extends KirraHelper {
         return KirraHelper.isEntity(it) && KirraHelper.isConcrete(it) && KirraHelper.isTopLevel(it);
     }
 
+    public static boolean isEssential(org.eclipse.uml2.uml.Property property) {
+        return isUserVisible(property) && property.getUpper() == 1 && property.getLower() == 1;
+    }
+    
+    
     public static List<Property> tabledProperties(final org.eclipse.uml2.uml.Class entity) {
         return KirraHelper.get(entity, "tabledProperties", new Callable<List<Property>>() {
             @Override
             public List<Property> call() throws Exception {
                 List<Property> result = new ArrayList<Property>();
                 for (Property it : KirraHelper.getPropertiesAndRelationships(entity))
-                    if (KirraHelper.isEssential(it))
+                    if (isEssential(it))
                         result.add(it);
                 return result;
             }
