@@ -3,6 +3,11 @@ package com.abstratt.mdd.core.runtime.types;
 import java.io.Serializable;
 
 import org.eclipse.uml2.uml.Classifier;
+import org.eclipse.uml2.uml.LiteralBoolean;
+import org.eclipse.uml2.uml.LiteralInteger;
+import org.eclipse.uml2.uml.LiteralReal;
+import org.eclipse.uml2.uml.LiteralSpecification;
+import org.eclipse.uml2.uml.LiteralString;
 import org.eclipse.uml2.uml.Type;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
@@ -14,11 +19,7 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
         ValueConverter valueConverter;
         try {
             valueConverter = (ValueConverter) java.lang.Class.forName(converterName).newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeException("Error finding converter for " + converterType.getQualifiedName() + " to convert " + original, e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException("Error finding converter for " + converterType.getQualifiedName() + " to convert " + original, e);
-        } catch (ClassNotFoundException e) {
+        } catch (InstantiationException | IllegalAccessException | ClassNotFoundException e) {
             throw new RuntimeException("Error finding converter for " + converterType.getQualifiedName() + " to convert " + original, e);
         }
         return valueConverter.convertToBasicType(original);
@@ -29,6 +30,21 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
     }
     
     public static <T extends PrimitiveType> T fromValue(Type basicType, Object value) {
+        return (T) convertToBasicType((Classifier) basicType, value);
+    }
+    
+    public static <T extends PrimitiveType> T fromValue(Type basicType, LiteralSpecification literalSpecification) {
+    	Object value;
+    	if (literalSpecification instanceof LiteralReal)
+    		value = literalSpecification.realValue();
+    	else if (literalSpecification instanceof LiteralInteger)
+    		value = literalSpecification.integerValue();
+    	else if (literalSpecification instanceof LiteralString)
+    		value = literalSpecification.stringValue();
+    	else if (literalSpecification instanceof LiteralBoolean)
+    		value = literalSpecification.booleanValue();
+    	else 
+    		value = null;
         return (T) convertToBasicType((Classifier) basicType, value);
     }
 

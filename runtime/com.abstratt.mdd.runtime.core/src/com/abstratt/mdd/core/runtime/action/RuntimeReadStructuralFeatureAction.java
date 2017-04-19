@@ -11,6 +11,7 @@ import com.abstratt.mdd.core.runtime.Constants;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
+import com.abstratt.mdd.core.runtime.StructuredRuntimeObject;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 
 public class RuntimeReadStructuralFeatureAction extends RuntimeAction implements Constants {
@@ -23,10 +24,10 @@ public class RuntimeReadStructuralFeatureAction extends RuntimeAction implements
     public void executeBehavior(ExecutionContext context) {
         ReadStructuralFeatureAction instance = (ReadStructuralFeatureAction) this.getInstance();
         OutputPin resultPin = instance.getResult();
-        RuntimeObject target;
+        StructuredRuntimeObject target;
         Property property = (Property) instance.getStructuralFeature();
         if (!property.isStatic()) {
-            target = (RuntimeObject) this.getRuntimeObjectNode(instance.getObject()).getValue();
+            target = (StructuredRuntimeObject) this.getRuntimeObjectNode(instance.getObject()).getValue();
             if (target == null) {
                 // return null if trying to access property of a null object
                 addResultValue(resultPin, null);

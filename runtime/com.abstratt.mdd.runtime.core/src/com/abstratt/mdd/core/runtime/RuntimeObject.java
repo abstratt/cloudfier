@@ -62,7 +62,7 @@ import com.abstratt.pluginutils.LogUtils;
 
 /**
  */
-public class RuntimeObject extends BasicType {
+public class RuntimeObject extends StructuredRuntimeObject {
 
     private INodeKey key;
 
@@ -325,6 +325,7 @@ public class RuntimeObject extends BasicType {
     
     
 
+    @Override
     public BasicType getValue(Property property) {
         if (property instanceof Port)
             return readPort((Port) property);
