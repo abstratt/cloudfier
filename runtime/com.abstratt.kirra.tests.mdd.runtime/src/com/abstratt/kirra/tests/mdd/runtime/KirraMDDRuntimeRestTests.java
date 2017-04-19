@@ -72,7 +72,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         final Instance created = RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Instance>() {
             @Override
             public Instance run(Resource<?> resource) {
@@ -112,7 +112,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), false);
 
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         PostMethod login = new PostMethod(sessionURI.resolve("login").toString());
         login.setRequestEntity(new StringRequestEntity("login=unknownuser&password=pass", "application/x-www-form-urlencoded", "UTF-8"));
         executeMethod(401, login);
@@ -136,7 +136,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         GetMethod getTemplateInstance = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/_template").toASCIIString());
 
@@ -173,7 +173,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), false);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         signUp(getName(), "pass");
         login(getName(), "pass");
@@ -205,7 +205,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         final Instance created = RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Instance>() {
             @Override
@@ -252,7 +252,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
 
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         String entityUri = sessionURI.resolve("entities/").resolve("mypackage.MyClass1").toASCIIString();
         GetMethod getEntity = new GetMethod(entityUri);
         executeMethod(200, getEntity);
@@ -284,7 +284,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         GetMethod getDomainTypes = new GetMethod(sessionURI.resolve("entities/").toASCIIString());
         executeMethod(200, getDomainTypes);
 
@@ -320,7 +320,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         Instance created = RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Instance>() {
             @Override
@@ -370,7 +370,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
             }
         });
 
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         GetMethod getInstances = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/").toASCIIString());
         executeMethod(200, getInstances);
@@ -388,7 +388,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
 
     public void testUpdateInstance() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
                 new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId()).toASCIIString()));
@@ -411,7 +411,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
     
     public void testUpdateInstance_ClearValue() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
                 new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId()).toASCIIString()));
@@ -431,7 +431,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
     
     public void testUpdateInstance_SetLink() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         URI uri1 = sessionURI.resolve("instances/mypackage.MyClass1/" + created.get(0).getObjectId());
         URI uri2 = sessionURI.resolve("instances/mypackage.MyClass2/" + created.get(1).getObjectId());
         
@@ -503,7 +503,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", source.getBytes()), true);
 
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         GetMethod getDomainTypes = new GetMethod(sessionURI.resolve("services/").toASCIIString());
         executeMethod(200, getDomainTypes);
 
@@ -531,7 +531,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         GetMethod getTemplateInstance = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/_template").toASCIIString());
         executeMethod(200, getTemplateInstance);
@@ -587,7 +587,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         model += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Object>() {
             @Override
@@ -650,7 +650,7 @@ public class KirraMDDRuntimeRestTests extends AbstractKirraRestV1Tests {
         source += "end.";
 
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", source.getBytes()), true);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<Object>() {
             @Override

@@ -9,64 +9,77 @@ import com.abstratt.kirra.TypeRef.TypeKind
 
 class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 
-	new(String name) {
-		super(name)
-	}
+    new(String name) {
+        super(name)
+    }
 
-	static String model = '''
-		package todo;
+    static String model = '''
+        package todo;
 
-		abstract role class AbstractUser
-		    attribute name : String;
-		end;
-		
-		role class Admin specializes AbstractUser
-		end;
-		
-		role class User specializes AbstractUser
-		    allow extent;
-		end;
-		
-		role class AdvancedUser specializes User
-		end;
-		
-		class Task
-		    allow Admin create, extent, delete, update;
-		    allow User create, read;
-		    allow User update { self.creator == (System#user() as User) };
-		    attribute description : String;
-		    private readonly attribute creator : User := { (System#user() as User) };
-		    
-		    operation assignTo(another : User);
-		    
-		    operation close()
-		        allow User call { self.creator == (System#user() as User) };
-		        
-		    static query openTasks() : Task[*];
-		        
-		    static operation deleteTasksFor(creator : User)
-		        allow Admin static call;
-		end;
-		
-		class AnonymousComment
-		    allow User all;
-		    allow extent, static call;
-		    attribute comment : Memo;
-		    operation reply(text : Memo);
-		    static operation newComment(text : Memo) : AnonymousComment;
-		end;
-		
-		class AnonymousPost
-		    attribute text : Memo;
-		    operation publish();
-		    static operation writeAndPublish(text : Memo) : AnonymousPost;
-	    end;
-	end.
-	  ''';
+        abstract role class AbstractUser
+            attribute name : String;
+        end;
+        
+        role class Admin specializes AbstractUser
+        end;
+        
+        role class User specializes AbstractUser
+            allow extent;
+        end;
+        
+        role class AdvancedUser specializes User
+        end;
+        
+        
+        /* A role that should be allowed to do anything */
+        role class PowerlessUser specializes AbstractUser
+            allow extent;
+        end; 
+        
+        class Bug
+            allow User read, delete { self.creator == (System#user() as User) };
+            attribute name : String;
+            attribute creator : User;
+        end;
+        
+        class Task
+            allow Admin create, extent, delete, update;
+            allow User create, read;
+            allow User update { self.creator == (System#user() as User) };
+            attribute description : String;
+            private readonly attribute creator : User := { (System#user() as User) };
+            
+            operation assignTo(another : User);
+            
+            operation close()
+                allow User call { self.creator == (System#user() as User) };
+                
+            static query openTasks() : Task[*];
+                
+            static operation deleteTasksFor(creator : User)
+                allow Admin static call;
+        end;
+        
+        class AnonymousComment
+            allow User extent, read;
+            allow Admin all;
+            allow create, read, static call;
+            attribute comment : Memo;
+            operation reply(text : Memo);
+            static operation newComment(text : Memo) : AnonymousComment;
+        end;
+        
+        class AnonymousPost
+            attribute text : Memo;
+            operation publish();
+            static operation writeAndPublish(text : Memo) : AnonymousPost;
+        end;
+    end.
+      ''';
 
-	override protected setupRuntime() throws CoreException {
-		super.setupRuntime()
-		
+    override protected setupRuntime() throws CoreException {
+        super.setupRuntime()
+        
         val Instance newProfile0 = new Instance()
         newProfile0.setEntityName("Profile")
         newProfile0.setEntityNamespace("userprofile")
@@ -80,22 +93,22 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         newUser0.setValue("name", "Administrator")
         newUser0.setRelated("userProfile", createdProfile0)
         val createdUser0 = kirra.createInstance(newUser0)
-		
-		val Instance newProfile1 = new Instance()
-		newProfile1.setEntityName("Profile")
-		newProfile1.setEntityNamespace("userprofile")
-		newProfile1.setValue("username", "peter.jones")
-		newProfile1.setValue("password", "pass")
-		val createdProfile1 = kirra.createInstance(newProfile1)
-		
+        
+        val Instance newProfile1 = new Instance()
+        newProfile1.setEntityName("Profile")
+        newProfile1.setEntityNamespace("userprofile")
+        newProfile1.setValue("username", "peter.jones")
+        newProfile1.setValue("password", "pass")
+        val createdProfile1 = kirra.createInstance(newProfile1)
+        
         val Instance newUser1 = new Instance()
         newUser1.setEntityName("User")
         newUser1.setEntityNamespace("todo")
         newUser1.setValue("name", "Peter")
         newUser1.setRelated("userProfile", createdProfile1)
-		val createdUser1 = kirra.createInstance(newUser1)
-		
-		val Instance newProfile2 = new Instance()
+        val createdUser1 = kirra.createInstance(newUser1)
+        
+        val Instance newProfile2 = new Instance()
         newProfile2.setEntityName("Profile")
         newProfile2.setEntityNamespace("userprofile")
         newProfile2.setValue("username", "john.ford")
@@ -122,17 +135,31 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         newUser3.setValue("name", "Mary")
         newUser3.setRelated("userProfile", createdProfile3)
         val createdUser3 = kirra.createInstance(newUser3)
-		
-		loginAs(newProfile1.getValue("username") as String)
-		
-	}
+        
+        val Instance newProfile4 = new Instance()
+        newProfile4.setEntityName("Profile")
+        newProfile4.setEntityNamespace("userprofile")
+        newProfile4.setValue("username", "powerless")
+        newProfile4.setValue("password", "pass")
+        val createdProfile4 = kirra.createInstance(newProfile4)
+        
+        val Instance newUser4 = new Instance()
+        newUser4.setEntityName("PowerlessUser")
+        newUser4.setEntityNamespace("todo")
+        newUser4.setValue("name", "Powerless User")
+        newUser4.setRelated("userProfile", createdProfile4)
+        val createdUser4 = kirra.createInstance(newUser4)
+        
+        loginAs(newProfile1.getValue("username") as String)
+        
+    }
 
-	def testCurrentUser() {
-		parseAndCheck(model)
-		assertEquals("peter.jones", kirra.currentUser.getValue("username"))
-	}
-	
-	def testCurrentUser_Roles() {
+    def testCurrentUser() {
+        parseAndCheck(model)
+        assertEquals("peter.jones", kirra.currentUser.getValue("username"))
+    }
+    
+    def testCurrentUser_Roles() {
         parseAndCheck(model)
         
         val actualRoles = kirra.currentUserRoles.map[it.reference]
@@ -150,26 +177,26 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         
         assertEquals(#[expectedUserRole.reference], actualRoles)
     }
-	
-	def testCurrentUser_AsRole() {
-		parseAndCheck(model)
+    
+    def testCurrentUser_AsRole() {
+        parseAndCheck(model)
 
-		val Instance newTask = new Instance()
-		newTask.setEntityName("Task")
-		newTask.setEntityNamespace("todo")
-		newTask.setValue("description", "something to do")
-		val Instance createdTask = kirra.createInstance(newTask)
+        val Instance newTask = new Instance()
+        newTask.setEntityName("Task")
+        newTask.setEntityNamespace("todo")
+        newTask.setValue("description", "something to do")
+        val Instance createdTask = kirra.createInstance(newTask)
 
         val expectedUserRole = findUserByName("Peter", "User")
         assertNotNull(expectedUserRole)
-		assertNotNull(createdTask.getRelated("creator"))
-		assertEquals(expectedUserRole.reference, createdTask.getRelated("creator").reference)
-	}
+        assertNotNull(createdTask.getRelated("creator"))
+        assertEquals(expectedUserRole.reference, createdTask.getRelated("creator").reference)
+    }
 
     protected def Instance findUserByName(String name, String entityName) {
         kirra.filterInstances(#{"name" -> #[name as Object]}, "todo", entityName, true).head
     }
-	
+    
     def testInstanceCRUDCapabilities_User() {
         parseAndCheck(model)
 
@@ -300,6 +327,25 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         assertEquals(#[], entityCapabilities.actions.get('deleteTasksFor'))
         
     }    
+
+    def testEntityCapabilities_PowerlessUser() {
+        parseAndCheck(model)
+
+        loginAs("powerless")
+        
+        val taskEntityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "Task", TypeKind.Entity))
+        assertEquals(#[], taskEntityCapabilities.entity)
+        taskEntityCapabilities.actions.forEach [ name, capabilities |
+            assertEquals(#[], capabilities)
+        ]
+        
+        val bugEntityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "Bug", TypeKind.Entity))
+        assertEquals(#[], taskEntityCapabilities.entity)
+        taskEntityCapabilities.actions.forEach [ name, capabilities |
+            assertEquals(#[], capabilities)
+        ]
+    }    
+
     
     def testEntityCapabilities_Admin() {
         parseAndCheck(model)
@@ -320,7 +366,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         
         val entityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousComment", TypeKind.Entity))
 
-        assertEquals(#{AccessCapability.List.name() }, entityCapabilities.entity.toSet)
+        assertEquals(#{AccessCapability.Create.name() }.toSet, entityCapabilities.entity.toSet)
         assertEquals(#[AccessCapability.StaticCall.name()], entityCapabilities.actions.get('newComment'))
         
         loginAs("peter.jones");

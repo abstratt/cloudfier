@@ -2,8 +2,9 @@ package com.abstratt.mdd.core.tests.runtime
 
 import com.abstratt.mdd.core.runtime.Runtime
 import com.abstratt.mdd.core.runtime.types.StringType
+import com.abstratt.mdd.core.runtime.ActorSelector
 
-class RuntimeTests extends AbstractRuntimeTests {
+class RuntimeUserTests extends AbstractRuntimeTests {
 	
 	new(String name) {
 		super(name)
@@ -29,9 +30,16 @@ class RuntimeTests extends AbstractRuntimeTests {
 		
 		val profile = runtime.getRuntimeClass("userprofile::Profile").newInstance
 		writeAttribute(profile, "username", new StringType("peter.jones"))
-		writeAttribute(profile, "email", new StringType("peter@abstratt.com"))
 		writeAttribute(profile, "password", new StringType("pass"))
-		runtime.setActorSelector([Runtime runtime | profile])
+		runtime.setActorSelector(new ActorSelector() {
+            override getCurrentActor(Runtime runtime) {
+                profile
+            }
+        
+            override getRoles(Runtime runtime) {
+                throw new UnsupportedOperationException() 
+            }
+		})
 		runtime.saveContext(false)
 		
 		assertNotNull(runtime.currentActor)
@@ -42,17 +50,15 @@ class RuntimeTests extends AbstractRuntimeTests {
 		parseAndCheck(model)
 		val profile1 = runtime.getRuntimeClass("userprofile::Profile").newInstance
 		writeAttribute(profile1, "username", new StringType("john.ford"))
-		writeAttribute(profile1, "email", new StringType("john@abstratt.com"))
 		writeAttribute(profile1, "password", new StringType("pass"))
 		
 		val profile2 = runtime.getRuntimeClass("userprofile::Profile").newInstance
 		writeAttribute(profile2, "username", new StringType("john.ford"))
-		writeAttribute(profile2, "email", new StringType("john@abstratt.com"))
 		writeAttribute(profile2, "password", new StringType("pass"))
 		
 		val user = runtime.getRuntimeClass("todo::User").newInstance
 		writeAttribute(user, "name", new StringType("John"))
-		writeAttribute(user, "user", profile2)
+		writeAttribute(user, "userProfile", profile2)
 		
 		runtime.saveContext(false)
 		

@@ -14,7 +14,7 @@ public abstract class AbstractKirraRestV1Tests extends AbstractKirraRestTests {
 	}
 
     protected void signUp(String username, String password, int expected) throws HttpException, IOException {
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         URI sigupUri = sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.SIGNUP);
 		PostMethod signUpMethod = new PostMethod(sigupUri.toString());
         signUpMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
@@ -22,8 +22,12 @@ public abstract class AbstractKirraRestV1Tests extends AbstractKirraRestTests {
         restHelper.executeMethod(expected, signUpMethod);
     }
     
+    protected void signUp(String username, String password) throws HttpException, IOException {
+        signUp(username, password, 204);
+    }
+
     protected void login(String username, String password) throws HttpException, IOException {
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         PostMethod loginMethod = new PostMethod(sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.LOGIN).toString());
         loginMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
                 "application/x-www-form-urlencoded", "UTF-8"));
@@ -31,7 +35,7 @@ public abstract class AbstractKirraRestV1Tests extends AbstractKirraRestTests {
     }
 
     protected void logout() throws HttpException, IOException {
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         PostMethod logoutMethod = new PostMethod(sessionURI.resolve(com.abstratt.mdd.frontend.web.Paths.LOGOUT).toString());
         restHelper.executeMethod(200, logoutMethod);
     }

@@ -115,7 +115,7 @@ public class InstancePerformanceTests extends AbstractKirraRestV1Tests {
     private void testCreateInstances(int instanceCount) throws Exception {
         int attributeCount = 30;
         buildSimpleModel(attributeCount);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         GetMethod getTemplateInstance = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/_template").toASCIIString());
 
@@ -142,7 +142,7 @@ public class InstancePerformanceTests extends AbstractKirraRestV1Tests {
         int attributeCount = 30;
         buildSimpleModel(attributeCount);
         createInstances(instanceCount, attributeCount);
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
         final GetMethod getInstances = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/").toASCIIString());
 
         Callable<?> toMeasure = new Callable<Object>() {
@@ -160,7 +160,7 @@ public class InstancePerformanceTests extends AbstractKirraRestV1Tests {
         buildSimpleModel(attributeCount);
         List<String> instanceIds = createInstances(instanceCount, attributeCount);
 
-        URI sessionURI = getWorkspaceURI();
+        URI sessionURI = getWorkspaceBaseURI();
 
         final GetMethod getOneInstance = new GetMethod(sessionURI.resolve("instances/mypackage.MyClass1/" + instanceIds.get(0))
                 .toASCIIString());

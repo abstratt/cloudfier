@@ -280,7 +280,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertFalse(properties.get(5).isRequired());
         TestCase.assertFalse(properties.get(5).isMultiple());
         TestCase.assertFalse(properties.get(5).isDerived());
-        TestCase.assertEquals(new TypeRef("mdd_media::Picture", TypeKind.Primitive), properties.get(5).getTypeRef());
+        TestCase.assertEquals(new TypeRef("mdd_media::Picture", TypeKind.Blob), properties.get(5).getTypeRef());
     }
 
     public void testEntityRelationships() throws CoreException {

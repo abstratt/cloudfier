@@ -14,6 +14,8 @@ import java.util.Map.Entry;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -37,6 +39,13 @@ public class RestHelper {
         httpClient = new HttpClient();
         workspaceName = name;
     }
+    
+	public void setCredentials(String username, String password, String realm, URI uri) {
+		httpClient.getState().setCredentials(
+			new AuthScope(uri.getHost(), uri.getPort(), realm),
+			new UsernamePasswordCredentials(username, password)
+		);
+	}
 
     public HttpMethod buildGetRequest(URI location) throws HttpException, IOException {
         return new GetMethod(location.toASCIIString());

@@ -1,6 +1,7 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
@@ -191,7 +192,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
 
         Instance newInstance2 = new Instance("mypackage", "MyClass2");
         newInstance2.setValue("attr3", true);
-        newInstance2.setValue("attr4", new Date());
+        newInstance2.setValue("attr4", LocalDateTime.now());
         newInstance2.setValue("attr5", "value1");
         Instance created3 = kirra.createInstance(newInstance2);
 
@@ -252,7 +253,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         newInstance2.setEntityName("MyClass2");
         newInstance2.setEntityNamespace("mypackage");
         newInstance2.setValue("attr3", true);
-        Date today = Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+        LocalDateTime today = LocalDateTime.now();
         newInstance2.setValue("attr4", today);
         newInstance2.setValue("attr5", "value2");
         Instance created2 = kirra.createInstance(newInstance2);

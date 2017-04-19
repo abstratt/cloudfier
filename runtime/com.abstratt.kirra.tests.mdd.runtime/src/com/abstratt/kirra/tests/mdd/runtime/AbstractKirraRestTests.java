@@ -47,10 +47,7 @@ public abstract class AbstractKirraRestTests extends AbstractRepositoryTests {
         sources = new HashMap<String, byte[]>(sources);
         sources.put("mdd.properties", getDefaultProperties().getBytes());
         restHelper.buildProject(sources);
-        login("guest", "");
         restHelper.initDB();
-        if (!login)
-            logout();
     }
 
     protected HttpMethod buildUploadRequest(URI location, Map<String, byte[]> toUpload) throws HttpException, IOException {
@@ -72,7 +69,7 @@ public abstract class AbstractKirraRestTests extends AbstractRepositoryTests {
     }
 
     protected String getDefaultProperties() {
-        return "mdd.modelWeaver=kirraWeaver\nmdd.extendBaseObject=true\nmdd.enableLibraries=true\nmdd.enableExtensions=true\nmdd.enableMedia=true\nmdd.application.allowAnonymous=true";
+        return "mdd.modelWeaver=kirraWeaver\nmdd.extendBaseObject=true\nmdd.enableLibraries=true\nmdd.enableExtensions=true\nmdd.enableMedia=true\nmdd.application.allowAnonymous=true\nmdd.application.loginRequired=true";
     }
 
     protected URI getTestProjectURI() {
@@ -83,7 +80,7 @@ public abstract class AbstractKirraRestTests extends AbstractRepositoryTests {
         return getName();
     }
 
-    protected URI getWorkspaceURI() throws IOException, HttpException {
+    protected URI getWorkspaceBaseURI() throws IOException, HttpException {
         return restHelper.getApiUri();
     }
 
@@ -93,12 +90,6 @@ public abstract class AbstractKirraRestTests extends AbstractRepositoryTests {
         restHelper = new RestHelper(getName());
     }
 
-    protected void signUp(String username, String password) throws HttpException, IOException {
-        signUp(username, password, 204);
-    }
-
-    protected abstract void signUp(String username, String password, int expected) throws HttpException, IOException;
-    
     protected abstract void login(String username, String password) throws HttpException, IOException;
 
     protected abstract void logout() throws HttpException, IOException;

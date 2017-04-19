@@ -3,11 +3,14 @@ package com.abstratt.kirra.tests.mdd.runtime;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.collections.IteratorUtils;
@@ -54,7 +57,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     }
     
     @Override
-    protected URI getWorkspaceURI() throws IOException, HttpException {
+    protected URI getWorkspaceBaseURI() throws IOException, HttpException {
 		URI workspaceURI = URI.create("http://localhost" + WebFrontEnd.APP_API2_PATH + "/");
 		return workspaceURI;
     }
@@ -65,9 +68,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "role class User\n";
-        model += "    readonly id attribute username : String;\n";
-        model += "end;\n";
         model += "class MyClass1\n";
         model += "    attribute attr1 : String;\n";
         model += "    attribute attr2 : Integer := 5;\n";
@@ -80,9 +80,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
         String templateUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", "mypackage.MyClass1"));
 		GetMethod getTemplateInstance = new GetMethod(templateUri);
-
         ObjectNode template = (ObjectNode) executeJsonMethod(200, getTemplateInstance);
-
         ((ObjectNode) template.get("values")).put("attr1", "foo");
         ((ObjectNode) template.get("values")).put("attr3", 100);
         ((ObjectNode) template.get("values")).put("attr4", (String) null);
@@ -103,9 +101,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "role class User\n";
-        model += "    readonly id attribute username : String;\n";
-        model += "end;\n";
         model += "class MyClass1\n";
         model += "    attribute attr1 : String;\n";
         model += "    attribute attr2 : Integer;\n";
@@ -166,9 +161,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "role class User\n";
-        model += "    readonly id attribute username : String;\n";
-        model += "end;\n";
         model += "class MyClass1\n";
         model += "    attribute attr1 : String;\n";
         model += "    attribute attr2 : Integer;\n";
@@ -207,9 +199,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "role class User\n";
-        model += "    readonly id attribute username : String;\n";
-        model += "end;\n";
         model += "class MyClass1 attribute a : Integer[0,1]; end;\n";
         model += "end.";
 
@@ -381,9 +370,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "role class User\n";
-        model += "    readonly id attribute username : String;\n";
-        model += "end;\n";
         model += "class MyClass1\n";
         model += "    attribute attr1 : String;\n";
         model += "    attribute attr2 : Integer := 5;\n";
@@ -407,33 +393,73 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "package mypackage;\n";
         model += "apply kirra;\n";
         model += "import base;\n";
-        model += "role class User readonly id attribute attr1 : String; end;\n";
+        model += "role class User\n";
+        model += "    readonly id attribute fullName : String;\n";
+        model += "end;\n";
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
 
-        final String username = getName() + "@foo.com";
-
-        // first sign up should work
-        signUp(username, "pass", 204);
+        String userEntityName = "mypackage.User";
+		String templateUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", userEntityName));
+		GetMethod getTemplateInstance = new GetMethod(templateUri);
+        ObjectNode template = (ObjectNode) executeJsonMethod(200, getTemplateInstance);
+        String fullName = getName() + " Chaves";
+		((ObjectNode) template.get("values")).put("fullName", fullName);
+        final String username = getName() + "@foo.com-" + UUID.randomUUID().toString();
+        ObjectNode createdRole = signUp(template, userEntityName, username, "pass", 201);
 
         // double sign up should fail
-        signUp(username, "pass", 400);
+        signUp(template, userEntityName, username, "pass", 400);
+        
+        ObjectNode index = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
+        assertNull(index.get("currentUser"));
 
         // can login
         login(username, "pass");
+        
+        index = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
+        JsonNode currentUserUri = index.get("currentUser");
+		assertNotNull(currentUserUri);
+        JsonNode roleLinkUri = index.get("currentUserRoles").get(userEntityName);
+        assertNotNull(roleLinkUri);
+        ObjectNode currentRole = executeJsonMethod(200, new GetMethod(roleLinkUri.asText()));
+        assertEquals(fullName, currentRole.get("values").get("fullName").textValue());
+        
+        ObjectNode currentUser = executeJsonMethod(200, new GetMethod(currentUserUri.asText()));
+        assertEquals(username, currentUser.get("values").get("username").textValue());
+        assertNull(currentUser.get("values").get("password"));
+    }
+
+    protected <T extends JsonNode> T signUp(ObjectNode roleRepresentation, String roleEntityName, String username, String password, int expected) throws HttpException, IOException {
+    	
+    	String signUpURI = resolveApplicationURI(Paths.SIGNUP_PATH.replace("{roleEntityName}", roleEntityName));
+    	PostMethod signUpMethod = new PostMethod(signUpURI.toString());
+    	String encodedCredentials = Base64.getEncoder().encodeToString((username+":"+password).getBytes(StandardCharsets.UTF_8));
+		signUpMethod.addRequestHeader("X-Kirra-Credentials", encodedCredentials);
+        signUpMethod.setRequestEntity(new StringRequestEntity(roleRepresentation.toString(), "application/json", "UTF-8"));
+        return executeJsonMethod(expected, signUpMethod);
+    	
+//    	String templateUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", roleEntityName));
+//    	GetMethod getTemplateInstance = new GetMethod(templateUri);
+//    	
+//    	ObjectNode template = (ObjectNode) executeJsonMethod(200, getTemplateInstance);
+//    	ObjectNode values = (ObjectNode) template.get("values");
+//    	values.put("username", username);
+//    	values.put("password", password);
+//    	PostMethod createMethod = new PostMethod(resolveApplicationURI(Paths.INSTANCES_PATH.replace("{entityName}", roleEntityName).replace("{application}", getName())));
+//    	createMethod.setRequestEntity(new StringRequestEntity(template.toString(), "application/json", "UTF-8"));
     }
     
     @Override
     protected void login(String username, String password) throws HttpException, IOException {
         String loginURI = resolveApplicationURI(Paths.LOGIN_PATH);
 		PostMethod loginMethod = new PostMethod(loginURI);
-        loginMethod.setRequestEntity(new StringRequestEntity("login=" + username + "&password=" + password,
-                "application/x-www-form-urlencoded", "UTF-8"));
+		restHelper.setCredentials(username, password, getName() + "-realm", URI.create(loginURI));
         restHelper.executeMethod(204, loginMethod);
     }
 
 	private String resolveApplicationURI(String toResolve) throws IOException, HttpException {
-		URI workspaceURI = getWorkspaceURI();
+		URI workspaceURI = getWorkspaceBaseURI();
 		String placeholderFreeURI = workspaceURI.resolve(toResolve.replace("{application}", getName())).toString();
 		Assert.assertFalse(placeholderFreeURI.contains("{"));
 		return placeholderFreeURI;
@@ -445,11 +471,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     	
     }
     
-    @Override
-    protected void signUp(String username, String password, int expected) throws HttpException, IOException {
-    	// TODO Auto-generated method stub
-    	
-    }
 
 
     @Override
