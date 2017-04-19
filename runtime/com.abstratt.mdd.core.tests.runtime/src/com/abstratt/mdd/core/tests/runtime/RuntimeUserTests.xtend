@@ -3,6 +3,8 @@ package com.abstratt.mdd.core.tests.runtime
 import com.abstratt.mdd.core.runtime.Runtime
 import com.abstratt.mdd.core.runtime.types.StringType
 import com.abstratt.mdd.core.runtime.ActorSelector
+import junit.framework.Test
+import junit.framework.TestSuite
 
 class RuntimeUserTests extends AbstractRuntimeTests {
 	
@@ -68,4 +70,8 @@ class RuntimeUserTests extends AbstractRuntimeTests {
 		assertNotNull(roleInstance)
 		assertEquals(user.objectId, roleInstance.objectId)
 	}
+	
+	def static Test suite() {
+        return new TestSuite(RuntimeUserTests);
+    }
 }
