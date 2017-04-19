@@ -29,6 +29,10 @@ public interface KirraAuthenticationContext {
      */
     ThreadLocal<Boolean> AUTHORIZED = new ThreadLocal<Boolean>();    
     /** 
+     * Does this application allow authentication? 
+     */
+    ThreadLocal<Boolean> LOGIN_ALLOWED = new ThreadLocal<Boolean>();    
+    /** 
      * Does this application require authentication? 
      */
     ThreadLocal<Boolean> LOGIN_REQUIRED = new ThreadLocal<Boolean>();    
@@ -46,8 +50,10 @@ public interface KirraAuthenticationContext {
     	String workspace = path.isEmpty() ? KirraRESTUtils.getWorkspaceFromProjectPath(request) : path.segment(0);
         WORKSPACE_NAME.set(workspace);
         Properties properties = KirraRESTUtils.getProperties(workspace);
-        LOGIN_REQUIRED.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.LOGIN_REQUIRED, Boolean.FALSE.toString())));
-        ALLOWS_ANONYMOUS.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS, Boolean.FALSE.toString())));
+        LOGIN_ALLOWED.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.LOGIN_ALLOWED, Boolean.FALSE.toString())));
+        ALLOWS_ANONYMOUS.set(Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS, "" + !LOGIN_ALLOWED.get())));
+        boolean loginRequired = !ALLOWS_ANONYMOUS.get() && LOGIN_ALLOWED.get();
+		LOGIN_REQUIRED.set(loginRequired);
         PROTECTED.set(false);
         IS_OPTIONAL.set(request.getMethod().equals(Method.OPTIONS) || !PROTECTED.get());
     	String requestedWith = ((Series<Header>) request.getAttributes().get("org.restlet.http.headers")).getFirstValue("X-Requested-With"); 
@@ -59,7 +65,8 @@ public interface KirraAuthenticationContext {
 	}
 	
 	default boolean isLoginRequired() {
-		return LOGIN_REQUIRED.get();
+		Boolean loginRequired = LOGIN_REQUIRED.get();
+		return loginRequired;
 	}
 	
 	default boolean isProtected() {
@@ -69,7 +76,8 @@ public interface KirraAuthenticationContext {
 		return IS_AJAX.get();
 	}
 	default boolean allowsAnonymous() {
-		return ALLOWS_ANONYMOUS.get();
+		Boolean allowsAnonymous = ALLOWS_ANONYMOUS.get();
+		return allowsAnonymous;
 	}
 	default boolean isAuthorized() {
 		return AUTHORIZED.get();

@@ -296,11 +296,6 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
     
     @Override
-    public Instance createUser(Instance userInfo) {
-    	throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Instance getCurrentUser() {
         RuntimeObject currentActor = getRuntime().getCurrentActor();
         return (Instance) (currentActor != null ? convertFromRuntimeObject(currentActor) : null);
@@ -338,6 +333,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     @Override
     public EntityCapabilities getEntityCapabilities(TypeRef entityRef) {
     	RuntimeClass runtimeClass = getRuntime().getRuntimeClass((Class) getModelType(entityRef, Literals.CLASS));
+    	List<AccessCapability> allCapabilities = asList(AccessCapability.values());
     	EntityCapabilities capabilities = new EntityCapabilities();
     	
     	RuntimeObject currentActor = getRuntime().getCurrentActor();
@@ -351,7 +347,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     	Function<Collection<Operation>, Map<String, List<String>>> computeOperationCapabilities = staticOperations -> staticOperations.stream().collect(toMap(action -> action.getName(), action -> {
 			Map<Classifier, Map<AccessCapability, Constraint>> actionConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(
 					allRoleClasses, 
-					asList(AccessCapability.StaticCall),
+					allCapabilities,
 					asList(runtimeClass.getModelClassifier(), action)
 				);
     		boolean isCallAvailable = isCapabilityAvailable(runtimeClass.getClassObject(), AccessCapability.StaticCall, actualRoleClasses, actionConstraintsPerRole);
@@ -361,7 +357,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     	capabilities.setActions(computeOperationCapabilities.apply(allStaticActions));
     	capabilities.setQueries(computeOperationCapabilities.apply(allStaticQueries));
 		
-    	Map<Classifier, Map<AccessCapability, Constraint>> explicitConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(allRoleClasses, asList(AccessCapability.Create, AccessCapability.List), asList(runtimeClass.getModelClassifier()));
+		Map<Classifier, Map<AccessCapability, Constraint>> explicitConstraintsPerRole = AccessControlUtils.computeConstraintsPerRoleClass(allRoleClasses, allCapabilities, asList(runtimeClass.getModelClassifier()));
 		
 		Set<AccessCapability> enabledEntityCapabilities = computeActualCapabilities(runtimeClass.getClassObject(),
 				actualRoleClasses, asList(AccessCapability.Create, AccessCapability.List), explicitConstraintsPerRole);

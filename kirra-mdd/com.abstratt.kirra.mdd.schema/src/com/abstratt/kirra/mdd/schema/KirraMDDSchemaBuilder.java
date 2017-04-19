@@ -18,7 +18,6 @@ import org.eclipse.uml2.uml.StateMachine;
 import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.VisibilityKind;
 
-import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.NamedElement;
@@ -28,7 +27,6 @@ import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
-import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.Schema;
 import com.abstratt.kirra.SchemaBuilder;
 import com.abstratt.kirra.Service;

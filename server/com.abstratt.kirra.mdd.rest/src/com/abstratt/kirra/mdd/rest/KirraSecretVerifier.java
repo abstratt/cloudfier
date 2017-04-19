@@ -45,8 +45,8 @@ public class KirraSecretVerifier extends SecretVerifier implements KirraAuthenti
     }
     
     @Override
-    	protected String getIdentifier(Request request, Response response) {
-    		// TODO Auto-generated method stub
-    		return super.getIdentifier(request, response);
-    	}
+	protected String getIdentifier(Request request, Response response) {
+		// TODO Auto-generated method stub
+		return super.getIdentifier(request, response);
+	}
 }

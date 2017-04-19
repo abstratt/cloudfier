@@ -18,7 +18,9 @@ class ApplicationMapper extends com.abstratt.mdd.target.jse.ApplicationMapper {
         val defaultJdbcProductionUrl = '''jdbc:hsqldb:mem:«applicationName»;user=«jdbcProductionUsername»;password=«jdbcProductionPassword»'''
         val defaultJdbcTestUrl = '''jdbc:hsqldb:mem:«applicationName»;user=«jdbcTestUsername»;password=«jdbcTestPassword»'''
         
-        val loginRequired = Boolean.parseBoolean(repository.properties.getOrDefault(KirraMDDConstants.LOGIN_REQUIRED, Boolean.toString(false)) as String)
+        val allowAnonymous = Boolean.parseBoolean(repository.properties.getOrDefault(KirraMDDConstants.ALLOW_ANONYMOUS, Boolean.toString(false)) as String)
+        val loginAllowed = Boolean.parseBoolean(repository.properties.getOrDefault(KirraMDDConstants.LOGIN_ALLOWED, Boolean.toString(true)) as String)
+        val loginRequired = !allowAnonymous && loginAllowed
         
         val explicitJdbcProductionUrl = properties.getProperty("mdd.generator.jpa.jdbc.production.url")
         val explicitJdbcTestUrl = properties.getProperty("mdd.generator.jpa.jdbc.test.url")

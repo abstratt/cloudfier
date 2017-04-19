@@ -4,6 +4,7 @@ import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -11,9 +12,11 @@ import org.eclipse.core.runtime.IStatus;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
+import org.restlet.data.ChallengeResponse;
 import org.restlet.data.Status;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
+import org.restlet.security.User;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
@@ -53,9 +56,9 @@ public class KirraRepositoryFilter extends Filter {
                     Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
                     KirraContext.setInstanceManagement(kirraRepository);
                     KirraContext.setSchemaManagement(kirraRepository);
-                    boolean allowAnonymous = Boolean.TRUE.valueOf(context.getProperties().getProperty(KirraMDDConstants.ALLOW_ANONYMOUS));
-                    boolean isLoginRequired = !allowAnonymous;
-                    boolean isLoginAllowed = Boolean.TRUE.valueOf(context.getProperties().getProperty(KirraMDDConstants.LOGIN_REQUIRED));
+                    boolean allowAnonymous = Boolean.valueOf(context.getProperties().getProperty(KirraMDDConstants.ALLOW_ANONYMOUS));
+                    boolean isLoginAllowed = Boolean.valueOf(context.getProperties().getProperty(KirraMDDConstants.LOGIN_ALLOWED));
+                    boolean isLoginRequired = !allowAnonymous && isLoginAllowed;
 					KirraContext.setOptions(new KirraContext.Options(isLoginRequired, isLoginAllowed));
                     URI baseURI = KirraReferenceUtils.getBaseReference(request, request.getResourceRef(),
                             Paths.API_V2).toUri();
