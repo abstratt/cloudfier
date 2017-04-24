@@ -1,5 +1,7 @@
 package com.abstratt.mdd.core.runtime.types;
 
+import org.apache.commons.lang.StringUtils;
+
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class StringType extends PrimitiveType<String> {
@@ -23,7 +25,7 @@ public class StringType extends PrimitiveType<String> {
     }
 
     public BooleanType contains(ExecutionContext context, StringType substring) {
-        return BooleanType.fromValue(substring != null && this.value.contains(substring.value));
+        return BooleanType.fromValue(substring != null && StringUtils.containsIgnoreCase(this.value, substring.value));
     }
 
     @Override
