@@ -5,8 +5,8 @@ import junit.framework.TestSuite;
 
 public class AllRuntimeTests {
 	
-    public static Test suite() {
-        TestSuite suite = new TestSuite(AllRuntimeTests.class.getName());
+    public def static Test suite() {
+        val TestSuite suite = new TestSuite(AllRuntimeTests.name);
         suite.addTest(PrimitiveActionTests.suite());
         suite.addTest(ExpressionTests.suite());
         suite.addTest(RuntimeStringTests.suite());
