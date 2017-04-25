@@ -1,7 +1,7 @@
 package com.abstratt.mdd.core.runtime.types;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 
 import org.eclipse.uml2.uml.Type;
 
@@ -14,7 +14,7 @@ public class SetType extends CollectionType {
     private static final long serialVersionUID = 1L;
 
     SetType(Type baseType, Collection<? extends BasicType> existing) {
-        super(baseType, new HashSet<BasicType>(existing));
+        super(baseType, new LinkedHashSet<BasicType>(existing));
     }
 
     @Override
