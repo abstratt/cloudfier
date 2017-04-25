@@ -122,7 +122,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	
 	public File getStoreFile() {
 		TypeRef typeRef = entityName;
-		return getCatalog().getStorePath(typeRef);
+		return getCatalog().getStorePath(entityName).getAbsoluteFile();
 	}
 	
 	static void save(InMemoryNodeStore store) {
@@ -297,7 +297,13 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		Relationship oppositeRel = getCatalog().getMetadata().getOpposite(relationship);
 		
 		NodeReference thisRef = new NodeReference(getName(), key);
-		return otherStore.nodes.values().stream().filter(other -> other.getRelated().getOrDefault(oppositeRel.getName(), Collections.emptyList()).contains(thisRef)).collect(Collectors.toList());
+		return otherStore.nodes.values().stream().filter(other -> { 
+			Map<String, Collection<NodeReference>> otherRelated = other.getRelated();
+			Collection<NodeReference> found = otherRelated.get(oppositeRel.getName());
+			if (found == null)
+				return false;
+			return found.contains(thisRef); 
+		}).collect(Collectors.toList());
 	}
 
 	@Override
@@ -316,7 +322,13 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 			node.setRelated(allRelated);
 		} else {
 			newRelated.forEach(it -> {
-				getCatalog().getStore(it.getStoreName()).linkNodes(it.getKey(), relationship.getOpposite(), new NodeReference(getName(), key));
+				INodeStore otherStore = getCatalog().getStore(it.getStoreName());
+				String opposite = relationship.getOpposite();
+				boolean primaryIsMultiple = getEntity(relationship.getTypeRef()).getRelationship(opposite).isMultiple();
+				if (primaryIsMultiple)
+					otherStore.linkMultipleNodes(it.getKey(), opposite, Collections.singleton(new NodeReference(getName(), key)), false);
+				else
+					otherStore.linkNodes(it.getKey(), opposite, new NodeReference(getName(), key));
 			});
 		}
 	}
@@ -360,6 +372,10 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	}
 
 	private Entity getEntity() {
+		return getEntity(entityName);
+	}
+	
+	private Entity getEntity(TypeRef entityName) {
 		return getCatalog().getMetadata().getEntity(entityName);
 	}
 

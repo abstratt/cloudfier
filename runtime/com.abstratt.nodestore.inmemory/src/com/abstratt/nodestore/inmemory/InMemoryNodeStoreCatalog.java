@@ -133,7 +133,7 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 	}
     
     @Override
-    public INodeStore getStore(String storeName) {
+    public synchronized INodeStore getStore(String storeName) {
     	String sanitizedStoreName = TypeRef.sanitize(storeName);
     	InMemoryNodeStore store = getStoreSet().get(sanitizedStoreName);
     	if (store == null) {

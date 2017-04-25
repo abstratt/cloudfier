@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -89,7 +90,7 @@ public class BasicNode implements INode, Serializable {
 
     @Override
     public Map<String, Object> getProperties() {
-        return new HashMap<String, Object>(properties);
+        return new LinkedHashMap<String, Object>(properties);
     }
 
     @Override
@@ -100,18 +101,6 @@ public class BasicNode implements INode, Serializable {
     @Override
     public Map<String, Collection<NodeReference>> getRelated() {
         return copyReferences(this.related);
-    }
-
-    public Map<String, Collection<INode>> getSharedChildren() {
-        return children;
-    }
-
-    public Map<String, Object> getSharedProperties() {
-        return properties;
-    }
-
-    public Map<String, Collection<NodeReference>> getSharedRelated() {
-        return this.related;
     }
 
     @Override
@@ -152,12 +141,13 @@ public class BasicNode implements INode, Serializable {
 
     @Override
     public void setProperties(Map<String, Object> values) {
-        this.properties = new HashMap<String, Object>(values);
+        this.properties = new LinkedHashMap<String, Object>(values);
     }
 
     @Override
-    public void setRelated(Map<String, Collection<NodeReference>> related) {
-        this.related = copyReferences(related);
+    public void setRelated(Map<String, Collection<NodeReference>> newRelated) {
+    	Map<String, Collection<NodeReference>> newReferences = copyReferences(newRelated);
+		this.related = newReferences;
     }
 
     @Override
@@ -192,7 +182,7 @@ public class BasicNode implements INode, Serializable {
      * @return a deep copy of the given source collection of node references
      */
     private Map<String, Collection<NodeReference>> copyReferences(Map<String, Collection<NodeReference>> source) {
-        Map<String, Collection<NodeReference>> copy = new HashMap<String, Collection<NodeReference>>(source.size());
+        Map<String, Collection<NodeReference>> copy = new LinkedHashMap<String, Collection<NodeReference>>(source.size());
         for (Entry<String, Collection<NodeReference>> entry : source.entrySet())
             copy.put(entry.getKey(), new ArrayList<NodeReference>(entry.getValue()));
         return copy;

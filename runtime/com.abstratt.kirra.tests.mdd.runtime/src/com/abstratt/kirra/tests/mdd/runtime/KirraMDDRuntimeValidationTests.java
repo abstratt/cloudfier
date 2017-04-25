@@ -1,6 +1,6 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.kirra.Instance;
