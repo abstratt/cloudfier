@@ -273,31 +273,47 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     
     public void testUpdateInstance_SetLink() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
-        String uri1 = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", created.get(0).getTypeRef().getFullName()).replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
-        String uri2 = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", created.get(1).getTypeRef().getFullName()).replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));        
+        List<String> uris = created.stream().map(it ->
+        	{
+				try {
+					return resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", it.getTypeRef().getFullName()).replace("{objectId}", it.getObjectId()).replace("{application}", getName()));
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+			}
+        ).collect(Collectors.toList());
         
         ObjectNode jsonInstance1 = executeJsonMethod(200,
-                new GetMethod(uri1.toString()));
+                new GetMethod(uris.get(0)));
         ObjectNode links = jsonNodeFactory.objectNode();
         jsonInstance1.put("links", links);
         
         ObjectNode myClass2 = jsonNodeFactory.objectNode();
         links.put("myClass2", myClass2);
-        myClass2.set("uri", new TextNode(uri2.toString()));
+        myClass2.set("uri", new TextNode(uris.get(1)));
+        
+        ObjectNode myClass3a = jsonNodeFactory.objectNode();
+        links.put("myClass3", myClass3a);
+        myClass3a.set("uri", new TextNode(uris.get(2)));
 
-        PutMethod putMethod = new PutMethod(uri1.toString());
+        PutMethod putMethod = new PutMethod(uris.get(0));
         putMethod.setRequestEntity(new StringRequestEntity(jsonInstance1.toString(), "application/json", "UTF-8"));
 
         ObjectNode updated = (ObjectNode) executeJsonMethod(200, putMethod);
-        assertNotNull(updated.get("links"));
-        assertNotNull(updated.get("links").get("myClass2"));
-        TestCase.assertEquals(uri2.toString(), updated.get("links").get("myClass2").get("uri").asText());
+        JsonNode updatedLinks = updated.get("links");
+		assertNotNull(updatedLinks);
+        assertNotNull(updatedLinks.get("myClass2"));
+        assertNotNull(updatedLinks.get("myClass3"));
+        TestCase.assertEquals(uris.get(1), updatedLinks.get("myClass2").get("uri").asText());
+        TestCase.assertEquals(uris.get(2), updatedLinks.get("myClass3").get("uri").asText());
         
         ObjectNode retrieved = executeJsonMethod(200,
                 new GetMethod(jsonInstance1.get("uri").textValue()));
         assertNotNull(retrieved.get("links"));
         assertNotNull(retrieved.get("links").get("myClass2"));
-        TestCase.assertEquals(uri2.toString(), retrieved.get("links").get("myClass2").get("uri").asText());
+        TestCase.assertEquals(uris.get(1), retrieved.get("links").get("myClass2").get("uri").asText());
+        assertNotNull(retrieved.get("links").get("myClass3"));
+        TestCase.assertEquals(uris.get(2), retrieved.get("links").get("myClass3").get("uri").asText());
     }
     
     public void testUpdateInstance_UnsetLink() throws CoreException, IOException {
@@ -341,10 +357,18 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "class MyClass1\n";
         model += "    attribute attr1 : String[0,1];\n";
         model += "    attribute attr2 : String[0,1];\n";
+        model += "    attribute myClass3 : MyClass3[0,1];\n";
         model += "    attribute myClass2 : MyClass2[0,1];\n";
         model += "end;\n";
         model += "class MyClass2\n";
         model += "    attribute attr2 : String[0,1];\n";
+        model += "end;\n";
+        model += "abstract class MyClass3\n";
+        model += "    attribute attr3 : String[0,1];\n";
+        model += "end;\n";
+        model += "class MyClass3a specializes MyClass3\n";
+        model += "end;\n";
+        model += "class MyClass3b specializes MyClass3\n";
         model += "end;\n";
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
@@ -359,6 +383,9 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         		Instance instance2 = repository.newInstance("mypackage", "MyClass2");
         		instance2.setValue("attr2", "value2");
         		created.add(repository.createInstance(instance2));
+        		Instance instance3a = repository.newInstance("mypackage", "MyClass3a");
+        		instance3a.setValue("attr3", "value3a");
+        		created.add(repository.createInstance(instance3a));
         		return created;
         	}
         });
