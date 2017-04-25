@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -146,7 +147,7 @@ public abstract class RuntimeAction {
      * @return a collection of source actions
      */
     public Collection<RuntimeAction> getSourceActions() {
-        Set<RuntimeAction> sources = new HashSet<RuntimeAction>(objectNodes.size());
+        Set<RuntimeAction> sources = new LinkedHashSet<RuntimeAction>(objectNodes.size());
         for (RuntimeObjectNode current : objectNodes)
             if (current.isInput())
                 for (RuntimeObjectFlow flow : current.getIncoming())

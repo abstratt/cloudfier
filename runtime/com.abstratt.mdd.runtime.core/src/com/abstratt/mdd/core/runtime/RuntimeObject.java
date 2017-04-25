@@ -288,12 +288,13 @@ public class RuntimeObject extends StructuredRuntimeObject {
         List<Constraint> constraints = MDDExtensionUtils.findInvariantConstraints(property);
         Collection<RuntimeObject> candidates = propertyRuntimeClass.getAllInstances();
         candidateLoop: for (BasicType candidate : candidates) {
-            for (Constraint constraint : constraints) {
-            	// simulate what the object would look like with the proposed value
-            	setValue(property, candidate);
-                if (!isConstraintSatisfied(constraint))
-                    continue candidateLoop;
-            }
+        	if (!property.isMultivalued())
+	            for (Constraint constraint : constraints) {
+	            	// simulate what the object would look like with the proposed value
+	            	setValue(property, candidate);
+	                if (!isConstraintSatisfied(constraint))
+	                    continue candidateLoop;
+	            }
             result.add((RuntimeObject) candidate);
         }
         return result;
@@ -553,7 +554,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
         if (isAssociationEnd(property) && isPersistable) {
             Collection<RuntimeObject> newPeers;
             if (property.isMultivalued()) {
-                newPeers = new HashSet<RuntimeObject>();
+                newPeers = new LinkedHashSet<RuntimeObject>();
                 for (BasicType newPeer : ((CollectionType) value).getBackEnd())
                     newPeers.add((RuntimeObject) newPeer);
             } else {
@@ -685,7 +686,14 @@ public class RuntimeObject extends StructuredRuntimeObject {
             Assert.isTrue(property.isMultivalued());
 			return CollectionType.createCollectionFor(property, this.getRelated(property, relatedType));
         }
-        Collection<RuntimeObject> related = this.getRelated(property, relatedType);
+        Collection<RuntimeObject> related = new LinkedHashSet<>(); 
+		RuntimeUtils.collectInstancesFromHierarchy(
+			getRuntime().getRepository(),
+			related,
+    		relatedType, 
+    		true, 
+    		((Classifier specificRelatedType) -> getRelated(property, specificRelatedType))
+		);
         return related.isEmpty() ? null : related.iterator().next();
     }
 
@@ -749,7 +757,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
         BasicType exceptionObject = Runtime.getCurrentRuntime().newInstance(violationClass, false);
         String message = MDDUtil.getDescription(violated);
         if (StringUtils.isBlank(message))
-            message = "Constraint violated " + anchorNameScope.getQualifiedName() + preconditionName;
+            message = "Constraint violated " + anchorNameScope.getQualifiedName() + preconditionName + " - object: " + this;
         RuntimeRaisedException runtimeRaisedException = new RuntimeRaisedException(exceptionObject, message, anchorNameScope);
         runtimeRaisedException.setConstraint(violated);
         throw runtimeRaisedException;
