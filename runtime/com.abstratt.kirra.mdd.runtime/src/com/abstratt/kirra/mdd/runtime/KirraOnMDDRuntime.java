@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -81,7 +82,6 @@ import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BlobInfo;
-import com.abstratt.mdd.core.runtime.types.BlobType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
@@ -1218,7 +1218,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private void validateValues(Instance kirraInstance) {
-        validateValues(kirraInstance, new HashSet<Instance>());
+        validateValues(kirraInstance, new LinkedHashSet<Instance>());
     }
 
     private void validateValues(Instance kirraInstance, Set<Instance> visited) {
