@@ -7,8 +7,9 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import junit.framework.TestCase;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.CoreException;
 
@@ -18,6 +19,9 @@ import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.populator.DataPopulator;
 import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.tests.harness.FixtureHelper;
+
+import junit.framework.TestCase;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
@@ -33,6 +37,13 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         KirraDataPopulatorTests.accountModel += "  attribute balance : Double[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  attribute status : Status[0,1];\n";
         KirraDataPopulatorTests.accountModel += "  readonly attribute owner : Person[0,1];\n";
+        KirraDataPopulatorTests.accountModel += "end;\n";
+        KirraDataPopulatorTests.accountModel += "class AccountService\n";
+        KirraDataPopulatorTests.accountModel += "  attribute name : String;\n";
+        KirraDataPopulatorTests.accountModel += "end;\n";
+        KirraDataPopulatorTests.accountModel += "association AccountServices\n";
+        KirraDataPopulatorTests.accountModel += "  navigable role accounts : Account[*];\n";
+        KirraDataPopulatorTests.accountModel += "  navigable role services : AccountService[*];\n";
         KirraDataPopulatorTests.accountModel += "end;\n";
         KirraDataPopulatorTests.accountModel += "association AccountOwner\n";
         KirraDataPopulatorTests.accountModel += "  role Account.owner;\n";
@@ -168,7 +179,51 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals("Mary", accounts.get("ABC").getSingleRelated("owner").getValue("name"));
         TestCase.assertEquals("Mary", accounts.get("DEF").getSingleRelated("owner").getValue("name"));
     }
-    
+
+    public void testGraph_ManyToMany() throws CoreException {
+        parseAndCheck(KirraDataPopulatorTests.accountModel);
+
+        String contents = "";
+        contents += "{\n";
+        contents += "  banking: {\n";
+        contents += "    AccountService: [\n";
+        contents += "      { name: 'Checking'},\n";
+        contents += "      { name: 'Savings'},\n";
+        contents += "      { name: 'Exchange'}\n";
+        contents += "    ],\n";
+        contents += "    Account: [\n";
+        contents += "      { number: '456', services: ['AccountService@1']},\n";
+        contents += "      { number: 'ABC', services: ['AccountService@2']},\n";
+        contents += "      { number: 'DEF', services: ['AccountService@1','AccountService@3']}\n";
+        contents += "    ]\n";
+        contents += "  }\n";
+        contents += "}\n";
+
+        FixtureHelper.assertCompilationSuccessful(parseData(contents));
+
+        Repository kirra = getKirra();
+
+        DataPopulator populator = new DataPopulator(kirra);
+        int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
+        TestCase.assertEquals(3 + 3, status);
+
+        Map<String, Instance> accounts = toMap(kirra.getInstances("banking", "Account", false), "number");
+        TestCase.assertEquals(accounts.keySet(), new HashSet<String>(Arrays.asList("456", "ABC", "DEF")));
+
+        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "AccountService", false), "name");
+        TestCase.assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("Checking", "Savings", "Exchange")));
+
+        BiFunction<Instance, Pair<String, String>, List<?>> getRelatedValues = (Instance anchor, Pair<String, String> path) -> 
+        	getKirraRepository()
+        	.getRelatedInstances(anchor, path.getLeft(), false)
+        	.stream()
+        	.map(it -> it.getValue(path.getRight()))
+        	.collect(Collectors.toList());
+        
+        TestCase.assertEquals(Arrays.asList("Checking"), getRelatedValues.apply(accounts.get("456"), Pair.of("services", "name")));
+        TestCase.assertEquals(Arrays.asList("Savings"), getRelatedValues.apply(accounts.get("ABC"), Pair.of("services", "name")));
+        TestCase.assertEquals(Arrays.asList("Checking", "Exchange"), getRelatedValues.apply(accounts.get("DEF"), Pair.of("services", "name")));
+    }
 
     public void testGraph_WithCycle() throws CoreException {
         parseAndCheck(KirraDataPopulatorTests.accountModel);
