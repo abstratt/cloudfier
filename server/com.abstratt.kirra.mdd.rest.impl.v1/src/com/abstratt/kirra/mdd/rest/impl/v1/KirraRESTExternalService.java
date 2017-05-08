@@ -118,12 +118,18 @@ public class KirraRESTExternalService implements ExternalService {
         PostMethod method = new PostMethod(uri.toString());
         HttpClient httpClient = new HttpClient();
         try {
-            String jsonRequest = JsonHelper.renderAsJson(representation);
+        	String jsonRequest = JsonHelper.renderAsJson(representation);
+            LogUtils.logInfo(LegacyKirraMDDRestletApplication.ID,
+                    "Sending event to " + uri + " \nbody:\n" + jsonRequest, null);
             method.setRequestEntity(new StringRequestEntity(jsonRequest, "application/json", "UTF-8"));
             int response = httpClient.executeMethod(method);
             if (response != 200)
                 LogUtils.logError(LegacyKirraMDDRestletApplication.ID,
                         "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(), null);
+            else
+                LogUtils.logInfo(LegacyKirraMDDRestletApplication.ID,
+                        "Successfully sent event to " + uri, null);
+
             // no use for response, not expected
         } catch (Exception e) {
         	LogUtils.logError(LegacyKirraMDDRestletApplication.ID,
