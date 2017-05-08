@@ -10,7 +10,7 @@ public class AllRuntimeTests {
         suite.addTest(PrimitiveActionTests.suite());
         suite.addTest(ExpressionTests.suite());
         suite.addTest(RuntimeStringTests.suite());
-        suite.addTest(RuntimeDateTests.suite());
+        suite.addTest(RuntimeDateAndTimeTests.suite());
         suite.addTest(RuntimeObjectTests.suite());
         suite.addTest(RuntimeEnumerationTests.suite());
         suite.addTest(RuntimeCollectionTests.suite());

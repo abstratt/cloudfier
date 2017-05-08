@@ -65,7 +65,10 @@ public class DurationType extends PrimitiveType<Long> {
         return IntegerType.fromValue(value / 1000);
     }
 
-
+    public IntegerType toMilliseconds(ExecutionContext context) {
+        return IntegerType.fromValue(value);
+    }
+    
     private DurationType(long value) {
         super(value);
     }

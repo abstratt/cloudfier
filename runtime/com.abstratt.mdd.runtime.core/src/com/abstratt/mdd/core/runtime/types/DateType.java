@@ -44,10 +44,6 @@ public class DateType extends PrimitiveType<LocalDateTime> {
         return new DateType(value);
     }
     
-    public static DateType now(@SuppressWarnings("unused") ExecutionContext context) {
-        return new DateType(new Date());
-    }
-
     /**
      *
      */
