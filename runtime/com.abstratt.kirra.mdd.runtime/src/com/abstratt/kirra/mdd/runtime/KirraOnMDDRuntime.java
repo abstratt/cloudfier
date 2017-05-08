@@ -289,6 +289,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     public String getApplicationLabel() {
     	return getSchemaManagement().getApplicationLabel();
     }
+    
+    @Override
+    public String getApplicationLogo() {
+    	return getSchemaManagement().getApplicationLogo();
+    }
 
     @Override
     public String getBuild() {
@@ -676,7 +681,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     public void receiveSignal(Classifier classifier, Signal signal, BasicType... arguments) {
         String namespace = SchemaManagementOperations.getNamespace(classifier);
         Reception reception = ReceptionUtils.findBySignal(classifier, signal);
-        getExternalService().executeOperation(namespace, classifier.getName(), reception.getName(),
+        ExternalService externalService = getExternalService();
+		externalService.executeOperation(namespace, classifier.getName(), reception.getName(),
                 convertArgumentsFromBasicType(reception, arguments));
     }
 
@@ -923,6 +929,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                         Object converted = convertFromBasicType(value, (Classifier) property.getType());
                         kirraInstance.setRelated(KirraHelper.getName(property), (Instance) converted);
                     }
+                } else if (KirraHelper.isTupleType(property.getType())) {
+                	BasicType value = source.getValue(property);
+                    if (value == null)
+                        continue;
+                	Object converted = convertFromBasicType(value, (Classifier) property.getType());
+                	kirraInstance.setValue(KirraHelper.getName(property), converted);
                 } else if (KirraHelper.isProperty(property)) {
                     BasicType value = source.getValue(property);
                     if (value == null)
@@ -1115,7 +1127,6 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private RuntimeObject convertToValueObject(Tuple instance) {
-        getTupleType(instance.getScopeNamespace(), instance.getScopeName());
         final RuntimeClass runtimeClass = getRuntimeClass(instance);
         RuntimeObject target = runtimeClass.newInstance(false, false);
         Classifier clazz = target.getRuntimeClass().getModelClassifier();
