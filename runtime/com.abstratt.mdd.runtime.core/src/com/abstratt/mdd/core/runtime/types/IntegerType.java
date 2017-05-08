@@ -31,6 +31,8 @@ public class IntegerType extends NumberType<Long> {
 
     @Override
     public NumberType divide(ExecutionContext context, NumberType another) {
+    	if (another.asDouble() == 0.0d)
+    		return IntegerType.fromValue(0);
         if (another instanceof RealType)
             return new RealType(this.asDouble() / another.asDouble());
         return new IntegerType(value / ((IntegerType) another).value);

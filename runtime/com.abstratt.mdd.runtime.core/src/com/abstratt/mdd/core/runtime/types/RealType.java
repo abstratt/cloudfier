@@ -1,5 +1,10 @@
 package com.abstratt.mdd.core.runtime.types;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.util.Locale;
+import java.util.Locale.Category;
+
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class RealType extends NumberType<Double> {
@@ -33,8 +38,10 @@ public class RealType extends NumberType<Double> {
     }
 
     @Override
-    public NumberType<Double> divide(ExecutionContext context, NumberType<?> number) {
-        return new RealType(value / number.asDouble());
+    public NumberType<Double> divide(ExecutionContext context, NumberType<?> another) {
+    	if (another.asDouble() == 0.0d)
+    		return RealType.fromValue(0);
+        return new RealType(value / another.asDouble());
     }
 
     @Override
@@ -67,5 +74,11 @@ public class RealType extends NumberType<Double> {
     protected RealType asReal() {
         // one less object
         return this;
+    }
+    
+    @Override
+    public String toString() {
+    	String formatted = NumberFormat.getNumberInstance(Locale.getDefault(Category.FORMAT)).format(primitiveValue());
+		return formatted;
     }
 }
