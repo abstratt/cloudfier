@@ -67,6 +67,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         applySubtypes(schema, subTypes);
         schema.setApplicationName(KirraHelper.getApplicationName(repository));
         schema.setApplicationLabel(KirraHelper.getApplicationLabel(repository));
+        schema.setApplicationLogo(KirraHelper.getApplicationLogo(repository));
         if (!namespaces.isEmpty())
             schema.setBuild(namespaces.get(0).getTimestamp());
         return schema;
