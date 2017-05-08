@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.MultiplicityElement;
@@ -102,6 +103,10 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     
     public BasicType one(ExecutionContext context) {
         return backEnd.isEmpty() ? null : backEnd.iterator().next(); 
+    }
+    
+    public BasicType join(ExecutionContext context, StringType delimiter) {
+        return new StringType(backEnd.isEmpty() ? "" : StringUtils.join(backEnd, delimiter.primitiveValue())); 
     }
 
     public BagType asBag(ExecutionContext context) {
