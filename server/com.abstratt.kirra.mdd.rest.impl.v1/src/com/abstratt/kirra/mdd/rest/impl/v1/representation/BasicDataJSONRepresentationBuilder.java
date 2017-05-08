@@ -1,7 +1,10 @@
 package com.abstratt.kirra.mdd.rest.impl.v1.representation;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import com.abstratt.kirra.TopLevelElement;
 import com.abstratt.kirra.Tuple;
@@ -13,15 +16,23 @@ public abstract class BasicDataJSONRepresentationBuilder<T extends TupleJSONRepr
             representation.typeName = element.getTypeRef().getFullName();
         representation.values = new HashMap<String, Object>();
         for (Entry<String, Object> entry : instance.getValues().entrySet()) {
-            if (entry.getValue() instanceof Tuple) {
-                Tuple childTuple = (Tuple) entry.getValue();
-                TupleJSONRepresentation childRepr = new TupleJSONRepresentation();
-                new TupleJSONRepresentationBuilder().build(childRepr, null, null, childTuple);
-                representation.values.put(entry.getKey(), childRepr);
-            } else {
-                representation.values.put(entry.getKey(), entry.getValue());
-            }
+            Object value = convertValue(entry.getValue());
+            representation.values.put(entry.getKey(), value);
         }
     }
+
+	private Object convertValue(Object value) {
+		if (value instanceof Tuple) {
+		    Tuple childTuple = (Tuple) value;
+		    TupleJSONRepresentation childRepr = new TupleJSONRepresentation();
+		    new TupleJSONRepresentationBuilder().build(childRepr, null, null, childTuple);
+		    return childRepr;
+		} else if (value instanceof Collection<?>) {
+        	List<?> values = (List<?>) ((Collection) value).stream().map(it -> convertValue(it)).collect(Collectors.toList());
+			return values;
+		} else {
+		    return value;
+		}
+	}
 
 }
