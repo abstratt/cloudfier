@@ -36,16 +36,12 @@ public class AssertType extends BuiltInClass {
             throw new RuntimeRaisedException(new StringType("Value is false"), null, null);
     }
 
-    public static RuntimeObject user(ExecutionContext context) {
-        return context.getRuntime().getCurrentActor();
-    }
-
     private AssertType() {
     }
 
     @Override
     public String getClassifierName() {
-        return "mdd_types::System";
+        return "mdd_types::Assert";
     }
 
 }
