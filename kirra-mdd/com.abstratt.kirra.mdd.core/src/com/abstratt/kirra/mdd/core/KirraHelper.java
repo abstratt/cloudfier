@@ -982,6 +982,12 @@ public class KirraHelper {
         return applicationTitle;
     }
     
+    public static String getApplicationLogo(IRepository repository) {
+        Properties repositoryProperties = repository.getProperties();
+        String applicationLogo = repositoryProperties.getProperty(IRepository.APPLICATION_LOGO);
+        return applicationLogo;
+    }
+    
     public static List<Class> getEntities(Collection<Package> applicationPackages) {
         List<Class> result = new ArrayList<Class>();
         for (Package current : applicationPackages)
