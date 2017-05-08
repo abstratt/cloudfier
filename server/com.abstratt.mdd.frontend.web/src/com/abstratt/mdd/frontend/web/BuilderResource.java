@@ -2,6 +2,7 @@ package com.abstratt.mdd.frontend.web;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,7 +31,7 @@ public class BuilderResource extends AbstractBuildDirectoryResource {
     public Representation build() {
         File tmpProjectDir = null;
         try {
-            Path contextFilePath = new Path((String) getRequestAttributes().get("contextFile"));
+            Path contextFilePath = new Path(URLDecoder.decode((String) getRequestAttributes().get("contextFile"), "UTF-8"));
 
             IFileStore contextFile = BuildDirectoryUtils.getSourcePath(contextFilePath);
             IPath userPath = new Path(contextFilePath.toString().replaceFirst("/file/", "/"));
