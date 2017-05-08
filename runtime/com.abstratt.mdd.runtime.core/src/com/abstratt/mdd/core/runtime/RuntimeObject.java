@@ -336,7 +336,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
             return derivedValue(property);
         if (isAssociationEnd(property))
             return isPersistable ? traverse(property) : (BasicType) node.getProperties(true).get(nodeProperty(property));
-        Assert.isLegal(this.isTuple() || !property.isMultivalued(), property.getName());
+        boolean legal = this.isTuple() || this.getRuntimeClass().getModelClassifier() instanceof Signal || !property.isMultivalued();
+		Assert.isLegal(legal, property.getName());
         return getSlotValue(property, node.getProperties());
     }
 
