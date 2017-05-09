@@ -13,35 +13,35 @@ import java.util.Date;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
-public class DateType extends PrimitiveType<LocalDate> {
-    public static DateType fromString(@SuppressWarnings("unused") ExecutionContext context, StringType literal) {
+public class DateTimeType extends PrimitiveType<LocalDateTime> {
+    public static DateTimeType fromString(@SuppressWarnings("unused") ExecutionContext context, StringType literal) {
         try {
-            return new DateType(new SimpleDateFormat("yyyy/MM/dd").parse(literal.primitiveValue()));
+            return new DateTimeType(new SimpleDateFormat("yyyy/MM/dd").parse(literal.primitiveValue()));
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
     }
 
-    public static DateType fromValue(Date original) {
-        return new DateType(original);
+    public static DateTimeType fromValue(Date original) {
+        return new DateTimeType(original);
     }
     
-    public static DateType fromValue(LocalDate original) {
-        return new DateType(original);
+    public static DateTimeType fromValue(LocalDateTime original) {
+        return new DateTimeType(original);
     }
 
-    public static DateType make(@SuppressWarnings("unused") ExecutionContext context, IntegerType year, IntegerType month, IntegerType day) {
-        return new DateType(new Date(year.primitiveValue().intValue() - 1900, month.primitiveValue().intValue() - 1, day.primitiveValue()
+    public static DateTimeType make(@SuppressWarnings("unused") ExecutionContext context, IntegerType year, IntegerType month, IntegerType day) {
+        return new DateTimeType(new Date(year.primitiveValue().intValue() - 1900, month.primitiveValue().intValue() - 1, day.primitiveValue()
                 .intValue()));
     }
 
-    public static DateType today(@SuppressWarnings("unused") ExecutionContext context) {
+    public static DateTimeType today(@SuppressWarnings("unused") ExecutionContext context) {
         Date value = new Date();
         value.setHours(0);
         value.setMinutes(0);
         value.setSeconds(0);
         value.setTime((value.getTime() / 1000) * 1000);
-        return new DateType(value);
+        return new DateTimeType(value);
     }
     
     /**
@@ -49,15 +49,15 @@ public class DateType extends PrimitiveType<LocalDate> {
      */
     private static final long serialVersionUID = 1L;
 
-    private DateType(Date value) {
-        super(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+    private DateTimeType(Date value) {
+        super(value.toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime());
     }
     
-    private DateType(LocalDate value) {
+    private DateTimeType(LocalDateTime value) {
         super(value);
     }
     
-    public DurationType difference(@SuppressWarnings("unused") ExecutionContext context, DateType end) {
+    public DurationType difference(@SuppressWarnings("unused") ExecutionContext context, DateTimeType end) {
         return DurationType.fromValue(ChronoUnit.DAYS.between(this.value, end.value) * (1000 * 60 * 60 * 24));
     }
 
@@ -89,8 +89,8 @@ public class DateType extends PrimitiveType<LocalDate> {
         return new StringType(asString);
     }
 
-    public DateType transpose(ExecutionContext context, DurationType delta) {
-    	LocalDate transposed = this.value.plusDays(Duration.ofMillis(delta.primitiveValue()).toDays());
-        return new DateType(transposed);
+    public DateTimeType transpose(ExecutionContext context, DurationType delta) {
+    	LocalDateTime transposed = this.value.plus(Duration.ofMillis(delta.primitiveValue()));
+        return new DateTimeType(transposed);
     }
 }
