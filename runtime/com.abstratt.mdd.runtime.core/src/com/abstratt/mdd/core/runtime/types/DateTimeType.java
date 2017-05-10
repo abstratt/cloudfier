@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
@@ -63,7 +64,7 @@ public class DateTimeType extends PrimitiveType<LocalDateTime> {
 
     @Override
     public String getClassifierName() {
-        return "mdd_types::Date";
+        return "mdd_types::DateTime";
     }
 
     @Override
@@ -81,6 +82,18 @@ public class DateTimeType extends PrimitiveType<LocalDateTime> {
     
     public IntegerType day(@SuppressWarnings("unused") ExecutionContext context) {
         return IntegerType.fromValue(this.primitiveValue().get(ChronoField.DAY_OF_MONTH));
+    }
+    
+    public DateType date(@SuppressWarnings("unused") ExecutionContext context) {
+        return DateType.fromValue(this.primitiveValue().toLocalDate());
+    }
+    
+    public TimeType time(@SuppressWarnings("unused") ExecutionContext context) {
+        return TimeType.fromValue(this.primitiveValue().toLocalTime());
+    }    
+    
+    public static DateTimeType now(@SuppressWarnings("unused") ExecutionContext context) {
+        return new DateTimeType(LocalDateTime.now());
     }
 
     @Override
