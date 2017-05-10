@@ -171,7 +171,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         try {
             RuntimeObject asRuntimeObject = convertToRuntimeObject(kirraInstance);
             asRuntimeObject.save();
-            return (Instance) convertFromRuntimeObject(asRuntimeObject);
+            return (Instance) convertFromRuntimeObject(asRuntimeObject, true);
         } catch (NodeStoreException e) {
             throw new KirraException("Could not create '" + kirraInstance.getTypeRef() + "': " + e.getMessage(), e, Kind.VALIDATION);
         } catch (ModelExecutionException rre) {
@@ -303,14 +303,14 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     @Override
     public Instance getCurrentUser() {
         RuntimeObject currentActor = getRuntime().getCurrentActor();
-        return (Instance) (currentActor != null ? convertFromRuntimeObject(currentActor) : null);
+        return (Instance) (currentActor != null ? convertFromRuntimeObject(currentActor, true) : null);
     }
     
     @Override
     public List<Instance> getCurrentUserRoles() {
     	RuntimeObject currentActor = getRuntime().getCurrentActor();
     	List<RuntimeObject> roles = getRuntime().getRolesForActor(currentActor);
-    	return roles.stream().map(ro -> (Instance) convertFromRuntimeObject(ro)).collect(Collectors.toList());
+    	return roles.stream().map(ro -> (Instance) convertFromRuntimeObject(ro, false)).collect(Collectors.toList());
     }
 
     @Override
@@ -480,7 +480,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     @Override
     public Instance getInstance(String namespace, String name, String externalId, boolean full) {
         RuntimeObject found = findRuntimeObject(namespace, name, externalId);
-        return (Instance) (found == null ? null : convertFromRuntimeObject(found));
+        return (Instance) (found == null ? null : convertFromRuntimeObject(found, full));
     }
     
     public List<Instance> getInstances(String namespace, String name, boolean full) {
@@ -490,7 +490,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     @Override
     public List<Instance> getInstances(String namespace, String name, boolean full, boolean includeSubclasses) {
         Class umlClass = (Class) getModelElement(namespace, name, Literals.CLASS);
-        return filterValidInstances(getRuntime().getAllInstances(umlClass, includeSubclasses));
+        return filterValidInstances(getRuntime().getAllInstances(umlClass, includeSubclasses), full);
     }
     
     @Override
@@ -513,7 +513,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 convertedValues.add(convertToBasicType(kirraValue, attribute));
             runtimeCriteria.put(attribute, convertedValues);
         }
-        return filterValidInstances(getRuntime().findInstances(umlClass, runtimeCriteria, includeSubClasses));
+        return filterValidInstances(getRuntime().findInstances(umlClass, runtimeCriteria, includeSubClasses), full);
     }
 
     public <NE extends org.eclipse.uml2.uml.NamedElement> NE getModelElement(String namespace, String name, EClass elementClass) {
@@ -547,7 +547,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);
         if ("_template".equals(objectId))
             return getInstances(relationship.getTypeRef().getNamespace(), relationship.getTypeRef().getTypeName(), false);
-        return filterValidInstances(getRuntime().getPropertyDomain(umlClass, objectId, property, true));
+        return filterValidInstances(getRuntime().getPropertyDomain(umlClass, objectId, property, true), false);
     }
 
     @Override
@@ -557,7 +557,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), Literals.CLASS);
         org.eclipse.uml2.uml.Operation operation = FeatureUtils.findOperation(getRepository(), umlClass, action.getName(), null);
         org.eclipse.uml2.uml.Parameter umlParameter = operation.getOwnedParameter(parameter.getName(), null);
-        return filterValidInstances(getRuntime().getParameterDomain(umlClass, externalId, umlParameter, true));
+        return filterValidInstances(getRuntime().getParameterDomain(umlClass, externalId, umlParameter, true), false);
     }
 
     @Override
@@ -571,7 +571,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         org.eclipse.uml2.uml.Property property = AssociationUtils.findMemberEnd(umlClass, relationship);
         if (!KirraHelper.isRelationship(property))
             throw new KirraException(relationship + " is not a relationship", null, Kind.ENTITY);
-        return filterValidInstances(getRuntime().getRelatedInstances(umlClass, externalId, property));
+        return filterValidInstances(getRuntime().getRelatedInstances(umlClass, externalId, property), full);
     }
 
     @Override
@@ -672,7 +672,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     public Instance newInstance(String namespace, String name) {
         KirraOnMDDRuntime.log.debug(getRuntime().getRepository().getBaseURI().toString());
         RuntimeObject newRuntimeObject = convertToRuntimeObject(new Instance(namespace, name));
-        Instance newInstance = (Instance) convertFromRuntimeObject(newRuntimeObject);
+        Instance newInstance = (Instance) convertFromRuntimeObject(newRuntimeObject, true);
         newInstance.setObjectId(null);
         return newInstance;
     }
@@ -753,7 +753,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Cannot update an unsaved instance", null, Kind.ENTITY);
         try {
             validateValues(kirraInstance);
-            return (Instance) convertFromRuntimeObject(convertToRuntimeObject(kirraInstance));
+            return (Instance) convertFromRuntimeObject(convertToRuntimeObject(kirraInstance), true);
         } catch (NodeStoreException e) {
             throw new KirraException("Could not update: " + e.getMessage(), e, Kind.VALIDATION);
         } catch (ModelExecutionException e) {
@@ -782,12 +782,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         return result;
     }
 
-    protected List<Instance> filterValidInstances(Collection<? extends BasicType> allRuntimeObjects) {
+    protected List<Instance> filterValidInstances(Collection<? extends BasicType> allRuntimeObjects, boolean full) {
         List<Instance> allInstances = new ArrayList<Instance>(allRuntimeObjects.size());
         for (BasicType current : allRuntimeObjects) {
             RuntimeObject currentRuntimeObject = (RuntimeObject) current;
             if (!filtering || currentRuntimeObject.checkConstraints(MDDExtensionUtils.ACCESS_STEREOTYPE) == null)
-                allInstances.add((Instance) convertFromRuntimeObject(currentRuntimeObject));
+                allInstances.add((Instance) convertFromRuntimeObject(currentRuntimeObject, full));
         }
         return allInstances;
     }
@@ -866,7 +866,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         if (value instanceof CollectionType)
             return convertFromCollectionType((CollectionType) value, sourceType);
         if (value instanceof RuntimeObject)
-            return convertFromRuntimeObject((RuntimeObject) value);
+            return convertFromRuntimeObject((RuntimeObject) value, false);
         if (value instanceof EnumerationType)
             return ((EnumerationType) value).getValue().getName();
         if (value instanceof StateMachineType)
@@ -880,7 +880,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         if (sourceType instanceof Class || sourceType instanceof DataType) {
             List<Tuple> result = new ArrayList<Tuple>(value.getBackEnd().size());
             for (BasicType currentRuntimeObject : value.getBackEnd())
-                result.add(convertFromRuntimeObject((RuntimeObject) currentRuntimeObject));
+                result.add(convertFromRuntimeObject((RuntimeObject) currentRuntimeObject, false));
             return result;
         }
         List<Object> result = new ArrayList<Object>(value.getBackEnd().size());
@@ -898,7 +898,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 		return primitiveValue;
     }
 
-    private Tuple convertFromRuntimeObject(RuntimeObject source) {
+    private Tuple convertFromRuntimeObject(RuntimeObject source, boolean full) {
         if (source == null)
             return null;
         final boolean first = convertedToInstance.isEmpty();
@@ -917,6 +917,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             kirraInstance.setEntityNamespace(modelClassifier.getNamespace().getQualifiedName());
             kirraInstance.setObjectId(getObjectId(source));
             EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
+            Object shorthand = extractShorthand(kirraInstance, modelClassifier);
+            kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
                 if (KirraHelper.isEntity(property.getType())) {
                     if (property.isMultivalued()) {
@@ -944,35 +946,35 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     kirraInstance.setValue(KirraHelper.getName(property), converted);
                 }
             }
-            Object shorthand = extractShorthand(kirraInstance, modelClassifier);
-            kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
-            if (source.isPersisted()) {
-                List<Association> allAssociations = AssociationUtils.allAssociations(modelClassifier);
-                for (Association association : allAssociations) {
-                    for (org.eclipse.uml2.uml.Property property : association.getMemberEnds()) {
-                        if (modelClassifier.conformsTo(property.getType())) {
-                            org.eclipse.uml2.uml.Property forwardReference = property.getOtherEnd();
-                            if (forwardReference != null && forwardReference.getOwningAssociation() == association
-                                    && forwardReference.isNavigable()) {
-                                if (KirraHelper.isEntity(forwardReference.getType())) {
-                                    if (forwardReference.isMultivalued()) {
-                                        // do nothing: only non-multiple arcs
-                                        // need to be hydrated
-                                    } else {
-                                        BasicType value = source.getValue(forwardReference);
-                                        if (value == null)
-                                            continue;
-                                        Object converted = convertFromBasicType(value, (Classifier) forwardReference.getType());
-                                        kirraInstance
-                                                .setRelated(KirraHelper.getName(forwardReference), (Instance) converted);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+            if (full) {
+	            if (source.isPersisted()) {
+	                List<Association> allAssociations = AssociationUtils.allAssociations(modelClassifier);
+	                for (Association association : allAssociations) {
+	                    for (org.eclipse.uml2.uml.Property property : association.getMemberEnds()) {
+	                        if (modelClassifier.conformsTo(property.getType())) {
+	                            org.eclipse.uml2.uml.Property forwardReference = property.getOtherEnd();
+	                            if (forwardReference != null && forwardReference.getOwningAssociation() == association
+	                                    && forwardReference.isNavigable()) {
+	                                if (KirraHelper.isEntity(forwardReference.getType())) {
+	                                    if (forwardReference.isMultivalued()) {
+	                                        // do nothing: only non-multiple arcs
+	                                        // need to be hydrated
+	                                    } else {
+	                                        BasicType value = source.getValue(forwardReference);
+	                                        if (value == null)
+	                                            continue;
+	                                        Object converted = convertFromBasicType(value, (Classifier) forwardReference.getType());
+	                                        kirraInstance
+	                                                .setRelated(KirraHelper.getName(forwardReference), (Instance) converted);
+	                                    }
+	                                }
+	                            }
+	                        }
+	                    }
+	                }
+	            }
+	            kirraInstance.setDisabledActions(computeDisabledActions(source, modelClassifier.getAllOperations()));
             }
-            kirraInstance.setDisabledActions(computeDisabledActions(source, modelClassifier.getAllOperations()));
             return kirraInstance;
         } finally {
             if (first)

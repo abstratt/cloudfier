@@ -80,6 +80,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	static InMemoryNodeStore load(InMemoryNodeStoreCatalog catalog, TypeRef typeRef) {
 		try {
 			File storePath = catalog.getStorePath(typeRef);
+			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Loading data from " + storePath);
 			byte[] contentArray = FileUtils.readFileToByteArray(storePath);
 			ByteArrayInputStream contents = new ByteArrayInputStream(contentArray);
 			InMemoryNodeStore fromJson = getGson().fromJson(new InputStreamReader(contents, StandardCharsets.UTF_8), InMemoryNodeStore.class);
@@ -87,6 +88,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 				LogUtils.logError(InMemoryNodeStoreActivator.BUNDLE_NAME, "Could not load JSON object from " + storePath, null);
 				throw new IllegalStateException("Could not load store contents for " + typeRef);
 			}
+			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Loaded data from " + storePath);
 			return fromJson;
 		} catch (FileNotFoundException e) {
 			// no file
@@ -129,11 +131,12 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		TypeRef typeRef = store.entityName;
 		try {
 			File storeFile = store.getStoreFile();
+			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Saving data to" + storeFile);
 			FileUtils.forceMkdir(storeFile.getParentFile());
 			String asString = getGson().toJson(store);
 			FileUtils.write(storeFile, asString);
-			System.out.println("Saving data to " + storeFile);
 			store.clearDirty();
+			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Saved data to" + storeFile);
 		} catch (IOException e) {
 			throw new NodeStoreException("Error saving " + typeRef, e);
 		}
