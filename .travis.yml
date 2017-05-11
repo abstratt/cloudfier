@@ -9,4 +9,7 @@ before_install:
   - psql -d postgres -c "CREATE DATABASE cloudfier OWNER cloudfier;"
 script: 
     - mvn clean install
-
+notifications:
+  email:
+    on_success: change
+    on_failure: change
