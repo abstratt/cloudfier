@@ -3,6 +3,7 @@ package com.abstratt.nodestore.inmemory;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -44,7 +45,7 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     private String catalogName;
 
-    private Map<String, Map<String, InMemoryNodeStore>> storeSet = new LinkedHashMap<>();
+    private Map<String, Map<String, InMemoryNodeStore>> storeSet = Collections.synchronizedMap(new LinkedHashMap<>());
 
 	private boolean readOnly;
 
@@ -132,10 +133,11 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     @Override
     public synchronized INodeStore getStore(String storeName) {
     	String sanitizedStoreName = TypeRef.sanitize(storeName);
-    	InMemoryNodeStore store = getStoreSet().get(sanitizedStoreName);
+    	Map<String, InMemoryNodeStore> environmentStoreSet = getStoreSet();
+		InMemoryNodeStore store = environmentStoreSet.get(sanitizedStoreName);
     	if (store == null) {
     		store = loadStore(sanitizedStoreName);
-    		getStoreSet().put(sanitizedStoreName, store);
+    		environmentStoreSet.put(sanitizedStoreName, store);
     	}
 		return store;
     }

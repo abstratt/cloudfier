@@ -920,8 +920,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             Object shorthand = extractShorthand(kirraInstance, modelClassifier);
             kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
-                if (KirraHelper.isEntity(property.getType())) {
-                    if (property.isMultivalued()) {
+                if (property.isDerived() && !full) {
+                    // skip	
+                } else if (KirraHelper.isEntity(property.getType())) {
+                    if (!full) {
+                    	// skip
+                    } else if (property.isMultivalued()) {
                         // do nothing: only non-multiple arcs need to be
                         // hydrated
                     } else {

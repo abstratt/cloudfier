@@ -90,6 +90,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 				throw new IllegalStateException("Could not load store contents for " + typeRef);
 			}
 			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Loaded data from " + storePath);
+			fromJson.clearDirty();
 			return fromJson;
 		} catch (FileNotFoundException e) {
 			// no file
@@ -101,7 +102,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	}
 
 	private static Gson getGson() {
-		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting().excludeFieldsWithModifiers(Modifier.STATIC);
+		GsonBuilder gsonBuilder = new GsonBuilder().setPrettyPrinting().excludeFieldsWithModifiers(Modifier.STATIC, Modifier.TRANSIENT);
 		gsonBuilder.registerTypeAdapter(INodeKey.class, new JsonDeserializer<INodeKey>() {
 			@Override
 			public INodeKey deserialize(JsonElement arg0, Type arg1, JsonDeserializationContext arg2)
