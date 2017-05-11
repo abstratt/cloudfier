@@ -21,6 +21,7 @@ import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStore;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.nodestore.NodeReference;
+import com.abstratt.pluginutils.LogUtils;
 
 /**
  * A catalog maps to a database+schema.
@@ -65,17 +66,13 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     @Override
     public void commitTransaction() {
-    	if (isDirty()) { 
-    		getStoreSet().values().forEach(it -> InMemoryNodeStore.save(it));
-    	}
+		getStoreSet().values().forEach(it -> it.save());
     }
     
-	private boolean isDirty() {
-		return storeSet.values().stream().flatMap(it -> it.values().stream()).anyMatch(it -> it.isDirty());
-	}
-
 	public Map<String, InMemoryNodeStore> getStoreSet() {
-		return storeSet.computeIfAbsent(environment, e -> new LinkedHashMap<>());
+		return storeSet.computeIfAbsent(environment, e -> 
+			new LinkedHashMap<>()
+		);
 	}
     
     @Override
@@ -144,6 +141,7 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     }
 
 	private InMemoryNodeStore loadStore(String storeName) {
+		LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Loading store " + storeName + " from " + this);
 		return InMemoryNodeStore.load(this, new TypeRef(storeName, TypeKind.Entity));
 	}
 

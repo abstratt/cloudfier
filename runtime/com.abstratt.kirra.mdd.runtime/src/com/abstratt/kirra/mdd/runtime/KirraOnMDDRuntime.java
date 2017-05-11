@@ -259,7 +259,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
         return executeEntityOperation(umlClass, externalId, operation, arguments);
     }
-
+    
     public void flush() {
         convertedToInstance.clear();
         convertedToRuntimeObject.clear();

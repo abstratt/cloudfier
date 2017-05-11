@@ -110,14 +110,10 @@ public class Runtime {
     	return targetClass.getRelatedInstances(objectId, property);
     }
     
-    public List<RuntimeObject> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria) {
-    	return findInstances(baseClass, criteria, false);
-    }
-
     public List<RuntimeObject> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria, boolean includeSubclasses) {
         if (criteria.isEmpty())
             return getAllInstances(baseClass, includeSubclasses);
-        return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).filterInstances(criteria));
+        return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).findInstances(criteria, null));
     }
 
     private List<RuntimeObject> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {

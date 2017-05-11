@@ -97,11 +97,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
 		return !classifier.isAbstract() && classifier.eClass() == UMLPackage.Literals.CLASS;
 	}
 
-	public final Collection<RuntimeObject> filterInstances(Map<Property, List<BasicType>> criteria) {
-        return findInstances(criteria, null);
-    }
-
-    private Collection<RuntimeObject> findInstances(Map<Property, List<BasicType>> criteria, Integer limit) {
+	Collection<RuntimeObject> findInstances(Map<Property, List<BasicType>> criteria, Integer limit) {
         Map<String, Collection<Object>> nodeCriteria = new LinkedHashMap<String, Collection<Object>>();
         for (Entry<Property, List<BasicType>> entry : criteria.entrySet()) {
             Collection<Object> values = new LinkedHashSet<Object>();
@@ -251,6 +247,10 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
             return getClassObject().runBehavioralFeature(operation, arguments);
         return ((RuntimeObject) target).runBehavioralFeature(operation, arguments);
     }
+    
+    protected RuntimeObject getDetachedInstance(INodeKey key) {
+    	return new RuntimeObject(this, key);
+    }
 
     protected RuntimeObject getOrLoadInstance(INodeKey key) {
         RuntimeObject existing = getRuntime().getCurrentContext().getWorkingObject(new NodeReference(getNodeStoreName(), key));
@@ -272,9 +272,9 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     protected Collection<RuntimeObject> nodesToRuntimeObjects(Collection<INodeKey> keys) {
         Collection<RuntimeObject> result = new LinkedHashSet<RuntimeObject>();
         for (INodeKey key : keys) {
-            RuntimeObject related = getInstance(key);
-            if (related != null)
-                result.add(related);
+            RuntimeObject loaded = getInstance(key);
+            if (loaded != null)
+                result.add(loaded);
         }
         return result;
     }

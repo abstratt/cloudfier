@@ -65,6 +65,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 
 	private TypeRef entityName;
 
+	// transient so it is not serialized
 	private transient boolean dirty;
 
 	private InMemoryNodeStore(TypeRef typeRef) {
@@ -123,27 +124,29 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	}
 	
 	public File getStoreFile() {
-		TypeRef typeRef = entityName;
 		return getCatalog().getStorePath(entityName).getAbsoluteFile();
 	}
 	
-	static void save(InMemoryNodeStore store) {
-		TypeRef typeRef = store.entityName;
+	void save() {
+		if (!isDirty())
+			return;
+		TypeRef typeRef = entityName;
 		try {
-			File storeFile = store.getStoreFile();
-			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Saving data to" + storeFile);
+			File storeFile = getStoreFile();
+			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Saving data to " + storeFile);
 			FileUtils.forceMkdir(storeFile.getParentFile());
-			String asString = getGson().toJson(store);
+			String asString = getGson().toJson(this);
 			FileUtils.write(storeFile, asString);
-			store.clearDirty();
-			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Saved data to" + storeFile);
+			clearDirty();
+			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Saved data to " + storeFile);
 		} catch (IOException e) {
 			throw new NodeStoreException("Error saving " + typeRef, e);
 		}
 	}
 
 	private void clearDirty() {
-		dirty = false;
+		if (dirty)
+			dirty = false;
 	}
 
 	@Override
