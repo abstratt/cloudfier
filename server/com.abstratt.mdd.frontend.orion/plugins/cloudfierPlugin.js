@@ -374,9 +374,7 @@ var insertNewLines = function(lines) {
 };
 
 
-
-
-var shellCreateProject = function(args, context) {
+var getProjectProperties = function(applicationName) {
     var propertiesFile = [
         '#This file configures a Cloudfier project',
         'mdd.modelWeaver=kirraWeaver',
@@ -385,11 +383,28 @@ var shellCreateProject = function(args, context) {
         'mdd.enableTypes=true',
         'mdd.extendBaseObject=true',
         'mdd.application.allowAnonymous=true',
-        'mdd.application.loginRequired=false'
+        'mdd.application.loginAllowed=true',
+        'mdd.application.name=' + applicationName
     ];
-    var result = {path: "mdd.properties", isDirectory: false, blob: new Blob(insertNewLines(propertiesFile))};
+    return insertNewLines(propertiesFile);
+};
+
+var shellInitProject = function(args, context) {
+    var applicationName = args.applicationName || 'app'; 
+    var result = {path: "mdd.properties", isDirectory: false, blob: new Blob(getProjectProperties(applicationName))};
     console.log(result);
     return result;
+};
+
+var shellCreateProject = function(args, context) {
+    var applicationName = args.applicationName;
+    var projectPath = asDirPath(applicationName);
+    var entityNames = args.entities.split(',')
+    var newFiles = [];
+    newFiles.push({path: projectPath + 'mdd.properties', isDirectory: false, blob: new Blob(getProjectProperties(applicationName))});
+    newFiles.push({path: projectPath + applicationName + ".tuml", blob: new Blob(insertNewLines(getSimpleEntities(applicationName, entityNames)))});
+    console.log(newFiles);
+    return newFiles;
 };
 
 var shellDBSnapshot = function(args, context) {
@@ -413,13 +428,20 @@ var shellDBSnapshot = function(args, context) {
 var shellCreateEntity = function(args, context) {
     var namespace = args.namespace;
     var entity = args.entity;
-    var validator = /\[^a-bA-B0-9_]/g;
-    if (entity.replace(validator, '') !== entity) {
-        throw Error("Invalid entity name '" + entity + "' - must have only letters/digits/underscore");
-    }
-    if (namespace.replace(validator, '') !== namespace) {
-        throw Error("Invalid namespace name '" + namespace + "' - must have only letters/digits/underscore");
-    }
+    var simpleModel = getSimpleEntity(namespace, entity);
+    var result = {path: entity + ".tuml", blob: new Blob(insertNewLines(simpleModel))};
+    console.log(result);
+    return result;
+};
+
+var sanitizeIdentifier = function(toSanitize) {
+    var cleaner = /[^A-Za-z0-9]/g;
+    return (toSanitize && toSanitize.replace(cleaner, '_')) || toSanitize;
+};
+
+var getSimpleEntity = function(namespace, entity) {
+    entity = sanitizeIdentifier(entity);
+    namespace = sanitizeIdentifier(namespace);
     if (/[0-9]/.test(entity[0])) {
         throw Error("Invalid entity name '" + entity + "' - first character cannot be a digit");
     }
@@ -434,19 +456,39 @@ var shellCreateEntity = function(args, context) {
         'end;',
         'end.',
     ];
-    var result = {path: entity + ".tuml", blob: new Blob(insertNewLines(simpleModel))};
-    console.log(result);
-    return result;
+    return simpleModel;
+};
+
+var getSimpleEntities = function(namespace, entityNames) {
+    var i;
+    for (i in entityNames) {
+        entityNames[i] = sanitizeIdentifier(entityNames[i]);
+        if (/[0-9]/.test(entityNames[i][0])) {
+            throw Error("Invalid entity name '" + entityNames[i] + "' - first character cannot be a digit");
+        }
+    }
+    namespace = sanitizeIdentifier(namespace);
+    if (/[0-9]/.test(namespace[0])) {
+        throw Error("Invalid namespace name '" + namespace + "' - first character cannot be a digit");
+    }
+    var simpleModel = [];
+    simpleModel.push('package ' + namespace + ';');
+    for (i in entityNames) {
+        simpleModel.push('class ' + entityNames[i]);
+        simpleModel.push('    /* Add your own attributes */');
+        simpleModel.push('    attribute name : String;');
+        simpleModel.push('end;');
+        simpleModel.push('');
+    }
+    simpleModel.push('end.');
+    return simpleModel;
 };
 
 var shellCreateNamespace = function(args, context) {
     var namespace = args.namespace;
     var baseFileName = args.file ? args.file.trim() : null;
     baseFileName = (!baseFileName || args.file == '<namespace>') ? namespace : baseFileName ;
-    var validator = /\[^a-bA-B0-9_]/g;
-    if (namespace.replace(validator, '') !== namespace) {
-        throw Error("Invalid namespace name '" + namespace + "' - must have only letters/digits/underscore");
-    }
+    namespace = sanitizeIdentifier(namespace);
     if (/[0-9]/.test(namespace[0])) {
         throw Error("Invalid namespace name '" + namespace + "' - first character cannot be a digit");
     }
@@ -630,10 +672,32 @@ provider.registerServiceProvider("orion.shell.command", { callback: shellSchemaC
 
 
 
-provider.registerServiceProvider("orion.shell.command", { callback: shellCreateProject }, {   
+provider.registerServiceProvider("orion.shell.command", { callback: shellInitProject }, {   
     name: "cloudfier init-project",
     description: "Initializes the current directory as a Cloudfier project",
+    parameters: [{
+        name: "applicationName",
+        type: {name: "string"},
+        description: "Name of the application to be initialized"
+    }],
     returnType: "file"
+});
+
+provider.registerServiceProvider("orion.shell.command", { callback: shellCreateProject }, {   
+    name: "cloudfier create-project",
+    description: "Creates a Cloudfier project",
+    parameters: [{
+        name: "applicationName",
+        type: {name: "string"},
+        description: "Name of the application to be created"
+    }, {
+        name: "entities",
+        type: {name: "string"},
+        description: "Name of the entity classes to be created (comma separated)",
+        option: true,
+        defaultValue: 'SimpleEntity' 
+    }],
+    returnType: "[file]"
 });
 
 provider.registerServiceProvider("orion.shell.command", { callback: shellDBSnapshot }, {   
