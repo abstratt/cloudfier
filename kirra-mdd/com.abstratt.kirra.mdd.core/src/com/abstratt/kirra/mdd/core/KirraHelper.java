@@ -159,7 +159,7 @@ public class KirraHelper {
     }
     
     public static Package getApplicationPackage(Package... packages) { 
-    	return Arrays.stream(packages).filter(it -> "userprofile".equals(it.getName())).findAny().orElse(null);
+    	return Arrays.stream(packages).filter(it -> isApplication(it)).findAny().orElse(null);
     }
     
     public static Collection<Package> getEntityPackages(Package... packages) {
@@ -872,7 +872,7 @@ public class KirraHelper {
         return get(current, "isApplication", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
-                return isKirraPackage(current) && hasKirraType(current);
+                return MDDExtensionUtils.isApplication(current) || (isKirraPackage(current) && hasKirraType(current));
             }
         });
     }

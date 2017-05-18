@@ -2,8 +2,10 @@ package com.abstratt.mdd.frontend.web;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.CoreException;
@@ -20,8 +22,10 @@ import org.restlet.resource.Get;
 
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.target.doc.DiagramGenerator;
+import com.abstratt.pluginutils.LogUtils;
 import com.abstratt.resman.Resource;
 import com.abstratt.resman.Task;
 
@@ -43,7 +47,17 @@ public class DiagramRendererResource extends AbstractWorkspaceResource {
                 IRepository repository = RepositoryService.DEFAULT.getCurrentRepository();
                 Map<String, String> diagramSettings = new HashMap<String, String>();
                 diagramSettings.putAll(getQuery().getValuesMap());
-                Package packageToRender = repository.findPackage(packageName, null);
+                Package packageToRender;
+                if (packageName == null) {
+                	Package[] ownPackages = repository.getOwnPackages(null);
+                	packageToRender = Arrays.stream(ownPackages).filter(it -> MDDExtensionUtils.isApplication(it)).findAny().orElse(null);
+                	if (packageToRender == null && ownPackages.length > 0)
+                		packageToRender = ownPackages[0];
+                } else
+                	packageToRender = repository.findPackage(packageName, null);
+                ResourceUtils.ensure(packageToRender != null, "Unknown package", Status.CLIENT_ERROR_NOT_FOUND);
+                	
+				LogUtils.logInfo(PublisherApplication.ID, "Package selected: " + Optional.ofNullable(packageToRender).map(it -> it.getName()).orElse(null), null);
                 DiagramGenerator diagramGenerator = new DiagramGenerator(repository);
 
                 String expectedContentType = ((HttpRequest) getRequest())

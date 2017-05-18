@@ -226,6 +226,13 @@ public class ResourceUtils {
         LogUtils.logError(WebFrontEnd.ID, exception.getMessage(), exception);
         throw resourceException;
     }
+    
+    public static void fail(String message, org.restlet.data.Status status) {
+        ResourceException resourceException = new ResourceException(
+                status == null ? org.restlet.data.Status.SERVER_ERROR_INTERNAL : status);
+        LogUtils.logError(WebFrontEnd.ID, message, null);
+        throw resourceException;
+    }
 
     public static List<String[]> fetchUnits(File baseDir, String[] allLocations) throws IOException, HttpException {
         HttpClient client = new HttpClient();
