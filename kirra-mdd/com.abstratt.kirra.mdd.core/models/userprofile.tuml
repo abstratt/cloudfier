@@ -5,6 +5,7 @@ apply kirra;
 import mdd_types;
 
 class Profile specializes SystemUser
+    allow none;
     (* Often an email address *)
     readonly id attribute username : String;
     private attribute password : String;

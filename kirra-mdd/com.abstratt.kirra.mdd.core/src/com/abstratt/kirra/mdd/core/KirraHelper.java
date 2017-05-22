@@ -558,7 +558,7 @@ public class KirraHelper {
                     return true;
                 if (isStateProperty(umlAttribute))
                     return true;
-                if (umlAttribute.getOtherEnd() != null && umlAttribute.getOtherEnd().getAggregation() != AggregationKind.NONE_LITERAL)
+                if (umlAttribute.getOtherEnd() != null && umlAttribute.getOtherEnd().isReadOnly() && umlAttribute.getOtherEnd().getAggregation() != AggregationKind.NONE_LITERAL)
                     return true;
                 return umlAttribute.isReadOnly() && (!creationTime || !isBasicallyRequired(umlAttribute));
             }

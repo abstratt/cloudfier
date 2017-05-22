@@ -70,10 +70,15 @@ public class ResourceUtils {
         return new StringRepresentation("<results status=\"failure\" message=\"" + e.getMessage() + "\">\n");
     }
 
-    public static String buildJSONErrorResponse(Exception e) {
-        return "{ message: \"" + e.getMessage() + "\" }";
+    public static Representation buildJSONErrorResponse(Exception e) {
+        return new StringRepresentation("{ \"message\": \"" + e.getMessage() + "\" }");
     }
 
+    public static Representation buildJSONErrorResponse(ResourceException e) {
+        return new StringRepresentation("{ \"message\": \"" + e.getStatus().getDescription() + "\" }");
+    }
+
+    
     /**
      * Encodes problems as a JSON representation (who am I kidding, this is the
      * Orion format).
@@ -86,7 +91,8 @@ public class ResourceUtils {
             String fileName = localFileName == null ? "" : localFileName instanceof IFileStore ? ((IFileStore) localFileName).getName()
                     : localFileName.toString();
             String lineNumberString = lineNumber == null ? "1" : lineNumber.toString();
-            problemMarkup.add("{ \"reason\": \"" + current.getMessage() + "\", \"end\": 1, \"character\": 1, \"line\": " + lineNumberString
+            String message = StringUtils.trimToEmpty(current.getMessage()).replace("\"", "\\\"");
+			problemMarkup.add("{ \"reason\": \"" + message + "\", \"end\": 1, \"character\": 1, \"line\": " + lineNumberString
                     + ", \"severity\": \"" + current.getSeverity().name().toLowerCase() + "\", \"file\": \"" + fileName + "\"}");
         }
         return "{\"problems\": [" + StringUtils.join(problemMarkup, ',') + "]}";

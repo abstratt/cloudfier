@@ -874,7 +874,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
     }
 
     private void prepareForLinking() {
-        commitAll();
+    	commitAll();
     }
 
     protected BasicType readPort(Port port) {

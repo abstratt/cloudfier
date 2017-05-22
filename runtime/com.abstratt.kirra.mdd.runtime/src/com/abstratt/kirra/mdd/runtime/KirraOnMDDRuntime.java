@@ -59,6 +59,7 @@ import com.abstratt.kirra.Namespace;
 import com.abstratt.kirra.Parameter;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
+import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.Schema;
 import com.abstratt.kirra.SchemaManagement;
@@ -740,7 +741,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         if (otherEnd != null) {
         	if (!KirraHelper.isEditable(otherEnd))
         		throw new KirraException("Cannot unlink: " + relationship.getName() + ", the other end (" + otherEnd.getName() + ") is read-only", null, Kind.SCHEMA);
-        	if (KirraHelper.isRequired(otherEnd) && !KirraHelper.isMultiple(otherEnd))
+        	if (KirraHelper.isRequired(otherEnd) && !KirraHelper.isMultiple(otherEnd) && KirraHelper.getRelationshipStyle(otherEnd) != Style.PARENT)
         		throw new KirraException("Cannot unlink: " + relationship.getName() + ", the other end (" + otherEnd.getName() + ") is required", null, Kind.SCHEMA);
         }
         source.unlink(end, destination);
@@ -920,9 +921,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             Object shorthand = extractShorthand(kirraInstance, modelClassifier);
             kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
-                if (property.isDerived() && !full) {
-                    // skip	
-                } else if (KirraHelper.isEntity(property.getType())) {
+                if (KirraHelper.isEntity(property.getType())) {
                     if (!full) {
                     	// skip
                     } else if (property.isMultivalued()) {

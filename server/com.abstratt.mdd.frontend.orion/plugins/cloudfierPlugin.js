@@ -93,7 +93,7 @@ var autoFormat = function(selectedText, text, selection, resource) {
 var computeProposals = function(prefix, buffer, selection) {
     return [
         {
-            proposal: "package package_name;\n\n/* add classes here */\n\nend.",
+            proposal: "[Application]\npackage package_name;\n\n/* add classes here */\n\nend.",
             description: 'New package' 
         },
         {
@@ -449,6 +449,7 @@ var getSimpleEntity = function(namespace, entity) {
         throw Error("Invalid namespace name '" + namespace + "' - first character cannot be a digit");
     }
     var simpleModel = [
+        '[Application]',
         'package ' + namespace + ';',
         'class ' + entity,
         '    /* Add your own attributes */',
@@ -472,6 +473,7 @@ var getSimpleEntities = function(namespace, entityNames) {
         throw Error("Invalid namespace name '" + namespace + "' - first character cannot be a digit");
     }
     var simpleModel = [];
+    simpleModel.push('[Application]');
     simpleModel.push('package ' + namespace + ';');
     for (i in entityNames) {
         simpleModel.push('class ' + entityNames[i]);
@@ -496,6 +498,7 @@ var shellCreateNamespace = function(args, context) {
         throw Error("Invalid base file name '" + baseFileName + "' - must have only letters/digits/underscore");
     }
     var simpleModel = [
+        '[Application]',
         'package ' + namespace + ';',
         '',
         '    /* Add your own classes here */',

@@ -24,6 +24,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Delete;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
+import org.restlet.resource.ResourceException;
 
 import com.abstratt.mdd.core.IProblem;
 import com.abstratt.mdd.core.IProblem.Severity;
@@ -40,7 +41,9 @@ public class DeployerResource extends AbstractBuildDirectoryResource {
         // project file -> project directory
         File tmpProjectDir = null;
         try {
-            tmpProjectDir = ResourceUtils.prepareTempProjectDir(userPath, sourcePath.getChild(IRepository.MDD_PROPERTIES));
+            IFileStore mddProperties = sourcePath.getChild(IRepository.MDD_PROPERTIES);
+            ResourceUtils.ensure(mddProperties.fetchInfo().exists(), "Not a project directory", Status.CLIENT_ERROR_BAD_REQUEST);
+			tmpProjectDir = ResourceUtils.prepareTempProjectDir(userPath, mddProperties);
             List<IProblem> results = ResourceUtils.compile(tmpProjectDir, getQuery().getValuesMap());
             for (IProblem current : results)
                 if (current.getSeverity() == Severity.ERROR) {
@@ -56,6 +59,9 @@ public class DeployerResource extends AbstractBuildDirectoryResource {
         } catch (CoreException e) {
             setStatus(Status.SERVER_ERROR_INTERNAL);
             return ResourceUtils.buildErrorResponse(e);
+        } catch (ResourceException e) {
+        	setStatus(e.getStatus());
+            return ResourceUtils.buildJSONErrorResponse(e);
         } catch (RuntimeException e) {
             setStatus(Status.SERVER_ERROR_INTERNAL);
             return ResourceUtils.buildErrorResponse(e);
