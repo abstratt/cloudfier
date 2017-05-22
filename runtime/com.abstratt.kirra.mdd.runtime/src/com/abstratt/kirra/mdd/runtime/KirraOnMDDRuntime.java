@@ -837,11 +837,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             if (KirraHelper.isFinder(operation)) {
             	Classifier resultType = (Classifier) operation.getReturnResult().getType();
             	if (KirraHelper.isMultiple(operation.getReturnResult()))
-        			return ((CollectionType) result).getBackEnd().stream().map(it -> convertFromBasicType(it, resultType)).collect(toList());
-        		return Arrays.asList(convertFromBasicType(result, resultType));
+        			return ((CollectionType) result).getBackEnd().stream().map(it -> convertFromBasicType(it, resultType, true)).collect(toList());
+        		return Arrays.asList(convertFromBasicType(result, resultType, true));
             }
             Classifier operationType = (Classifier) operation.getType();
-            return fromObjectToList(convertFromBasicType(result, operationType));
+            return fromObjectToList(convertFromBasicType(result, operationType, true));
         } catch (ModelExecutionException rre) {
             throw KirraOnMDDRuntime.convertModelExecutionException(rre, Kind.ENTITY);
         }
@@ -862,12 +862,15 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private Object convertFromBasicType(BasicType value, Classifier sourceType) {
+    	return convertFromBasicType(value, sourceType, false);
+    }
+    private Object convertFromBasicType(BasicType value, Classifier sourceType, boolean full) {
         if (value == null)
             return null;
         if (value instanceof CollectionType)
-            return convertFromCollectionType((CollectionType) value, sourceType);
+            return convertFromCollectionType((CollectionType) value, sourceType, full);
         if (value instanceof RuntimeObject)
-            return convertFromRuntimeObject((RuntimeObject) value, false);
+            return convertFromRuntimeObject((RuntimeObject) value, full);
         if (value instanceof EnumerationType)
             return ((EnumerationType) value).getValue().getName();
         if (value instanceof StateMachineType)
@@ -878,10 +881,15 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private List<?> convertFromCollectionType(CollectionType value, Classifier sourceType) {
+    	return convertFromCollectionType(value, sourceType, false);
+    }
+
+    
+    private List<?> convertFromCollectionType(CollectionType value, Classifier sourceType, boolean full) {
         if (sourceType instanceof Class || sourceType instanceof DataType) {
             List<Tuple> result = new ArrayList<Tuple>(value.getBackEnd().size());
             for (BasicType currentRuntimeObject : value.getBackEnd())
-                result.add(convertFromRuntimeObject((RuntimeObject) currentRuntimeObject, false));
+                result.add(convertFromRuntimeObject((RuntimeObject) currentRuntimeObject, full));
             return result;
         }
         List<Object> result = new ArrayList<Object>(value.getBackEnd().size());

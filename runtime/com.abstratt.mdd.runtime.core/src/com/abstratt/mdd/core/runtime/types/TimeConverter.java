@@ -6,7 +6,7 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 
 public class TimeConverter implements ValueConverter {
-    private static String[] SUPPORTED_FORMATS = {"hh:mm:ss.SSS", "HH:mm:ss", "yyyy-MM-dd'T'HH:mmZ", "yyyy-MM-dd'T'HH:mm:ssZ"}; 
+    private static String[] SUPPORTED_FORMATS = {"HH:mm:ss", "hh:mm:ss.SSS", "yyyy-MM-dd'T'HH:mmZ", "yyyy-MM-dd'T'HH:mm:ssZ"}; 
     @Override
     public BasicType convertToBasicType(Object original) {
         if (original == null)
@@ -20,7 +20,6 @@ public class TimeConverter implements ValueConverter {
                 try {
                     return TimeType.fromValue(new SimpleDateFormat(format).parse((String) original));
                 } catch (ParseException e) {
-                	e.printStackTrace();
                     // try next
                 }
             throw new RuntimeException("Cannot parse time: '" + original + "'");
