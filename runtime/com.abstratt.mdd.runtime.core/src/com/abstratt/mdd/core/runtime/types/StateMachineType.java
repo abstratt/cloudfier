@@ -19,6 +19,13 @@ public class StateMachineType extends BasicType implements Serializable, Compara
 
     private static final long serialVersionUID = 1L;
 
+	public static final MetaClass<StateMachineType> META_CLASS = new MetaClass<StateMachineType>() {
+        @Override
+        public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
+            return BasicType.runNativeOperation(context, StateMachineType.class, target, operation, arguments);
+        }
+    };
+
     private Vertex value;
 
     public StateMachineType(Vertex value) {
@@ -75,13 +82,8 @@ public class StateMachineType extends BasicType implements Serializable, Compara
     }
 
     @Override
-    public MetaClass getMetaClass() {
-        return new MetaClass<StateMachineType>() {
-            @Override
-            public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
-                return BasicType.runNativeOperation(context, StateMachineType.class, target, operation, arguments);
-            }
-        };
+    public MetaClass<?> getMetaClass() {
+        return META_CLASS;
     }
 
     public Vertex getValue() {

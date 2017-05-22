@@ -1,9 +1,13 @@
 package com.abstratt.mdd.core.runtime.types;
 
 import java.io.Serializable;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.LiteralSpecification;
@@ -17,7 +21,22 @@ import com.abstratt.mdd.core.runtime.StructuredRuntimeObject;
 
 public class EnumerationType extends StructuredRuntimeObject implements ComparableType, Serializable {
 
-    private static final long serialVersionUID = 1L;
+	private static class EnumerationMetaClass implements MetaClass<EnumerationType> {
+		@Override
+		public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
+		    return BasicType.runNativeOperation(context, EnumerationType.class, target, operation, arguments);
+		}
+		@Override
+		public List<? extends BasicType> getAllInstances(Classifier classifier, boolean includeSubTypes) {
+			Enumeration asEnumeration = (Enumeration) classifier;
+			Stream<EnumerationLiteral> literals = asEnumeration.getOwnedLiterals().stream();
+			return literals.map(it -> new EnumerationType(it)).collect(Collectors.toList());
+		}
+	}
+	
+    public static final MetaClass<EnumerationType> META_CLASS = new EnumerationMetaClass();
+
+	private static final long serialVersionUID = 1L;
 
     private EnumerationLiteral value;
 
@@ -55,14 +74,9 @@ public class EnumerationType extends StructuredRuntimeObject implements Comparab
 
     @Override
     public MetaClass<EnumerationType> getMetaClass() {
-        return new MetaClass<EnumerationType>() {
-            @Override
-            public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments) {
-                return BasicType.runNativeOperation(context, EnumerationType.class, target, operation, arguments);
-            }
-        };
+        return META_CLASS;
     }
-
+    
     public EnumerationLiteral getValue() {
         return value;
     }

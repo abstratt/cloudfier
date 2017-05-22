@@ -1,5 +1,10 @@
 package com.abstratt.mdd.core.runtime;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Operation;
 
 import com.abstratt.mdd.core.runtime.types.BasicType;
@@ -17,6 +22,10 @@ public interface MetaClass<T> {
 
     public default void handleEvent(RuntimeEvent runtimeEvent) {
     	
+    }
+    
+    public default List<? extends BasicType> getAllInstances(Classifier classifier, boolean includeSubTypes) {
+    	return Collections.emptyList();
     }
 
     /**

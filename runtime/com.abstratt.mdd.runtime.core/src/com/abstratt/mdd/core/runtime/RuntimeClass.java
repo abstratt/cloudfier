@@ -80,6 +80,11 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     public Map<Operation, List<Vertex>> findStateSpecificOperations() {
         return StateMachineUtils.findStateSpecificOperations((BehavioredClassifier) getModelClassifier());
     }
+    
+    @Override
+    public List<RuntimeObject> getAllInstances(Classifier classifier, boolean includeSubTypes) {
+    	return runtime.getAllInstances(classifier, includeSubTypes);
+    }
 
     public final Collection<RuntimeObject> getAllInstances() {
     	if (!this.isPersistable())

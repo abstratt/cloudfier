@@ -17,10 +17,12 @@ import org.eclipse.uml2.uml.Action;
 import org.eclipse.uml2.uml.Activity;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
+import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Port;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Signal;
+import org.eclipse.uml2.uml.StateMachine;
 import org.eclipse.uml2.uml.StructuredActivityNode;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Variable;
@@ -33,6 +35,8 @@ import com.abstratt.mdd.core.runtime.external.ExternalObject;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BuiltInMetaClass;
+import com.abstratt.mdd.core.runtime.types.EnumerationType;
+import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
@@ -237,6 +241,16 @@ public class Runtime {
 
     public void prime() {
         nodeStoreCatalog.prime();
+    }
+    
+    public MetaClass<?> getMetaClass(Classifier classifier) {
+    	if (classifier instanceof Enumeration)
+    		return EnumerationType.META_CLASS;
+    	if (classifier instanceof StateMachine)
+    		return StateMachineType.META_CLASS;
+    	if (BuiltInMetaClass.isBuiltIn(classifier.getQualifiedName()))
+			return BuiltInMetaClass.findBuiltInClass(classifier.getQualifiedName());
+    	return getRuntimeClass(classifier);
     }
 
     public void registerExternalDelegate(ExternalObjectDelegate externalDelegate) {

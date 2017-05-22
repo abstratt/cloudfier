@@ -67,7 +67,7 @@ public abstract class BasicType implements Type {
      * @param context
      */
     public BooleanType same(ExecutionContext context, BasicType other) {
-        return BooleanType.fromValue(this == other);
+        return BooleanType.fromValue(equals(other));
     }
 
     /**
