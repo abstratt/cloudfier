@@ -817,14 +817,25 @@ public class RuntimeObject extends StructuredRuntimeObject {
             }
             for (Trigger trigger : transition.getTriggers())
                 if (runtimeEvent.isMatchedBy(trigger)) {
+                	/*
+                	The semantics of entering a State depend on the type of State and the manner in which it is entered. However, in all
+                	cases, the entry Behavior of the State is executed (if defined) upon entry, but only after any effect Behavior associated
+                	with the incoming Transition is completed. Also, if a doActivity Behavior is defined for the State, this Behavior
+                	commences execution immediately after the entry Behavior is executed. It executes concurrently with any subsequent
+                	Behaviors associated with entering the State, such as the entry Behaviors of substates entered as part of the same
+                	compound transition.
+                	[...]
+                	Regardless of how a State is entered, the StateMachine is deemed to be “in” that State even before any
+                    effect Behavior (if defined) of that State start executing.
+                	*/
                     if (currentState instanceof State && ((State) currentState).getExit() != null)
                         runBehavior(getCurrentContext(), ((State) currentState).getExit());
                     if (transition.getEffect() != null)
                         runBehavior(getCurrentContext(), transition.getEffect());
                     Vertex newState = transition.getTarget();
+                    setPropertyValue(stateProperty, new StateMachineType(newState));
                     if (newState instanceof State && ((State) newState).getEntry() != null)
                         runBehavior(getCurrentContext(), ((State) newState).getEntry());
-                    setPropertyValue(stateProperty, new StateMachineType(newState));
                     if (newState instanceof State && ((State) newState).getDoActivity() != null)
                         runBehavior(getCurrentContext(), ((State) newState).getDoActivity());
                     return;
