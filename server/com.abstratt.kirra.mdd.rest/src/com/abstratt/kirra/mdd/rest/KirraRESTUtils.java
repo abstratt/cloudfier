@@ -43,11 +43,7 @@ public class KirraRESTUtils {
         User user = request.getClientInfo().getUser();
         if (user != null)
             return user.getIdentifier();
-        // fallback to a run-as header (which circumvents any security)
-        Series<NamedValue<String>> httpHeaders = (Series<NamedValue<String>>) request.getAttributes()
-                .get(HeaderConstants.ATTRIBUTE_HEADERS);
-        String runAs = httpHeaders.getFirstValue("X-Kirra-RunAs");
-        return runAs;
+        return null;
     }
 
     public static Properties getProperties(String workspace) {

@@ -30,7 +30,8 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     
     @Override
     public String getCookieName() {
-        return "cloudfier-" + WORKSPACE_NAME.get() + "-credentials";
+        String cookieName = "cloudfier-" + WORKSPACE_NAME.get() + "-credentials";
+		return cookieName;
     }
 
     @Override
@@ -58,6 +59,8 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     
     @Override
     protected void login(Request request, Response response) {
+    	// first discard the authentication cookie from the request
+    	request.getCookies().removeIf(it -> it.getName().equals(getCookieName()));
     	Series<Header> requestHeaders = (Series<Header>)request.getAttributes().computeIfAbsent("org.restlet.http.headers", key -> new Series<Header>(Header.class));
     	Header authorizationHeader = requestHeaders.getFirst("Authorization");
 		if (authorizationHeader == null || !authorizationHeader.getValue().startsWith("Custom ")) {
@@ -105,6 +108,7 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     }
     @Override
     public boolean isOptional() {
-    	return KirraAuthenticationContext.super.isOptional() || !isAjax();
+    	boolean optional = KirraAuthenticationContext.super.isOptional() || !isAjax();
+		return optional;
     }
 }
