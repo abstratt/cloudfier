@@ -925,7 +925,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             kirraInstance.setEntityName(modelClassifier.getName());
             kirraInstance.setEntityNamespace(modelClassifier.getNamespace().getQualifiedName());
             kirraInstance.setObjectId(getObjectId(source));
-            EList<org.eclipse.uml2.uml.Property> allAttributes = modelClassifier.getAllAttributes();
+            List<org.eclipse.uml2.uml.Property> allAttributes = KirraHelper.getPropertiesAndRelationships(modelClassifier);
             Object shorthand = extractShorthand(kirraInstance, modelClassifier);
             kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
@@ -1255,7 +1255,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new IllegalArgumentException("Class not found for " + kirraInstance.getEntityName() + " ("
                     + kirraInstance.getEntityNamespace() + ")");
         Entity entity = getSchemaManagement().getEntity(kirraInstance.getTypeRef());
-        for (org.eclipse.uml2.uml.Property property : modelClass.getAllAttributes()) {
+        for (org.eclipse.uml2.uml.Property property : KirraHelper.getPropertiesAndRelationships(modelClass)) {
             if (property.getAssociation() == null) {
                 if (!KirraHelper.isProperty(property) || KirraHelper.isReadOnly(property) || !KirraHelper.isRequired(property))
                     continue;
