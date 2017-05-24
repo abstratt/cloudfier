@@ -331,6 +331,7 @@ public class ExecutionContext {
             Assert.isTrue(this.events.isEmpty(), "Event backlog is not empty");
             Assert.isTrue(this.workingSet.isEmpty(), "Working set is not empty");
             this.readOnly = readOnly;
+            this.dirty = false;
         } else {
             Assert.isTrue(readOnly || !this.readOnly, "Attempt to change the context from R/O to R/W");
         }
