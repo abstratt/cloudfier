@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import org.eclipse.uml2.uml.Type;
 
@@ -28,6 +29,22 @@ public class SequenceType extends OrderedCollectionType {
     public BasicType at(@SuppressWarnings("unused") ExecutionContext context, IntegerType index) {
         return backEnd.size() <= index.primitiveValue().intValue() ? null : ((List<BasicType>) backEnd).get(index.primitiveValue()
                 .intValue());
+    }
+    
+    public BasicType indexWhere(@SuppressWarnings("unused") ExecutionContext context, ElementReferenceType reference) {
+        List<BasicType> backEndAsList = (List<BasicType>) backEnd;
+        for (int i = 0; i < backEnd.size(); i++) {
+            BooleanType predicateOutcome = (BooleanType) CollectionType.runClosureBehavior(context, reference, backEndAsList.get(i));
+            if (predicateOutcome.isTrue())
+            	return IntegerType.fromValue(i);
+			
+		}
+        return IntegerType.fromValue(-1);
+    }
+    
+    public BasicType indexOf(@SuppressWarnings("unused") ExecutionContext context, BasicType item) {
+        List<BasicType> backEndAsList = (List<BasicType>) backEnd;
+        return IntegerType.fromValue(backEndAsList.indexOf(item));
     }
 
     public BasicType head(@SuppressWarnings("unused") ExecutionContext context) {
