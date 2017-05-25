@@ -23,7 +23,7 @@ public class RuntimeValueSpecificationAction extends RuntimeAction {
         ValueSpecificationAction instance = (ValueSpecificationAction) this.getInstance();
         ValueSpecification valueSpec = instance.getValue();
 
-        BasicType value = RuntimeUtils.extractValueFromSpecification(valueSpec);
+        BasicType value = RuntimeUtils.extractValueFromSpecification(context.getSelf(), valueSpec);
         if (value == null && instance.getResult().isMultivalued())
             value = CollectionType.createCollectionFor(instance.getResult(), Collections.<BasicType> emptySet());
         addResultValue(instance.getResult(), value);

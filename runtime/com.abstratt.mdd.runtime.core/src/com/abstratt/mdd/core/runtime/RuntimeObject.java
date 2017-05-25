@@ -148,7 +148,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
                 + inParameters.size());
         for (int i = 0; i < inParameters.size(); i++) {
             if (arguments[i] == null && inParameters.get(i).getDefaultValue() != null)
-                arguments[i] = RuntimeUtils.extractValueFromSpecification(inParameters.get(i).getDefaultValue());
+                arguments[i] = RuntimeUtils.extractValueFromSpecification(this, inParameters.get(i).getDefaultValue());
             argumentsPerParameter.put(inParameters.get(i).getName(), arguments[i]);
         }
         return argumentsPerParameter;
@@ -376,7 +376,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
                     this.setPropertyValue(property,
                             new StateMachineType(StateMachineUtils.getInitialVertex((StateMachine) property.getType())));
                 if (property.getDefaultValue() != null) {
-                    BasicType computedValue = RuntimeUtils.extractValueFromSpecification(property.getDefaultValue());
+                    BasicType computedValue = RuntimeUtils.extractValueFromSpecification(this, property.getDefaultValue());
                     if (computedValue != null)
                         // this is important for association ends (which may not admit being set to null)
                         this.setValue(property, computedValue);

@@ -365,7 +365,7 @@ public class ExecutionContext {
     /**
      * @return
      */
-    public Object getSelf() {
+    public RuntimeObject getSelf() {
         return currentFrame().getSelf();
     }
 
