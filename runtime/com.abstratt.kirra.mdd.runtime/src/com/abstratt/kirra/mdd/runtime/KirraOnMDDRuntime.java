@@ -926,8 +926,6 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             kirraInstance.setEntityNamespace(modelClassifier.getNamespace().getQualifiedName());
             kirraInstance.setObjectId(getObjectId(source));
             List<org.eclipse.uml2.uml.Property> allAttributes = KirraHelper.getPropertiesAndRelationships(modelClassifier);
-            Object shorthand = extractShorthand(kirraInstance, modelClassifier);
-            kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
                 if (KirraHelper.isEntity(property.getType())) {
                     if (!full) {
@@ -986,6 +984,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 	            }
 	            kirraInstance.setDisabledActions(computeDisabledActions(source, modelClassifier.getAllOperations()));
             }
+            Object shorthand = extractShorthand(kirraInstance, modelClassifier);
+            kirraInstance.setShorthand(shorthand == null ? null : shorthand.toString());
             return kirraInstance;
         } finally {
             if (first)
