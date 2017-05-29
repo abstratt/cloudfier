@@ -440,7 +440,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 			entity.getRelationships().forEach(relationship -> {
 				if (relationship.isRequired() && relationship.isPrimary()) {
 					if (links.getOrDefault(relationship.getName(), Collections.emptyList()).isEmpty())
-						throw new NodeStoreValidationException("Missing link for " + entity.getLabel() + "/" +relationship.getLabel());
+						throw new NodeStoreValidationException("Missing link for " + entity.getLabel() + "/" +relationship.getLabel() + " in " + entity.getLabel() + '@' + it.getKey());
 				}
 			});
 		});

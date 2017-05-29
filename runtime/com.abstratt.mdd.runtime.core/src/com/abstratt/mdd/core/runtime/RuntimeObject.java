@@ -147,9 +147,10 @@ public class RuntimeObject extends StructuredRuntimeObject {
         Assert.isLegal(arguments.length == inParameters.size(), "parameter and argument counts don't match: " + arguments.length + " != "
                 + inParameters.size());
         for (int i = 0; i < inParameters.size(); i++) {
-            if (arguments[i] == null && inParameters.get(i).getDefaultValue() != null)
-                arguments[i] = RuntimeUtils.extractValueFromSpecification(this, inParameters.get(i).getDefaultValue());
-            argumentsPerParameter.put(inParameters.get(i).getName(), arguments[i]);
+            Parameter parameter = inParameters.get(i);
+            if (arguments[i] == null && parameter.getDefaultValue() != null)
+                arguments[i] = RuntimeUtils.extractValueFromSpecification(this, parameter.getDefaultValue());
+            argumentsPerParameter.put(parameter.getName(), arguments[i]);
         }
         return argumentsPerParameter;
     }
