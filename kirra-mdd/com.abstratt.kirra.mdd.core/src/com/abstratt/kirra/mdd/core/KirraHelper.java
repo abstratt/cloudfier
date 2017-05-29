@@ -413,7 +413,8 @@ public class KirraHelper {
     }
 
     public static boolean isRegularProperty(Property attribute) {
-        return attribute.eClass() == UMLPackage.Literals.PROPERTY && attribute.getType() != null && (attribute.getType().eClass() == UMLPackage.Literals.CLASS || attribute.getType().eClass() == UMLPackage.Literals.STATE_MACHINE || attribute.getType().eClass() == UMLPackage.Literals.ENUMERATION);
+        boolean result = attribute.eClass() == UMLPackage.Literals.PROPERTY && attribute.getType() != null && (attribute.getType().eClass() == UMLPackage.Literals.CLASS || attribute.getType().eClass() == UMLPackage.Literals.STATE_MACHINE || attribute.getType().eClass() == UMLPackage.Literals.DATA_TYPE || attribute.getType().eClass() == UMLPackage.Literals.ENUMERATION);
+		return result;
     }
 
     public static boolean isInstance(Property attribute) {
