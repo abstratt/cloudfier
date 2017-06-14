@@ -67,6 +67,6 @@ public final class BlobInfo {
 	}
 	
 	public byte[] getContentsAsBytes() {
-		return Base64.getDecoder().decode(this.contents);
+		return this.contents == null ? null : Base64.getDecoder().decode(this.contents);
 	}
 }

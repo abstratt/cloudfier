@@ -484,12 +484,19 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         return (Instance) (found == null ? null : convertFromRuntimeObject(found, full));
     }
     
+    @Override
     public List<Instance> getInstances(String namespace, String name, boolean full) {
     	return getInstances(namespace, name, full, true);
     }
 
     @Override
     public List<Instance> getInstances(String namespace, String name, boolean full, boolean includeSubclasses) {
+        return getInstances(namespace, name, full, includeSubclasses, new PageRequest(0l, Integer.MAX_VALUE));
+    }
+    
+    @Override
+    public List<Instance> getInstances(String namespace, String name, boolean full, boolean includeSubclasses,
+            PageRequest pageRequest) {
         Class umlClass = (Class) getModelElement(namespace, name, Literals.CLASS);
         return filterValidInstances(getRuntime().getAllInstances(umlClass, includeSubclasses), full);
     }
