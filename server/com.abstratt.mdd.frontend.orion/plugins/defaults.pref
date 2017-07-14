@@ -1,8 +1,10 @@
 {
 	"/plugins":{
-        "/cloudfier-orion/cloudfierPlugin.html": true,	
+		"/cloudfier-orion/cloudfierPlugin.html": true,	
 		"plugins/orionSharedWorker.js": true,
 		"git/plugins/gitPlugin.html":true,
+		"shell/plugins/shellPagePlugin.html": true,
+		"plugins/languages/json/jsonPlugin.html": true,		
 		"webtools/plugins/webToolsPlugin.html":true,
 		"javascript/plugins/javascriptPlugin.html":true,
 		"edit/content/imageViewerPlugin.html":true,
