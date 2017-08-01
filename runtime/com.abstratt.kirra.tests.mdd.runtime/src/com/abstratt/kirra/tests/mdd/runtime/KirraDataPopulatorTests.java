@@ -108,14 +108,14 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         DataPopulator populator = new DataPopulator(kirra);
         try {
             populator.populate(new ByteArrayInputStream(contents.getBytes()));
-            TestCase.fail("KirraException expected");
+            fail("KirraException expected");
         } catch (KirraException e) {
-            TestCase.assertEquals(KirraException.Kind.VALIDATION, e.getKind());
+            assertEquals(KirraException.Kind.VALIDATION, e.getKind());
         }
         // normally we would rollback the transaction but at this point we
         // expect the first 3 rows only
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
-        TestCase.assertEquals(3, instances.size());
+        assertEquals(3, instances.size());
     }
 
     public void testEmptyDataReturnsZero() throws CoreException {
@@ -135,10 +135,10 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
         DataPopulator populator = new DataPopulator(kirra);
         int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(0, status);
+        assertEquals(0, status);
 
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
-        TestCase.assertEquals(0, instances.size());
+        assertEquals(0, instances.size());
     }
 
     public void testGraph() throws CoreException {
@@ -166,18 +166,19 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
         DataPopulator populator = new DataPopulator(kirra);
         int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(2 + 4, status);
+        
+        assertEquals(2 + 4, status);
 
-        Map<String, Instance> accounts = toMap(kirra.getInstances("banking", "Account", false), "number");
-        TestCase.assertEquals(accounts.keySet(), new HashSet<String>(Arrays.asList("123", "456", "ABC", "DEF")));
+        Map<String, Instance> accounts = toMap(kirra.getInstances("banking", "Account", true), "number");
+        assertEquals(new HashSet<String>(Arrays.asList("123", "456", "ABC", "DEF")), accounts.keySet());
 
-        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", false), "name");
-        TestCase.assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Mary")));
+        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", true), "name");
+        assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Mary")));
 
-        TestCase.assertNull(accounts.get("123").getSingleRelated("owner"));
-        TestCase.assertEquals("John", accounts.get("456").getSingleRelated("owner").getValue("name"));
-        TestCase.assertEquals("Mary", accounts.get("ABC").getSingleRelated("owner").getValue("name"));
-        TestCase.assertEquals("Mary", accounts.get("DEF").getSingleRelated("owner").getValue("name"));
+        assertNull(accounts.get("123").getSingleRelated("owner"));
+        assertEquals("John", accounts.get("456").getSingleRelated("owner").getValue("name"));
+        assertEquals("Mary", accounts.get("ABC").getSingleRelated("owner").getValue("name"));
+        assertEquals("Mary", accounts.get("DEF").getSingleRelated("owner").getValue("name"));
     }
 
     public void testGraph_ManyToMany() throws CoreException {
@@ -205,13 +206,13 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
         DataPopulator populator = new DataPopulator(kirra);
         int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(3 + 3, status);
+        assertEquals(3 + 3, status);
 
         Map<String, Instance> accounts = toMap(kirra.getInstances("banking", "Account", false), "number");
-        TestCase.assertEquals(accounts.keySet(), new HashSet<String>(Arrays.asList("456", "ABC", "DEF")));
+        assertEquals(accounts.keySet(), new HashSet<String>(Arrays.asList("456", "ABC", "DEF")));
 
         Map<String, Instance> persons = toMap(kirra.getInstances("banking", "AccountService", false), "name");
-        TestCase.assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("Checking", "Savings", "Exchange")));
+        assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("Checking", "Savings", "Exchange")));
 
         BiFunction<Instance, Pair<String, String>, List<?>> getRelatedValues = (Instance anchor, Pair<String, String> path) -> 
         	getKirraRepository()
@@ -220,9 +221,9 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         	.map(it -> it.getValue(path.getRight()))
         	.collect(Collectors.toList());
         
-        TestCase.assertEquals(Arrays.asList("Checking"), getRelatedValues.apply(accounts.get("456"), Pair.of("services", "name")));
-        TestCase.assertEquals(Arrays.asList("Savings"), getRelatedValues.apply(accounts.get("ABC"), Pair.of("services", "name")));
-        TestCase.assertEquals(Arrays.asList("Checking", "Exchange"), getRelatedValues.apply(accounts.get("DEF"), Pair.of("services", "name")));
+        assertEquals(Arrays.asList("Checking"), getRelatedValues.apply(accounts.get("456"), Pair.of("services", "name")));
+        assertEquals(Arrays.asList("Savings"), getRelatedValues.apply(accounts.get("ABC"), Pair.of("services", "name")));
+        assertEquals(Arrays.asList("Checking", "Exchange"), getRelatedValues.apply(accounts.get("DEF"), Pair.of("services", "name")));
     }
 
     public void testGraph_WithCycle() throws CoreException {
@@ -251,19 +252,19 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
         DataPopulator populator = new DataPopulator(kirra);
         int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(3 + 4, status);
+        assertEquals(3 + 4, status);
 
-        Map<String, Instance> companies = toMap(kirra.getInstances("banking", "Company", false), "name");
-        TestCase.assertEquals(companies.keySet(), new HashSet<String>(Arrays.asList("Acme Inc.", "Acme Corp.", "Acme LLC")));
+        Map<String, Instance> companies = toMap(kirra.getInstances("banking", "Company", true), "name");
+        assertEquals(companies.keySet(), new HashSet<String>(Arrays.asList("Acme Inc.", "Acme Corp.", "Acme LLC")));
 
-        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", false), "name");
-        TestCase.assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Martha", "Mary", "Paul")));
+        Map<String, Instance> persons = toMap(kirra.getInstances("banking", "Person", true), "name");
+        assertEquals(persons.keySet(), new HashSet<String>(Arrays.asList("John", "Martha", "Mary", "Paul")));
 
-        TestCase.assertNull(companies.get("Acme Inc.").getSingleRelated("manager"));
-        TestCase.assertNotNull(companies.get("Acme Corp.").getSingleRelated("manager"));
-        TestCase.assertEquals("John", companies.get("Acme Corp.").getSingleRelated("manager").getValue("name"));
-        TestCase.assertNotNull(companies.get("Acme LLC").getSingleRelated("manager"));
-        TestCase.assertEquals("Martha", companies.get("Acme LLC").getSingleRelated("manager").getValue("name"));
+        assertNull(companies.get("Acme Inc.").getSingleRelated("manager"));
+        assertNotNull(companies.get("Acme Corp.").getSingleRelated("manager"));
+        assertEquals("John", companies.get("Acme Corp.").getSingleRelated("manager").getValue("name"));
+        assertNotNull(companies.get("Acme LLC").getSingleRelated("manager"));
+        assertEquals("Martha", companies.get("Acme LLC").getSingleRelated("manager").getValue("name"));
     }
 
     
@@ -286,12 +287,12 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
         DataPopulator populator = new DataPopulator(kirra);
         int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(1, status);
+        assertEquals(1, status);
 
         // data went through
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
-        TestCase.assertEquals(1, instances.size());
-        TestCase.assertEquals(Collections.singletonMap("balance", 20d), instances.get(0).getValues());
+        assertEquals(1, instances.size());
+        assertEquals(Collections.singletonMap("balance", 20d), instances.get(0).getValues());
     }
 
     public void testInvalidJSONThrowsException() throws CoreException {
@@ -307,9 +308,9 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         DataPopulator populator = new DataPopulator(kirra);
         try {
             populator.populate(new ByteArrayInputStream(contents.getBytes()));
-            TestCase.fail("KirraException expected");
+            fail("KirraException expected");
         } catch (KirraException e) {
-            TestCase.assertEquals(KirraException.Kind.VALIDATION, e.getKind());
+            assertEquals(KirraException.Kind.VALIDATION, e.getKind());
         }
     }
 
@@ -324,7 +325,7 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         IProblem[] result = parseData(contents);
         // invalid reference type
         FixtureHelper.assertTrue(result, result.length == 1);
-        TestCase.assertTrue(result[0].getMessage(), result[0].getMessage().contains("is not a kind of"));
+        assertTrue(result[0].getMessage(), result[0].getMessage().contains("is not a kind of"));
     }
 
     public void testNonExistingClass() throws CoreException {
@@ -344,13 +345,13 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
         DataPopulator populator = new DataPopulator(kirra);
         try {
             populator.populate(new ByteArrayInputStream(contents.getBytes()));
-            TestCase.fail("should have failed");
+            fail("should have failed");
         } catch (KirraException e) {
             // expected
         }
         // all or nothing
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
-        TestCase.assertEquals(Collections.singletonMap("number", "123"), instances.get(0).getValues());
+        assertEquals(Collections.singletonMap("number", "123"), instances.get(0).getValues());
     }
 
     public void testSimple() throws CoreException {
@@ -370,13 +371,13 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
 
         DataPopulator populator = new DataPopulator(kirra);
         int status = populator.populate(new ByteArrayInputStream(contents.getBytes()));
-        TestCase.assertEquals(1, status);
+        assertEquals(1, status);
 
         List<Instance> instances = kirra.getInstances("banking", "Account", false);
-        TestCase.assertEquals(1, instances.size());
-        TestCase.assertEquals("123", instances.get(0).getValue("number"));
-        TestCase.assertEquals(340.5, instances.get(0).getValue("balance"));
-        TestCase.assertEquals("Closed", instances.get(0).getValue("status"));
+        assertEquals(1, instances.size());
+        assertEquals("123", instances.get(0).getValue("number"));
+        assertEquals(340.5, instances.get(0).getValue("balance"));
+        assertEquals("Closed", instances.get(0).getValue("status"));
     }
 
     private IProblem[] parseData(String contents) throws CoreException {
@@ -386,7 +387,7 @@ public class KirraDataPopulatorTests extends AbstractKirraMDDRuntimeTests {
     private <T> Map<T, Instance> toMap(List<Instance> instances, String indexProperty) {
         Map<T, Instance> map = new HashMap<T, Instance>();
         for (Instance instance : instances)
-            TestCase.assertNull(map.put((T) instance.getValue(indexProperty), instance));
+            assertNull(map.put((T) instance.getValue(indexProperty), instance));
         return map;
     }
 }
