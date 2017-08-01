@@ -75,10 +75,4 @@ public class RealType extends NumberType<Double> {
         // one less object
         return this;
     }
-    
-    @Override
-    public String toString() {
-    	String formatted = NumberFormat.getNumberInstance(Locale.getDefault(Category.FORMAT)).format(primitiveValue());
-		return formatted;
-    }
 }
