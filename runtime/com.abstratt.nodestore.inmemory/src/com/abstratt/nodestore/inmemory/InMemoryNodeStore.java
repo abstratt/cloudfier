@@ -212,11 +212,9 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 			Map<String, Collection<NodeReference>> related = node.getRelated();
 			relationships.forEach(relationship -> {
 				Collection<NodeReference> links = related.get(relationship.getName());
-				if (links != null)
-				    if (relationship.isRequired())
-			            throw new NodeStoreValidationException("Relationship " + relationship.getName() + " is required");
-				    else
-				        links.remove(removedReference);
+				if (links != null && links.contains(removedReference))
+				    if (links.remove(removedReference) && relationship.isRequired())
+			            throw new NodeStoreValidationException("Relationship " + relationship.getName() + " is required by " + NodeReference.toString(getName(), node.getKey()));
 			});
 			node.setRelated(related);
 		});

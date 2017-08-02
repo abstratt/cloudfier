@@ -56,6 +56,10 @@ public class NodeReference implements Serializable {
 
     @Override
     public String toString() {
+        return toString(storeName, key);
+    }
+
+    public static String toString(String storeName, INodeKey key) {
         return storeName + ":" + key;
     }
 }

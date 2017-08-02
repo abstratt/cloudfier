@@ -345,15 +345,18 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
             instance5.setRelated("requiredClass1", instance1);
             instance5 = repository.createInstance(instance5);
             created.add(instance5);
+            Instance instance1b = repository.newInstance("mypackage", "MyClass1");
+            instance1b = repository.createInstance(instance1b);
+            created.add(instance1b);
             return created;
         };
         List<Instance> created = buildAndRunInRepository(globalModel, fixture);
-        Instance relatedInstance = created.get(0);
-        String relatedInstanceUri = getInstanceUri(relatedInstance);
-        Instance dependantInstance = created.get(1);
-        String dependantInstanceUri = getInstanceUri(dependantInstance);
+        String relatedInstanceUri = getInstanceUri(created.get(0));
+        String dependantInstanceUri = getInstanceUri(created.get(1));
+        String unrelatedInstanceUri = getInstanceUri(created.get(2));
         executeMethod(200, new GetMethod(relatedInstanceUri));
         executeMethod(200, new GetMethod(dependantInstanceUri));
+        executeMethod(204, new DeleteMethod(unrelatedInstanceUri));
         executeMethod(400, new DeleteMethod(relatedInstanceUri));
         executeMethod(200, new GetMethod(relatedInstanceUri));
         // not only it was not deleted, but it is still pointing to the related object
