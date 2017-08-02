@@ -80,6 +80,15 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "    attribute attr4 : String[0,1];\n";
         model += "    attribute parent : MyClass1;\n";
         model += "end;\n";
+        model += "class MyClass5\n";
+        model += "    attribute attr5 : String[0,1];\n";
+        model += "    attribute requiredClass1 : MyClass1;\n";
+        model += "end;\n";
+        model += "class MyClass6\n";
+        model += "    attribute attr6 : String[0,1];\n";
+        model += "    attribute optionalClass1 : MyClass1[0,1];\n";
+        model += "end;\n";
+        
         model += "end.";
         globalModel = model;
     }
@@ -323,7 +332,71 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         executeMethod(404, new GetMethod(parentInstanceUri));
         executeMethod(404, new GetMethod(childInstanceUri));
         executeMethod(404, new GetMethod(childInstanceAsTopUri));
+    }
+    
+    public void testDeleteRelated_Required() throws CoreException, IOException {
+        Task<List<Instance>> fixture = (Resource<?> resource) -> {
+            List<Instance> created = new LinkedList<>();
+            Repository repository = resource.getFeature(Repository.class);
+            Instance instance1 = repository.newInstance("mypackage", "MyClass1");
+            instance1 = repository.createInstance(instance1);
+            created.add(instance1);
+            Instance instance5 = repository.newInstance("mypackage", "MyClass5");
+            instance5.setRelated("requiredClass1", instance1);
+            instance5 = repository.createInstance(instance5);
+            created.add(instance5);
+            return created;
+        };
+        List<Instance> created = buildAndRunInRepository(globalModel, fixture);
+        Instance relatedInstance = created.get(0);
+        String relatedInstanceUri = getInstanceUri(relatedInstance);
+        Instance dependantInstance = created.get(1);
+        String dependantInstanceUri = getInstanceUri(dependantInstance);
+        executeMethod(200, new GetMethod(relatedInstanceUri));
+        executeMethod(200, new GetMethod(dependantInstanceUri));
+        executeMethod(400, new DeleteMethod(relatedInstanceUri));
+        executeMethod(200, new GetMethod(relatedInstanceUri));
+        // not only it was not deleted, but it is still pointing to the related object
+        ObjectNode jsonDependantInstance = executeJsonMethod(200, new GetMethod(dependantInstanceUri));
+        assertEquals(relatedInstanceUri, JsonHelper.traverse(jsonDependantInstance, "links", "requiredClass1", "uri").asText());
+        executeMethod(204, new DeleteMethod(dependantInstanceUri));
+        executeMethod(204, new DeleteMethod(relatedInstanceUri));
+    }
+    
+    public void testDeleteRelated_Optional() throws CoreException, IOException {
+        Task<List<Instance>> fixture = (Resource<?> resource) -> {
+            List<Instance> created = new LinkedList<>();
+            Repository repository = resource.getFeature(Repository.class);
+            Instance instance1 = repository.newInstance("mypackage", "MyClass1");
+            instance1 = repository.createInstance(instance1);
+            created.add(instance1);
+            Instance instance6 = repository.newInstance("mypackage", "MyClass6");
+            instance6.setRelated("optionalClass1", instance1);
+            instance6 = repository.createInstance(instance6);
+            created.add(instance6);
+            return created;
+        };
+        List<Instance> created = buildAndRunInRepository(globalModel, fixture);
+        Instance relatedInstance = created.get(0);
+        String relatedInstanceUri = getInstanceUri(relatedInstance);
+        Instance dependantInstance = created.get(1);
+        String dependantInstanceUri = getInstanceUri(dependantInstance);
+        assertEquals(relatedInstanceUri, getAndTraverse(dependantInstanceUri, "links", "optionalClass1", "uri").textValue());
+        executeMethod(204, new DeleteMethod(relatedInstanceUri));
+        executeMethod(404, new GetMethod(relatedInstanceUri));
+        // the dependant object is still around, but its reference to the related object is now gone
+        assertFalse(getAndTraverse(dependantInstanceUri, "links").has("optionalClass1"));
+    }
+
+    private String getInstanceUri(Instance instance) throws IOException, HttpException {
+        return resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", instance.getTypeRef().toString()).replace("{objectId}", instance.getObjectId()).replace("{application}", getName()));
     }    
+    
+    private JsonNode getAndTraverse(String uri, String... paths) throws HttpException, IOException {
+        JsonNode asJson = executeJsonMethod(200, new GetMethod(uri));
+        return JsonHelper.traverse(asJson, paths);
+    }
+
 
     
     public void testUpdateInstance() throws CoreException, IOException {

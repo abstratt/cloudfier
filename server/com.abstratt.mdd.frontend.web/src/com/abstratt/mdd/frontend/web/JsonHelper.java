@@ -13,6 +13,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 public class JsonHelper {
 
@@ -29,6 +30,17 @@ public class JsonHelper {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    public static JsonNode traverse(JsonNode node, String... path) {
+        JsonNode result = node;
+        for (int i = 0; i < path.length; i++) {
+            if (!result.has(path[i])) {
+                throw new IllegalArgumentException("Unknown path: " + path[i]);
+            }
+            result = result.get(path[i]);
+        }
+        return result;
     }
 
     private static JsonFactory jsonFactory = new JsonFactory();
