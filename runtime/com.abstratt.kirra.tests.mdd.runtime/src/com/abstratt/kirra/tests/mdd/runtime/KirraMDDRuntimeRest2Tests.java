@@ -6,7 +6,7 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.collections.IteratorUtils;
 import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -46,11 +47,43 @@ import junit.framework.TestCase;
  */
 public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
 
-    Map<String, String> authorized = new HashMap<String, String>();
+    Map<String, String> authorized = new LinkedHashMap<String, String>();
     
     private JsonNodeFactory jsonNodeFactory = JsonNodeFactory.withExactBigDecimals(false);
 
     protected ServiceRegistration<AuthenticationService> authenticatorRegistration;
+    
+    private static final String globalModel;
+    static {
+        String model = "";
+        model += "package mypackage;\n";
+        model += "apply kirra;\n";
+        model += "import base;\n";
+        model += "class MyClass1\n";
+        model += "    attribute attr1 : String[0,1];\n";
+        model += "    attribute attr2 : String[0,1];\n";
+        model += "    attribute myClass3 : MyClass3[0,1];\n";
+        model += "    attribute myClass2 : MyClass2[0,1];\n";
+        model += "    composition myClass4s : MyClass4[*] opposite parent;\n";
+        model += "end;\n";
+        model += "class MyClass2\n";
+        model += "    attribute attr2 : String[0,1];\n";
+        model += "end;\n";
+        model += "abstract class MyClass3\n";
+        model += "    attribute attr3 : String[0,1];\n";
+        model += "end;\n";
+        model += "class MyClass3a specializes MyClass3\n";
+        model += "end;\n";
+        model += "class MyClass3b specializes MyClass3\n";
+        model += "end;\n";
+        model += "class MyClass4\n";
+        model += "    attribute attr4 : String[0,1];\n";
+        model += "    attribute parent : MyClass1;\n";
+        model += "end;\n";
+        model += "end.";
+        globalModel = model;
+    }
+    
     
     public KirraMDDRuntimeRest2Tests(String name) {
         super(name);
@@ -230,6 +263,69 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         }
     }
 
+    public void testDelete() throws CoreException, IOException {
+        List<Instance> created = testUpdateInstanceSetup();
+        String instanceUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
+        executeMethod(204, new DeleteMethod(instanceUri));
+        executeMethod(404, new GetMethod(instanceUri));
+    }
+    
+    public void testDetachChild() throws CoreException, IOException {
+        Task<List<Instance>> fixture = (Resource<?> resource) -> {
+            List<Instance> created = new LinkedList<>();
+            Repository repository = resource.getFeature(Repository.class);
+            Instance instance1 = repository.newInstance("mypackage", "MyClass1");
+            instance1.setValue("attr1", "value1");
+            instance1 = repository.createInstance(instance1);
+            created.add(instance1);
+            Instance instance4 = repository.newInstance("mypackage", "MyClass4");
+            instance4.setValue("attr4", "value4");
+            instance4.setRelated("parent", instance1);
+            instance4 = repository.createInstance(instance4);
+            created.add(instance4);
+            return created;
+        };
+        List<Instance> created = buildAndRunInRepository(globalModel, fixture);
+        String parentInstanceUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
+        String childInstanceAsTopUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass4").replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));
+        String childInstanceUri = resolveApplicationURI(parentInstanceUri + "/" + Paths.RELATIONSHIPS + "/myClass4s/" + created.get(1).getReference()); 
+        executeMethod(200, new GetMethod(parentInstanceUri));
+        executeMethod(200, new GetMethod(childInstanceUri));
+        executeMethod(200, new GetMethod(childInstanceAsTopUri));
+        executeMethod(204, new DeleteMethod(childInstanceUri));
+        executeMethod(404, new GetMethod(childInstanceUri));
+        executeMethod(404, new GetMethod(childInstanceAsTopUri));
+    }
+    
+    public void testDeleteParent() throws CoreException, IOException {
+        Task<List<Instance>> fixture = (Resource<?> resource) -> {
+            List<Instance> created = new LinkedList<>();
+            Repository repository = resource.getFeature(Repository.class);
+            Instance instance1 = repository.newInstance("mypackage", "MyClass1");
+            instance1.setValue("attr1", "value1");
+            instance1 = repository.createInstance(instance1);
+            created.add(instance1);
+            Instance instance4 = repository.newInstance("mypackage", "MyClass4");
+            instance4.setValue("attr4", "value4");
+            instance4.setRelated("parent", instance1);
+            instance4 = repository.createInstance(instance4);
+            created.add(instance4);
+            return created;
+        };
+        List<Instance> created = buildAndRunInRepository(globalModel, fixture);
+        String parentInstanceUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()));
+        String childInstanceAsTopUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass4").replace("{objectId}", created.get(1).getObjectId()).replace("{application}", getName()));
+        String childInstanceUri = resolveApplicationURI(parentInstanceUri + "/" + Paths.RELATIONSHIPS + "/myClass4s/" + created.get(1).getReference());
+        executeMethod(200, new GetMethod(parentInstanceUri));
+        executeMethod(200, new GetMethod(childInstanceUri));
+        executeMethod(200, new GetMethod(childInstanceAsTopUri));
+        executeMethod(204, new DeleteMethod(parentInstanceUri));
+        executeMethod(404, new GetMethod(parentInstanceUri));
+        executeMethod(404, new GetMethod(childInstanceUri));
+        executeMethod(404, new GetMethod(childInstanceAsTopUri));
+    }    
+
+    
     public void testUpdateInstance() throws CoreException, IOException {
         List<Instance> created = testUpdateInstanceSetup();
         
@@ -350,47 +446,32 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     }    
 
 	private List<Instance> testUpdateInstanceSetup() throws IOException, CoreException {
-		String model = "";
-        model += "package mypackage;\n";
-        model += "apply kirra;\n";
-        model += "import base;\n";
-        model += "class MyClass1\n";
-        model += "    attribute attr1 : String[0,1];\n";
-        model += "    attribute attr2 : String[0,1];\n";
-        model += "    attribute myClass3 : MyClass3[0,1];\n";
-        model += "    attribute myClass2 : MyClass2[0,1];\n";
-        model += "end;\n";
-        model += "class MyClass2\n";
-        model += "    attribute attr2 : String[0,1];\n";
-        model += "end;\n";
-        model += "abstract class MyClass3\n";
-        model += "    attribute attr3 : String[0,1];\n";
-        model += "end;\n";
-        model += "class MyClass3a specializes MyClass3\n";
-        model += "end;\n";
-        model += "class MyClass3b specializes MyClass3\n";
-        model += "end;\n";
-        model += "end.";
-        buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-        return RepositoryService.DEFAULT.runTask(getRepositoryURI(), new Task<List<Instance>>() {
-        	@Override
-        	public List<Instance> run(Resource<?> resource) {
-        		List<Instance> created = new LinkedList<>();
-        		Repository repository = resource.getFeature(Repository.class);
-        		Instance instance1 = repository.newInstance("mypackage", "MyClass1");
-        		instance1.setValue("attr1", "value1");
-        		created.add(repository.createInstance(instance1));
-        		Instance instance2 = repository.newInstance("mypackage", "MyClass2");
-        		instance2.setValue("attr2", "value2");
-        		created.add(repository.createInstance(instance2));
-        		Instance instance3a = repository.newInstance("mypackage", "MyClass3a");
-        		instance3a.setValue("attr3", "value3a");
-        		created.add(repository.createInstance(instance3a));
-        		return created;
-        	}
-        });
+        Task<List<Instance>> fixture = (Resource<?> resource) -> {
+    		List<Instance> created = new LinkedList<>();
+    		Repository repository = resource.getFeature(Repository.class);
+    		Instance instance1 = repository.newInstance("mypackage", "MyClass1");
+    		instance1.setValue("attr1", "value1");
+    		created.add(repository.createInstance(instance1));
+    		Instance instance2 = repository.newInstance("mypackage", "MyClass2");
+    		instance2.setValue("attr2", "value2");
+    		created.add(repository.createInstance(instance2));
+    		Instance instance3a = repository.newInstance("mypackage", "MyClass3a");
+    		instance3a.setValue("attr3", "value3a");
+    		created.add(repository.createInstance(instance3a));
+    		return created;
+        };
+        return buildAndRunInRepository(globalModel, fixture);
 	}
-
+	
+	private <T, S> T buildAndRunInRepository(String model, Task<S> task) throws IOException, CoreException {
+	    buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
+	    return runInRepository(task);
+	}
+	
+	private <T, S> T runInRepository(Task<S> task) {
+	    T result = (T) RepositoryService.DEFAULT.runTask(getRepositoryURI(), task);
+	    return result;
+	}
 
     public void testGetTemplateInstance() throws CoreException, IOException {
         String model = "";

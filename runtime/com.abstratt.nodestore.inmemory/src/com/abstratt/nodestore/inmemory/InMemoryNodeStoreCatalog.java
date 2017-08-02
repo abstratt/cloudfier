@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -63,6 +64,8 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     
     @Override
     public void clearCaches() {
+        List<String> clean = getStoreSet().entrySet().stream().filter(it -> !it.getValue().isDirty()).map(it -> it.getKey()).collect(Collectors.toList());
+        clean.forEach(it -> getStoreSet().remove(it));
     }
 
     @Override

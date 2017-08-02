@@ -30,8 +30,9 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         KirraMDDRuntimeDataTests.model += "end;\n";
         KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2\n";
         KirraMDDRuntimeDataTests.model += "attribute attr3 : Boolean[0,1];\n";
-        KirraMDDRuntimeDataTests.model += "attribute attr4 : Date[0,1];\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr4 : DateTime[0,1];\n";
         KirraMDDRuntimeDataTests.model += "attribute attr5 : MyEnum[0,1] := value2;\n";
+        KirraMDDRuntimeDataTests.model += "attribute attr6 : Date[0,1];\n";
         KirraMDDRuntimeDataTests.model += "end;\n";
         KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2a specializes MyClass2 end;\n";
         KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2b specializes MyClass2 end;\n";
@@ -194,6 +195,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         newInstance2.setValue("attr3", true);
         newInstance2.setValue("attr4", LocalDateTime.now());
         newInstance2.setValue("attr5", "value1");
+        newInstance2.setValue("attr6", LocalDate.now());
         Instance created3 = kirra.createInstance(newInstance2);
 
         List<Instance> myClass1Instances = kirra.getInstances("mypackage", "MyClass1", true);
@@ -253,9 +255,11 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         newInstance2.setEntityName("MyClass2");
         newInstance2.setEntityNamespace("mypackage");
         newInstance2.setValue("attr3", true);
-        LocalDateTime today = LocalDateTime.now();
-        newInstance2.setValue("attr4", today);
+        LocalDate today = LocalDate.now();
+        LocalDateTime now = LocalDateTime.now();
+        newInstance2.setValue("attr4", now);
         newInstance2.setValue("attr5", "value2");
+        newInstance2.setValue("attr6", today);
         Instance created2 = kirra.createInstance(newInstance2);
 
         Instance loaded2 = kirra.getInstance("mypackage", "MyClass2", created2.getObjectId(), true);
@@ -263,8 +267,9 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertFalse(loaded2.isNew());
 
         TestCase.assertEquals(true, loaded2.getValue("attr3"));
-        TestCase.assertEquals(today, loaded2.getValue("attr4"));
+        TestCase.assertEquals(now, loaded2.getValue("attr4"));
         TestCase.assertEquals("value2", loaded2.getValue("attr5"));
+        TestCase.assertEquals(today, loaded2.getValue("attr6"));
     }
 
     public void testNewInstanceDefaults() throws CoreException {

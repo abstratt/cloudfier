@@ -80,7 +80,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 
 	static InMemoryNodeStore load(InMemoryNodeStoreCatalog catalog, TypeRef typeRef) {
 		try {
-			File storePath = catalog.getStorePath(typeRef);
+			File storePath = catalog.getStorePath(typeRef).getAbsoluteFile();
 			LogUtils.debug(InMemoryNodeStoreActivator.BUNDLE_NAME, "Loading data from " + storePath);
 			byte[] contentArray = FileUtils.readFileToByteArray(storePath);
 			ByteArrayInputStream contents = new ByteArrayInputStream(contentArray);
@@ -361,18 +361,25 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		INode node = basicGetNode(key);
 		Entity entity = getEntity();
 		Relationship relationship = entity.getRelationship(relationshipName);
-		INodeStore otherStore = getCatalog().getStore(toRemove.getStoreName());
+		String otherStoreName = relationship.getTypeRef().getFullName();
+		INodeStore otherStore = getCatalog().getStore(otherStoreName);
 		if (relationship.isPrimary()) {
 			Map<String, Collection<NodeReference>> allRelated = node.getRelated();
-			Collection<NodeReference> existing = allRelated.get(relationshipName);
+			Collection<NodeReference> existing = allRelated.computeIfAbsent(relationshipName, k -> Collections.emptyList());
 			if (existing.contains(toRemove)) {
-				existing = new LinkedList<>(existing);
+			    existing = new LinkedList<>(existing);
 				existing.remove(toRemove);
 			}
 			allRelated.put(relationshipName, existing);
-			if (relationship.getStyle() == Relationship.Style.CHILD)
-				otherStore.deleteNode(toRemove.getKey());
 			node.setRelated(allRelated);
+			switch (relationship.getStyle()) {
+    			case CHILD:
+    			    otherStore.deleteNode(toRemove.getKey());
+    			    break;
+    			case PARENT:
+    			    this.deleteNode(key);
+    			    break;
+			}
 		} else {
 			otherStore.unlinkNodes(toRemove.getKey(), relationship.getOpposite(), new NodeReference(getName(), key));
 		}		
@@ -518,5 +525,10 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 			jsonObject.add("children", context.serialize(node.getChildren()));
 			return jsonObject;
 		}
+	}
+	
+	@Override
+	public String toString() {
+	    return this.getName();
 	}
 }
