@@ -6,6 +6,7 @@ import com.abstratt.mdd.core.util.AccessCapability
 import org.eclipse.core.runtime.CoreException
 import com.abstratt.kirra.TypeRef
 import com.abstratt.kirra.TypeRef.TypeKind
+import com.abstratt.kirra.InstanceManagement
 
 class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 
@@ -194,7 +195,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
     }
 
     protected def Instance findUserByName(String name, String entityName) {
-        kirra.filterInstances(#{"name" -> #[name as Object]}, "todo", entityName, true).head
+        kirra.filterInstances(#{"name" -> #[name as Object]}, "todo", entityName, InstanceManagement.DataProfile.Full).head
     }
     
     def testInstanceCRUDCapabilities_User() {

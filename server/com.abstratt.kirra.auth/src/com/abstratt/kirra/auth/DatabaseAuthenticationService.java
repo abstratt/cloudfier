@@ -1,15 +1,12 @@
 package com.abstratt.kirra.auth;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
-import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
