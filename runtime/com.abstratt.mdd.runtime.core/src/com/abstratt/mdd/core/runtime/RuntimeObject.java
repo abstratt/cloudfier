@@ -77,8 +77,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
     private boolean isPersisted;
 
     /**
-     * Is this object meant to be stored in a node store?
-     * Tuples are not, and so aren't objects created in a read-only context.
+     * Is this object meant to be stored in a node store? Tuples are not, and so
+     * aren't objects created in a read-only context.
      */
     private boolean isPersistable;
 
@@ -144,8 +144,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
         Map<String, BasicType> argumentsPerParameter = new HashMap<String, BasicType>();
         List<Parameter> inParameters = FeatureUtils.filterParameters(behavioralFeature.getOwnedParameters(),
                 ParameterDirectionKind.IN_LITERAL);
-        Assert.isLegal(arguments.length == inParameters.size(), "parameter and argument counts don't match: " + arguments.length + " != "
-                + inParameters.size());
+        Assert.isLegal(arguments.length == inParameters.size(),
+                "parameter and argument counts don't match: " + arguments.length + " != " + inParameters.size());
         for (int i = 0; i < inParameters.size(); i++) {
             Parameter parameter = inParameters.get(i);
             if (arguments[i] == null && parameter.getDefaultValue() != null)
@@ -157,7 +157,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     public Constraint checkConstraints(Classifier scope, String kind) {
         List<Constraint> invariants = ConstraintUtils.findConstraints(scope, kind);
-        Constraint partial = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
+        Constraint partial = checkConstraints(invariants, Collections.<String, BasicType>emptyMap());
         if (partial != null)
             return partial;
         for (Classifier general : scope.getGenerals()) {
@@ -170,7 +170,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     public Constraint checkConstraints(NamedElement scope, String kind) {
         List<Constraint> constraints = ConstraintUtils.findConstraints(scope, kind);
-        return checkConstraints(constraints, Collections.<String, BasicType> emptyMap());
+        return checkConstraints(constraints, Collections.<String, BasicType>emptyMap());
     }
 
     public Constraint checkConstraints(String kind) {
@@ -208,8 +208,9 @@ public class RuntimeObject extends StructuredRuntimeObject {
     public void ensureValid() {
         if (!isActive())
             return;
-        List<Constraint> invariants = MDDExtensionUtils.findOwnedInvariantConstraints(getRuntimeClass().getModelClassifier());
-        Constraint violated = checkConstraints(invariants, Collections.<String, BasicType> emptyMap());
+        List<Constraint> invariants = MDDExtensionUtils
+                .findOwnedInvariantConstraints(getRuntimeClass().getModelClassifier());
+        Constraint violated = checkConstraints(invariants, Collections.<String, BasicType>emptyMap());
         if (violated != null)
             constraintViolated(ConstraintUtils.getConstraintScope(violated), violated);
     }
@@ -264,7 +265,9 @@ public class RuntimeObject extends StructuredRuntimeObject {
      * Returns all instances that satisfy this parameter's constraints.
      * 
      * @param parameter
-     * @param parameterType the type of instances we are interested in (could be the parameter type or a subclass)
+     * @param parameterType
+     *            the type of instances we are interested in (could be the
+     *            parameter type or a subclass)
      * @return the matching instances
      */
     public Collection<RuntimeObject> getParameterDomain(Parameter parameter, Classifier parameterType) {
@@ -289,22 +292,23 @@ public class RuntimeObject extends StructuredRuntimeObject {
         List<Constraint> constraints = MDDExtensionUtils.findInvariantConstraints(property);
         Collection<RuntimeObject> candidates = propertyRuntimeClass.getAllInstances();
         candidateLoop: for (BasicType candidate : candidates) {
-        	if (!property.isMultivalued())
-	            for (Constraint constraint : constraints) {
-	            	// simulate what the object would look like with the proposed value
-	            	setValue(property, candidate);
-	                if (!isConstraintSatisfied(constraint))
-	                    continue candidateLoop;
-	            }
+            if (!property.isMultivalued())
+                for (Constraint constraint : constraints) {
+                    // simulate what the object would look like with the
+                    // proposed value
+                    setValue(property, candidate);
+                    if (!isConstraintSatisfied(constraint))
+                        continue candidateLoop;
+                }
             result.add((RuntimeObject) candidate);
         }
         return result;
     }
 
-    
     public Collection<RuntimeObject> getRelated(Property property) {
-    	return getRelated(property, (Classifier) property.getType());
+        return getRelated(property, (Classifier) property.getType());
     }
+
     /**
      * Returns the objects related via the given property.
      * 
@@ -324,8 +328,6 @@ public class RuntimeObject extends StructuredRuntimeObject {
     public RuntimeClass getRuntimeClass() {
         return runtimeClass;
     }
-    
-    
 
     @Override
     public BasicType getValue(Property property) {
@@ -336,16 +338,19 @@ public class RuntimeObject extends StructuredRuntimeObject {
         if (property.isDerived() && property.getDefaultValue() != null)
             return derivedValue(property);
         if (isAssociationEnd(property))
-            return isPersistable ? traverse(property) : (BasicType) node.getProperties(true).get(nodeProperty(property));
-        boolean legal = this.isTuple() || this.getRuntimeClass().getModelClassifier() instanceof Signal || !property.isMultivalued();
-		Assert.isLegal(legal, property.getName());
+            return isPersistable ? traverse(property)
+                    : (BasicType) node.getProperties(true).get(nodeProperty(property));
+        boolean legal = this.isTuple() || this.getRuntimeClass().getModelClassifier() instanceof Signal
+                || !property.isMultivalued();
+        Assert.isLegal(legal, property.getName());
         return getSlotValue(property, node.getProperties());
     }
 
     public void handleEvent(RuntimeEvent runtimeEvent) {
         INode node = getNode();
         Map<String, Object> nodeProperties = node.getProperties();
-        if (runtimeEvent instanceof RuntimeMessageEvent<?> && ((RuntimeMessageEvent<?>) runtimeEvent).getMessage() instanceof Signal) {
+        if (runtimeEvent instanceof RuntimeMessageEvent<?>
+                && ((RuntimeMessageEvent<?>) runtimeEvent).getMessage() instanceof Signal) {
             RuntimeMessageEvent<Signal> runtimeMessageEvent = (RuntimeMessageEvent<Signal>) runtimeEvent;
             Signal signal = runtimeMessageEvent.getMessage();
             Reception reception = ReceptionUtils.findBySignal(this.getRuntimeClass().getModelClassifier(), signal);
@@ -354,7 +359,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
         }
         for (Property stateProperty : StateMachineUtils.findStateProperties(getRuntimeClass().getModelClassifier())) {
             StateMachine stateMachine = (StateMachine) stateProperty.getType();
-            StateMachineType currentState = getStateMachineValue(stateMachine, nodeProperties.get(stateProperty.getName()));
+            StateMachineType currentState = getStateMachineValue(stateMachine,
+                    nodeProperties.get(stateProperty.getName()));
             handleEventForState(runtimeEvent, stateProperty, currentState.getValue());
         }
     }
@@ -374,12 +380,14 @@ public class RuntimeObject extends StructuredRuntimeObject {
         for (Property property : allAttributes)
             if (!property.isStatic() && !property.isDerived() && !isInitialized(property)) {
                 if (property.getType() instanceof StateMachine)
-                    this.setPropertyValue(property,
-                            new StateMachineType(StateMachineUtils.getInitialVertex((StateMachine) property.getType())));
+                    this.setPropertyValue(property, new StateMachineType(
+                            StateMachineUtils.getInitialVertex((StateMachine) property.getType())));
                 if (property.getDefaultValue() != null) {
-                    BasicType computedValue = RuntimeUtils.extractValueFromSpecification(this, property.getDefaultValue());
+                    BasicType computedValue = RuntimeUtils.extractValueFromSpecification(this,
+                            property.getDefaultValue());
                     if (computedValue != null)
-                        // this is important for association ends (which may not admit being set to null)
+                        // this is important for association ends (which may not
+                        // admit being set to null)
                         this.setValue(property, computedValue);
                 }
             }
@@ -409,7 +417,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
             for (Parameter inputParameters : constraintParameters)
                 argumentValues.add(argumentsPerParameter.get(inputParameters.getName()));
         }
-        Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute, argumentValues.toArray(new BasicType[0]));
+        Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute,
+                argumentValues.toArray(new BasicType[0]));
         return behaviorResult != null && ((BooleanType) behaviorResult).isTrue();
     }
 
@@ -419,7 +428,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
             if (!isInState(stateSpecificOperations.get(operation)))
                 return false;
         for (Constraint precondition : operation.getPreconditions())
-            if (!FeatureUtils.isParametrizedConstraint(precondition) && !isConstraintSatisfied(precondition, argumentsPerParameter))
+            if (!FeatureUtils.isParametrizedConstraint(precondition)
+                    && !isConstraintSatisfied(precondition, argumentsPerParameter))
                 return false;
         return true;
     }
@@ -454,7 +464,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
         for (RuntimeObject peer : peers)
             peer.attach();
         prepareForLinking();
-        getNodeStore().linkMultipleNodes(RuntimeObject.this.getKey(), end.getName(), RuntimeObject.this.nodeReferences(peers), true);
+        getNodeStore().linkMultipleNodes(RuntimeObject.this.getKey(), end.getName(),
+                RuntimeObject.this.nodeReferences(peers), true);
     }
 
     /**
@@ -472,9 +483,9 @@ public class RuntimeObject extends StructuredRuntimeObject {
         other.attach();
         prepareForLinking();
         if (end.isMultivalued()) {
-        	getNodeStore().linkMultipleNodes(getKey(), end.getName(), Arrays.asList(other.nodeReference()), false);
+            getNodeStore().linkMultipleNodes(getKey(), end.getName(), Arrays.asList(other.nodeReference()), false);
         } else {
-        	getNodeStore().linkNodes(getKey(), end.getName(), other.nodeReference());
+            getNodeStore().linkNodes(getKey(), end.getName(), other.nodeReference());
         }
     }
 
@@ -494,11 +505,11 @@ public class RuntimeObject extends StructuredRuntimeObject {
             if (violated != null)
                 constraintViolated(behavioralFeature, violated);
 
-            if (!TypeUtils
-                    .isCompatible(getRuntime().getRepository(), getRuntimeClass().getModelClassifier(), asOperation.getClass_(), null))
-                throw new IllegalArgumentException("Operation " + behavioralFeature.getQualifiedName()
-                        + " defined by a class not belonging to " + getRuntimeClass().getModelClassifier().getQualifiedName()
-                        + "'s hierarchy");
+            if (!TypeUtils.isCompatible(getRuntime().getRepository(), getRuntimeClass().getModelClassifier(),
+                    asOperation.getClass_(), null))
+                throw new IllegalArgumentException(
+                        "Operation " + behavioralFeature.getQualifiedName() + " defined by a class not belonging to "
+                                + getRuntimeClass().getModelClassifier().getQualifiedName() + "'s hierarchy");
             if (!isClassObject() && !asOperation.isQuery())
                 // only non-query operations generate events
                 publishEvent(asOperation, arguments);
@@ -561,7 +572,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
                     newPeers.add((RuntimeObject) newPeer);
             } else {
                 markDirty();
-                newPeers = value == null ? Collections.<RuntimeObject> emptySet() : Collections.singleton((RuntimeObject) value);
+                newPeers = value == null ? Collections.<RuntimeObject>emptySet()
+                        : Collections.singleton((RuntimeObject) value);
             }
             this.link(property, newPeers);
         } else
@@ -679,23 +691,18 @@ public class RuntimeObject extends StructuredRuntimeObject {
     }
 
     /**
-     * A generic traversal operation that will return a single RuntimeObject or a collection of runtime objects
-     * depending on the multiplicity of the property.
+     * A generic traversal operation that will return a single RuntimeObject or
+     * a collection of runtime objects depending on the multiplicity of the
+     * property.
      */
     protected BasicType traverse(Property property) {
-    	Classifier relatedType = (Classifier) property.getType();
+        Classifier relatedType = (Classifier) property.getType();
         if (property.isMultivalued()) {
             Assert.isTrue(property.isMultivalued());
-			return CollectionType.createCollectionFor(property, this.getRelated(property, relatedType));
+            return CollectionType.createCollectionFor(property, this.getRelated(property, relatedType));
         }
-        Collection<RuntimeObject> related = new LinkedHashSet<>(); 
-		RuntimeUtils.collectInstancesFromHierarchy(
-			getRuntime().getRepository(),
-			related,
-    		relatedType, 
-    		true, 
-    		((Classifier specificRelatedType) -> getRelated(property, specificRelatedType))
-		);
+        Collection<RuntimeObject> related = getRuntime().collectInstancesFromHierarchy(relatedType, true,
+                ((Classifier specificRelatedType) -> getRelated(property, specificRelatedType)));
         return related.isEmpty() ? null : related.iterator().next();
     }
 
@@ -726,15 +733,15 @@ public class RuntimeObject extends StructuredRuntimeObject {
     BasicType runBehavioralFeatureBehavior(BehavioralFeature operation, BasicType... arguments) {
         final Runtime runtime = getRuntime();
         if (operation instanceof Operation && ((Operation) operation).getInterface() != null)
-            operation = FeatureUtils.findCompatibleOperation(runtime.getRepository(), this.getRuntimeClass().getModelClassifier(),
-                    (Operation) operation);
+            operation = FeatureUtils.findCompatibleOperation(runtime.getRepository(),
+                    this.getRuntimeClass().getModelClassifier(), (Operation) operation);
         if (operation.getMethods().isEmpty())
             // a behavior-less operation or reception does nothing
             return null;
         String frameName = operation.getQualifiedName();
         Activity behavior = (Activity) operation.getMethods().get(0);
         BasicType result = runtime.runBehavior(this, frameName, behavior, arguments);
-		return result;
+        return result;
     }
 
     private void commitAll() {
@@ -755,28 +762,32 @@ public class RuntimeObject extends StructuredRuntimeObject {
         String preconditionName = violated.getName() == null ? "" : " - " + violated.getName();
         Classifier violationClass = MDDExtensionUtils.getRuleViolationClass(violated);
         if (violationClass == null)
-            violationClass = ClassifierUtils.findClassifier(Runtime.getCurrentRuntime().getRepository(), "mdd_types::Violation");
+            violationClass = ClassifierUtils.findClassifier(Runtime.getCurrentRuntime().getRepository(),
+                    "mdd_types::Violation");
         BasicType exceptionObject = Runtime.getCurrentRuntime().newInstance(violationClass, false);
         String message = MDDUtil.getDescription(violated);
         if (StringUtils.isBlank(message))
-            message = "Constraint violated " + anchorNameScope.getQualifiedName() + preconditionName + " - object: " + this;
-        RuntimeRaisedException runtimeRaisedException = new RuntimeRaisedException(exceptionObject, message, anchorNameScope);
+            message = "Constraint violated " + anchorNameScope.getQualifiedName() + preconditionName + " - object: "
+                    + this;
+        RuntimeRaisedException runtimeRaisedException = new RuntimeRaisedException(exceptionObject, message,
+                anchorNameScope);
         runtimeRaisedException.setConstraint(violated);
         throw runtimeRaisedException;
     }
 
     private void ensureValidEnd(Property property) {
         Assert.isLegal(isAssociationEnd(property));
-        Assert.isLegal(getRuntimeClass().getModelClassifier().isCompatibleWith(property.getOtherEnd().getType()), "Expected: "
-                + getRuntimeClass().getModelClassifier().getQualifiedName() + " - Actual: "
-                + property.getOtherEnd().getType().getQualifiedName());
+        Assert.isLegal(getRuntimeClass().getModelClassifier().isCompatibleWith(property.getOtherEnd().getType()),
+                "Expected: " + getRuntimeClass().getModelClassifier().getQualifiedName() + " - Actual: "
+                        + property.getOtherEnd().getType().getQualifiedName());
     }
 
     private Collection<RuntimeObject> getMultipleRelated(Property property, Classifier relatedInstanceType) {
         Assert.isLegal(!property.isDerived());
         RuntimeClass relatedEntity = getRuntime().getRuntimeClass(relatedInstanceType);
         String relatedStoreNodeName = relatedEntity.getNodeStore().getName();
-		Collection<INodeKey> relatedNodeKeys = getNodeStore().getRelatedNodeKeys(getKey(), property.getName(), relatedStoreNodeName);
+        Collection<INodeKey> relatedNodeKeys = getNodeStore().getRelatedNodeKeys(getKey(), property.getName(),
+                relatedStoreNodeName);
         return relatedEntity.nodesToRuntimeObjects(relatedNodeKeys);
     }
 
@@ -785,10 +796,11 @@ public class RuntimeObject extends StructuredRuntimeObject {
     }
 
     private BasicType getSlotValue(Property attribute, Map<String, Object> properties) {
-    	attribute = mapToActualAttribute(attribute);
+        attribute = mapToActualAttribute(attribute);
         Object value = properties.get(nodeProperty(attribute));
         if (value instanceof BasicType)
-            // seen this when dealing with anonymously typed objects (object literals) with a slot that is a full Class instance 
+            // seen this when dealing with anonymously typed objects (object
+            // literals) with a slot that is a full Class instance
             return (BasicType) value;
         if (attribute.getType() instanceof StateMachine)
             return getStateMachineValue((StateMachine) attribute.getType(), value);
@@ -800,16 +812,16 @@ public class RuntimeObject extends StructuredRuntimeObject {
     }
 
     private Property mapToActualAttribute(Property attribute) {
-    	Classifier thisClassifier = this.runtimeClass.getModelClassifier();
-    	if (DataTypeUtils.isAnonymousDataType(thisClassifier)) {
-    		// for anonymous data types, property access is positional
-    		int position = FeatureUtils.getOwningClassifier(attribute).getAllAttributes().indexOf(attribute);
-    	    return thisClassifier.getAllAttributes().get(position);
-    	}
-    	return attribute;
-	}
+        Classifier thisClassifier = this.runtimeClass.getModelClassifier();
+        if (DataTypeUtils.isAnonymousDataType(thisClassifier)) {
+            // for anonymous data types, property access is positional
+            int position = FeatureUtils.getOwningClassifier(attribute).getAllAttributes().indexOf(attribute);
+            return thisClassifier.getAllAttributes().get(position);
+        }
+        return attribute;
+    }
 
-	private void handleEventForState(RuntimeEvent runtimeEvent, Property stateProperty, Vertex currentState) {
+    private void handleEventForState(RuntimeEvent runtimeEvent, Property stateProperty, Vertex currentState) {
         for (Transition transition : currentState.getOutgoings()) {
             if (transition.getGuard() != null) {
                 boolean enabled = isConstraintSatisfied(transition.getGuard());
@@ -818,17 +830,23 @@ public class RuntimeObject extends StructuredRuntimeObject {
             }
             for (Trigger trigger : transition.getTriggers())
                 if (runtimeEvent.isMatchedBy(trigger)) {
-                	/*
-                	The semantics of entering a State depend on the type of State and the manner in which it is entered. However, in all
-                	cases, the entry Behavior of the State is executed (if defined) upon entry, but only after any effect Behavior associated
-                	with the incoming Transition is completed. Also, if a doActivity Behavior is defined for the State, this Behavior
-                	commences execution immediately after the entry Behavior is executed. It executes concurrently with any subsequent
-                	Behaviors associated with entering the State, such as the entry Behaviors of substates entered as part of the same
-                	compound transition.
-                	[...]
-                	Regardless of how a State is entered, the StateMachine is deemed to be “in” that State even before any
-                    effect Behavior (if defined) of that State start executing.
-                	*/
+                    /*
+                     * The semantics of entering a State depend on the type of
+                     * State and the manner in which it is entered. However, in
+                     * all cases, the entry Behavior of the State is executed
+                     * (if defined) upon entry, but only after any effect
+                     * Behavior associated with the incoming Transition is
+                     * completed. Also, if a doActivity Behavior is defined for
+                     * the State, this Behavior commences execution immediately
+                     * after the entry Behavior is executed. It executes
+                     * concurrently with any subsequent Behaviors associated
+                     * with entering the State, such as the entry Behaviors of
+                     * substates entered as part of the same compound
+                     * transition. [...] Regardless of how a State is entered,
+                     * the StateMachine is deemed to be “in” that State even
+                     * before any effect Behavior (if defined) of that State
+                     * start executing.
+                     */
                     if (currentState instanceof State && ((State) currentState).getExit() != null)
                         runBehavior(getCurrentContext(), ((State) currentState).getExit());
                     if (transition.getEffect() != null)
@@ -855,7 +873,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     private boolean isInitialized(Property property) {
         String nodeProperty = nodeProperty(property);
-		return getNode().isPropertySet(nodeProperty) || getNode().isRelatedSet(nodeProperty);
+        return getNode().isPropertySet(nodeProperty) || getNode().isRelatedSet(nodeProperty);
     }
 
     private boolean isInState(List<Vertex> states) {
@@ -886,7 +904,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
     }
 
     private void prepareForLinking() {
-    	commitAll();
+        commitAll();
     }
 
     protected BasicType readPort(Port port) {
@@ -910,12 +928,12 @@ public class RuntimeObject extends StructuredRuntimeObject {
             return ((EnumerationType) value).getValue().getName();
         if (value instanceof StateMachineType)
             return ((StateMachineType) value).toString();
-        if (value instanceof PrimitiveType) 
+        if (value instanceof PrimitiveType)
             return ((PrimitiveType<?>) value).primitiveValue();
         return value;
     }
 
-//	public Map<String> getActionCapabilities() {
-//		return Collections.
-//	}
+    // public Map<String> getActionCapabilities() {
+    // return Collections.
+    // }
 }

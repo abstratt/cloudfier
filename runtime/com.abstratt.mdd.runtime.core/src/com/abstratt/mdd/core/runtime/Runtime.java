@@ -74,6 +74,9 @@ public class Runtime {
     private ExternalMetaClass externalMetaClass = (ExternalMetaClass) ExternalObject.META_CLASS;
 
     private IRepository repository;
+    
+    // a cache of classifier hierarchies
+    private Map<Classifier, Collection<Classifier>> hierarchies = new LinkedHashMap<>();
 
     private ExecutionContext context;
 
@@ -117,11 +120,22 @@ public class Runtime {
     public List<RuntimeObject> findInstances(final Classifier baseClass, Map<Property, List<BasicType>> criteria, boolean includeSubclasses) {
         if (criteria.isEmpty())
             return getAllInstances(baseClass, includeSubclasses);
-        return collectInstancesFromHierarchy(baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).findInstances(criteria, null));
+        return collectInstancesFromHierarchy(baseClass, includeSubclasses,
+                currentClass -> getRuntimeClass(currentClass).findInstances(criteria, null));
     }
 
-    private List<RuntimeObject> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses, Function<Classifier, Collection<RuntimeObject>> collector) {
-    	return RuntimeUtils.collectInstancesFromHierarchy(getRepository(), new ArrayList<RuntimeObject>(), baseClass, includeSubclasses, collector);
+    protected List<RuntimeObject> collectInstancesFromHierarchy(Classifier baseClass, boolean includeSubclasses,
+            Function<Classifier, Collection<RuntimeObject>> collector) {
+        Stream<Classifier> classes = streamHierarchy(baseClass, includeSubclasses);
+        return RuntimeUtils.collectInstancesFromClasses(new ArrayList<RuntimeObject>(), classes, collector);
+    }
+
+    private Stream<Classifier> streamHierarchy(Classifier baseClass, boolean includeSubclasses) {
+        if (!includeSubclasses)
+            return Stream.of(baseClass);
+        // cache hierarchy as they are expensive to compute
+        Collection<Classifier> subclasses = this.hierarchies.computeIfAbsent(baseClass, it -> ClassifierUtils.findAllSpecifics(repository, baseClass));
+        return Stream.concat(Stream.of(baseClass), subclasses.stream());
     }
 
     public RuntimeObject findOneInstance(Class baseClass, Map<Property, List<BasicType>> criteria) {
@@ -164,11 +178,11 @@ public class Runtime {
 		RuntimeObject role = runtimeRoleClass.findOneInstance(criteria);
 		return role;
     }
-    
+
     public ActorSelector getActorSelector() {
-		return actorSelector;
-	}
-    
+        return actorSelector;
+    }
+
     /**
      * For testing only.
      */

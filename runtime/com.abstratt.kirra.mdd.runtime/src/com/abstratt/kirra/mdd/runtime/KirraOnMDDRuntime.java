@@ -230,15 +230,17 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     
     @Override
     public Blob getBlob(TypeRef entityRef, String objectId, String blobPropertyName, String blobToken) {
-    	RuntimeObject instanceFound = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
+        RuntimeObject instanceFound = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
         if (instanceFound == null)
             throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
         Classifier modelClass = instanceFound.getRuntimeClass().getModelClassifier();
         org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
         if (property == null)
-        	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
-        BasicType blobValue = instanceFound.getValue(property);
-		return (Blob) convertFromBasicType(blobValue, (Classifier) property.getType(), DataProfile.Empty);
+            throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
+        if (!KirraHelper.isBlob(property.getType()))
+            throw new KirraException("Attribute " + blobPropertyName + " is not a blob type", null, Kind.SCHEMA);
+        PrimitiveType<BlobInfo> blobValue = (PrimitiveType<BlobInfo>) instanceFound.getValue(property);
+        return convertFromBlob(blobValue.primitiveValue(), true);
     }
 
     @Override
@@ -898,10 +900,15 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     private Object convertFromPrimitive(PrimitiveType<?> value) {
         Object primitiveValue = value.primitiveValue();
     	if (primitiveValue instanceof BlobInfo) {
-    		BlobInfo asBlobInfo = (BlobInfo) primitiveValue;
-    		return new Blob(asBlobInfo.getToken(), asBlobInfo.getContentLength(), asBlobInfo.getContentsAsBytes(), asBlobInfo.getContentType(), asBlobInfo.getOriginalName());
+    		return convertFromBlob((BlobInfo) primitiveValue, false);
     	}
 		return primitiveValue;
+    }
+
+    private Blob convertFromBlob(BlobInfo primitiveValue, boolean includeContents) {
+        BlobInfo asBlobInfo = (BlobInfo) primitiveValue;
+        byte[] contents = includeContents ? primitiveValue.getContentsAsBytes() : null;
+        return new Blob(asBlobInfo.getToken(), asBlobInfo.getContentLength(), contents, asBlobInfo.getContentType(), asBlobInfo.getOriginalName());
     }
 
     private Tuple convertFromRuntimeObject(RuntimeObject source, DataProfile dataProfile) {
