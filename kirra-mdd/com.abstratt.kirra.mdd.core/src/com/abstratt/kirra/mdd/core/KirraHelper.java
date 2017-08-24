@@ -46,6 +46,7 @@ import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.VisibilityKind;
 
+import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
@@ -382,11 +383,15 @@ public class KirraHelper {
     }
 
     public static boolean isAction(Operation operation) {
-        return isPublic(operation) && !operation.isQuery() && VisibilityKind.PUBLIC_LITERAL == operation.getVisibility();
+        return isPublic(operation) && !operation.isQuery() && !FeatureUtils.isConstructor(operation) && VisibilityKind.PUBLIC_LITERAL == operation.getVisibility();
     }
     
     public static boolean isEntityOperation(Operation operation) {
-        return isAction(operation) || isFinder(operation);
+        return isAction(operation) || isFinder(operation) || isConstructor(operation);
+    }
+
+    public static boolean isConstructor(Operation operation) {
+        return isPublic(operation) && FeatureUtils.isConstructor(operation) && operation.getReturnResult() != null && !operation.isStatic() && operation.getReturnResult().getType() == operation.getClass_();
     }
 
     public static List<Parameter> getParameters(BehavioralFeature operation) {
@@ -1171,4 +1176,14 @@ public class KirraHelper {
 		boolean inherited = feature.getOwner() != candidateOwner && ClassifierUtils.isKindOf(candidateOwner, (Classifier) feature.getOwner());
 		return inherited;
 	}
+
+    public static OperationKind getOperationKind(org.eclipse.uml2.uml.Operation operation) {
+        if (isFinder(operation))
+            return OperationKind.Finder;
+        if (isAction(operation))
+            return OperationKind.Action;
+        if (isConstructor(operation))
+            return OperationKind.Construtor;
+        return null;
+    }
 }

@@ -134,11 +134,11 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     public Operation getEntityOperation(org.eclipse.uml2.uml.Operation umlOperation) {
         if (!KirraHelper.isEntityOperation(umlOperation))
             throw new IllegalArgumentException();
-        if (!KirraHelper.isAction(umlOperation) && !KirraHelper.isFinder(umlOperation))
+        if (!KirraHelper.isAction(umlOperation) && !KirraHelper.isFinder(umlOperation) && !KirraHelper.isConstructor(umlOperation))
             throw new IllegalArgumentException();
 
         Operation entityOperation = basicGetOperation(umlOperation);
-        entityOperation.setKind(KirraHelper.isFinder(umlOperation) ? Operation.OperationKind.Finder : Operation.OperationKind.Action);
+        entityOperation.setKind(KirraHelper.getOperationKind(umlOperation));
         entityOperation.setInstanceOperation(entityOperation.getKind() == OperationKind.Action && !umlOperation.isStatic());
         return entityOperation;
     }

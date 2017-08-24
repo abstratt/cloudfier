@@ -655,6 +655,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         model += "import datatypes;\n";
         model += "class MyClass1\n";
         model += "attribute singleAttribute : Integer;\n";
+        model += "constructor \\create1(someValue : Integer);\n";
         model += "operation action1();\n";
         model += "operation action2(par1 : Integer, par2 : Boolean) : String;\n";
         model += "operation action3() : MyClass1[*];\n";
@@ -670,7 +671,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         Entity entity = kirra.getEntity("mypackage", "MyClass1");
         List<Operation> operations = entity.getOperations();
-        TestCase.assertEquals(5, operations.size());
+        TestCase.assertEquals(6, operations.size());
 
         sortNamedElements(operations);
 
@@ -707,11 +708,18 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertFalse(operations.get(3).isInstanceOperation());
         TestCase.assertEquals(0, operations.get(3).getParameters().size());
 
-        TestCase.assertEquals("query1", operations.get(4).getName());
+        TestCase.assertEquals("create1", operations.get(4).getName());
         TestCase.assertEquals("MyClass1", operations.get(4).getTypeRef().getTypeName());
-        TestCase.assertEquals(Operation.OperationKind.Finder, operations.get(4).getKind());
+        TestCase.assertEquals(Operation.OperationKind.Construtor, operations.get(4).getKind());
         TestCase.assertFalse(operations.get(4).isInstanceOperation());
-        TestCase.assertEquals(2, operations.get(4).getParameters().size());
+        TestCase.assertEquals(1, operations.get(4).getParameters().size());
+        TestCase.assertEquals("mypackage.MyClass1", operations.get(4).getTypeRef().getFullName());
+        
+        TestCase.assertEquals("query1", operations.get(5).getName());
+        TestCase.assertEquals("MyClass1", operations.get(5).getTypeRef().getTypeName());
+        TestCase.assertEquals(Operation.OperationKind.Finder, operations.get(5).getKind());
+        TestCase.assertFalse(operations.get(5).isInstanceOperation());
+        TestCase.assertEquals(2, operations.get(5).getParameters().size());
     }
 
     public void testSchema() throws CoreException {

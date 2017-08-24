@@ -17,6 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.Function;
@@ -67,6 +68,7 @@ import com.abstratt.kirra.Service;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
+import com.abstratt.kirra.InstanceManagement.DataProfile;
 import com.abstratt.kirra.InstanceManagement.PageRequest;
 import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.kirra.mdd.core.KirraMDDConstants;
@@ -173,6 +175,14 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         try {
             RuntimeObject asRuntimeObject = convertToRuntimeObject(kirraInstance);
             asRuntimeObject.save();
+
+            // execute default constructor if found
+            // TODO-RC this is not the right place for it - it should be handled by the runtime itself, 
+            // or by the model compiler
+            Classifier modelClassifier = asRuntimeObject.getRuntimeClass().getModelClassifier();
+            Optional<? extends Operation> defaultConstructor = FeatureUtils.getBehavioralFeatures(modelClassifier).stream().filter(it -> it instanceof Operation).map(it -> (Operation) it).filter(it -> KirraHelper.isConstructor((Operation) it) && FeatureUtils.getInputParameters(it.getOwnedParameters()).isEmpty()).findFirst();
+            defaultConstructor.ifPresent(it -> getRuntime().runOperation(asRuntimeObject, it));
+            
             return (Instance) convertFromRuntimeObject(asRuntimeObject, DataProfile.Full);
         } catch (NodeStoreException e) {
             throw new KirraException("Could not create '" + kirraInstance.getTypeRef() + "': " + e.getMessage(), e, Kind.VALIDATION);
@@ -493,17 +503,17 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         RuntimeObject found = findRuntimeObject(namespace, name, externalId);
         return (Instance) (found == null ? null : convertFromRuntimeObject(found, dataProfile));
     }
-    
-    @Override
-    public List<Instance> getInstances(String namespace, String name, DataProfile dataProfile) {
-    	return getInstances(namespace, name, dataProfile, true);
-    }
 
+    @Override
+    public List<Instance> getInstances(String namespace, String name, DataProfile dataProfile, boolean includeSubclasses) {
+        return getInstances(namespace, name, new PageRequest(null, null, dataProfile, includeSubclasses));
+    }
     
     @Override
     public List<Instance> getInstances(String namespace, String name, PageRequest pageRequest) {
         Class umlClass = (Class) getModelElement(namespace, name, Literals.CLASS);
-        return filterValidInstances(getRuntime().getAllInstances(umlClass, pageRequest.getIncludeSubtypes()), pageRequest.getDataProfile());
+        List<RuntimeObject> allInstances = getRuntime().getAllInstances(umlClass, pageRequest.getIncludeSubtypes());
+        return filterValidInstances(allInstances, pageRequest.getDataProfile());
     }
 
     @Override
