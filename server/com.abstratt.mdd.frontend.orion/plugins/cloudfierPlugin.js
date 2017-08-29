@@ -487,15 +487,11 @@ var getSimpleEntities = function(namespace, entityNames) {
 };
 
 var shellCreateNamespace = function(args, context) {
-    var namespace = args.namespace;
+    var namespace = sanitizeIdentifier(args.namespace);
     var baseFileName = args.file ? args.file.trim() : null;
     baseFileName = (!baseFileName || args.file == '<namespace>') ? namespace : baseFileName ;
-    namespace = sanitizeIdentifier(namespace);
     if (/[0-9]/.test(namespace[0])) {
         throw Error("Invalid namespace name '" + namespace + "' - first character cannot be a digit");
-    }
-    if (baseFileName.replace(validator, '') !== baseFileName) {
-        throw Error("Invalid base file name '" + baseFileName + "' - must have only letters/digits/underscore");
     }
     var simpleModel = [
         '[Application]',
