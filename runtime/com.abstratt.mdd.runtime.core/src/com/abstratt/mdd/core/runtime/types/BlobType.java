@@ -3,7 +3,7 @@ package com.abstratt.mdd.core.runtime.types;
 public class BlobType extends PrimitiveType<BlobInfo> {
 	private static final long serialVersionUID = 1L;
 
-	protected BlobType(BlobInfo value) {
+	public BlobType(BlobInfo value) {
 		super(value);
 	}
 	

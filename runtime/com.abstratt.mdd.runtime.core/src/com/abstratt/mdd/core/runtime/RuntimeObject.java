@@ -1,5 +1,6 @@
 package com.abstratt.mdd.core.runtime;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,13 +38,18 @@ import org.eclipse.uml2.uml.Transition;
 import org.eclipse.uml2.uml.Trigger;
 import org.eclipse.uml2.uml.Vertex;
 
+import com.abstratt.blobstore.BlobMetadata;
+import com.abstratt.blobstore.IBlobStore;
 import com.abstratt.mdd.core.runtime.types.BasicType;
+import com.abstratt.mdd.core.runtime.types.BlobInfo;
+import com.abstratt.mdd.core.runtime.types.BlobType;
 import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
 import com.abstratt.mdd.core.runtime.types.StateMachineType;
 import com.abstratt.mdd.core.util.ActivityUtils;
+import com.abstratt.mdd.core.util.BasicTypeUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConstraintUtils;
 import com.abstratt.mdd.core.util.DataTypeUtils;
@@ -256,6 +262,10 @@ public class RuntimeObject extends StructuredRuntimeObject {
     public INodeStore getNodeStore() {
         return runtimeClass.getNodeStore();
     }
+    
+    public IBlobStore getBlobStoreStore() {
+        return runtimeClass.getBlobStore();
+    }
 
     public String getObjectId() {
         return key == null ? null : key.toString();
@@ -327,6 +337,37 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     public RuntimeClass getRuntimeClass() {
         return runtimeClass;
+    }
+    
+    public InputStream readBlob(Property property, String token) {
+        return getBlobStoreStore().getContents(token);
+    }
+    
+    public BlobType createBlob(Property property, BlobType blob) {
+        if (!BasicTypeUtils.isBlobType(property.getType()))
+            throw new IllegalArgumentException();
+        BlobMetadata newBlob = getBlobStoreStore().addBlob(blob.primitiveValue().getOriginalName(), blob.primitiveValue().getContentType());
+        BlobType result = toBlobType(newBlob);
+        setValue(property, result);
+        return result;
+    }
+
+    private BlobType toBlobType(BlobMetadata newBlob) {
+        return new BlobType(new BlobInfo(newBlob.getToken(), newBlob.getContentType(), newBlob.getOriginalName(), newBlob.getContentLength()));
+    }
+    
+    public void writeBlob(Property property, String token, InputStream inputStream) {
+        if (!BasicTypeUtils.isBlobType(property.getType()))
+            throw new IllegalArgumentException();
+        BlobMetadata updatedBlob = getBlobStoreStore().setContents(token, inputStream);
+        setValue(property, toBlobType(updatedBlob));
+    }
+    
+    public void deleteBlob(Property property, String token) {
+        if (!BasicTypeUtils.isBlobType(property.getType()))
+            throw new IllegalArgumentException();
+        getBlobStoreStore().deleteBlob(token);
+        setValue(property, null);
     }
 
     @Override
@@ -416,7 +457,8 @@ public class RuntimeObject extends StructuredRuntimeObject {
         }
         Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute,
                 argumentValues.toArray(new BasicType[0]));
-        return behaviorResult != null && ((BooleanType) behaviorResult).isTrue();
+        boolean result = behaviorResult != null && ((BooleanType) behaviorResult).isTrue();
+        return result;
     }
 
     public boolean isEnabledOperation(Operation operation, Map<String, BasicType> argumentsPerParameter) {
@@ -573,7 +615,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
                         : Collections.singleton((RuntimeObject) value);
             }
             this.link(property, newPeers);
-        } else
+        } else 
             setPropertyValue(property, value);
     }
 

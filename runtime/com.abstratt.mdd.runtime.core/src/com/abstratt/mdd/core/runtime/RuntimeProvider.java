@@ -1,5 +1,6 @@
 package com.abstratt.mdd.core.runtime;
 
+import com.abstratt.blobstore.IBlobStoreCatalog;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.resman.ActivatableFeatureProvider;
@@ -27,15 +28,16 @@ public class RuntimeProvider implements ActivatableFeatureProvider {
 
     @Override
     public Class<?>[] getRequiredFeatureTypes() {
-        return new Class<?>[] { IRepository.class, INodeStoreCatalog.class, ActorSelector.class, TaskModeSelector.class };
+        return new Class<?>[] { IRepository.class, IBlobStoreCatalog.class, INodeStoreCatalog.class, ActorSelector.class, TaskModeSelector.class };
     }
 
     @Override
     public void initFeatures(Resource<?> resource) {
         IRepository repository = resource.getFeature(IRepository.class);
         INodeStoreCatalog nodeStoreCatalog = resource.getFeature(INodeStoreCatalog.class);
+        IBlobStoreCatalog blobStoreCatalog = resource.getFeature(IBlobStoreCatalog.class);
         ActorSelector actorSelector = resource.getFeature(ActorSelector.class);
-        Runtime newRuntime = new Runtime(repository, nodeStoreCatalog, actorSelector);
+        Runtime newRuntime = new Runtime(repository, nodeStoreCatalog, blobStoreCatalog, actorSelector);
         resource.setFeature(Runtime.class, newRuntime);
     }
 }

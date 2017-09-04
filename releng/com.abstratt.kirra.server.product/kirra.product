@@ -20,6 +20,8 @@
 -Dcloudfier.api.internalBaseUri=http://localhost:8081/services/
 -Dcloudfier.api.externalBaseUri=http://localhost/services/
 -Dcloudfier.database.username=cloudfier
+-Dnodestore.file.base=nodestore/
+-Dblobstore.file.base=blobstore/
       </vmArgs>
       <vmArgsMac>-XstartOnFirstThread -Dorg.eclipse.swt.internal.carbon.smallFonts
       </vmArgsMac>
@@ -75,6 +77,8 @@
       <plugin id="com.abstratt.mdd.target.jee"/>
       <plugin id="com.abstratt.mdd.target.jse"/>
       <plugin id="com.abstratt.mdd.target.mean"/>
+      <plugin id="com.abstratt.blobstore"/>
+      <plugin id="com.abstratt.simpleblobstore"/>
       <plugin id="com.abstratt.nodestore"/>
       <plugin id="com.abstratt.nodestore.inmemory"/>
       <plugin id="com.abstratt.nodestore.jdbc"/>

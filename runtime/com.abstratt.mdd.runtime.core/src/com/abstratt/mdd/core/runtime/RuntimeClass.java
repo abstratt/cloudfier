@@ -18,6 +18,8 @@ import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Vertex;
 
+import com.abstratt.blobstore.IBlobStore;
+import com.abstratt.blobstore.IBlobStoreCatalog;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
@@ -302,4 +304,8 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         return runtime.getNodeStoreCatalog();
     }
 
+    public IBlobStore getBlobStore() {
+        IBlobStoreCatalog getBlogStoreCatalog = runtime.getBlobStoreCatalog();
+        return getBlogStoreCatalog.getBlobStore(this.classifier.getQualifiedName());
+    }
 }

@@ -17,4 +17,7 @@ class Profile specializes SystemUser
 */    
 end;
 
+role class Anonymous
+end;
+
 end.

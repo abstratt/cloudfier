@@ -28,6 +28,7 @@ import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Variable;
 import org.eclipse.uml2.uml.VisibilityKind;
 
+import com.abstratt.blobstore.IBlobStoreCatalog;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.runtime.external.ExternalMetaClass;
@@ -42,7 +43,6 @@ import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
-import com.abstratt.mdd.core.util.TypeUtils;
 import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.pluginutils.LogUtils;
@@ -69,6 +69,8 @@ public class Runtime {
     public final static String ID = "com.abstratt.mdd.runtime.core";
 
     private INodeStoreCatalog nodeStoreCatalog;
+    
+    private IBlobStoreCatalog blobStoreCatalog;
 
     // only one external metaClass instance for the entire runtime
     private ExternalMetaClass externalMetaClass = (ExternalMetaClass) ExternalObject.META_CLASS;
@@ -82,9 +84,10 @@ public class Runtime {
 
     private ActorSelector actorSelector;
 
-    public Runtime(IRepository repository, INodeStoreCatalog catalog, ActorSelector actorSelector) {
+    public Runtime(IRepository repository, INodeStoreCatalog nodeStoreCatalog, IBlobStoreCatalog blobStoreCatalog, ActorSelector actorSelector) {
         this.repository = repository;
-        this.nodeStoreCatalog = catalog;
+        this.nodeStoreCatalog = nodeStoreCatalog;
+        this.blobStoreCatalog = blobStoreCatalog;        
         this.actorSelector = actorSelector;
         this.context = new ExecutionContext(this);
     }
@@ -206,6 +209,10 @@ public class Runtime {
 
     public INodeStoreCatalog getNodeStoreCatalog() {
         return nodeStoreCatalog;
+    }
+    
+    public IBlobStoreCatalog getBlobStoreCatalog() {
+        return blobStoreCatalog;
     }
 
     public BasicType getProviderInstance(Port port) {
@@ -341,6 +348,7 @@ public class Runtime {
     public void zap() {
     	getCurrentContext().clearWorkingSet();
         nodeStoreCatalog.zap();
+        blobStoreCatalog.zap();
     }
 
     private BasicType basicRunOperation(BasicType target, Operation operation, BasicType... arguments) {

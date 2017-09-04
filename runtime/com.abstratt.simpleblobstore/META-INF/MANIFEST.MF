@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Simple Blob Store
+Bundle-SymbolicName: com.abstratt.simpleblobstore;singleton:=true
+Bundle-Version: 2.2.201606.qualifier
+Bundle-Vendor: ABSTRATT
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Activator: com.abstratt.simpleblobstore.SimpleBlobStoreActivator
+Export-Package: com.abstratt.simpleblobstore
+Require-Bundle: com.abstratt.pluginutils,
+ org.eclipse.equinox.registry,
+ org.eclipse.core.runtime;visibility:=reexport,
+ com.abstratt.blobstore
+Import-Package: com.abstratt.resman;resolution:=optional,
+ org.apache.commons.io,
+ org.apache.commons.beanutils,
+ com.abstratt.kirra

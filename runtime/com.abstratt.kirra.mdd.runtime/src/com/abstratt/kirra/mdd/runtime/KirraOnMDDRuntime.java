@@ -6,6 +6,7 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,8 +69,6 @@ import com.abstratt.kirra.Service;
 import com.abstratt.kirra.Tuple;
 import com.abstratt.kirra.TupleType;
 import com.abstratt.kirra.TypeRef;
-import com.abstratt.kirra.InstanceManagement.DataProfile;
-import com.abstratt.kirra.InstanceManagement.PageRequest;
 import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.kirra.mdd.core.KirraMDDConstants;
 import com.abstratt.kirra.mdd.schema.SchemaManagementOperations;
@@ -86,6 +85,7 @@ import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
 import com.abstratt.mdd.core.runtime.external.ExternalObjectDelegate;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.BlobInfo;
+import com.abstratt.mdd.core.runtime.types.BlobType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.runtime.types.EnumerationType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
@@ -220,12 +220,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
         if (property == null)
         	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
-        toDelete.setValue(property, null);
+        toDelete.deleteBlob(property, blobToken);
         toDelete.save();
     }
     
     @Override
-    public Blob addBlob(TypeRef entityRef, String objectId, String blobPropertyName, Blob newBlob) {
+    public Blob writeBlob(TypeRef entityRef, String objectId, String blobPropertyName, String token, InputStream contents) {
     	RuntimeObject toUpdate = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
         if (toUpdate == null)
             throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
@@ -233,13 +233,14 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
         if (property == null)
         	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
-        toUpdate.setValue(property, PrimitiveType.convertToBasicType((Classifier) property.getType(), newBlob.toMap()));
+        toUpdate.writeBlob(property, token, contents);
         toUpdate.save();
-        return (Blob) convertFromBasicType(toUpdate.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
+        BlobInfo result = (BlobInfo) convertFromBasicType(toUpdate.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
+        return toBlob(result);
     }
-    
+
     @Override
-    public Blob getBlob(TypeRef entityRef, String objectId, String blobPropertyName, String blobToken) {
+    public Blob createBlob(TypeRef entityRef, String objectId, String blobPropertyName, String contentType, String originalName) {
         RuntimeObject instanceFound = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
         if (instanceFound == null)
             throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
@@ -249,8 +250,43 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
         if (!KirraHelper.isBlob(property.getType()))
             throw new KirraException("Attribute " + blobPropertyName + " is not a blob type", null, Kind.SCHEMA);
-        PrimitiveType<BlobInfo> blobValue = (PrimitiveType<BlobInfo>) instanceFound.getValue(property);
-        return convertFromBlob(blobValue.primitiveValue(), true);
+        BlobInfo value = new BlobInfo(null, contentType, originalName, 0L);
+        BlobType asBlobType = (BlobType) convertToPrimitive(property, value, (Classifier) property.getType());
+        BlobType result = instanceFound.createBlob(property, asBlobType);
+        return toBlob(result.primitiveValue());
+    }
+    
+    @Override
+    public Blob getBlob(TypeRef entityRef, String objectId, String blobPropertyName, String token) {
+        RuntimeObject instanceFound = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
+        if (instanceFound == null)
+            throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
+        Classifier modelClass = instanceFound.getRuntimeClass().getModelClassifier();
+        org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
+        if (property == null)
+            throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
+        if (!KirraHelper.isBlob(property.getType()))
+            throw new KirraException("Attribute " + blobPropertyName + " is not a blob type", null, Kind.SCHEMA);
+        BlobInfo result = (BlobInfo) convertFromBasicType(instanceFound.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
+        return toBlob(result);
+    }
+
+    private Blob toBlob(BlobInfo convertFromBlobType) {
+        return new Blob(convertFromBlobType.getToken(), convertFromBlobType.getContentLength(), convertFromBlobType.getContentType(), convertFromBlobType.getOriginalName());
+    }
+    
+    @Override
+    public InputStream readBlob(TypeRef entityRef, String objectId, String blobPropertyName, String token) {
+        RuntimeObject instanceFound = findRuntimeObject(entityRef.getEntityNamespace(), entityRef.getTypeName(), objectId);
+        if (instanceFound == null)
+            throw new KirraException("Object does not exist", null, Kind.OBJECT_NOT_FOUND);
+        Classifier modelClass = instanceFound.getRuntimeClass().getModelClassifier();
+        org.eclipse.uml2.uml.Property property = FeatureUtils.findAttribute(modelClass, blobPropertyName, false, true);
+        if (property == null)
+            throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
+        if (!KirraHelper.isBlob(property.getType()))
+            throw new KirraException("Attribute " + blobPropertyName + " is not a blob type", null, Kind.SCHEMA);
+        return instanceFound.readBlob(property, token);
     }
 
     @Override
@@ -909,16 +945,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     private Object convertFromPrimitive(PrimitiveType<?> value) {
         Object primitiveValue = value.primitiveValue();
-    	if (primitiveValue instanceof BlobInfo) {
-    		return convertFromBlob((BlobInfo) primitiveValue, false);
-    	}
 		return primitiveValue;
-    }
-
-    private Blob convertFromBlob(BlobInfo primitiveValue, boolean includeContents) {
-        BlobInfo asBlobInfo = (BlobInfo) primitiveValue;
-        byte[] contents = includeContents ? primitiveValue.getContentsAsBytes() : null;
-        return new Blob(asBlobInfo.getToken(), asBlobInfo.getContentLength(), contents, asBlobInfo.getContentType(), asBlobInfo.getOriginalName());
     }
 
     private Tuple convertFromRuntimeObject(RuntimeObject source, DataProfile dataProfile) {
@@ -1059,6 +1086,10 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             Vertex vertex = StateMachineUtils.getState((StateMachine) targetType, (String) value);
             return vertex == null ? null : new StateMachineType(vertex);
         }
+        return convertToPrimitive(targetElement, value, targetType);
+    }
+
+    private BasicType convertToPrimitive(org.eclipse.uml2.uml.NamedElement targetElement, Object value, Classifier targetType) {
         try {
             return PrimitiveType.convertToBasicType(targetType, value);
         } catch (ValueConverter.ConversionException e) {

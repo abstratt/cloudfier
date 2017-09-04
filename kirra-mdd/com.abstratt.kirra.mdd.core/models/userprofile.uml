@@ -2,7 +2,7 @@
 <xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:mdd_extensions="profiles/mdd_extensions" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="profiles/mdd_extensions pathmap://MDD_PROFILES/mdd_extensions.uml#_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-mdd_extensions">
   <uml:Package xmi:id="_0" name="userprofile" URI="models/userprofile">
     <eAnnotations xmi:id="_com.abstratt2Fmdd2F" source="com.abstratt/mdd/">
-      <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2017/05/19 02:40:51 221 -0300"/>
+      <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2017/08/22 11:52:16 969 -0300"/>
     </eAnnotations>
     <packageImport xmi:id="_packageImport.0">
       <importedPackage xmi:type="uml:Model" href="pathmap://MDD_LIBRARIES/mdd_types.uml#_0"/>
@@ -78,6 +78,14 @@
         </structuredNode>
       </ownedBehavior>
     </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="Anonymous" name="Anonymous">
+      <eAnnotations xmi:id="Anonymous-_com.abstratt2Fmdd2Funit" source="com.abstratt/mdd/unit">
+        <details xmi:id="Anonymous-_com.abstratt2Fmdd2Funit-_details.0" key="name" value="userprofile.tuml"/>
+      </eAnnotations>
+      <generalization xmi:id="Anonymous-_generalization.0">
+        <general xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Object"/>
+      </generalization>
+    </packagedElement>
     <profileApplication xmi:id="_profileApplication.0">
       <eAnnotations xmi:id="_profileApplication.0-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML">
         <references xmi:type="ecore:EPackage" href="pathmap://MDD_PROFILES/mdd_extensions.uml#_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-mdd_extensions"/>
@@ -94,13 +102,15 @@
   <mdd_extensions:Debuggable xmi:id="_1" lineNumber="7" source="userprofile.tuml" base_Element="Profile"/>
   <mdd_extensions:Debuggable xmi:id="_2" lineNumber="10" source="userprofile.tuml" base_Element="Profile-username"/>
   <mdd_extensions:Debuggable xmi:id="_3" lineNumber="11" source="userprofile.tuml" base_Element="Profile-password"/>
-  <mdd_extensions:Application xmi:id="_4" base_Package="_0"/>
-  <mdd_extensions:Access xmi:id="_5" base_Constraint="Profile-_ownedRule.0"/>
-  <mdd_extensions:Debuggable xmi:id="_6" lineNumber="8" source="userprofile.tuml" base_Element="Profile-_ownedRule.0"/>
-  <mdd_extensions:ConstraintBehavior xmi:id="_7" constraint="Profile-_ownedRule.0" base_Activity="Profile-_ownedBehavior.0"/>
-  <mdd_extensions:BasicValue xmi:id="_8" base_LiteralString="Profile-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_value">
+  <mdd_extensions:Debuggable xmi:id="_4" lineNumber="20" source="userprofile.tuml" base_Element="Anonymous"/>
+  <mdd_extensions:Role xmi:id="_5" base_Class="Anonymous"/>
+  <mdd_extensions:Application xmi:id="_6" base_Package="_0"/>
+  <mdd_extensions:Access xmi:id="_7" base_Constraint="Profile-_ownedRule.0"/>
+  <mdd_extensions:Debuggable xmi:id="_8" lineNumber="8" source="userprofile.tuml" base_Element="Profile-_ownedRule.0"/>
+  <mdd_extensions:ConstraintBehavior xmi:id="_9" constraint="Profile-_ownedRule.0" base_Activity="Profile-_ownedBehavior.0"/>
+  <mdd_extensions:BasicValue xmi:id="_10" base_LiteralString="Profile-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_value">
     <basicType xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Boolean"/>
   </mdd_extensions:BasicValue>
-  <mdd_extensions:Debuggable xmi:id="_9" source="userprofile.tuml" base_Element="Profile-_ownedBehavior.0-body-_node.0-_node.0-_node.1"/>
-  <mdd_extensions:Debuggable xmi:id="_10" source="userprofile.tuml" base_Element="Profile-_ownedBehavior.0-body-_node.0-_node.0-_node.0"/>
+  <mdd_extensions:Debuggable xmi:id="_11" source="userprofile.tuml" base_Element="Profile-_ownedBehavior.0-body-_node.0-_node.0-_node.1"/>
+  <mdd_extensions:Debuggable xmi:id="_12" source="userprofile.tuml" base_Element="Profile-_ownedBehavior.0-body-_node.0-_node.0-_node.0"/>
 </xmi:XMI>
