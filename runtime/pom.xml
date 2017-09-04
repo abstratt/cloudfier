@@ -12,6 +12,8 @@
 	</parent>
 	<modules>
 	    <!-- first so target gets updated/rebuilt first -->
+		<module>com.abstratt.blobstore</module>
+		<module>com.abstratt.simpleblobstore</module>
 		<module>com.abstratt.nodestore</module>
 		<module>com.abstratt.nodestore.inmemory</module>
 		<module>com.abstratt.nodestore.jdbc</module>
