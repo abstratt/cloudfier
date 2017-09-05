@@ -1,11 +1,8 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
-
 import org.eclipse.core.runtime.CoreException;
 
+import com.abstratt.blobstore.IBlobStoreCatalog;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.SchemaManagement;
 import com.abstratt.mdd.core.IRepository;
@@ -15,6 +12,10 @@ import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.nodestore.INodeStoreCatalog;
 import com.abstratt.pluginutils.ISharedContextRunnable;
 import com.abstratt.resman.Resource;
+
+import junit.framework.Test;
+import junit.framework.TestCase;
+import junit.framework.TestSuite;
 
 public class RepositoryServiceTests extends AbstractRepositoryBuildingTests {
 
@@ -36,6 +37,7 @@ public class RepositoryServiceTests extends AbstractRepositoryBuildingTests {
                 current.getFeature(SchemaManagement.class);
                 current.getFeature(Repository.class);
                 current.getFeature(INodeStoreCatalog.class);
+                current.getFeature(IBlobStoreCatalog.class);
                 return null;
             }
         });

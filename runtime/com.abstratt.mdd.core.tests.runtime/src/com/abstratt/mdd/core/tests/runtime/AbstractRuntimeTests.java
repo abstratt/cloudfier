@@ -5,8 +5,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import junit.framework.TestCase;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
@@ -25,8 +23,8 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.tests.harness.AbstractRepositoryBuildingTests;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.nodestore.INodeStoreCatalog;
-import com.abstratt.nodestore.INodeStoreFactory;
-import com.abstratt.nodestore.NodeStores;
+
+import junit.framework.TestCase;
 
 public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
 
@@ -139,10 +137,6 @@ public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
 
     protected SchemaManagement getKirraSchema() {
         return RepositoryService.DEFAULT.getCurrentResource().getFeature(SchemaManagement.class);
-    }
-
-    protected INodeStoreFactory getNodeStoreFactory() {
-        return NodeStores.get().getDefaultFactory();
     }
 
     protected Map<String, Object> getNodeStoreSettings() {

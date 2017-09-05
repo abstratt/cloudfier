@@ -50,14 +50,6 @@ public class SimpleBlobStoreCatalog implements IBlobStoreCatalog {
         this.environment = environment;
     }
 
-    public void init() {
-        try {
-            Files.createDirectories(getBasePath());
-        } catch (IOException e) {
-            throw new BlobStoreException(e);
-        }
-    }
-
     private Path getBasePath() {
         return REPOSITORY_ROOT.resolve(catalogName).resolve(environment);
     }

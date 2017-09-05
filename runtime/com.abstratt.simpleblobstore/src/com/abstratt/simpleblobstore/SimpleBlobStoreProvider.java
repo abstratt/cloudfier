@@ -13,7 +13,6 @@ public class SimpleBlobStoreProvider implements ActivatableFeatureProvider {
         TaskModeSelector taskModeSelector = resource.getFeature(TaskModeSelector.class);
         String environment = taskModeSelector.getEnvironment().toLowerCase();
         blobStoreCatalog.setEnvironment(environment);
-        blobStoreCatalog.init();
     }
 
     @Override
