@@ -1,17 +1,18 @@
 package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.UMLPackage;
-import org.restlet.representation.Representation;
 
-import com.abstratt.kirra.mdd.rest.KirraRESTUtils;
 import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.SourceLocation;
-import com.abstratt.kirra.mdd.rest.impl.v1.resources.AbstractTestRunnerResource.TestResult.Status;
+import com.abstratt.kirra.rest.resources.ResourceHelper;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.runtime.ExecutionContext.CallSite;
@@ -22,8 +23,6 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.frontend.web.ResourceUtils;
-import com.abstratt.nodestore.INodeStoreCatalog;
-import com.abstratt.pluginutils.ISharedContextRunnable;
 
 public abstract class AbstractTestRunnerResource extends AbstractKirraRepositoryResource {
 
@@ -78,6 +77,7 @@ public abstract class AbstractTestRunnerResource extends AbstractKirraRepository
     	IRepository repository = RepositoryService.DEFAULT.getCurrentRepository();
         Operation testCaseOperation = repository.findNamedElement(testCase.testClass.replace(".", NamedElement.SEPARATOR) + NamedElement.SEPARATOR
                 + testCase.testCase, UMLPackage.Literals.OPERATION, null);
+        ResourceHelper.ensure(testCaseOperation != null, () -> MessageFormat.format("No operation ''{0}'' found in class ''{1}''", testCase.testCase, testCase.testClass), Status.BAD_REQUEST);
         try {
         	return runTestCase(testCaseOperation);
         } finally {
@@ -133,7 +133,7 @@ public abstract class AbstractTestRunnerResource extends AbstractKirraRepository
                     matchExpectation = false;
                     message += " - Expected constraint: " + expectedConstraint + ", actual: " + actualConstraint;
                 }
-                testResult = new TestResult(testClassName, testCaseName, matchExpectation ? Status.Pass : Status.Fail,
+                testResult = new TestResult(testClassName, testCaseName, matchExpectation ? TestResult.Status.Pass : TestResult.Status.Fail,
                         matchExpectation ? null : message, testLocation);
             } else {
                 testResult = new TestResult(testClassName, testCaseName, TestResult.Status.Fail, message, testLocation);
