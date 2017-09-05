@@ -267,8 +267,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
         if (!KirraHelper.isBlob(property.getType()))
             throw new KirraException("Attribute " + blobPropertyName + " is not a blob type", null, Kind.SCHEMA);
-        BlobInfo result = (BlobInfo) convertFromBasicType(instanceFound.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
-        return toBlob(result);
+        return (Blob) convertFromBasicType(instanceFound.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
     }
 
     private Blob toBlob(BlobInfo convertFromBlobType) {
@@ -944,6 +943,9 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private Object convertFromPrimitive(PrimitiveType<?> value) {
+        if (value instanceof BlobType) {
+            return toBlob(((BlobType) value).primitiveValue());
+        }
         Object primitiveValue = value.primitiveValue();
 		return primitiveValue;
     }
