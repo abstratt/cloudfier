@@ -165,7 +165,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             return asCollection.isEmpty() ? null : convertSingleToBasicType((TypedElement) targetElement, asCollection.iterator().next(),
                     targetType);
         }
-        return convertSingleToBasicType((TypedElement) targetElement, value, targetType);
+        BasicType converted = convertSingleToBasicType((TypedElement) targetElement, value, targetType);
+        return converted;
     }
 
     @Override
@@ -235,8 +236,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         	throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
         toUpdate.writeBlob(property, token, contents);
         toUpdate.save();
-        BlobInfo result = (BlobInfo) convertFromBasicType(toUpdate.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
-        return toBlob(result);
+        Blob result = (Blob) convertFromBasicType(toUpdate.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
+        return result;
     }
 
     @Override
@@ -250,8 +251,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Attribute " + blobPropertyName + " does not exist", null, Kind.SCHEMA);
         if (!KirraHelper.isBlob(property.getType()))
             throw new KirraException("Attribute " + blobPropertyName + " is not a blob type", null, Kind.SCHEMA);
-        BlobInfo value = new BlobInfo(null, contentType, originalName, 0L);
-        BlobType asBlobType = (BlobType) convertToPrimitive(property, value, (Classifier) property.getType());
+        Blob kirraValue = new Blob(null, 0L, contentType, originalName);
+        BlobType asBlobType = (BlobType) convertToPrimitive(property, kirraValue, (Classifier) property.getType());
         BlobType result = instanceFound.createBlob(property, asBlobType);
         return toBlob(result.primitiveValue());
     }
@@ -270,8 +271,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         return (Blob) convertFromBasicType(instanceFound.getValue(property), (Classifier) property.getType(), DataProfile.Empty);
     }
 
-    private Blob toBlob(BlobInfo convertFromBlobType) {
-        return new Blob(convertFromBlobType.getToken(), convertFromBlobType.getContentLength(), convertFromBlobType.getContentType(), convertFromBlobType.getOriginalName());
+    private Blob toBlob(BlobInfo value) {
+        return new Blob(value.getToken(), value.getContentLength(), value.getContentType(), value.getOriginalName());
+    }
+    
+    private BlobInfo fromBlob(Blob value) {
+        return new BlobInfo(value.getToken(), value.getContentType(), value.getOriginalName(), value.getContentLength());
     }
     
     @Override
@@ -977,6 +982,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                         continue;
                     }
                 }
+                if (property.isDerived() && isPopulating())
+                    continue;
                 if (KirraHelper.isEntity(property.getType())) {
                     if (!full ) {
                     	// skip
@@ -1092,6 +1099,9 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private BasicType convertToPrimitive(org.eclipse.uml2.uml.NamedElement targetElement, Object value, Classifier targetType) {
+        if (KirraHelper.isBlob(targetType)) {
+            return new BlobType(fromBlob((Blob) value));
+        }
         try {
             return PrimitiveType.convertToBasicType(targetType, value);
         } catch (ValueConverter.ConversionException e) {
