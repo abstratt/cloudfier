@@ -71,7 +71,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         Activity closure = (Activity) reference.getElement();
         Assert.isTrue(MDDExtensionUtils.isClosure(closure));
         return context.getRuntime()
-                .runBehavior(context.currentFrame().getSelf(), "[closure]", closure, arguments);
+                .runBehavior(context.currentFrame().getSelf(), "[closure]", closure, null, arguments);
     }
 
     private static final long serialVersionUID = 1L;

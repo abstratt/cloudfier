@@ -1,6 +1,6 @@
 package com.abstratt.blobstore;
 
 public interface IBlobStoreCatalog {
-    IBlobStore getBlobStore(String namespace);
+    IBlobStore getBlobStore();
     void zap();
 }

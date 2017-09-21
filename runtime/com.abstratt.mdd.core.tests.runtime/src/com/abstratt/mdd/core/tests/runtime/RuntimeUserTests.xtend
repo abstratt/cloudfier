@@ -30,7 +30,7 @@ class RuntimeUserTests extends AbstractRuntimeTests {
 	def void testCurrentUser() {
 		parseAndCheck(model)
 		
-		val profile = runtime.getRuntimeClass("userprofile::Profile").newInstance
+		val profile = runtime.getRuntimeClass("userprofile::UserProfile").newInstance
 		writeAttribute(profile, "username", new StringType("peter.jones"))
 		writeAttribute(profile, "password", new StringType("pass"))
 		runtime.setActorSelector(new ActorSelector() {
@@ -50,11 +50,11 @@ class RuntimeUserTests extends AbstractRuntimeTests {
 	
 	def void testUserAsRole() {
 		parseAndCheck(model)
-		val profile1 = runtime.getRuntimeClass("userprofile::Profile").newInstance
+		val profile1 = runtime.getRuntimeClass("userprofile::UserProfile").newInstance
 		writeAttribute(profile1, "username", new StringType("john.ford"))
 		writeAttribute(profile1, "password", new StringType("pass"))
 		
-		val profile2 = runtime.getRuntimeClass("userprofile::Profile").newInstance
+		val profile2 = runtime.getRuntimeClass("userprofile::UserProfile").newInstance
 		writeAttribute(profile2, "username", new StringType("john.ford"))
 		writeAttribute(profile2, "password", new StringType("pass"))
 		

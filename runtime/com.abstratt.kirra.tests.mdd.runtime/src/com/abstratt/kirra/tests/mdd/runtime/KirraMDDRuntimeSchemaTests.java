@@ -131,7 +131,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         
         kirra.getEntity("mypackage", "MyUserClass1");
         kirra.getEntity("mypackage", "MyClass");
-        Entity userData = kirra.getEntity("userprofile", "Profile");
+        Entity userData = kirra.getEntity("userprofile", "UserProfile");
         assertTrue(userData.isUserVisible());
         
         List<Relationship> relationships = userData.getRelationships();
@@ -710,7 +710,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
 
         TestCase.assertEquals("create1", operations.get(4).getName());
         TestCase.assertEquals("MyClass1", operations.get(4).getTypeRef().getTypeName());
-        TestCase.assertEquals(Operation.OperationKind.Construtor, operations.get(4).getKind());
+        TestCase.assertEquals(Operation.OperationKind.Constructor, operations.get(4).getKind());
         TestCase.assertFalse(operations.get(4).isInstanceOperation());
         TestCase.assertEquals(1, operations.get(4).getParameters().size());
         TestCase.assertEquals("mypackage.MyClass1", operations.get(4).getTypeRef().getFullName());
@@ -753,7 +753,7 @@ public class KirraMDDRuntimeSchemaTests extends AbstractKirraMDDRuntimeTests {
         List<Entity> namespace3Entities = namespaces.get(2).getEntities();
         TestCase.assertEquals(1, namespace3Entities.size());
         TestCase.assertEquals("userprofile", namespace3Entities.get(0).getEntityNamespace());
-        TestCase.assertEquals("Profile", namespace3Entities.get(0).getName());
+        TestCase.assertEquals("UserProfile", namespace3Entities.get(0).getName());
     }
 
 }

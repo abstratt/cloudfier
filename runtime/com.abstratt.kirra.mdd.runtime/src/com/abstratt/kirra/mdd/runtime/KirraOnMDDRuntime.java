@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -40,6 +41,7 @@ import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.MultiplicityElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.ParameterDirectionKind;
+import org.eclipse.uml2.uml.ParameterSet;
 import org.eclipse.uml2.uml.Reception;
 import org.eclipse.uml2.uml.Signal;
 import org.eclipse.uml2.uml.StateMachine;
@@ -180,9 +182,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             // execute default constructor if found
             // TODO-RC this is not the right place for it - it should be handled by the runtime itself, 
             // or by the model compiler
-            Classifier modelClassifier = asRuntimeObject.getRuntimeClass().getModelClassifier();
-            Optional<? extends Operation> defaultConstructor = FeatureUtils.getBehavioralFeatures(modelClassifier).stream().filter(it -> it instanceof Operation).map(it -> (Operation) it).filter(it -> KirraHelper.isConstructor((Operation) it) && FeatureUtils.getInputParameters(it.getOwnedParameters()).isEmpty()).findFirst();
-            defaultConstructor.ifPresent(it -> getRuntime().runOperation(asRuntimeObject, it));
+            if (!isPopulating()) {
+                Classifier modelClassifier = asRuntimeObject.getRuntimeClass().getModelClassifier();
+                Optional<? extends Operation> defaultConstructor = FeatureUtils.getBehavioralFeatures(modelClassifier).stream().filter(it -> it instanceof Operation).map(it -> (Operation) it).filter(it -> KirraHelper.isConstructor((Operation) it) && FeatureUtils.getInputParameters(it.getOwnedParameters()).isEmpty()).findFirst();
+                defaultConstructor.ifPresent(it -> getRuntime().runOperation(asRuntimeObject, it));
+            }
             
             return (Instance) convertFromRuntimeObject(asRuntimeObject, DataProfile.Full);
         } catch (NodeStoreException e) {
@@ -302,13 +306,18 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     @Override
     public List<?> executeOperation(com.abstratt.kirra.Operation operation, String externalId, List<?> arguments) {
+        return executeOperation(operation, externalId, arguments, null);
+    }
+    
+    @Override
+    public List<?> executeOperation(com.abstratt.kirra.Operation operation, String externalId, List<?> arguments, String parameterSet) {
         KirraOnMDDRuntime.log.debug(getRuntime().getRepository().getBaseURI().toString());
         Classifier umlClass = getModelType(operation.getOwner(), Literals.CLASS);
 
         if (KirraHelper.isService(umlClass))
             return executeServiceOperation(umlClass, operation, arguments);
 
-        return executeEntityOperation(umlClass, externalId, operation, arguments, DataProfile.Full);
+        return executeEntityOperation(umlClass, externalId, operation, arguments, parameterSet, DataProfile.Full);
     }
 
     @Override
@@ -316,7 +325,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             PageRequest pageRequest) {
         KirraOnMDDRuntime.log.debug(getRuntime().getRepository().getBaseURI().toString());
         Classifier umlClass = getModelType(query.getOwner(), Literals.CLASS);
-        List<?> allResults = executeEntityOperation(umlClass, externalId, query, arguments, pageRequest.getDataProfile());
+        List<?> allResults = executeEntityOperation(umlClass, externalId, query, arguments, null, pageRequest.getDataProfile());
         List<?> page = allResults.stream().skip(pageRequest.getFirst()).limit(pageRequest.getMaximum()).collect(Collectors.toList());
         return page;
     }
@@ -869,9 +878,9 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
      * @return the resulting value
      * @see com.abstratt.kirra.Operation.OperationKind
      */
-    private List<?> basicExecuteOperation(BasicType target, Operation operation, List<?> arguments, DataProfile resultDataProfile) {
-        List<org.eclipse.uml2.uml.Parameter> inParameters = FeatureUtils.filterParameters(operation.getOwnedParameters(),
-                ParameterDirectionKind.IN_LITERAL);
+    private List<?> basicExecuteOperation(BasicType target, Operation operation, List<?> arguments, String parameterSetName, DataProfile resultDataProfile) {
+        ParameterSet parameterSet = parameterSetName == null ? null : operation.getOwnedParameterSet(parameterSetName);
+        List<org.eclipse.uml2.uml.Parameter> inParameters = FeatureUtils.filterByParameterSet(parameterSet, FeatureUtils.getInputParameters(operation.getOwnedParameters()));
         if (arguments.size() != inParameters.size())
             throw new KirraException("Operation '" + operation.getName() + "' requires " + inParameters.size() + " arguments, "
                     + arguments.size() + " were provided", null, Kind.ENTITY);
@@ -887,7 +896,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Operation '" + operation.getName() + "' is not valid at this time", null, Kind.VALIDATION);
 
         try {
-            BasicType result = getRuntime().runOperation(null, target, operation, convertedArguments);
+            BasicType result = getRuntime().runOperation(null, target, operation, parameterSet, convertedArguments);
             if (result == null)
                 return Collections.emptyList();
             if (KirraHelper.isFinder(operation)) {
@@ -904,8 +913,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private Map<String, Object> convertArgumentsFromBasicType(BehavioralFeature behavioralFeature, BasicType... arguments) {
-        List<org.eclipse.uml2.uml.Parameter> parameters = FeatureUtils.filterParameters(behavioralFeature.getOwnedParameters(),
-                ParameterDirectionKind.IN_LITERAL, ParameterDirectionKind.INOUT_LITERAL);
+        List<org.eclipse.uml2.uml.Parameter> parameters = FeatureUtils.getInputParameters(behavioralFeature.getOwnedParameters());
         int required = parameters.size();
         if (required != arguments.length)
             throw new KirraException("Operation " + behavioralFeature.getName() + " requires " + required + " parameters, got "
@@ -913,7 +921,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         Map<String, Object> argumentMap = new LinkedHashMap<String, Object>();
         for (int i = 0; i < arguments.length; i++)
             argumentMap.put(parameters.get(i).getName(),
-                    convertFromBasicType(arguments[i], (Classifier) parameters.get(i).getType(), DataProfile.Empty));
+                    convertFromBasicType(arguments[i], (Classifier) parameters.get(i).getType(), DataProfile.Full));
         return argumentMap;
     }
 
@@ -968,13 +976,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             RuntimeClass class_ = source.getRuntimeClass();
             Instance kirraInstance = new Instance();
             convertedToInstance.put(source, kirraInstance);
-            kirraInstance.setFull(dataProfile == DataProfile.Full);
+            kirraInstance.setProfile(dataProfile);
             Classifier modelClassifier = class_.getModelClassifier();
             kirraInstance.setEntityName(modelClassifier.getName());
             kirraInstance.setEntityNamespace(modelClassifier.getNamespace().getQualifiedName());
             kirraInstance.setObjectId(getObjectId(source));
             List<org.eclipse.uml2.uml.Property> allAttributes = KirraHelper.getPropertiesAndRelationships(modelClassifier);
-            boolean full = dataProfile == DataProfile.Full;
             org.eclipse.uml2.uml.Property mnemonic = KirraHelper.getMnemonic(modelClassifier);
             for (org.eclipse.uml2.uml.Property property : allAttributes) {
                 if (dataProfile == DataProfile.Empty) {
@@ -985,7 +992,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 if (property.isDerived() && isPopulating())
                     continue;
                 if (KirraHelper.isEntity(property.getType())) {
-                    if (!full ) {
+                    if (!EnumSet.of(DataProfile.Slim, DataProfile.Full).contains(dataProfile)) {
                     	// skip
                     } else if (property.isMultivalued()) {
                         // do nothing: only non-multiple arcs need to be
@@ -994,7 +1001,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                         BasicType value = source.getValue(property);
                         if (value == null)
                             continue;
-                        Object converted = convertFromBasicType(value, (Classifier) property.getType(), DataProfile.Empty);
+                        Object converted = convertFromBasicType(value, (Classifier) property.getType(), dataProfile.lighter());
                         kirraInstance.setRelated(KirraHelper.getName(property), (Instance) converted);
                     }
                 } else if (KirraHelper.isTupleType(property.getType())) {
@@ -1012,7 +1019,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     kirraInstance.setValue(KirraHelper.getName(property), converted);
                 }
             }
-            if (full) {
+            if (EnumSet.of(DataProfile.Slim, DataProfile.Full).contains(dataProfile)) {
 	            if (source.isPersisted()) {
 	                List<Association> allAssociations = AssociationUtils.allAssociations(modelClassifier);
 	                for (Association association : allAssociations) {
@@ -1029,7 +1036,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 	                                        BasicType value = source.getValue(forwardReference);
 	                                        if (value == null)
 	                                            continue;
-	                                        Object converted = convertFromBasicType(value, (Classifier) forwardReference.getType(), DataProfile.Slim);
+	                                        Object converted = convertFromBasicType(value, (Classifier) forwardReference.getType(), dataProfile.lighter());
 	                                        kirraInstance
 	                                                .setRelated(KirraHelper.getName(forwardReference), (Instance) converted);
 	                                    }
@@ -1217,7 +1224,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
     }
 
     private List<?> executeEntityOperation(Classifier umlClass, String externalId, com.abstratt.kirra.Operation kirraOperation,
-            List<?> arguments, DataProfile resultProfile) {
+            List<?> arguments, String parameterSet, DataProfile resultProfile) {
         org.eclipse.uml2.uml.Operation operation = mapOperation(umlClass, kirraOperation);
 
         BasicType target = null;
@@ -1232,14 +1239,14 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                 throw new KirraException("Object does not exist", null, Kind.ENTITY);
         }
 
-        return basicExecuteOperation(target, operation, arguments, resultProfile);
+        return basicExecuteOperation(target, operation, arguments, parameterSet, resultProfile);
     }
 
     private List<?> executeServiceOperation(Classifier classifier, com.abstratt.kirra.Operation operation, List<?> arguments) {
         BasicType providingInstance = getRuntime().getInstance(classifier);
         switch (operation.getKind()) {
         case Retriever:
-            return basicExecuteOperation(providingInstance, mapOperation(classifier, operation), arguments, DataProfile.Slim);
+            return basicExecuteOperation(providingInstance, mapOperation(classifier, operation), arguments, null, DataProfile.Slim);
         case Event:
             TypeRef tupleType = operation.getParameters().get(0).getTypeRef();
             RuntimeObject event = convertToValueObject((Tuple) arguments.get(0));

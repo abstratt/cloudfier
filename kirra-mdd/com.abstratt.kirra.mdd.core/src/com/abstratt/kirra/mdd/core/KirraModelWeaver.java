@@ -149,7 +149,7 @@ public class KirraModelWeaver implements IModelWeaver {
 			if (kirraProfilePackage == null)
 				throw new IllegalStateException("No package for user profiles");
 			
-			Class profileClass = (Class) repository.findNamedElement("userprofile::Profile", UMLPackage.Literals.CLASS, null);
+			Class profileClass = (Class) repository.findNamedElement("userprofile::UserProfile", UMLPackage.Literals.CLASS, null);
 			
 			// if there are any role classes in this package, create relationships to the profile class
 			// (ignore role classes that specialize other role classes)

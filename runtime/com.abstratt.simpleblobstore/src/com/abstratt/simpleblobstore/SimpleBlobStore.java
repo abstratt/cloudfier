@@ -19,11 +19,9 @@ import com.abstratt.blobstore.BlobStoreException;
 import com.abstratt.blobstore.IBlobStore;
 
 public class SimpleBlobStore implements IBlobStore {
-    private String namespace;
     private Path basePath;
 
-    public SimpleBlobStore(Path basePath, String namespace) {
-        this.namespace = namespace;
+    public SimpleBlobStore(Path basePath) {
         this.basePath = basePath;
     }
     
@@ -113,7 +111,8 @@ public class SimpleBlobStore implements IBlobStore {
     }
 
     private Path getNamespacePath() {
-        return getBasePath().resolve(namespace);
+        // we ignore the namespace, everybody goes under the same parent dir
+        return getBasePath();
     }
 
     private Path getMetadataFile(String token) {

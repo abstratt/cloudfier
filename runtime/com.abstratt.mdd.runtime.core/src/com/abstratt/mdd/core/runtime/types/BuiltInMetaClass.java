@@ -4,7 +4,6 @@ import org.eclipse.uml2.uml.Operation;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.MetaClass;
-import com.abstratt.mdd.core.runtime.RuntimeEvent;
 
 public enum BuiltInMetaClass implements MetaClass<BuiltInClass> {
     System("mdd_types::System", SystemType.class), 
@@ -14,6 +13,8 @@ public enum BuiltInMetaClass implements MetaClass<BuiltInClass> {
 	Integer("mdd_types::Integer", IntegerType.class), 
 	Decimal("mdd_types::Double", RealType.class), 
 	String("mdd_types::String", StringType.class), 
+    Email("mdd_types::Email", EmailType.class), 
+    Geolocation("mdd_types::Geolocation", GeolocationType.class), 
 	Memo("mdd_types::Memo", MemoType.class), 
 	Image("mdd_media::Image", PictureType.class), 
 	Duration("mdd_types::Duration", DurationType.class),

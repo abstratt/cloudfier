@@ -1,8 +1,5 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 public class GeolocationConverter implements ValueConverter {
 
 	@Override

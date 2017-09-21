@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.Path;
+import org.eclipse.emf.common.util.EList;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioralFeature;
@@ -36,6 +36,7 @@ import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.ParameterDirectionKind;
+import org.eclipse.uml2.uml.ParameterSet;
 import org.eclipse.uml2.uml.Profile;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Reception;
@@ -47,6 +48,8 @@ import org.eclipse.uml2.uml.UMLPackage.Literals;
 import org.eclipse.uml2.uml.VisibilityKind;
 
 import com.abstratt.kirra.Operation.OperationKind;
+import com.abstratt.kirra.Parameter.Direction;
+import com.abstratt.kirra.Parameter.Effect;
 import com.abstratt.kirra.Relationship.Style;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
@@ -54,15 +57,14 @@ import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
 import com.abstratt.mdd.core.util.AssociationUtils;
 import com.abstratt.mdd.core.util.BasicTypeUtils;
-import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.ClassifierUtils;
+import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
 import com.abstratt.mdd.core.util.NamedElementUtils;
 import com.abstratt.mdd.core.util.StateMachineUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 import com.abstratt.pluginutils.NodeSorter;
-
 public class KirraHelper {
     public static class Metadata {
         public Map<String, Map<String, Object>> values = new HashMap<String, Map<String,Object>>();
@@ -287,48 +289,34 @@ public class KirraHelper {
     
     public static Class getUserClass() {
     	IRepository mddRepository = RepositoryService.DEFAULT.getCurrentResource().getFeature(IRepository.class);
-    	return get(mddRepository.getBaseURI().toString(), "getUserClass", new Callable<Class>() {
-            @Override
-            public Class call() throws Exception {
-            	Class userProfileClass = mddRepository.findNamedElement("userprofile::Profile", UMLPackage.Literals.CLASS, null);
-            	return userProfileClass;
-            }
+    	return get(mddRepository.getBaseURI().toString(), "getUserClass", () -> {
+        	Class userProfileClass = mddRepository.findNamedElement("userprofile::UserProfile", UMLPackage.Literals.CLASS, null);
+        	return userProfileClass;
         });
     }
 
     public static boolean isRole(final Classifier classifier) {
-        return get(classifier, "isRole", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                boolean isRole = !classifier.isAbstract() && MDDExtensionUtils.isRoleClass(classifier);
-				return isRole;
-            }
+        return get(classifier, "isRole", () -> {
+            boolean isRole = !classifier.isAbstract() && MDDExtensionUtils.isRoleClass(classifier);
+			return isRole;
         });
     }
     
     public static boolean isUser(final Classifier classifier) {
-        return get(classifier, "isUser", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return !classifier.isAbstract() && classifier.getQualifiedName().equals("userprofile::Profile");
-            }
-        });
+        return get(classifier, "isUser", () -> !classifier.isAbstract() && classifier.getQualifiedName().equals("userprofile::UserProfile"));
     }
         
     
     public static Property getUsernameProperty(final Classifier userClass) {
-        return get(userClass, "getUsernameProperty", new Callable<Property>() {
-            @Override
-            public Property call() throws Exception {
-            	Property property = FeatureUtils.findAttribute(userClass, "username", false, true);
-                return property != null && isUserNameProperty(property) ? property : null;
-            }
+        return get(userClass, "getUsernameProperty", () -> {
+        	Property property = FeatureUtils.findAttribute(userClass, "username", false, true);
+            return property != null && isUserNameProperty(property) ? property : null;
         });
     }
 
     /** Is the given property usable as a username property? */
     public static boolean isUserNameProperty(Property property) {
-    	return isUnique(property) && !isEditable(property) && property.getType()!= null && "String".equals(property.getType().getName());
+    	return isUnique(property) && !isEditable(property) && property.getType()!= null && ("String".equals(property.getType().getName()) || "Email".equals(property.getType().getName()));
 	}
 
 	public static boolean isRequired(Property property) {
@@ -342,22 +330,12 @@ public class KirraHelper {
      * @return
      */
     public static boolean isRequired(final Property property, final boolean creation) {
-        return get(property, "isRequiredProperty_" + creation, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return property.isNavigable() && !isReadOnly(property, creation) && isBasicallyRequired(property) && !isBlob(property.getType()) && !isGeolocation(property.getType());
-            }
-        });
+        return get(property, "isRequiredProperty_" + creation, 
+            () -> property.isNavigable() && !isReadOnly(property, creation) && isBasicallyRequired(property) && !isBlob(property.getType()) && !isGeolocation(property.getType()));
     }
 
 	public static boolean isBasicallyRequired(final Property property) {
-        return get(property, "isBasicallyRequiredProperty", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return property.getLower() > 0;
-            }
-
-        });
+        return get(property, "isBasicallyRequiredProperty", () -> property.getLower() > 0);
 
     }
 
@@ -365,12 +343,7 @@ public class KirraHelper {
     	return property.getType() instanceof StateMachine;
     }
     public static boolean isRequired(final Parameter parameter) {
-        return get(parameter, "isRequiredParameter", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return parameter.getLower() > 0 && !hasDefault(parameter);
-            }
-        });
+        return get(parameter, "isRequiredParameter", () -> parameter.getLower() > 0 && !hasDefault(parameter));
     }
 
     /**
@@ -381,7 +354,40 @@ public class KirraHelper {
     public static boolean isRequired(Parameter parameter, boolean creation) {
         return isRequired(parameter);
     }
+    
+    public static Direction getParameterDirection(final Parameter parameter) {
+        return get(parameter, "getParameterDirection", () -> {
+            switch (parameter.getDirection()) {
+            case IN_LITERAL:
+                return Direction.In;
+            case INOUT_LITERAL:
+                return Direction.InOut;
+            case OUT_LITERAL:
+                return Direction.Out;
+            case RETURN_LITERAL:
+                throw new IllegalArgumentException();
+            default:
+                throw new IllegalStateException();
+            }
+        });
+    }
 
+    public static Effect getParameterEffect(final Parameter parameter) {
+        Effect effect = get(parameter, "getParameterEffect", () -> {
+            if (parameter.isSetEffect())
+                // workaround for https://bugs.eclipse.org/bugs/show_bug.cgi?id=522336
+                switch (parameter.getEffect()) {
+                case CREATE_LITERAL:
+                    return Effect.Creation;
+                default:
+                    return Effect.None;
+                }
+            else return Effect.None;
+        });
+        return effect;
+    }
+
+    
     public static boolean isAction(Operation operation) {
         return isPublic(operation) && !operation.isQuery() && !FeatureUtils.isConstructor(operation) && VisibilityKind.PUBLIC_LITERAL == operation.getVisibility();
     }
@@ -395,8 +401,17 @@ public class KirraHelper {
     }
 
     public static List<Parameter> getParameters(BehavioralFeature operation) {
-        return FeatureUtils.filterParameters(operation.getOwnedParameters(), ParameterDirectionKind.IN_LITERAL);
+        return FeatureUtils.getInputParameters(operation.getOwnedParameters());
     }
+    
+    public static List<String> getParameters(org.eclipse.uml2.uml.ParameterSet parameterSet) {
+        return parameterSet.getParameters().stream().map(it -> it.getName()).collect(Collectors.toList());
+    }
+    
+    public static EList<ParameterSet> getParameterSets(BehavioralFeature umlOperation) {
+        return umlOperation.getOwnedParameterSets();
+    }
+
 
     public static boolean isFinder(Operation operation) {
         return isPublic(operation) && operation.getReturnResult() != null && operation.isStatic() && operation.isQuery();
@@ -407,13 +422,10 @@ public class KirraHelper {
     }
 
     public static boolean isProperty(final Property attribute) {
-        return get(attribute, "isProperty", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                // no support for static properties
-                boolean isProperty = isRegularProperty(attribute) && isInstance(attribute) && attribute.getName() != null && !isBasicallyAnEntity(attribute.getType());
-				return isProperty;
-            }
+        return get(attribute, "isProperty", () -> {
+            // no support for static properties
+            boolean isProperty = isRegularProperty(attribute) && isInstance(attribute) && attribute.getName() != null && !isBasicallyAnEntity(attribute.getType());
+    		return isProperty;
         });
     }
 
@@ -427,51 +439,35 @@ public class KirraHelper {
     }
 
     public static boolean isPublic(final NamedElement feature) {
-        return get(feature, "isPublic", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return feature.getVisibility() == VisibilityKind.PUBLIC_LITERAL;
-            }
-        });
+        return get(feature, "isPublic", () -> 
+            feature.getVisibility() == VisibilityKind.PUBLIC_LITERAL
+        );
 
     }
 
     public static boolean isParentRelationship(final Property attribute) {
-        return get(attribute, "isParentRelationship", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return !attribute.isMultivalued() && attribute.getOtherEnd() != null && isChildRelationship(attribute.getOtherEnd());
-            }
-        });
+        return get(attribute, "isParentRelationship", () ->
+            !attribute.isMultivalued() && attribute.getOtherEnd() != null && isChildRelationship(attribute.getOtherEnd())
+        );
     }
 
     public static boolean isChildRelationship(final Property attribute) {
-        return get(attribute, "isChildRelationship", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return isRelationship(attribute) && attribute.getAggregation() != AggregationKind.NONE_LITERAL;
-            }
-        });
+        return get(attribute, "isChildRelationship", () ->
+            isRelationship(attribute) && attribute.getAggregation() != AggregationKind.NONE_LITERAL
+        );
     }
 
     public static boolean isLinkRelationship(final Property attribute) {
-        return get(attribute, "isLinkRelationship", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return isRelationship(attribute) && attribute.getAggregation() == AggregationKind.NONE_LITERAL;
-            }
-        });
+        return get(attribute, "isLinkRelationship", () ->
+            isRelationship(attribute) && attribute.getAggregation() == AggregationKind.NONE_LITERAL
+        );
     }
     
     public static boolean isLikeLinkRelationship(final Property attribute) {
-        return get(attribute, "isLikeLinkRelationship", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return isLinkRelationship(attribute) ||
+        return get(attribute, "isLikeLinkRelationship", () ->
+            isLinkRelationship(attribute) ||
                         (isChildRelationship(attribute) && isTopLevel((Classifier) attribute.getType())) || 
-                        (isParentRelationship(attribute) && isTopLevel(attribute.getClass_()));
-            }
-        });
+                        (isParentRelationship(attribute) && isTopLevel(attribute.getClass_())));
     }
 
 
@@ -480,15 +476,11 @@ public class KirraHelper {
     }
 
     public static boolean isRelationship(final Property attribute, boolean navigableOnly) {
-        return get(attribute, "isRelationshipAttribute_"+navigableOnly, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
+        return get(attribute, "isRelationshipAttribute_"+navigableOnly, () -> 
                 // derived relationships might not actually have an association
-                return isRegularProperty(attribute) && attribute.getName() != null
+                isRegularProperty(attribute) && attribute.getName() != null
                         && isBasicallyAnEntity(attribute.getType())
-                        && (attribute.isDerived() || attribute.getAssociation() != null);
-            }
-        });
+                        && (attribute.isDerived() || attribute.getAssociation() != null));
     }
 
     public static String metaClass(Element element) {
@@ -496,21 +488,11 @@ public class KirraHelper {
     }
 
     public static boolean isAutoGenerated(final org.eclipse.uml2.uml.Property umlAttribute) {
-    	return get(umlAttribute, "isAutoGenerated", new Callable<Boolean>() {
-    		@Override
-    		public Boolean call() throws Exception {
-    			return umlAttribute.isDerived();
-    		}
-    	});
+    	return get(umlAttribute, "isAutoGenerated", () -> umlAttribute.isDerived());
     }
 
     public static boolean isSequence(final org.eclipse.uml2.uml.Property umlAttribute) {
-    	return get(umlAttribute, "isSequence", new Callable<Boolean>() {
-    		@Override
-    		public Boolean call() throws Exception {
-    			return isAutoGenerated(umlAttribute) && isPropertyUnique(umlAttribute) && !hasDefault(umlAttribute);
-    		}
-    	});
+    	return get(umlAttribute, "isSequence", () -> isAutoGenerated(umlAttribute) && isPropertyUnique(umlAttribute) && !hasDefault(umlAttribute));
     }
 
 	public static boolean isPropertyDerived(final org.eclipse.uml2.uml.Property umlAttribute) {
@@ -527,12 +509,8 @@ public class KirraHelper {
     
 
     public static boolean isDerived(final org.eclipse.uml2.uml.Property umlAttribute) {
-        return get(umlAttribute, "isDerived", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return umlAttribute.isDerived() && umlAttribute.getDefaultValue() != null;
-            }
-        });
+        return get(umlAttribute, "isDerived", () ->
+            umlAttribute.isDerived() && umlAttribute.getDefaultValue() != null);
     }
     
     /**
@@ -557,17 +535,14 @@ public class KirraHelper {
      * @return
      */
     public static boolean isReadOnly(final org.eclipse.uml2.uml.Property umlAttribute, final boolean creationTime) {
-        return get(umlAttribute, "isReadOnlyProperty_" + creationTime, new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                if (umlAttribute.isDerived())
-                    return true;
-                if (isStateProperty(umlAttribute))
-                    return true;
-                if (umlAttribute.getOtherEnd() != null && umlAttribute.getOtherEnd().isReadOnly() && umlAttribute.getOtherEnd().getAggregation() != AggregationKind.NONE_LITERAL)
-                    return true;
-                return umlAttribute.isReadOnly() && (!creationTime || !isBasicallyRequired(umlAttribute));
-            }
+        return get(umlAttribute, "isReadOnlyProperty_" + creationTime, () -> {
+            if (umlAttribute.isDerived())
+                return true;
+            if (isStateProperty(umlAttribute))
+                return true;
+            if (umlAttribute.getOtherEnd() != null && umlAttribute.getOtherEnd().isReadOnly() && umlAttribute.getOtherEnd().getAggregation() != AggregationKind.NONE_LITERAL)
+                return true;
+            return umlAttribute.isReadOnly() && (!creationTime || !isBasicallyRequired(umlAttribute));
         });
     }
     
@@ -590,15 +565,12 @@ public class KirraHelper {
     }
 
     public static boolean isReadOnly(final Class umlClass) {
-        return get(umlClass, "isReadOnlyClass", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                List<Property> all = getPropertiesAndRelationships(umlClass);
-                for (Property property : all)
-                    if (!isReadOnly(property))
-                        return false;
-                return true;
-            }
+        return get(umlClass, "isReadOnlyClass", () -> {
+            List<Property> all = getPropertiesAndRelationships(umlClass);
+            for (Property property : all)
+                if (!isReadOnly(property))
+                    return false;
+            return true;
         });
     }
 
@@ -617,24 +589,18 @@ public class KirraHelper {
     }
 
     public static List<Property> getProperties(final Classifier umlClass) {
-        return get(umlClass, "getProperties", new Callable<List<Property>>() {
-            @Override
-            public List<Property> call() throws Exception {
-                List<Property> entityProperties = new ArrayList<Property>();
-                addEntityProperties(umlClass, entityProperties);
-                return removeDuplicates(entityProperties, propertySelector(umlClass));
-            }
+        return get(umlClass, "getProperties", () -> {
+            List<Property> entityProperties = new ArrayList<Property>();
+            addEntityProperties(umlClass, entityProperties);
+            return removeDuplicates(entityProperties, propertySelector(umlClass));
         });
     }
     
     public static List<Property> getTupleProperties(final Classifier dataType) {
-        return get(dataType, "getTupleProperties", new Callable<List<Property>>() {
-            @Override
-            public List<Property> call() throws Exception {
-                List<Property> tupleProperties = new ArrayList<Property>();
-                addTupleProperties(dataType, tupleProperties);
-                return removeDuplicates(tupleProperties, propertySelector(dataType));
-            }
+        return get(dataType, "getTupleProperties", () -> {
+            List<Property> tupleProperties = new ArrayList<Property>();
+            addTupleProperties(dataType, tupleProperties);
+            return removeDuplicates(tupleProperties, propertySelector(dataType));
         });
     }
     
@@ -652,14 +618,11 @@ public class KirraHelper {
 	}
 
     public static List<Property> getPropertiesAndRelationships(final Classifier umlClass) {
-        return get(umlClass, "getPropertiesAndRelationships", new Callable<List<Property>>() {
-            @Override
-            public List<Property> call() throws Exception {
-                LinkedHashSet<Property> entityProperties = new LinkedHashSet<Property>();
-                addEntityPropertiesAndRelationships(umlClass, entityProperties);
-                addAssociationOwnedRelationships(umlClass, true, entityProperties);
-                return removeDuplicates(entityProperties, propertySelector(umlClass));
-            }
+        return get(umlClass, "getPropertiesAndRelationships", () -> {
+            LinkedHashSet<Property> entityProperties = new LinkedHashSet<Property>();
+            addEntityPropertiesAndRelationships(umlClass, entityProperties);
+            addAssociationOwnedRelationships(umlClass, true, entityProperties);
+            return removeDuplicates(entityProperties, propertySelector(umlClass));
         });
     }
     
@@ -686,54 +649,42 @@ public class KirraHelper {
     }
 
     public static List<Operation> getQueries(final Class umlClass) {
-        return get(umlClass, "getQueries", new Callable<List<Operation>>() {
-            @Override
-            public List<Operation> call() throws Exception {
-                List<Operation> queries = new ArrayList<Operation>();
-                for (Operation operation : umlClass.getAllOperations())
-                    if (isFinder(operation))
-                        queries.add(operation);
-                return removeDuplicates(queries, operationSelector(umlClass));
-            }
+        return get(umlClass, "getQueries", () -> {
+            List<Operation> queries = new ArrayList<Operation>();
+            for (Operation operation : umlClass.getAllOperations())
+                if (isFinder(operation))
+                    queries.add(operation);
+            return removeDuplicates(queries, operationSelector(umlClass));
         });
     }
 
     public static List<Operation> getActions(final Class umlClass) {
-        return get(umlClass, "getActions", new Callable<List<Operation>>() {
-            @Override
-            public List<Operation> call() throws Exception {
-                List<Operation> actions = new ArrayList<Operation>();
-                for (Operation operation : umlClass.getAllOperations())
-                    if (isAction(operation))
-                        actions.add(operation);
-                return removeDuplicates(actions, operationSelector(umlClass));
-            }
+        return get(umlClass, "getActions", () -> {
+            List<Operation> actions = new ArrayList<Operation>();
+            for (Operation operation : umlClass.getAllOperations())
+                if (isAction(operation))
+                    actions.add(operation);
+            return removeDuplicates(actions, operationSelector(umlClass));
         });
     }
     
     public static List<Operation> getInstanceActions(final Class umlClass) {
-        return get(umlClass, "getInstanceActions", new Callable<List<Operation>>() {
-            @Override
-            public List<Operation> call() throws Exception {
-                List<Operation> instanceActions = new ArrayList<Operation>();
-                for (Operation operation : getActions(umlClass))
-                    if (!operation.isStatic())
-                        instanceActions.add(operation);
-                return instanceActions;
-            }
+        return get(umlClass, "getInstanceActions", () -> {
+            List<Operation> instanceActions = new ArrayList<Operation>();
+            for (Operation operation : getActions(umlClass))
+                if (!operation.isStatic())
+                    instanceActions.add(operation);
+            return instanceActions;
         });
     }
     
     public static List<Operation> getEntityActions(final Class umlClass) {
-        return get(umlClass, "getEntityActions", new Callable<List<Operation>>() {
-            @Override
-            public List<Operation> call() throws Exception {
-                List<Operation> entityActions = new ArrayList<Operation>();
-                for (Operation operation : getActions(umlClass))
-                    if (operation.isStatic())
-                        entityActions.add(operation);
-                return entityActions;
-            }
+        return get(umlClass, "getEntityActions", () -> {
+            List<Operation> entityActions = new ArrayList<Operation>();
+            for (Operation operation : getActions(umlClass))
+                if (operation.isStatic())
+                    entityActions.add(operation);
+            return entityActions;
         });
     }
 
@@ -742,28 +693,25 @@ public class KirraHelper {
     }
 
     public static boolean isTopLevel(final Classifier umlClass) {
-        return get(umlClass, "isTopLevel", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-            	if (!isUserVisible(umlClass))
-            		return false;
-            	if (!isConcrete(umlClass))
-            		return false;
-                for (Operation operation : umlClass.getAllOperations())
-                    if (isFinder(operation))
-                        return true;
-                int parentCount = 0;
-                for (Property attribute : getRelationships(umlClass))
-                    if (attribute.getOtherEnd() != null)
-                        if (attribute.getOtherEnd().isComposite())
-                            parentCount++;
-                // If has exactly one parent, it is not top-level.
-                // We used to care about whether there were references from other (non-parent) entities
-                // but since we could tell whether that was required, and that is not what the UI needed, 
-                // we no longer do that
-                boolean isTopLevel = parentCount != 1;
-				return isTopLevel;
-            }
+        return get(umlClass, "isTopLevel", () -> {
+        	if (!isUserVisible(umlClass))
+        		return false;
+        	if (!isConcrete(umlClass))
+        		return false;
+            for (Operation operation : umlClass.getAllOperations())
+                if (isFinder(operation))
+                    return true;
+            int parentCount = 0;
+            for (Property attribute : getRelationships(umlClass))
+                if (attribute.getOtherEnd() != null)
+                    if (attribute.getOtherEnd().isComposite())
+                        parentCount++;
+            // If has exactly one parent, it is not top-level.
+            // We used to care about whether there were references from other (non-parent) entities
+            // but since we could tell whether that was required, and that is not what the UI needed, 
+            // we no longer do that
+            boolean isTopLevel = parentCount != 1;
+			return isTopLevel;
         });
     }
 
@@ -772,12 +720,8 @@ public class KirraHelper {
     }
 
     public static Property getMnemonic(final Classifier clazz) {
-        return get(clazz, "getMnemonic", new Callable<Property>() {
-            @Override
-            public Property call() throws Exception {
-                return getPropertiesAndRelationships(clazz).stream().filter(it -> isUserVisible(it)).findAny().orElse(null);
-            }
-        });
+        return get(clazz, "getMnemonic", () ->
+             getPropertiesAndRelationships(clazz).stream().filter(it -> isUserVisible(it)).findAny().orElse(null));
     }
     
     public static String getDescription(Element element) {
@@ -795,29 +739,26 @@ public class KirraHelper {
      *  so a relationship *always* has a primary end, and only one.
      */
     public static boolean isPrimary(final org.eclipse.uml2.uml.Property thisEnd) {
-        return get(thisEnd, "isPrimary", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                if (thisEnd.getAssociation() == null)
-                    return false;
-                if (!thisEnd.isNavigable())
-                    return false;
-                Property otherEnd = thisEnd.getOtherEnd();
-                if (otherEnd == null)
-                    return true;
-                if (!otherEnd.isNavigable())
-                    return true;
-                if (thisEnd.isMultivalued() != otherEnd.isMultivalued())
-                    return !thisEnd.isMultivalued();
-                if (isBasicallyRequired(thisEnd) != isBasicallyRequired(otherEnd))
-                    return isBasicallyRequired(thisEnd);
-                // only one side is association owned
-                if (thisEnd.getAssociation().getOwnedEnds().size() == 1)
-                	return !thisEnd.getAssociation().getOwnedEnds().contains(thisEnd);
-                // both owned or none owned, pick the first one as a tie breaker
-                Property firstEnd = thisEnd.getAssociation().getMemberEnds().get(0);
-                return firstEnd == thisEnd;
-            }
+        return get(thisEnd, "isPrimary", () -> {
+            if (thisEnd.getAssociation() == null)
+                return false;
+            if (!thisEnd.isNavigable())
+                return false;
+            Property otherEnd = thisEnd.getOtherEnd();
+            if (otherEnd == null)
+                return true;
+            if (!otherEnd.isNavigable())
+                return true;
+            if (thisEnd.isMultivalued() != otherEnd.isMultivalued())
+                return !thisEnd.isMultivalued();
+            if (isBasicallyRequired(thisEnd) != isBasicallyRequired(otherEnd))
+                return isBasicallyRequired(thisEnd);
+            // only one side is association owned
+            if (thisEnd.getAssociation().getOwnedEnds().size() == 1)
+            	return !thisEnd.getAssociation().getOwnedEnds().contains(thisEnd);
+            // both owned or none owned, pick the first one as a tie breaker
+            Property firstEnd = thisEnd.getAssociation().getMemberEnds().get(0);
+            return firstEnd == thisEnd;
         });        
     }
 
@@ -842,54 +783,35 @@ public class KirraHelper {
 
     public static boolean isServiceOperation(
             final BehavioralFeature operation) {
-        return get(operation, "isPrimary", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                if (!(operation.getOwner() instanceof Interface))
-                    return false;
-                if (operation instanceof Operation)
-                    return ((Operation) operation).getReturnResult() != null;
-                
-                return operation instanceof Reception && operation.getName() != null && operation.getOwnedParameters().size() == 1 && operation.getOwnedParameters().get(0).getType() instanceof Signal;
-            }
+        return get(operation, "isPrimary", () -> {
+            if (!(operation.getOwner() instanceof Interface))
+                return false;
+            if (operation instanceof Operation)
+                return ((Operation) operation).getReturnResult() != null;
+            
+            return operation instanceof Reception && operation.getName() != null && operation.getOwnedParameters().size() == 1 && operation.getOwnedParameters().get(0).getType() instanceof Signal;
         });        
     }
 
     public static boolean isTupleType(final Type classifier) {
-        return get(classifier, "isTupleType", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                // excludes other DataTypes, such as primitives
-                return classifier.getName() != null && (classifier.eClass() == Literals.DATA_TYPE || classifier.eClass() == Literals.SIGNAL) && classifier.getVisibility() != VisibilityKind.PRIVATE_LITERAL;
-            }
-        });
+        return get(classifier, "isTupleType", () ->
+            // excludes other DataTypes, such as primitives
+            classifier.getName() != null && (classifier.eClass() == Literals.DATA_TYPE || classifier.eClass() == Literals.SIGNAL) && classifier.getVisibility() != VisibilityKind.PRIVATE_LITERAL);
     }
 
     public static boolean isService(final Type umlClass) {
-        return get(umlClass, "isService", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return umlClass instanceof BehavioredClassifier && hasStereotype(umlClass, "Service");
-            }
-        });
+        return get(umlClass, "isService", () ->
+            umlClass instanceof BehavioredClassifier && hasStereotype(umlClass, "Service"));
     }
 
     public static boolean isApplication(final org.eclipse.uml2.uml.Package current) {
-        return get(current, "isApplication", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return MDDExtensionUtils.isApplication(current) || (isKirraPackage(current) && hasKirraType(current));
-            }
-        });
+        return get(current, "isApplication", () ->
+            MDDExtensionUtils.isApplication(current) || (isKirraPackage(current) && hasKirraType(current)));
     }
     
     public static boolean isKirraPackage(final org.eclipse.uml2.uml.Package current) {
-        return get(current, "isKirraPackage", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return StereotypeUtils.hasProfile(current, "kirra");
-            }
-        });
+        return get(current, "isKirraPackage", () ->
+            StereotypeUtils.hasProfile(current, "kirra"));
     }
     
     public static boolean hasKirraType(final org.eclipse.uml2.uml.Package current) {
@@ -915,12 +837,8 @@ public class KirraHelper {
     	return isUnique(umlAttribute);
     }
     public static boolean isUnique(final org.eclipse.uml2.uml.Property umlAttribute) {
-        return get(umlAttribute, "isUnique", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return umlAttribute.isID() && umlAttribute.getLower() > 0 && !umlAttribute.isMultivalued();
-            }
-        });
+        return get(umlAttribute, "isUnique", () ->
+            umlAttribute.isID() && umlAttribute.getLower() > 0 && !umlAttribute.isMultivalued());
     }
 
     public static void addNonInstanceActions(Class target, Collection<Operation> collected) {
@@ -930,12 +848,7 @@ public class KirraHelper {
     }
     
     public static boolean isStatic(final Feature operation) {
-        return get(operation, "isStaticFeature", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return operation.isStatic();
-            }
-        });
+        return get(operation, "isStaticFeature", () -> operation.isStatic());
     }
 
     public static List<Operation> getNonInstanceActions(Class umlClass) {
@@ -948,15 +861,12 @@ public class KirraHelper {
      * An entity is not instantiable if it has at least one required field which is not initializable and is not automatically generated.
      */
     public static boolean isInstantiable(final Class umlClass) {
-        return get(umlClass, "isInstantiable", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                List<Property> all = getPropertiesAndRelationships(umlClass);
-                for (Property property : all)
-					if (!isAutoGenerated(property) && !isInitializable(property) && isBasicallyRequired(property) && !isStateProperty(property))
-                        return false;
-                return true;
-            }
+        return get(umlClass, "isInstantiable", () -> {
+            List<Property> all = getPropertiesAndRelationships(umlClass);
+            for (Property property : all)
+				if (!isAutoGenerated(property) && !isInitializable(property) && isBasicallyRequired(property) && !isStateProperty(property))
+                    return false;
+            return true;
         });
     }
     
@@ -1026,29 +936,22 @@ public class KirraHelper {
     }
 
     public static boolean isEnumeration(final Type umlType) {
-        return get(umlType, "isEnumeration", new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                return umlType instanceof Enumeration || umlType instanceof StateMachine;
-            }
-        });
+        return get(umlType, "isEnumeration", () ->
+            umlType instanceof Enumeration || umlType instanceof StateMachine);
     }
     
     public static Map<String, String> getEnumerationLiterals(final Type enumOrStateMachine) {
-        return get(enumOrStateMachine, "getEnumerationLiterals", new Callable<Map<String, String>>() {
-            @Override
-            public Map<String, String> call() throws Exception {
-            	List<String> names;
-                if (enumOrStateMachine instanceof Enumeration)
-                	names = NamedElementUtils.getNames(((Enumeration) enumOrStateMachine).getOwnedLiterals());
-				else if (enumOrStateMachine instanceof StateMachine)
-                    names = NamedElementUtils.getNames(StateMachineUtils.getStates(((StateMachine) enumOrStateMachine)));
-				else
-					names = Arrays.<String>asList();
-                Map<String, String> result = new LinkedHashMap<>();
-                names.forEach(name -> result.put(name, getLabelFromSymbol(name)));
-				return result ;
-            }
+        return get(enumOrStateMachine, "getEnumerationLiterals", () -> {
+        	List<String> names;
+            if (enumOrStateMachine instanceof Enumeration)
+            	names = NamedElementUtils.getNames(((Enumeration) enumOrStateMachine).getOwnedLiterals());
+			else if (enumOrStateMachine instanceof StateMachine)
+                names = NamedElementUtils.getNames(StateMachineUtils.getStates(((StateMachine) enumOrStateMachine)));
+			else
+				names = Arrays.<String>asList();
+            Map<String, String> result = new LinkedHashMap<>();
+            names.forEach(name -> result.put(name, getLabelFromSymbol(name)));
+			return result ;
         });
     }
     
@@ -1183,7 +1086,8 @@ public class KirraHelper {
         if (isAction(operation))
             return OperationKind.Action;
         if (isConstructor(operation))
-            return OperationKind.Construtor;
+            return OperationKind.Constructor;
         return null;
     }
+
 }

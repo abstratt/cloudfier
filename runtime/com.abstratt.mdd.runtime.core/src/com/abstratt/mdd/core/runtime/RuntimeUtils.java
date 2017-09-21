@@ -60,7 +60,7 @@ public class RuntimeUtils {
             if (ActivityUtils.getClosureInputParameters(behavior).size() == 0) {
                 // no parameters, evaluate on the spot
                 Runtime runtime = Runtime.get();
-                return runtime.runBehavior(self, behavior.getName(), behavior);
+                return runtime.runBehavior(self, behavior.getName(), behavior, null);
             }
             return new ElementReferenceType(behavior);
         }

@@ -42,8 +42,8 @@ public class SimpleBlobStoreCatalog implements IBlobStoreCatalog {
     }
     
     @Override
-    public IBlobStore getBlobStore(String namespace) {
-        return new SimpleBlobStore(getBasePath(), namespace);
+    public IBlobStore getBlobStore() {
+        return new SimpleBlobStore(getBasePath());
     }
 
     public void setEnvironment(String environment) {
@@ -51,7 +51,7 @@ public class SimpleBlobStoreCatalog implements IBlobStoreCatalog {
     }
 
     private Path getBasePath() {
-        return REPOSITORY_ROOT.resolve(catalogName).resolve(environment);
+        return REPOSITORY_ROOT.resolve(environment).resolve(catalogName);
     }
 
 }

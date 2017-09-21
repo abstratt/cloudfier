@@ -63,13 +63,10 @@ public abstract class BasicType implements Type {
         return equals(context, another).not(context);
     }
 
-    /**
-     * @param context
-     */
     public BooleanType same(ExecutionContext context, BasicType other) {
         return BooleanType.fromValue(equals(other));
     }
-
+    
     /**
      * @param context
      */

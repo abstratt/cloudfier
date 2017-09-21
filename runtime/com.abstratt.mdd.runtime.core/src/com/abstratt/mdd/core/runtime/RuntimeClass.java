@@ -7,6 +7,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.BehavioredClassifier;
@@ -14,13 +15,13 @@ import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
+import org.eclipse.uml2.uml.ParameterSet;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.UMLPackage;
 import org.eclipse.uml2.uml.Vertex;
 
 import com.abstratt.blobstore.IBlobStore;
 import com.abstratt.blobstore.IBlobStoreCatalog;
-import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.runtime.types.CollectionType;
 import com.abstratt.mdd.core.util.StateMachineUtils;
@@ -159,7 +160,7 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         IntegerKey key = objectIdToKey(externalId);
         if (!getNodeStore().containsNode(key))
             return Collections.emptySet();
-        return getOrLoadInstance(key).getParameterDomain(parameter, parameterType);
+        return getOrLoadInstance(key, this::createRuntimeObject).getParameterDomain(parameter, parameterType);
     }
 
     public Collection<RuntimeObject> getPropertyDomain(String objectId, Property property, Classifier propertyType) {
@@ -182,6 +183,10 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         List<RuntimeObject> collected = getRuntime().collectInstancesFromHierarchy(baseClass, true,
                 currentClass -> getRelatedInstancesOfTheExactType(objectId, property, currentClass));
         return CollectionType.createCollectionBackEndFor(property, collected);
+    }
+    
+    private RuntimeObject createRuntimeObject(INodeKey key) {
+        return new RuntimeObject(this, key);
     }
 
     /**
@@ -255,13 +260,19 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
             newObject.initDefaults();
         return newObject;
     }
+    
+    @Override
+    public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, ParameterSet parameterSet,
+            BasicType... arguments) {
+        if (operation.isStatic())
+            return getClassObject().runBehavioralFeature(operation, parameterSet, arguments);
+        return ((RuntimeObject) target).runBehavioralFeature(operation, parameterSet, arguments);
+    }
 
     @Override
     public final BasicType runOperation(ExecutionContext context, BasicType target, Operation operation,
             BasicType... arguments) {
-        if (operation.isStatic())
-            return getClassObject().runBehavioralFeature(operation, arguments);
-        return ((RuntimeObject) target).runBehavioralFeature(operation, arguments);
+        return runOperation(context, target, operation, null, arguments);
     }
 
     protected RuntimeObject getDetachedInstance(INodeKey key) {
@@ -269,14 +280,18 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
     }
 
     protected RuntimeObject getOrLoadInstance(INodeKey key) {
-        RuntimeObject existing = getRuntime().getCurrentContext()
+        return getOrLoadInstance(key, this::createRuntimeObject);
+    }
+    
+    protected <RO extends RuntimeObject> RO getOrLoadInstance(INodeKey key, Function<INodeKey, RO> objectSupplier) {
+        RO existing = (RO) getRuntime().getCurrentContext()
                 .getWorkingObject(new NodeReference(getNodeStoreName(), key));
         if (existing != null) {
             if (!existing.isActive())
                 return null;
             return existing;
         }
-        RuntimeObject runtimeObject = new RuntimeObject(this, key);
+        RO runtimeObject = objectSupplier.apply(key);
         try {
             // force load (also ensures the object exists)
             runtimeObject.load();
@@ -306,6 +321,6 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
 
     public IBlobStore getBlobStore() {
         IBlobStoreCatalog getBlogStoreCatalog = runtime.getBlobStoreCatalog();
-        return getBlogStoreCatalog.getBlobStore(this.classifier.getQualifiedName());
+        return getBlogStoreCatalog.getBlobStore();
     }
 }

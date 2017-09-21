@@ -29,7 +29,7 @@ public class DatabaseAuthenticationService implements AuthenticationService {
 		Entity userEntity = getUserEntity(repository);
 		if (userEntity == null)
 			return null;
-		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "Profile", false);
+		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "UserProfile", false);
 		if (!found.isEmpty() && password.equals(found.get(0).getValue("password")))
 			return found.get(0);
 		return null;
@@ -41,7 +41,7 @@ public class DatabaseAuthenticationService implements AuthenticationService {
 		Entity userEntity = getUserEntity(repository);
 		if (userEntity == null)
 			return null;
-		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "Profile", false);
+		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "UserProfile", false);
 		if (found.isEmpty())
 			return Collections.emptyList();
 		Instance profile = found.get(0);
@@ -53,7 +53,7 @@ public class DatabaseAuthenticationService implements AuthenticationService {
 	}
 
 	private Entity getUserEntity(Repository repository) {
-		Entity userEntity = repository.getEntity(new TypeRef("userprofile", "Profile", TypeKind.Entity));
+		Entity userEntity = repository.getEntity(new TypeRef("userprofile", "UserProfile", TypeKind.Entity));
 		return userEntity;
 	}
 

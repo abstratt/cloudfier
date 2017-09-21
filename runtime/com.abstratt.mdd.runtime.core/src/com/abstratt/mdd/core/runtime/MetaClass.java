@@ -1,11 +1,11 @@
 package com.abstratt.mdd.core.runtime;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Operation;
+import org.eclipse.uml2.uml.ParameterSet;
 
 import com.abstratt.mdd.core.runtime.types.BasicType;
 
@@ -41,4 +41,9 @@ public interface MetaClass<T> {
      *             if this invokable is not a class object
      */
     public BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, BasicType... arguments);
+    
+    public default BasicType runOperation(ExecutionContext context, BasicType target, Operation operation, ParameterSet parameterSet, BasicType... arguments) {
+        // by default we ignore parameter sets
+        return runOperation(context, target, operation, arguments);
+    }
 }

@@ -19,6 +19,7 @@ import org.eclipse.uml2.uml.Class;
 import org.eclipse.uml2.uml.Classifier;
 import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Operation;
+import org.eclipse.uml2.uml.ParameterSet;
 import org.eclipse.uml2.uml.Port;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Signal;
@@ -181,6 +182,12 @@ public class Runtime {
 		RuntimeObject role = runtimeRoleClass.findOneInstance(criteria);
 		return role;
     }
+    
+    public RuntimeObject getActorForRole(RuntimeObject role) {
+        Property userProfileProperty = FeatureUtils.findAttribute(role.getRuntimeClass().getModelClassifier(), "userProfile", false, true);
+        return (RuntimeObject) role.traverse(userProfileProperty);
+    }
+
 
     public ActorSelector getActorSelector() {
         return actorSelector;
@@ -278,7 +285,7 @@ public class Runtime {
         this.externalMetaClass.register(externalDelegate);
     }
 
-    public BasicType runBehavior(RuntimeObject target, String frameName, Activity behavior, BasicType... arguments) {
+    public BasicType runBehavior(RuntimeObject target, String frameName, Activity behavior, ParameterSet parameterSet, BasicType... arguments) {
         final StructuredActivityNode main = ActivityUtils.getBodyNode(behavior);
         context.newFrame(behavior, target, frameName);
         try {
@@ -286,7 +293,8 @@ public class Runtime {
             for (Variable current : main.getVariables()) {
                 context.declareVariable(current);
                 if (!"".equals(current.getName()) && current.getVisibility() != VisibilityKind.PRIVATE_LITERAL)
-                    context.setVariableValue(current, arguments[paramIndex++]);
+                    if (parameterSet == null || parameterSet.getParameter(current.getName(), null) != null)
+                        context.setVariableValue(current, arguments[paramIndex++]);
             }
             // the actual root node (corresponding to the utmost begin...end) is
             // the only node of the main node
@@ -307,15 +315,20 @@ public class Runtime {
         }
     }
 
+    public BasicType runOperation(ActorSelector currentActor, final BasicType target, final Operation operation, final BasicType... arguments) {
+        return runOperation(currentActor, target, operation, (ParameterSet) null, arguments); 
+    }
+
+    
     /**
      * Runs an operation against an object.
      */
-    public BasicType runOperation(ActorSelector currentActor, final BasicType target, final Operation operation, final BasicType... arguments) {
+    public BasicType runOperation(ActorSelector currentActor, final BasicType target, final Operation operation, ParameterSet parameterSet, final BasicType... arguments) {
         Assert.isNotNull(operation);
         return runSession(new Session<BasicType>() {
             @Override
             public BasicType run() {
-                return basicRunOperation(target, operation, arguments);
+                return basicRunOperation(target, operation, parameterSet, arguments);
             }
         });
     }
@@ -351,7 +364,7 @@ public class Runtime {
         blobStoreCatalog.zap();
     }
 
-    private BasicType basicRunOperation(BasicType target, Operation operation, BasicType... arguments) {
+    private BasicType basicRunOperation(BasicType target, Operation operation, ParameterSet parameterSet, BasicType... arguments) {
         MetaClass<?> metaClass;
         String className = target == null ? operation.getClass_().getQualifiedName() : target.getClassifierName();
         if (target != null)
@@ -364,7 +377,7 @@ public class Runtime {
             Assert.isLegal(target == null, "operation '" + operation.getQualifiedName() + "' is static, wrong target");
         else
             Assert.isLegal(target != null, "operation '" + operation.getQualifiedName() + "' is not static, wrong target");
-        BasicType result = metaClass.runOperation(context, target, operation, arguments);
+        BasicType result = metaClass.runOperation(context, target, operation, parameterSet, arguments);
         return result;
     }
 

@@ -151,7 +151,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
     }
 	
 	def CharSequence generateParameterDefaults(Operation operation) {
-        val parameterWithDefaults = operation.ownedParameters.filter[direction == ParameterDirectionKind.IN_LITERAL && (^default != null || defaultValue != null)]
+        val parameterWithDefaults = operation.ownedParameters.inputParameters.filter[(^default !== null || defaultValue !== null)]
         return parameterWithDefaults.generateMany[generateParameterDefault(it)]
 	}
 	
@@ -283,7 +283,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
     
     def toJavaClosureType(Interface signature) {
         val signatureParameters = signature.signatureParameters
-        val inputs = signatureParameters.filterParameters(ParameterDirectionKind.IN_LITERAL)
+        val inputs = signatureParameters.getInputParameters()
         val result = signatureParameters.filterParameters(ParameterDirectionKind.RETURN_LITERAL).head 
         if (inputs.size() == 1) {
             if (result == null)

@@ -28,6 +28,7 @@ import org.eclipse.uml2.uml.NamedElement;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Parameter;
 import org.eclipse.uml2.uml.ParameterDirectionKind;
+import org.eclipse.uml2.uml.ParameterSet;
 import org.eclipse.uml2.uml.Port;
 import org.eclipse.uml2.uml.Property;
 import org.eclipse.uml2.uml.Reception;
@@ -146,10 +147,9 @@ public class RuntimeObject extends StructuredRuntimeObject {
         getCurrentContext().addToWorkingSet(this);
     }
 
-    public Map<String, BasicType> buildArgumentMap(BehavioralFeature behavioralFeature, BasicType... arguments) {
+    public Map<String, BasicType> buildArgumentMap(BehavioralFeature behavioralFeature, ParameterSet parameterSet, BasicType... arguments) {
         Map<String, BasicType> argumentsPerParameter = new HashMap<String, BasicType>();
-        List<Parameter> inParameters = FeatureUtils.filterParameters(behavioralFeature.getOwnedParameters(),
-                ParameterDirectionKind.IN_LITERAL);
+        List<Parameter> inParameters = FeatureUtils.filterByParameterSet(parameterSet, FeatureUtils.getInputParameters(behavioralFeature.getOwnedParameters()));
         Assert.isLegal(arguments.length == inParameters.size(),
                 "parameter and argument counts don't match: " + arguments.length + " != " + inParameters.size());
         for (int i = 0; i < inParameters.size(); i++) {
@@ -163,7 +163,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     public Constraint checkConstraints(Classifier scope, String kind) {
         List<Constraint> invariants = ConstraintUtils.findConstraints(scope, kind);
-        Constraint partial = checkConstraints(invariants, Collections.<String, BasicType>emptyMap());
+        Constraint partial = checkConstraints(invariants, null,  Collections.<String, BasicType>emptyMap());
         if (partial != null)
             return partial;
         for (Classifier general : scope.getGenerals()) {
@@ -176,7 +176,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     public Constraint checkConstraints(NamedElement scope, String kind) {
         List<Constraint> constraints = ConstraintUtils.findConstraints(scope, kind);
-        return checkConstraints(constraints, Collections.<String, BasicType>emptyMap());
+        return checkConstraints(constraints, null, Collections.<String, BasicType>emptyMap());
     }
 
     public Constraint checkConstraints(String kind) {
@@ -216,7 +216,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
             return;
         List<Constraint> invariants = MDDExtensionUtils
                 .findOwnedInvariantConstraints(getRuntimeClass().getModelClassifier());
-        Constraint violated = checkConstraints(invariants, Collections.<String, BasicType>emptyMap());
+        Constraint violated = checkConstraints(invariants, null, Collections.<String, BasicType>emptyMap());
         if (violated != null)
             constraintViolated(ConstraintUtils.getConstraintScope(violated), violated);
     }
@@ -288,7 +288,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
         candidateLoop: for (BasicType candidate : candidates) {
             for (Constraint constraint : parameterConstraints) {
                 Map<String, BasicType> argumentsPerParameter = Collections.singletonMap(parameter.getName(), candidate);
-                if (!isConstraintSatisfied(constraint, argumentsPerParameter))
+                if (!isConstraintSatisfied(constraint, null, argumentsPerParameter))
                     continue candidateLoop;
             }
             result.add((RuntimeObject) candidate);
@@ -393,7 +393,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
             Signal signal = runtimeMessageEvent.getMessage();
             Reception reception = ReceptionUtils.findBySignal(this.getRuntimeClass().getModelClassifier(), signal);
             if (reception != null)
-                runBehavioralFeature(reception, runtimeMessageEvent.getArguments());
+                runBehavioralFeature(reception, null, runtimeMessageEvent.getArguments());
         }
         for (Property stateProperty : StateMachineUtils.findStateProperties(getRuntimeClass().getModelClassifier())) {
             StateMachine stateMachine = (StateMachine) stateProperty.getType();
@@ -440,22 +440,24 @@ public class RuntimeObject extends StructuredRuntimeObject {
     }
 
     public boolean isConstraintSatisfied(Constraint constraint) {
-        return isConstraintSatisfied(constraint, null);
+        return isConstraintSatisfied(constraint, null, null);
     }
 
-    public boolean isConstraintSatisfied(Constraint constraint, Map<String, BasicType> argumentsPerParameter) {
+    public boolean isConstraintSatisfied(Constraint constraint, ParameterSet parameterSet, Map<String, BasicType> argumentsPerParameter) {
         Activity toExecute = (Activity) ActivityUtils.resolveBehaviorReference(constraint.getSpecification());
 
         List<BasicType> argumentValues = new ArrayList<BasicType>();
-        List<Parameter> constraintParameters = FeatureUtils.filterParameters(toExecute.getOwnedParameters(),
-                ParameterDirectionKind.IN_LITERAL, ParameterDirectionKind.INOUT_LITERAL);
+        List<Parameter> constraintParameters = FeatureUtils.getInputParameters(toExecute.getOwnedParameters());
         if (!constraintParameters.isEmpty()) {
             if (argumentsPerParameter == null)
                 throw new IllegalArgumentException();
-            for (Parameter inputParameters : constraintParameters)
-                argumentValues.add(argumentsPerParameter.get(inputParameters.getName()));
+            for (Parameter inputParameter : constraintParameters) {
+                if (parameterSet != null && !parameterSet.getParameters().contains(inputParameter))
+                    return true;
+                argumentValues.add(argumentsPerParameter.get(inputParameter.getName()));
+            }
         }
-        Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute,
+        Object behaviorResult = getRuntime().runBehavior(this, constraint.getName(), toExecute, parameterSet, 
                 argumentValues.toArray(new BasicType[0]));
         boolean result = behaviorResult != null && ((BooleanType) behaviorResult).isTrue();
         return result;
@@ -468,7 +470,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
                 return false;
         for (Constraint precondition : operation.getPreconditions())
             if (!FeatureUtils.isParametrizedConstraint(precondition)
-                    && !isConstraintSatisfied(precondition, argumentsPerParameter))
+                    && !isConstraintSatisfied(precondition, null, argumentsPerParameter))
                 return false;
         return true;
     }
@@ -534,13 +536,13 @@ public class RuntimeObject extends StructuredRuntimeObject {
         markClear();
     }
 
-    public BasicType runBehavioralFeature(BehavioralFeature behavioralFeature, BasicType... arguments) {
+    public BasicType runBehavioralFeature(BehavioralFeature behavioralFeature, ParameterSet parameterSet, BasicType... arguments) {
         Operation asOperation = (Operation) (behavioralFeature instanceof Operation ? behavioralFeature : null);
         // try to run behavior defined for operation (if any)
         ensureActive();
         if (asOperation != null) {
-            Map<String, BasicType> argumentsPerParameter = buildArgumentMap(behavioralFeature, arguments);
-            Constraint violated = this.checkConstraints(asOperation.getPreconditions(), argumentsPerParameter);
+            Map<String, BasicType> argumentsPerParameter = buildArgumentMap(behavioralFeature, parameterSet, arguments);
+            Constraint violated = this.checkConstraints(asOperation.getPreconditions(), parameterSet, argumentsPerParameter);
             if (violated != null)
                 constraintViolated(behavioralFeature, violated);
 
@@ -553,7 +555,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
                 // only non-query operations generate events
                 publishEvent(asOperation, arguments);
         }
-        return runBehavioralFeatureBehavior(behavioralFeature, arguments);
+        return runBehavioralFeatureBehavior(behavioralFeature, parameterSet, arguments);
     }
 
     @Override
@@ -634,7 +636,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
         getNodeStore().unlinkNodes(getKey(), end.getName(), other.nodeReference());
     }
 
-    protected Constraint checkConstraints(List<Constraint> constraints, Map<String, BasicType> arguments) {
+    protected Constraint checkConstraints(List<Constraint> constraints, ParameterSet parameterSet, Map<String, BasicType> arguments) {
         try {
             getNode();
         } catch (NotFoundException e) {
@@ -642,7 +644,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
             return null;
         }
         for (Constraint constraint : constraints)
-            if (!isConstraintSatisfied(constraint, arguments))
+            if (!isConstraintSatisfied(constraint, parameterSet, arguments))
                 return constraint;
         return null;
     }
@@ -765,11 +767,11 @@ public class RuntimeObject extends StructuredRuntimeObject {
         return runtimeObjectToNodeReference();
     }
 
-    BasicType runBehavior(ExecutionContext context, Behavior behavior, BasicType... arguments) {
-        return context.getRuntime().runBehavior(this, "", (Activity) behavior, arguments);
+    BasicType runBehavior(ExecutionContext context, Behavior behavior, ParameterSet parameterSet, BasicType... arguments) {
+        return context.getRuntime().runBehavior(this, "", (Activity) behavior, parameterSet, arguments);
     }
 
-    BasicType runBehavioralFeatureBehavior(BehavioralFeature operation, BasicType... arguments) {
+    BasicType runBehavioralFeatureBehavior(BehavioralFeature operation, ParameterSet parameterSet, BasicType... arguments) {
         final Runtime runtime = getRuntime();
         if (operation instanceof Operation && ((Operation) operation).getInterface() != null)
             operation = FeatureUtils.findCompatibleOperation(runtime.getRepository(),
@@ -779,7 +781,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
             return null;
         String frameName = operation.getQualifiedName();
         Activity behavior = (Activity) operation.getMethods().get(0);
-        BasicType result = runtime.runBehavior(this, frameName, behavior, arguments);
+        BasicType result = runtime.runBehavior(this, frameName, behavior, parameterSet, arguments);
         return result;
     }
 
@@ -887,15 +889,15 @@ public class RuntimeObject extends StructuredRuntimeObject {
                      * start executing.
                      */
                     if (currentState instanceof State && ((State) currentState).getExit() != null)
-                        runBehavior(getCurrentContext(), ((State) currentState).getExit());
+                        runBehavior(getCurrentContext(), ((State) currentState).getExit(), null);
                     if (transition.getEffect() != null)
-                        runBehavior(getCurrentContext(), transition.getEffect());
+                        runBehavior(getCurrentContext(), transition.getEffect(), null);
                     Vertex newState = transition.getTarget();
                     setPropertyValue(stateProperty, new StateMachineType(newState));
                     if (newState instanceof State && ((State) newState).getEntry() != null)
-                        runBehavior(getCurrentContext(), ((State) newState).getEntry());
+                        runBehavior(getCurrentContext(), ((State) newState).getEntry(), null);
                     if (newState instanceof State && ((State) newState).getDoActivity() != null)
-                        runBehavior(getCurrentContext(), ((State) newState).getDoActivity());
+                        runBehavior(getCurrentContext(), ((State) newState).getDoActivity(), null);
                     return;
                 }
         }

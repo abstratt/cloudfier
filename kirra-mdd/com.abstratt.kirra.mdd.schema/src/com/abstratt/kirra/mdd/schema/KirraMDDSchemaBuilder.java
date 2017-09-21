@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -25,6 +28,7 @@ import com.abstratt.kirra.Namespace;
 import com.abstratt.kirra.Operation;
 import com.abstratt.kirra.Operation.OperationKind;
 import com.abstratt.kirra.Parameter;
+import com.abstratt.kirra.ParameterSet;
 import com.abstratt.kirra.Property;
 import com.abstratt.kirra.Relationship;
 import com.abstratt.kirra.Schema;
@@ -294,18 +298,33 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
         }
 
         basicOperation.setOwner(KirraHelper.convertType((Type) umlOperation.getOwner()));
-        List<Parameter> entityOperationParameters = new ArrayList<Parameter>();
+        List<ParameterSet> parameterSets = new LinkedList<>();
+        KirraHelper.getParameterSets(umlOperation).forEach(parameterSet -> {
+            final ParameterSet newSet = new ParameterSet();
+            newSet.setOwner(basicOperation);
+            newSet.setParameters(KirraHelper.getParameters(parameterSet));
+            setName(parameterSet, newSet);
+            parameterSets.add(newSet);
+        });
+        Set<String> allParameterSetNames = parameterSets.stream().map(it -> it.getName()).collect(Collectors.toSet());
+        basicOperation.setParameterSets(parameterSets);
+        List<Parameter> operationParameters = new ArrayList<Parameter>();
         for (org.eclipse.uml2.uml.Parameter parameter : KirraHelper.getParameters(umlOperation)) {
-            final Parameter entityOperationParameter = new Parameter();
-            entityOperationParameter.setOwner(basicOperation.getOwner());
-            setName(parameter, entityOperationParameter);
-            entityOperationParameter.setRequired(KirraHelper.isRequired(parameter));
-            entityOperationParameter.setHasDefault(KirraHelper.hasDefault(parameter));
-            entityOperationParameter.setMultiple(KirraHelper.isMultiple(parameter));
-            setTypeInfo(entityOperationParameter, parameter.getType());
-            entityOperationParameters.add(entityOperationParameter);
+            final Parameter operationParameter = new Parameter();
+            operationParameter.setOwner(basicOperation.getOwner());
+            setName(parameter, operationParameter);
+            operationParameter.setRequired(KirraHelper.isRequired(parameter));
+            operationParameter.setHasDefault(KirraHelper.hasDefault(parameter));
+            operationParameter.setMultiple(KirraHelper.isMultiple(parameter));
+            operationParameter.setDirection(KirraHelper.getParameterDirection(parameter));
+            operationParameter.setEffect(KirraHelper.getParameterEffect(parameter));
+            List<String> parameterParameterSets = parameter.getParameterSets().stream().map(it->it.getName()).collect(Collectors.toList());
+            operationParameter.setParameterSets(parameterParameterSets);
+            operationParameter.setInAllSets(allParameterSetNames.isEmpty() || allParameterSetNames.equals(new LinkedHashSet<>(parameterParameterSets)));
+            setTypeInfo(operationParameter, parameter.getType());
+            operationParameters.add(operationParameter);
         }
-        basicOperation.setParameters(entityOperationParameters);
+        basicOperation.setParameters(operationParameters);
         return basicOperation;
     }
 

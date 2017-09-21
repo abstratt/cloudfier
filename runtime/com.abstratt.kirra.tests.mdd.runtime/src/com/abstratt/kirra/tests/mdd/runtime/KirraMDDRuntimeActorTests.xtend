@@ -82,7 +82,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         super.setupRuntime()
         
         val Instance newProfile0 = new Instance()
-        newProfile0.setEntityName("Profile")
+        newProfile0.setEntityName("UserProfile")
         newProfile0.setEntityNamespace("userprofile")
         newProfile0.setValue("username", "admin")
         newProfile0.setValue("password", "pass")
@@ -96,7 +96,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val createdUser0 = kirra.createInstance(newUser0)
         
         val Instance newProfile1 = new Instance()
-        newProfile1.setEntityName("Profile")
+        newProfile1.setEntityName("UserProfile")
         newProfile1.setEntityNamespace("userprofile")
         newProfile1.setValue("username", "peter.jones")
         newProfile1.setValue("password", "pass")
@@ -110,7 +110,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val createdUser1 = kirra.createInstance(newUser1)
         
         val Instance newProfile2 = new Instance()
-        newProfile2.setEntityName("Profile")
+        newProfile2.setEntityName("UserProfile")
         newProfile2.setEntityNamespace("userprofile")
         newProfile2.setValue("username", "john.ford")
         newProfile2.setValue("password", "pass")
@@ -124,7 +124,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val createdUser2 = kirra.createInstance(newUser2)
         
         val Instance newProfile3 = new Instance()
-        newProfile3.setEntityName("Profile")
+        newProfile3.setEntityName("UserProfile")
         newProfile3.setEntityNamespace("userprofile")
         newProfile3.setValue("username", "mary.jones")
         newProfile3.setValue("password", "pass")
@@ -138,7 +138,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val createdUser3 = kirra.createInstance(newUser3)
         
         val Instance newProfile4 = new Instance()
-        newProfile4.setEntityName("Profile")
+        newProfile4.setEntityName("UserProfile")
         newProfile4.setEntityNamespace("userprofile")
         newProfile4.setValue("username", "powerless")
         newProfile4.setValue("password", "pass")
