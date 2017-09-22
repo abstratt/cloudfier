@@ -6,6 +6,7 @@ import mdd_types;
 
 class UserProfile specializes SystemUser
     allow none;
+    (* Username is an email *)
     readonly id attribute username : Email;
     private attribute password : String;
 /*
