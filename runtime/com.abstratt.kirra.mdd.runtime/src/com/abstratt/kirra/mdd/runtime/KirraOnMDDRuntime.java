@@ -941,12 +941,11 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         throw new IllegalArgumentException(value + " is of an unexpected type: " + sourceType.getQualifiedName());
     }
 
-    
     private List<?> convertFromCollectionType(CollectionType value, Classifier sourceType, DataProfile dataProfile) {
         if (sourceType instanceof Class || sourceType instanceof DataType) {
-            List<Tuple> result = new ArrayList<Tuple>(value.getBackEnd().size());
+            List<Object> result = new ArrayList<Object>(value.getBackEnd().size());
             for (BasicType currentRuntimeObject : value.getBackEnd())
-                result.add(convertFromRuntimeObject((RuntimeObject) currentRuntimeObject, dataProfile));
+                result.add(convertFromBasicType((BasicType) currentRuntimeObject, sourceType, dataProfile));
             return result;
         }
         List<Object> result = new ArrayList<Object>(value.getBackEnd().size());
