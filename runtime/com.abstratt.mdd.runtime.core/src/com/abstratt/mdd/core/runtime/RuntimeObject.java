@@ -838,17 +838,22 @@ public class RuntimeObject extends StructuredRuntimeObject {
 
     private BasicType getSlotValue(Property attribute, Map<String, Object> properties) {
         attribute = mapToActualAttribute(attribute);
-        Object value = properties.get(nodeProperty(attribute));
+        String nodeProperty = nodeProperty(attribute);
+        Object value = properties.get(nodeProperty);
+        if (attribute.getType() instanceof StateMachine)
+            return getStateMachineValue((StateMachine) attribute.getType(), value);
+        if (attribute.getType() instanceof Enumeration)
+            return getEnumerationValue((Enumeration) attribute.getType(), value.toString());
+        if (value == null) {
+            boolean valueFound = properties.containsKey(nodeProperty);
+            return valueFound || attribute.getDefaultValue() == null ? 
+                    null :
+                    RuntimeUtils.extractValueFromSpecification(this, attribute.getDefaultValue());
+        }
         if (value instanceof BasicType)
             // seen this when dealing with anonymously typed objects (object
             // literals) with a slot that is a full Class instance
             return (BasicType) value;
-        if (attribute.getType() instanceof StateMachine)
-            return getStateMachineValue((StateMachine) attribute.getType(), value);
-        if (value == null)
-            return null;
-        if (attribute.getType() instanceof Enumeration)
-            return getEnumerationValue((Enumeration) attribute.getType(), value.toString());
         return PrimitiveType.fromValue(attribute.getType(), value);
     }
 
