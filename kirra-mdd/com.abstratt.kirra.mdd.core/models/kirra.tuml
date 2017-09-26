@@ -1,6 +1,15 @@
 profile kirra;
 
-stereotype Entity extends UML::Class end;
+
+abstract stereotype NamedElement extends UML::NamedElement
+    property label : String[0,1];
+    property description : String[0,1];
+end;
+
+stereotype Property extends UML::Property specializes NamedElement
+end;
+
+stereotype Entity extends UML::Class specializes NamedElement end;
 
 (*
     A service is a part of a component that is not an entity.

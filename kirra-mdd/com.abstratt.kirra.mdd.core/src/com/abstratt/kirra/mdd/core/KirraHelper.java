@@ -769,6 +769,9 @@ public class KirraHelper {
     }
     
     public static String getLabel(org.eclipse.uml2.uml.NamedElement sourceElement) {
+        String explicitLabel = (String) StereotypeUtils.getValue(sourceElement, "kirra::Property", "label");
+        if (explicitLabel != null)
+            return explicitLabel;
         String symbol = sourceElement.getName();
         return getLabelFromSymbol(symbol);
     }

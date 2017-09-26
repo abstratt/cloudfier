@@ -1,11 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <uml:Profile xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xmi:id="_0" name="kirra" URI="models/kirra" metamodelReference="_packageImport.0">
   <eAnnotations xmi:id="_com.abstratt2Fmdd2F" source="com.abstratt/mdd/">
-    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2017/09/22 03:29:12 686 -0300"/>
+    <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2017/09/25 10:51:06 446 -0300"/>
   </eAnnotations>
   <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML">
     <contents xmi:type="ecore:EPackage" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra" name="kirra" nsURI="models/kirra" nsPrefix="kirra">
-      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity" name="Entity">
+      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement" name="NamedElement" abstract="true">
+        <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="NamedElement"/>
+        <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement-label" name="label" ordered="false">
+          <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/uml2/5.0.0/Types#//String"/>
+        </eStructuralFeatures>
+        <eStructuralFeatures xmi:type="ecore:EAttribute" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement-description" name="description" ordered="false">
+          <eType xmi:type="ecore:EDataType" href="http://www.eclipse.org/uml2/5.0.0/Types#//String"/>
+        </eStructuralFeatures>
+        <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement-base_NamedElement" name="base_NamedElement" ordered="false" lowerBound="1">
+          <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//NamedElement"/>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Property" name="Property" eSuperTypes="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement">
+        <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Property-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="Property"/>
+        <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Property-base_Property" name="base_Property" ordered="false" lowerBound="1">
+          <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//Property"/>
+        </eStructuralFeatures>
+      </eClassifiers>
+      <eClassifiers xmi:type="ecore:EClass" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity" name="Entity" eSuperTypes="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-NamedElement">
         <eAnnotations xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML" references="Entity"/>
         <eStructuralFeatures xmi:type="ecore:EReference" xmi:id="_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-kirra-Entity-base_Class" name="base_Class" ordered="false" lowerBound="1">
           <eType xmi:type="ecore:EClass" href="http://www.eclipse.org/uml2/5.0.0/UML#//Class"/>
@@ -70,7 +88,29 @@
   <packageImport xmi:id="_packageImport.0">
     <importedPackage xmi:type="uml:Model" href="pathmap://UML_METAMODELS/UML.metamodel.uml#_0"/>
   </packageImport>
+  <packagedElement xmi:type="uml:Stereotype" xmi:id="NamedElement" name="NamedElement" isAbstract="true">
+    <ownedAttribute xmi:id="NamedElement-label" name="label">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="NamedElement-label-_lowerValue"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="NamedElement-label-_upperValue" value="1"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:id="NamedElement-description" name="description">
+      <type xmi:type="uml:PrimitiveType" href="pathmap://UML_LIBRARIES/UMLPrimitiveTypes.library.uml#String"/>
+      <lowerValue xmi:type="uml:LiteralInteger" xmi:id="NamedElement-description-_lowerValue"/>
+      <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="NamedElement-description-_upperValue" value="1"/>
+    </ownedAttribute>
+    <ownedAttribute xmi:id="NamedElement-base_NamedElement" name="base_NamedElement" association="NamedElement_NamedElement">
+      <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#NamedElement"/>
+    </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Stereotype" xmi:id="Property" name="Property">
+    <generalization xmi:id="Property-_generalization.0" general="NamedElement"/>
+    <ownedAttribute xmi:id="Property-base_Property" name="base_Property" association="Property_Property">
+      <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Property"/>
+    </ownedAttribute>
+  </packagedElement>
   <packagedElement xmi:type="uml:Stereotype" xmi:id="Entity" name="Entity">
+    <generalization xmi:id="Entity-_generalization.0" general="NamedElement"/>
     <ownedAttribute xmi:id="Entity-base_Class" name="base_Class" association="Class_Entity">
       <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Class"/>
     </ownedAttribute>
@@ -124,6 +164,12 @@
     <ownedAttribute xmi:id="BusinessRuleViolation-base_Classifier" name="base_Classifier" association="Classifier_BusinessRuleViolation">
       <type xmi:type="uml:Class" href="pathmap://UML_METAMODELS/UML.metamodel.uml#Classifier"/>
     </ownedAttribute>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Extension" xmi:id="NamedElement_NamedElement" name="NamedElement_NamedElement" memberEnd="NamedElement_NamedElement-extension_NamedElement NamedElement-base_NamedElement">
+    <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="NamedElement_NamedElement-extension_NamedElement" name="extension_NamedElement" type="NamedElement" aggregation="composite" association="NamedElement_NamedElement"/>
+  </packagedElement>
+  <packagedElement xmi:type="uml:Extension" xmi:id="Property_Property" name="Property_Property" memberEnd="Property_Property-extension_Property Property-base_Property">
+    <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Property_Property-extension_Property" name="extension_Property" type="Property" aggregation="composite" association="Property_Property"/>
   </packagedElement>
   <packagedElement xmi:type="uml:Extension" xmi:id="Class_Entity" name="Class_Entity" memberEnd="Class_Entity-extension_Entity Entity-base_Class">
     <ownedEnd xmi:type="uml:ExtensionEnd" xmi:id="Class_Entity-extension_Entity" name="extension_Entity" type="Entity" aggregation="composite" association="Class_Entity"/>
