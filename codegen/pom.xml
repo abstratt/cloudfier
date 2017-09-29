@@ -14,7 +14,7 @@
 	<modules>
         <module>com.abstratt.kirra.mdd.target.base</module>  
 		<module>com.abstratt.mdd.target.core</module>
-        <module>com.abstratt.mdd.target.mean</module>
+        <!-- >module>com.abstratt.mdd.target.mean</module-->
         <module>com.abstratt.mdd.target.doc</module>
         <module>com.abstratt.mdd.target.jee</module>          
         <module>com.abstratt.mdd.target.jse</module>                
