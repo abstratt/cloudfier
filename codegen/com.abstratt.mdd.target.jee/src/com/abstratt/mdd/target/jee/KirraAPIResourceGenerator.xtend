@@ -11,6 +11,7 @@ import org.eclipse.uml2.uml.Type
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ClassifierUtils.*
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import org.eclipse.uml2.uml.NamedElement
 
 class KirraAPIResourceGenerator extends AbstractGenerator {
     
@@ -35,10 +36,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "topLevel": «entity.topLevel»,
             "role": «entity.isRole»,
             "namespace": "«typeRef.namespace»",
-            "description": "«entity.description.removeNewLines»",
-            "label": "«KirraHelper.getLabel(entity)»",
-            "name": "«entity.name»",
-            "symbol": "«entity.symbol»",
+            «entity.namedElementFragment»,
             "uri": "${baseUri}entities/«typeRef.fullName»",
             "fullName": "«typeRef.fullName»",
             "extentUri": "${baseUri}entities/«typeRef.fullName»/instances/",
@@ -85,19 +83,36 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "initializable": «property.initializable»,
             "hasDefault": «property.defaultValue != null»,
             «IF property.type.enumeration»
-            "enumerationLiterals": {
-                «property.type.enumerationLiterals.entrySet.map['''"«it.key»": "«it.value»"'''].join(',\n')»
-            },
+            «property.type.enumerationRepresentation»
             «ENDIF»
             "multiple": «property.multivalued»,
             "required": «property.required»,
             "typeRef": «getTypeRefRepresentation(property.type)»,
             "owner": «owner.typeRefRepresentation»,
-            "description": "«property.description.removeNewLines»",
-            "label": "«KirraHelper.getLabel(property)»",
-            "name": "«property.name»",
-            "symbol": "«property.symbol»"
+            «property.getNamedElementFragment»
         }
+        '''
+    }
+    
+    def CharSequence getEnumerationRepresentation(Type enumerationType) {
+        '''
+        "enumerationLiterals": {
+            «enumerationType.enumerationLiterals.map[
+                '''"«it.name»": {
+                       «it.getNamedElementFragment»
+                   }
+                '''
+            ].join(',\n')»
+        },
+        '''
+    }
+    
+    def CharSequence getNamedElementFragment(NamedElement element) {
+        return '''
+        "description": "«element.description.removeNewLines»",
+        "label": "«KirraHelper.getLabel(element)»",
+        "name": "«element.name»",
+        "symbol": "«element.symbol»"
         '''
     }
     
@@ -128,10 +143,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
 	      "required": «relationship.required»,
 	      "typeRef": «getTypeRefRepresentation(relationship.type)»,
 	      "owner": «owner.typeRefRepresentation»,
-	      "description": "«relationship.description.removeNewLines»",
-	      "label": "«KirraHelper.getLabel(relationship)»",
-	      "name": "«relationship.name»",
-	      "symbol": "«relationship.symbol»"
+	      «relationship.namedElementFragment»
 	    }
         '''
     }
@@ -152,10 +164,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "typeRef": «getTypeRefRepresentation(operation.getReturnResult().type)»,
             «ENDIF»
             "owner": «owner.typeRefRepresentation»,
-            "description": "«operation.description.removeNewLines»",
-            "label": "«KirraHelper.getLabel(operation)»",
-            "name": "«operation.name»",
-            "symbol": "«operation.symbol»"
+            «operation.namedElementFragment»
         }
         '''
     }
@@ -165,18 +174,13 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
         {
             "hasDefault": «KirraHelper.hasDefault(parameter)»,
             «IF parameter.type.enumeration»
-            "enumerationLiterals": {
-                «parameter.type.enumerationLiterals.entrySet.map['''"«it.key»": "«it.value»"'''].join(',\n')»
-            },
+            «parameter.type.enumerationRepresentation»
             «ENDIF»
             "multiple": «KirraHelper.isMultiple(parameter)»,
             "required": «KirraHelper.isRequired(parameter)»,
             "typeRef": «getTypeRefRepresentation(parameter.type)»,
             "owner": «owner.typeRefRepresentation»,
-            "description": "«parameter.description.removeNewLines»",
-            "label": "«KirraHelper.getLabel(parameter)»",
-            "name": "«parameter.name»",
-            "symbol": "«parameter.symbol»"
+            «parameter.namedElementFragment»
         }
         '''
 	}

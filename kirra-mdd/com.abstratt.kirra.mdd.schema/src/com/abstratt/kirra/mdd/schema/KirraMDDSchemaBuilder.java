@@ -22,6 +22,7 @@ import org.eclipse.uml2.uml.Type;
 import org.eclipse.uml2.uml.VisibilityKind;
 
 import com.abstratt.kirra.Entity;
+import com.abstratt.kirra.EnumerationLiteral;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.NamedElement;
 import com.abstratt.kirra.Namespace;
@@ -336,8 +337,21 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
     }
 
     private void setTypeInfo(com.abstratt.kirra.TypedElement<?> typedElement, Type umlType) {
-        if (umlType instanceof Enumeration || umlType instanceof StateMachine)
-            typedElement.setEnumerationLiterals(KirraHelper.getEnumerationLiterals(umlType));
+        if (umlType == null)
+            return;
+        if (KirraHelper.isEnumeration(umlType))
+            typedElement.setEnumerationLiterals(KirraHelper
+                    .getEnumerationLiterals(umlType)
+                    .stream()
+                    .map(it -> getEnumerationLiteral(it))
+                    .collect(Collectors.toMap(it -> it.getName(), it -> it)));
         typedElement.setTypeRef(KirraHelper.convertType(umlType));
     }
+    
+    private EnumerationLiteral getEnumerationLiteral(org.eclipse.uml2.uml.NamedElement element) {
+        EnumerationLiteral literal = new EnumerationLiteral();
+        setName(element, literal);
+        return literal;
+    }
+
 }

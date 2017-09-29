@@ -61,7 +61,6 @@ import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.MDDUtil;
-import com.abstratt.mdd.core.util.NamedElementUtils;
 import com.abstratt.mdd.core.util.StateMachineUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
 import com.abstratt.pluginutils.NodeSorter;
@@ -942,19 +941,17 @@ public class KirraHelper {
         return get(umlType, "isEnumeration", () ->
             umlType instanceof Enumeration || umlType instanceof StateMachine);
     }
-    
-    public static Map<String, String> getEnumerationLiterals(final Type enumOrStateMachine) {
+
+    public static Collection<? extends NamedElement> getEnumerationLiterals(final Type enumOrStateMachine) {
         return get(enumOrStateMachine, "getEnumerationLiterals", () -> {
-        	List<String> names;
+        	List<? extends NamedElement> literalElements; 
             if (enumOrStateMachine instanceof Enumeration)
-            	names = NamedElementUtils.getNames(((Enumeration) enumOrStateMachine).getOwnedLiterals());
+                literalElements = ((Enumeration) enumOrStateMachine).getOwnedLiterals();
 			else if (enumOrStateMachine instanceof StateMachine)
-                names = NamedElementUtils.getNames(StateMachineUtils.getStates(((StateMachine) enumOrStateMachine)));
+			    literalElements = StateMachineUtils.getStates(((StateMachine) enumOrStateMachine));
 			else
-				names = Arrays.<String>asList();
-            Map<String, String> result = new LinkedHashMap<>();
-            names.forEach(name -> result.put(name, getLabelFromSymbol(name)));
-			return result ;
+			    literalElements = Arrays.asList();
+			return literalElements;
         });
     }
     
