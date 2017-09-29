@@ -76,7 +76,7 @@
       <plugin id="com.abstratt.mdd.target.engine.gstring"/>
       <plugin id="com.abstratt.mdd.target.jee"/>
       <plugin id="com.abstratt.mdd.target.jse"/>
-      <plugin id="com.abstratt.mdd.target.mean"/>
+      <!--plugin id="com.abstratt.mdd.target.mean"/-->
       <plugin id="com.abstratt.blobstore"/>
       <plugin id="com.abstratt.simpleblobstore"/>
       <plugin id="com.abstratt.nodestore"/>
