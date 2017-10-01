@@ -35,7 +35,7 @@ public class KirraBasicAuthenticator extends ChallengeAuthenticator implements K
     @Override
     protected int unauthenticated(Request request, Response response) {
     	super.unauthenticated(request, response);
-    	ResourceHelper.ensure(!PROTECTED.get() || !LOGIN_REQUIRED.get(), "Login required", Status.FORBIDDEN);
+    	ResourceHelper.ensure(!PROTECTED.get() || !LOGIN_REQUIRED.get(), "login_required", Status.FORBIDDEN);
     	return CONTINUE; 
     }
 }

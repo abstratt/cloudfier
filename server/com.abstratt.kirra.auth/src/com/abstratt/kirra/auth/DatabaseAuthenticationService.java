@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import com.abstratt.kirra.Entity;
 import com.abstratt.kirra.Instance;
+import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.TypeRef;
 import com.abstratt.kirra.TypeRef.TypeKind;
@@ -29,10 +30,10 @@ public class DatabaseAuthenticationService implements AuthenticationService {
 		Entity userEntity = getUserEntity(repository);
 		if (userEntity == null)
 			return null;
-		List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "UserProfile", false);
-		if (!found.isEmpty() && password.equals(found.get(0).getValue("password")))
-			return found.get(0);
-		return null;
+	    List<Instance> found = repository.filterInstances(Collections.singletonMap("username", Collections.singletonList(username)), "userprofile", "UserProfile", false);
+	    if (!found.isEmpty() && password.equals(found.get(0).getValue("password")))
+	        return found.get(0);
+	    return null;
 	}
 	
 	@Override

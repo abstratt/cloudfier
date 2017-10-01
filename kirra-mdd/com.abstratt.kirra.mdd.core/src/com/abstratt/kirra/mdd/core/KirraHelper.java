@@ -1089,5 +1089,4 @@ public class KirraHelper {
             return OperationKind.Constructor;
         return null;
     }
-
 }

@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.StopWatch;
@@ -20,6 +21,7 @@ import org.restlet.security.User;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
+import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.kirra.mdd.core.KirraMDDConstants;
 import com.abstratt.kirra.mdd.runtime.KirraOnMDDRuntime;
 import com.abstratt.kirra.rest.common.KirraContext;
@@ -56,10 +58,7 @@ public class KirraRepositoryFilter extends Filter {
                     Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
                     KirraContext.setInstanceManagement(kirraRepository);
                     KirraContext.setSchemaManagement(kirraRepository);
-                    boolean allowAnonymous = Boolean.valueOf(context.getProperties().getProperty(KirraMDDConstants.ALLOW_ANONYMOUS));
-                    boolean isLoginAllowed = Boolean.valueOf(context.getProperties().getProperty(KirraMDDConstants.LOGIN_ALLOWED));
-                    boolean isLoginRequired = !allowAnonymous && isLoginAllowed;
-					KirraContext.setOptions(new KirraContext.Options(isLoginRequired, isLoginAllowed));
+					KirraContext.setOptions(getApplicationOptions(context.getProperties()));
                     URI baseURI = KirraReferenceUtils.getBaseReference(request, request.getResourceRef(),
                             Paths.API_V2).toUri();
 					KirraContext.setBaseURI(baseURI);
@@ -100,6 +99,13 @@ public class KirraRepositoryFilter extends Filter {
             handleInternalError(response, e);
         }
         return Filter.STOP;
+    }
+    
+    private static KirraContext.Options getApplicationOptions(Properties properties) {
+        boolean allowAnonymous = Boolean.valueOf(properties.getProperty(KirraMDDConstants.ALLOW_ANONYMOUS));
+        boolean isLoginAllowed = Boolean.valueOf(properties.getProperty(KirraMDDConstants.LOGIN_ALLOWED));
+        boolean isLoginRequired = !allowAnonymous && isLoginAllowed;
+        return new KirraContext.Options(isLoginRequired, isLoginAllowed);
     }
 
     protected String getWorkspace(Request request) {

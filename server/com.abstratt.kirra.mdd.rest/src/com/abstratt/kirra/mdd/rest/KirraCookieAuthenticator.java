@@ -103,7 +103,7 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     @Override
     protected int unauthenticated(Request request, Response response) {
     	super.unauthenticated(request, response);
-    	ResourceHelper.ensure(!isProtected() || !isLoginRequired(), "Login required", Status.UNAUTHORIZED);
+    	ResourceHelper.ensure(!isProtected() || !isLoginRequired(), "login_required", Status.UNAUTHORIZED);
     	return CONTINUE; 
     }
     @Override

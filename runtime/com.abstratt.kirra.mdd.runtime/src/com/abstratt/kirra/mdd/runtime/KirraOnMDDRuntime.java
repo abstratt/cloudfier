@@ -40,7 +40,6 @@ import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.EnumerationLiteral;
 import org.eclipse.uml2.uml.MultiplicityElement;
 import org.eclipse.uml2.uml.Operation;
-import org.eclipse.uml2.uml.ParameterDirectionKind;
 import org.eclipse.uml2.uml.ParameterSet;
 import org.eclipse.uml2.uml.Reception;
 import org.eclipse.uml2.uml.Signal;
@@ -1111,12 +1110,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         try {
             return PrimitiveType.convertToBasicType(targetType, value);
         } catch (ValueConverter.ConversionException e) {
-            throw new KirraException(e.toString(), e, Kind.VALIDATION, targetElement.getName(), null);
+            log.debug("Error converting value: " + value, e);
+            throw new KirraException(e.getMessage(), null, Kind.VALIDATION, targetElement.getName(), null);
         }
     }
 
     private CollectionType convertToCollectionType(Collection<?> values, MultiplicityElement targetElement) {
-        Classifier targetType = (Classifier) ((TypedElement) targetElement).getType();
         CollectionType targetCollection = CollectionType.createCollectionFor(targetElement);
         for (Object value : values)
             targetCollection.add(convertToBasicType(value, (org.eclipse.uml2.uml.MultiplicityElement) targetElement));
