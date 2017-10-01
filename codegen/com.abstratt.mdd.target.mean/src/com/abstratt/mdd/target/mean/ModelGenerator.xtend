@@ -699,7 +699,7 @@ class ModelGenerator extends AsyncJSGenerator {
 //        if (attribute.required)
 //            attributeDef.put('required', true)
         if (attribute.type.enumeration)
-            attributeDef.put('enum', attribute.type.enumerationLiterals.keySet.map['''"«it»"'''])
+            attributeDef.put('enum', attribute.type.enumerationLiterals.map['''"«it.name»"'''])
         attributeDef.put('"default"', 
             if (attribute.defaultValue != null) 
                 attribute.defaultValue.generateValue
