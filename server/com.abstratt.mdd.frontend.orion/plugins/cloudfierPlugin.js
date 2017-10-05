@@ -412,12 +412,16 @@ var shellDBSnapshot = function(args, context) {
     if (!cwd.indexOf('/file/') == 0) {
         throw Error("Cannot run from the root. CD into a project directory before running this command.");
     }
+    var snapshotPath = args.output && args.output.file && args.output.file.path || 'data.json';
+    if (snapshotPath.indexOf('.') < 0) {
+        snapshotPath = snapshotPath + '.json'
+    }
     var url = ("/services/api/" + locationToWorkspace(cwd) + "/data").replace(/\/+/g,'/');
     return dojo.xhrGet({
          handleAs: 'text',
          url: url,
          load: function(result) {
-             var result = {path: "data.json", isDirectory: false, blob: new Blob([result.toString()])};
+             var result = {path: snapshotPath, isDirectory: false, blob: new Blob([result.toString()])};
              console.log(result);
              return result;
          },
@@ -533,9 +537,10 @@ var shellAppDeploy = function(args, context) {
 
 var shellDbDeploy = function(args, context, message) {
     var projectPath = buildProjectPath(args, context);
-    message = (message || "") + "\nDatabase was reset\n"
-    var appName = locationToWorkspace(projectPath)
-    var url = "/services/api/" + appName + "/data";
+    var snapshotFile = (args.snapshot && args.snapshot.file.path);
+    message = (message || "") + "\nDatabase was reset\n";
+    var appName = locationToWorkspace(projectPath);
+    var url = "/services/api/" + appName + "/data" + (snapshotFile ? "?snapshot=" + snapshotFile : "");
     return dojo.xhrPost({
          postData: '',
          handleAs: 'json',
@@ -702,6 +707,12 @@ provider.registerServiceProvider("orion.shell.command", { callback: shellCreateP
 provider.registerServiceProvider("orion.shell.command", { callback: shellDBSnapshot }, {   
     name: "cloudfier db-snapshot",
     description: "Fetches a snapshot of the current application's database and stores it in as a data.json file in the current directory",
+    parameters: [{
+        name: "output",
+        type: "file",
+        description: "file to generate snapshot into"
+    }],
+    
     returnType: "file"
 });
 
@@ -760,6 +771,10 @@ provider.registerServiceProvider("orion.shell.command", { callback: shellDbDeplo
             name: "application",
             type: "file",
             description: "Application to reset the database for"
+        },{
+            name: "snapshot",
+            type: "file",
+            description: "Name of the snapshot file to deploy"
         }],
         returnType: "string"
     }
