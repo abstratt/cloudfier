@@ -680,8 +680,10 @@ public class RuntimeObject extends StructuredRuntimeObject {
         return ctx;
     }
 
-    protected EnumerationType getEnumerationValue(Enumeration enumeration, String value) {
-        EnumerationLiteral literal = enumeration.getOwnedLiteral(value);
+    protected EnumerationType getEnumerationValue(Enumeration enumeration, Object value) {
+        if (value == null)
+            return null;
+        EnumerationLiteral literal = enumeration.getOwnedLiteral(value.toString());
         if (literal == null)
             // could mask an invalid state due to refactor/rename of literals
             // (and what if the property does not admit nulls?)
@@ -843,7 +845,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
         if (attribute.getType() instanceof StateMachine)
             return getStateMachineValue((StateMachine) attribute.getType(), value);
         if (attribute.getType() instanceof Enumeration)
-            return getEnumerationValue((Enumeration) attribute.getType(), value.toString());
+            return getEnumerationValue((Enumeration) attribute.getType(), value);
         if (value == null) {
             boolean valueFound = properties.containsKey(nodeProperty);
             return valueFound || attribute.getDefaultValue() == null ? 
