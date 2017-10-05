@@ -1,7 +1,10 @@
 package com.abstratt.kirra.mdd.rest.impl.v1.resources;
 
 import java.lang.reflect.Type;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
+import java.util.Optional;
 
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
@@ -25,6 +28,8 @@ import com.google.gson.JsonSerializer;
 public class DataResource extends AbstractKirraRepositoryResource {
     @Post
     public Representation create(Representation noneExpected) {
+        Path snapshotFileName = Optional.ofNullable(getQueryValue("snapshot")).map(it -> Paths.get(it)).orElse(DataPopulator.DEFAULT_SNAPSHOT_PATH);
+        ResourceUtils.ensure(!snapshotFileName.isAbsolute(), "Relative path expected: " + snapshotFileName, Status.CLIENT_ERROR_BAD_REQUEST);
         Repository repo = getRepository();
         if (Boolean.parseBoolean(repo.getProperties().getProperty("mdd.isLibrary"))) {
             getResponse().setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -32,7 +37,7 @@ public class DataResource extends AbstractKirraRepositoryResource {
                     MediaType.APPLICATION_JSON);
         }
         repo.initialize();
-        DataPopulator populator = new DataPopulator(repo);
+        DataPopulator populator = new DataPopulator(repo, snapshotFileName);
         int status = populator.populate();
         ResourceUtils.ensure(status >= 0, "Failure populating the database, check the data sample", Status.CLIENT_ERROR_BAD_REQUEST);
         return new StringRepresentation("{\"success\": true, \"processed\": " + status + " }", MediaType.APPLICATION_JSON);
