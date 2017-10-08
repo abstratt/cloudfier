@@ -14,7 +14,7 @@ public class SimpleBlobStoreCatalog implements IBlobStoreCatalog {
     
     static final String BLOBSTORE_FILE_BASE_KEY = "blobstore.file.base";
 
-    private static final String BLOBSTORE_FILE_BASE = System.getProperty(BLOBSTORE_FILE_BASE_KEY, System.getProperty("java.io.tmpdir"));
+    private static final String BLOBSTORE_FILE_BASE = System.getProperty(BLOBSTORE_FILE_BASE_KEY, System.getProperty("java.io.tmpdir") + "/" + SimpleBlobStoreCatalog.class.getPackage().getName());
 
     protected static final Path REPOSITORY_ROOT = computeRepositoryDataRoot();
 
