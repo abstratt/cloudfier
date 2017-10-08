@@ -685,7 +685,7 @@ public class SQLGenerator {
             return "bigint";
         if ("Double".equals(name))
             return "numeric";
-        if ("String".equals(name) || "Memo".equals(name))
+        if ("String".equals(name) || "Memo".equals(name) || "Email".equals(name))
             return "varchar";
         if ("Boolean".equals(name))
             return "boolean";
