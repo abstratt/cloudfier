@@ -1,6 +1,7 @@
 package com.abstratt.kirra.tests.mdd.runtime;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -20,6 +21,11 @@ import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.ByteArrayPartSource;
+import org.apache.commons.httpclient.methods.multipart.FilePart;
+import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
+import org.apache.commons.httpclient.methods.multipart.Part;
+import org.apache.commons.httpclient.methods.multipart.PartSource;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.CoreException;
 import org.junit.Assert;
@@ -65,6 +71,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "    attribute myClass3 : MyClass3[0,1];\n";
         model += "    attribute myClass2 : MyClass2[0,1];\n";
         model += "    composition myClass4s : MyClass4[*] opposite parent;\n";
+        model += "    attribute myImage : Picture[0,1];\n";
         model += "end;\n";
         model += "class MyClass2\n";
         model += "    attribute attr2 : String[0,1];\n";
@@ -88,7 +95,6 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "    attribute attr6 : String[0,1];\n";
         model += "    attribute optionalClass1 : MyClass1[0,1];\n";
         model += "end;\n";
-        
         model += "end.";
         globalModel = model;
     }
@@ -235,6 +241,45 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         TestCase.assertEquals("The answer is", values.get("attr1").textValue());
         TestCase.assertEquals(42L, values.get("attr2").asLong());
     }
+    
+    public void testCreateBlob() throws CoreException, IOException {
+        String model = "";
+        model += "package mypackage;\n";
+        model += "apply kirra;\n";
+        model += "import base;\n";
+        model += "class MyClass1\n";
+        model += "    attribute attr1 : String;\n";
+        model += "    attribute pictureAttr : Picture;\n";
+        model += "end;\n";
+        model += "end.";
+
+        buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
+
+        Instance created = RepositoryService.DEFAULT.runTask(getRepositoryURI(), resource -> {
+            Repository repository = resource.getFeature(Repository.class);
+            Instance instance = repository.newInstance("mypackage", "MyClass1");
+            instance.setValue("attr1", "Some value");
+            return repository.createInstance(instance);
+        });
+        
+        String instanceUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.getObjectId()).replace("{application}", getName()));
+        ObjectNode withoutBlob = executeJsonMethod(200, new GetMethod(instanceUri));
+        assertNull(withoutBlob.get("values").get("pictureAttr"));
+        
+        PostMethod addBlobMethod = new PostMethod(resolveApplicationURI(Paths.INSTANCE_BLOB_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.getObjectId()).replace("{propertyName}", "pictureAttr").replace("{application}", getName())));
+        PartSource payload = new ByteArrayPartSource("file.txt", "some content".getBytes("UTF-8"));
+        Part attachment = new FilePart("dummy", payload, "application/json", "UTF-8");
+        addBlobMethod.setRequestEntity(new MultipartRequestEntity(new Part[] { attachment }, addBlobMethod.getParams()));  
+
+        ObjectNode blob = (ObjectNode) executeJsonMethod(200, addBlobMethod);
+        assertNotNull(blob);
+        assertNotNull(blob.get("token"));
+        assertEquals(payload.getLength(), blob.get("contentLength").asInt());
+        
+        ObjectNode withBlob = executeJsonMethod(200, new GetMethod(instanceUri));
+        assertNotNull(withBlob.get("values").get("pictureAttr"));
+        assertEquals(blob, withBlob.get("values").get("pictureAttr"));
+    }    
 
     public void testGetInstanceList() throws CoreException, IOException {
         String model = "";
@@ -422,6 +467,34 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
                 new GetMethod(jsonInstance1.get("uri").textValue()));
         TestCase.assertEquals("value 1a", retrieved.get("values").get("attr1").asText());
         TestCase.assertEquals("value 2a", retrieved.get("values").get("attr2").asText());
+    }
+
+    public void testUpdateInstance_Blob() throws CoreException, IOException {
+        List<Instance> created = testUpdateInstanceSetup();
+        
+        PostMethod addBlobMethod = new PostMethod(resolveApplicationURI(Paths.INSTANCE_BLOB_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{propertyName}", "myImage").replace("{application}", getName())));
+        Part attachment = new FilePart("dummy", new ByteArrayPartSource("file.txt", "some content".getBytes("UTF-8")), "application/json", "UTF-8");
+        addBlobMethod.setRequestEntity(new MultipartRequestEntity(new Part[] { attachment }, addBlobMethod.getParams()));  
+
+        executeJsonMethod(200, addBlobMethod);
+
+        ObjectNode retrieved = executeJsonMethod(200,
+                new GetMethod(resolveApplicationURI(Paths.INSTANCE_PATH.replace("{entityName}", "mypackage.MyClass1").replace("{objectId}", created.get(0).getObjectId()).replace("{application}", getName()))));
+        
+        // a blob reference was found
+        assertNotNull(retrieved.get("values").get("myImage"));
+        
+        // update now
+        ((ObjectNode) retrieved.get("values")).set("attr1", new TextNode("new value"));
+        PutMethod putMethod = new PutMethod(retrieved.get("uri").textValue());
+        putMethod.setRequestEntity(new StringRequestEntity(retrieved.toString(), "application/json", "UTF-8"));
+
+        // blob reference should still be set
+        ObjectNode updated = (ObjectNode) executeJsonMethod(200, putMethod);
+        assertEquals("new value", updated.get("values").get("attr1").asText());
+        assertNotNull(updated.get("values").get("myImage"));
+        assertEquals(retrieved.get("values").get("myImage").get("token"), updated.get("values").get("myImage").get("token"));
+        
     }
     
     public void testUpdateInstance_ClearValue() throws CoreException, IOException {

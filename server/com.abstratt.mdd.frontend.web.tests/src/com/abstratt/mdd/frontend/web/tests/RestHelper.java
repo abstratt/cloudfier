@@ -129,7 +129,7 @@ public class RestHelper {
         PostMethod init = new PostMethod(getApiUri().resolve(Paths.DATA).toString());
         try {
             int result = httpClient.executeMethod(init);
-            Assert.assertTrue(result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
+            Assert.assertTrue("Result: " + result, result == HttpURLConnection.HTTP_OK || result == HttpURLConnection.HTTP_NOT_FOUND);
         } finally {
             init.releaseConnection();
         }

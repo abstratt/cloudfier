@@ -1144,15 +1144,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             // note that below we ignore attempts to modify read only properties/links
             // but allow them to be set on creation to support data snapshot loading 
             Classifier clazz = target.getRuntimeClass().getModelClassifier();
-            for (Entry<String, Object> entry : instance.getValues().entrySet()) {
-                org.eclipse.uml2.uml.Property attribute = FeatureUtils.findAttribute(clazz, entry.getKey(), false, true);
-                if (attribute == null)
-                    throw new KirraException("Attribute " + entry.getKey() + " does not exist", null, Kind.SCHEMA);
-                if (KirraHelper.isDerived(attribute) || !populating && !instance.isNew()
-                        && (KirraHelper.isReadOnly(attribute) || attribute.getType() instanceof StateMachine))
-                    continue;
-                target.setValue(attribute, convertToBasicType(entry.getValue(), attribute));
-            }
+            applyPropertyValues(instance.getValues(), target, clazz);
             for (Entry<String, Instance> entry : instance.getLinks().entrySet()) {
                 Relationship relationship = entity.getRelationship(entry.getKey());
                 if (relationship == null)
@@ -1178,6 +1170,18 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         } finally {
             if (first)
                 convertedToRuntimeObject.clear();
+        }
+    }
+
+    private void applyPropertyValues(Map<String, ? extends Object> instanceValues, RuntimeObject target, Classifier clazz) {
+        for (Entry<String, ? extends Object> entry : instanceValues.entrySet()) {
+            org.eclipse.uml2.uml.Property attribute = FeatureUtils.findAttribute(clazz, entry.getKey(), false, true);
+            if (attribute == null)
+                throw new KirraException("Attribute " + entry.getKey() + " does not exist", null, Kind.SCHEMA);
+            if (KirraHelper.isDerived(attribute) || !populating && target.isPersisted()
+                    && (KirraHelper.isReadOnly(attribute) || attribute.getType() instanceof StateMachine))
+                continue;
+            target.setValue(attribute, convertToBasicType(entry.getValue(), attribute));
         }
     }
 
@@ -1212,12 +1216,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
         final RuntimeClass runtimeClass = getRuntimeClass(instance);
         RuntimeObject target = runtimeClass.newInstance(false, false);
         Classifier clazz = target.getRuntimeClass().getModelClassifier();
-        for (Entry<String, Object> entry : instance.getValues().entrySet()) {
-            org.eclipse.uml2.uml.Property attribute = FeatureUtils.findAttribute(clazz, entry.getKey(), false, true);
-            if (attribute == null)
-                throw new KirraException("Attribute " + entry.getKey() + " does not exist", null, Kind.SCHEMA);
-            target.setValue(attribute, convertToBasicType(entry.getValue(), attribute));
-        }
+        applyPropertyValues(instance.getValues(), target, clazz);
         return target;
     }
 

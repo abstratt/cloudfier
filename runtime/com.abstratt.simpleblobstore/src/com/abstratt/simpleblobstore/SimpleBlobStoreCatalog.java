@@ -1,7 +1,6 @@
 package com.abstratt.simpleblobstore;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -15,7 +14,7 @@ public class SimpleBlobStoreCatalog implements IBlobStoreCatalog {
     
     static final String BLOBSTORE_FILE_BASE_KEY = "blobstore.file.base";
 
-    private static final String BLOBSTORE_FILE_BASE = System.getProperty(BLOBSTORE_FILE_BASE_KEY);
+    private static final String BLOBSTORE_FILE_BASE = System.getProperty(BLOBSTORE_FILE_BASE_KEY, System.getProperty("java.io.tmpdir"));
 
     protected static final Path REPOSITORY_ROOT = computeRepositoryDataRoot();
 

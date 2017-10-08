@@ -55,6 +55,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         KirraMDDRuntimeDataTests.model += "end;\n";
         KirraMDDRuntimeDataTests.model += "enumeration MyEnum value1; value2; value3; end;\n";
         KirraMDDRuntimeDataTests.model += "[Entity] class MyClass6\n";
+        KirraMDDRuntimeDataTests.model += "attribute myString : String[0,1];\n";
         KirraMDDRuntimeDataTests.model += "attribute myFile : Blob;\n";
         KirraMDDRuntimeDataTests.model += "end;\n";        
         KirraMDDRuntimeDataTests.model += "end.";
@@ -339,4 +340,29 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         TestCase.assertEquals(20L, updated.getValue("attr1"));
         TestCase.assertEquals("foo", updated.getValue("attr2"));
     }
+    
+    public void testUpdateInstance_WithBlob() throws CoreException {
+        parseAndCheck(KirraMDDRuntimeDataTests.model);
+        Repository kirra = getKirra();
+
+        Instance newInstance = new Instance();
+        newInstance.setEntityName("MyClass6");
+        newInstance.setEntityNamespace("mypackage");
+        newInstance.setValue("myString", "10");
+        Instance created = kirra.createInstance(newInstance);
+        
+        Blob blob = kirra.createBlob(created.getTypeRef(), created.getObjectId(), "myFile", "text/plain", "original.txt");
+        assertNotNull(blob);
+
+        Instance retrieved = kirra.getInstance(created.getTypeRef().getEntityNamespace(), created.getTypeRef().getTypeName(), created.getObjectId(), true);
+        
+        retrieved.setValue("myString", "20");
+
+        Instance updated = kirra.updateInstance(retrieved);
+
+        TestCase.assertEquals("20", updated.getValue("myString"));
+        Blob updatedBlob = (Blob) updated.getValue("myFile");
+        assertNotNull(updatedBlob);
+    }
+
 }
