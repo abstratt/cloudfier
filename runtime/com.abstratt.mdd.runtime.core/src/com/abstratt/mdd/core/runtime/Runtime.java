@@ -103,7 +103,12 @@ public class Runtime {
     }
 
     public List<RuntimeObject> getAllInstances(final Classifier baseClass, boolean includeSubclasses) {
-        return collectInstancesFromHierarchy((Classifier) baseClass, includeSubclasses, currentClass -> getRuntimeClass(currentClass).getAllInstances());
+        return collectInstancesFromHierarchy((Classifier) baseClass, includeSubclasses, currentClass -> getAllInstances(currentClass));
+    }
+
+    private Collection<RuntimeObject> getAllInstances(Classifier currentClass) {
+        Collection<RuntimeObject> allInstances = getRuntimeClass(currentClass).getAllInstances();
+        return allInstances;
     }
     
     public Collection<RuntimeObject> getParameterDomain(Class baseClass, String externalId, org.eclipse.uml2.uml.Parameter parameter, boolean includeSubclasses) {
