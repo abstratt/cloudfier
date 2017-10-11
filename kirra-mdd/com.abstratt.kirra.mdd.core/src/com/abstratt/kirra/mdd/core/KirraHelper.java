@@ -477,7 +477,7 @@ public class KirraHelper {
     public static boolean isRelationship(final Property attribute, boolean navigableOnly) {
         return get(attribute, "isRelationshipAttribute_"+navigableOnly, () -> 
                 // derived relationships might not actually have an association
-                isRegularProperty(attribute) && attribute.getName() != null
+                isRegularProperty(attribute) && isInstance(attribute) && attribute.getName() != null
                         && isBasicallyAnEntity(attribute.getType())
                         && (attribute.isDerived() || attribute.getAssociation() != null));
     }
