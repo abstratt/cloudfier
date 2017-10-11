@@ -31,7 +31,7 @@ class RuntimeUserTests extends AbstractRuntimeTests {
 		parseAndCheck(model)
 		
 		val profile = runtime.getRuntimeClass("userprofile::UserProfile").newInstance
-		writeAttribute(profile, "username", new StringType("peter.jones"))
+		writeAttribute(profile, "username", new StringType("peter.jones@abstratt.com"))
 		writeAttribute(profile, "password", new StringType("pass"))
 		runtime.setActorSelector(new ActorSelector() {
             override getCurrentActor(Runtime runtime) {
@@ -45,7 +45,7 @@ class RuntimeUserTests extends AbstractRuntimeTests {
 		runtime.saveContext(false)
 		
 		assertNotNull(runtime.currentActor)
-		assertEquals(new StringType("peter.jones"), readAttribute(runtime.currentActor, "username"))
+		assertEquals(new StringType("peter.jones@abstratt.com"), readAttribute(runtime.currentActor, "username"))
 	}
 	
 	def void testUserAsRole() {
