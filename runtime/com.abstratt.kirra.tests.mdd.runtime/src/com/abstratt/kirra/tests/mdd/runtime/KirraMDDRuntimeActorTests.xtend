@@ -84,7 +84,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val Instance newProfile0 = new Instance()
         newProfile0.setEntityName("UserProfile")
         newProfile0.setEntityNamespace("userprofile")
-        newProfile0.setValue("username", "admin")
+        newProfile0.setValue("username", "admin@abstratt.com")
         newProfile0.setValue("password", "pass")
         val createdProfile0 = kirra.createInstance(newProfile0)
         
@@ -98,7 +98,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val Instance newProfile1 = new Instance()
         newProfile1.setEntityName("UserProfile")
         newProfile1.setEntityNamespace("userprofile")
-        newProfile1.setValue("username", "peter.jones")
+        newProfile1.setValue("username", "peter.jones@abstratt.com")
         newProfile1.setValue("password", "pass")
         val createdProfile1 = kirra.createInstance(newProfile1)
         
@@ -112,7 +112,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val Instance newProfile2 = new Instance()
         newProfile2.setEntityName("UserProfile")
         newProfile2.setEntityNamespace("userprofile")
-        newProfile2.setValue("username", "john.ford")
+        newProfile2.setValue("username", "john.ford@abstratt.com")
         newProfile2.setValue("password", "pass")
         val createdProfile2 = kirra.createInstance(newProfile2)
         
@@ -126,7 +126,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val Instance newProfile3 = new Instance()
         newProfile3.setEntityName("UserProfile")
         newProfile3.setEntityNamespace("userprofile")
-        newProfile3.setValue("username", "mary.jones")
+        newProfile3.setValue("username", "mary.jones@abstratt.com")
         newProfile3.setValue("password", "pass")
         val createdProfile3 = kirra.createInstance(newProfile3)
         
@@ -140,7 +140,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val Instance newProfile4 = new Instance()
         newProfile4.setEntityName("UserProfile")
         newProfile4.setEntityNamespace("userprofile")
-        newProfile4.setValue("username", "powerless")
+        newProfile4.setValue("username", "powerless@abstratt.com")
         newProfile4.setValue("password", "pass")
         val createdProfile4 = kirra.createInstance(newProfile4)
         
@@ -157,7 +157,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 
     def testCurrentUser() {
         parseAndCheck(model)
-        assertEquals("peter.jones", kirra.currentUser.getValue("username"))
+        assertEquals("peter.jones@abstratt.com", kirra.currentUser.getValue("username"))
     }
     
     def testCurrentUser_Roles() {
