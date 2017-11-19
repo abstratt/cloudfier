@@ -19,6 +19,7 @@ import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
 import org.restlet.security.User;
 
+import com.abstratt.kirra.KirraApplication;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
 import com.abstratt.kirra.mdd.core.KirraHelper;
@@ -56,6 +57,8 @@ public class KirraRepositoryFilter extends Filter {
                 @Override
                 public Integer runInContext(IRepository context) {
                     Repository kirraRepository = RepositoryService.DEFAULT.getFeature(Repository.class);
+                    KirraApplication kirraApplication = RepositoryService.DEFAULT.getFeature(KirraApplication.class);
+                    KirraContext.setApplication(kirraApplication);
                     KirraContext.setInstanceManagement(kirraRepository);
                     KirraContext.setSchemaManagement(kirraRepository);
 					KirraContext.setOptions(getApplicationOptions(context.getProperties()));
@@ -66,6 +69,7 @@ public class KirraRepositoryFilter extends Filter {
                         int result = KirraRepositoryFilter.super.doHandle(request, response);
                         return result;
                     } finally {
+                        KirraContext.setApplication(null);
                         KirraContext.setInstanceManagement(null);
                         KirraContext.setSchemaManagement(null);
                         KirraContext.setBaseURI(null);
