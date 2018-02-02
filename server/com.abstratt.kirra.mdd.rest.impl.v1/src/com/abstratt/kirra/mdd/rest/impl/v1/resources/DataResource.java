@@ -39,7 +39,7 @@ public class DataResource extends AbstractKirraRepositoryResource {
         repo.initialize();
         DataPopulator populator = new DataPopulator(repo, snapshotFileName);
         int status = populator.populate();
-        ResourceUtils.ensure(status >= 0, "Failure populating the database, check the data sample", Status.CLIENT_ERROR_BAD_REQUEST);
+        ResourceUtils.ensure(status >= 0, "Failure populating the database, check the data sample file", Status.CLIENT_ERROR_BAD_REQUEST);
         return new StringRepresentation("{\"success\": true, \"processed\": " + status + " }", MediaType.APPLICATION_JSON);
     }
 
