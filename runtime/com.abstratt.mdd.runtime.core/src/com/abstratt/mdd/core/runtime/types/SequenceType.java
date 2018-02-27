@@ -1,11 +1,9 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.IntStream;
 
 import org.eclipse.uml2.uml.Type;
 

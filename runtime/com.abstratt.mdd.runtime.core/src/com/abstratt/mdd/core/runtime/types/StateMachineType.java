@@ -2,7 +2,6 @@ package com.abstratt.mdd.core.runtime.types;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.uml2.uml.Operation;

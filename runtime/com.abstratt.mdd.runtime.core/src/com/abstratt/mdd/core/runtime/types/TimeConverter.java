@@ -3,7 +3,6 @@ package com.abstratt.mdd.core.runtime.types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 
 public class TimeConverter implements ValueConverter {
     private static String[] SUPPORTED_FORMATS = {"HH:mm:ss", "hh:mm:ss.SSS", "yyyy-MM-dd'T'HH:mmZ", "yyyy-MM-dd'T'HH:mm:ssZ"}; 

@@ -7,7 +7,6 @@ import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.Constants;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
-import com.abstratt.mdd.core.runtime.types.BasicType;
 
 public class RuntimeReadVariableAction extends RuntimeAction implements Constants {
 

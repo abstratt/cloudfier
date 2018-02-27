@@ -1,10 +1,5 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import java.text.DecimalFormat;
-import java.text.NumberFormat;
-import java.util.Locale;
-import java.util.Locale.Category;
-
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class RealType extends NumberType<Double> {
