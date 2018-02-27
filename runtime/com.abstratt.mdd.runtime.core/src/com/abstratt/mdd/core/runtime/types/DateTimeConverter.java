@@ -3,7 +3,6 @@ package com.abstratt.mdd.core.runtime.types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
-import java.util.Date;
 
 public class DateTimeConverter implements ValueConverter {
     private static String[] SUPPORTED_FORMATS = {"EEE MMM dd yyyy HH:mm:ss z (z)", "yyyy-MM-dd'T'HH:mmZ", "yyyy/MM/dd", "yyyy-MM-dd"}; 

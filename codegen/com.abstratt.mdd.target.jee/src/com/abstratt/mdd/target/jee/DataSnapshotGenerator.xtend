@@ -3,7 +3,6 @@ package com.abstratt.mdd.target.jee
 import com.abstratt.kirra.InstanceRef
 import com.abstratt.kirra.NamedElement
 import com.abstratt.kirra.TypeRef
-import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDUtil

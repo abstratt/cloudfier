@@ -18,7 +18,6 @@ import org.eclipse.uml2.uml.Variable;
 import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
-import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.NodeReference;
 
 /**

@@ -1,6 +1,6 @@
 package com.abstratt.mdd.core.runtime.types;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.uml2.uml.Operation;
 
 import com.abstratt.mdd.core.runtime.ExecutionContext;
