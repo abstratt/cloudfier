@@ -28,6 +28,7 @@ import org.eclipse.uml2.uml.VisibilityKind;
 import org.eclipse.uml2.uml.util.UMLUtil;
 
 import com.abstratt.mdd.core.IRepository;
+import com.abstratt.mdd.core.Step;
 import com.abstratt.mdd.core.isv.IModelWeaver;
 import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
@@ -56,9 +57,12 @@ public class KirraModelWeaver implements IModelWeaver {
 	 * entities themselves.
 	 * Creates wirings between user entities and the User built-in class.
 	 */
+	
 	@Override
-	public void repositoryComplete(IRepository repository) {
-		new Session(repository).weave();
+	public void afterStep(IRepository repository, Step step) {
+		if (step == Step.STEREOTYPE_APPLICATIONS) {
+			new Session(repository).weave();			
+		}
 	}
 
 	public class Session {
@@ -159,7 +163,7 @@ public class KirraModelWeaver implements IModelWeaver {
 				
 				Property userProfile = roleClass.createOwnedAttribute(KirraMDDConstants.USER_PROFILE_ASSOCIATION_END, profileClass);
 				userProfile.setIsReadOnly(true);
-				// wllor for role instances without a corresponding userProfile
+				// allow for role instances without a corresponding userProfile
 				userProfile.setLower(0);
 				
 				Property otherEnd = buildAssociationForAttribute(roleClass, userProfile, "roleAs" + roleClass.getName(), false);
