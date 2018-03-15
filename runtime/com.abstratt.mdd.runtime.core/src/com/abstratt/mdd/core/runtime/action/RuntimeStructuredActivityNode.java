@@ -19,6 +19,7 @@ import org.eclipse.uml2.uml.Variable;
 import com.abstratt.mdd.core.runtime.CompositeRuntimeAction;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 import com.abstratt.mdd.core.runtime.RuntimeAction;
+import com.abstratt.mdd.core.runtime.RuntimeClass;
 import com.abstratt.mdd.core.runtime.RuntimeObject;
 import com.abstratt.mdd.core.runtime.RuntimeObjectNode;
 import com.abstratt.mdd.core.runtime.RuntimeRaisedException;
@@ -47,7 +48,8 @@ public class RuntimeStructuredActivityNode extends CompositeRuntimeAction {
             BasicType sourceValue = source.getValue();
 			if (MDDExtensionUtils.isRoleClass(outputClassifier) && MDDExtensionUtils.isSystemUserClass(inputClassifier)) {
             	// special case: casting user to role 
-				RuntimeObject userAsRole = context.getRuntime().getRoleForActor((RuntimeObject) sourceValue, outputClassifier);
+				List<RuntimeObject> rolesForActor = context.getRuntime().getRolesForActor((RuntimeObject) sourceValue);
+				RuntimeObject userAsRole = rolesForActor.stream().filter(it -> context.getRuntime().isClassInstance(outputClassifier, it)).findAny().orElse(null);
 				addResultValue(output, userAsRole);
 			} else if (MDDExtensionUtils.isRoleClass(inputClassifier) && MDDExtensionUtils.isSystemUserClass(outputClassifier)) {
                 // special case: casting role to user

@@ -180,6 +180,9 @@ public class Runtime {
 		return result;
     }
     
+    /**
+     * Returns the role matching the specified role class for the current actor.
+     */
     public RuntimeObject getRoleForActor(RuntimeObject actor, Classifier roleClass) {
     	Property userProperty = FeatureUtils.findAttribute(roleClass, "userProfile", false, true);
     	Map<Property, List<BasicType>> criteria = Collections.singletonMap(userProperty, Arrays.asList(actor));
@@ -385,5 +388,21 @@ public class Runtime {
         BasicType result = metaClass.runOperation(context, target, operation, parameterSet, arguments);
         return result;
     }
+
+	public boolean isClassInstance(Classifier classifier, BasicType toTest) {
+		if (!(toTest instanceof RuntimeObject)) {
+			return false;
+		}
+		RuntimeObject asRuntimeObject = (RuntimeObject) toTest;
+		if (MDDExtensionUtils.isRoleClass(classifier)
+				&& MDDExtensionUtils.isSystemUserClass(asRuntimeObject.getRuntimeClass().getModelClassifier())) {
+			// special case: casting user to role
+			RuntimeObject userAsRole = context.getRuntime().getRoleForActor((RuntimeObject) asRuntimeObject,
+					classifier);
+			asRuntimeObject = userAsRole;
+		}
+		boolean result = asRuntimeObject != null && asRuntimeObject.getRuntimeClass().getModelClassifier().conformsTo(classifier);
+		return result;
+	}
 
 }
