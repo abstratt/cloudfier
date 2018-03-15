@@ -9,7 +9,7 @@ Require-Bundle: com.abstratt.mdd.core;visibility:=reexport,
 Import-Package: com.abstratt.nodestore,
  com.abstratt.blobstore,
  com.abstratt.resman,
- org.apache.commons.lang
+ org.apache.commons.lang3
 Export-Package: com.abstratt.mdd.core.runtime,
  com.abstratt.mdd.core.runtime.action,
  com.abstratt.mdd.core.runtime.external,
