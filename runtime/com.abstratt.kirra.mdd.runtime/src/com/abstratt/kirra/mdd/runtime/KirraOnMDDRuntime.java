@@ -892,7 +892,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             }
 
         if (target instanceof RuntimeObject && !((RuntimeObject) target).isEnabledOperation(operation, argumentsPerParameter))
-            throw new KirraException("Operation '" + operation.getName() + "' is not valid at this time", null, Kind.VALIDATION);
+            throw new KirraException("Operation '" + operation.getName() + "' is not available at this time or for this user", null, Kind.VALIDATION);
 
         try {
             BasicType result = getRuntime().runOperation(null, target, operation, parameterSet, convertedArguments);
