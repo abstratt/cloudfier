@@ -44,8 +44,10 @@ import com.abstratt.mdd.core.util.ClassifierUtils;
 import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.FeatureUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
+import com.abstratt.nodestore.INode;
 import com.abstratt.nodestore.INodeKey;
 import com.abstratt.nodestore.INodeStoreCatalog;
+import com.abstratt.nodestore.NodeReference;
 import com.abstratt.pluginutils.LogUtils;
 
 /**
@@ -405,4 +407,11 @@ public class Runtime {
 		return result;
 	}
 
+	public Collection<RuntimeObject> getInstances(Collection<NodeReference> relatedNodeRefs) {
+		return relatedNodeRefs.stream().map(this::getRuntimeObject).collect(Collectors.toList());
+	}
+
+	private RuntimeObject getRuntimeObject(NodeReference ref) {
+		return getRuntimeClass(RuntimeClass.fromStoreNameToClassifierName(ref.getStoreName())).getInstance(ref.getKey());
+	}
 }

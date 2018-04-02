@@ -288,7 +288,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		Collection<INode> relatedNodes = getRelatedNodes(key, relationshipName, relatedNodeStoreName);
 		return relatedNodes.stream().map(it -> it.getKey()).collect(Collectors.toList());
 	}
-
+	
 	@Override
 	public Collection<INode> getRelatedNodes(INodeKey key, String relationshipName, String relatedNodeStoreName) {
 		INode node = basicGetNode(key);
@@ -363,8 +363,8 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		INode node = basicGetNode(key);
 		Entity entity = getEntity();
 		Relationship relationship = entity.getRelationship(relationshipName);
-		String otherStoreName = relationship.getTypeRef().getFullName();
-		INodeStore otherStore = getCatalog().getStore(otherStoreName);
+		TypeRef relationshipType = relationship.getTypeRef();
+		INodeStore otherStore = getCatalog().getStore(getStoreName(relationshipType));
 		if (relationship.isPrimary()) {
 			Map<String, Collection<NodeReference>> allRelated = node.getRelated();
 			Collection<NodeReference> existing = allRelated.computeIfAbsent(relationshipName, k -> Collections.emptyList());
@@ -385,6 +385,10 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		} else {
 			otherStore.unlinkNodes(toRemove.getKey(), relationship.getOpposite(), new NodeReference(getName(), key));
 		}		
+	}
+
+	private static String getStoreName(TypeRef type) {
+		return type.getFullName();
 	}
 
 	private Entity getEntity() {
@@ -511,8 +515,9 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 	
 	public static class BasicNodeSerialization implements JsonDeserializer<BasicNode>, JsonSerializer<BasicNode> {
 		public BasicNode deserialize(JsonElement jsonElement, Type arg1, JsonDeserializationContext context) throws JsonParseException {
-			BasicNode node = new BasicNode((INodeKey) null);
 			JsonObject asJsonObject = jsonElement.getAsJsonObject();
+			String storeName = context.deserialize(asJsonObject.get("storeName"), String.class);
+			BasicNode node = new BasicNode(storeName, (INodeKey) null);
 			node.setKey(context.deserialize(asJsonObject.get("key"), INodeKey.class));
 			node.setProperties(context.deserialize(asJsonObject.get("properties"), new TypeToken<Map<String, Object>>() {}.getType()));
 			node.setRelated(context.deserialize(asJsonObject.get("related"), new TypeToken<Map<String, Collection<NodeReference>>>() {}.getType()));
@@ -522,6 +527,7 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		public JsonElement serialize(BasicNode node, Type arg1, JsonSerializationContext context) throws JsonParseException {
 			JsonObject jsonObject = new JsonObject();
 			jsonObject.add("key", context.serialize(node.getKey()));
+			jsonObject.add("storeName", context.serialize(node.getStoreName()));
 			jsonObject.add("properties", context.serialize(node.getProperties()));
 			jsonObject.add("related", context.serialize(node.getRelated()));
 			jsonObject.add("children", context.serialize(node.getChildren()));

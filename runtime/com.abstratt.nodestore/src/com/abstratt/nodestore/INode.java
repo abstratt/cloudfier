@@ -9,6 +9,8 @@ import java.util.Map;
  * be null, primitives, {@link Date}, or node keys (for cross referencing).
  */
 public interface INode extends Cloneable {
+	
+	public String getStoreName();
 
     public Map<String, Collection<INode>> getChildren();
 
@@ -47,4 +49,8 @@ public interface INode extends Cloneable {
     public void setRelated(Map<String, Collection<NodeReference>> related);
     
     public INode clone();
+
+	public default NodeReference getReference() {
+		return new NodeReference(getStoreName(), getKey());
+	}
 }

@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
@@ -120,7 +121,7 @@ public class RuntimeObject extends StructuredRuntimeObject {
         this.runtimeClass = runtimeClass;
         isPersisted = false;
         isPersistable = false;
-        this.inMemoryState = new BasicNode((INodeKey) null);
+        this.inMemoryState = new BasicNode(runtimeClass.getNodeStoreName(), (INodeKey) null);
     }
 
     /**
@@ -828,9 +829,10 @@ public class RuntimeObject extends StructuredRuntimeObject {
         Assert.isLegal(!property.isDerived());
         RuntimeClass relatedEntity = getRuntime().getRuntimeClass(relatedInstanceType);
         String relatedStoreNodeName = relatedEntity.getNodeStore().getName();
-        Collection<INodeKey> relatedNodeKeys = getNodeStore().getRelatedNodeKeys(getKey(), property.getName(),
+        Collection<NodeReference> relatedNodeRefs = getNodeStore().getRelatedNodeReferences(getKey(), property.getName(),
                 relatedStoreNodeName);
-        return relatedEntity.nodesToRuntimeObjects(relatedNodeKeys);
+//        List<INodeKey> nodeKeys = relatedNodeRefs.stream().map(it -> it.getKey()).collect(Collectors.toList());
+		return getCurrentContext().getRuntime().getInstances(relatedNodeRefs);
     }
 
     private Runtime getRuntime() {

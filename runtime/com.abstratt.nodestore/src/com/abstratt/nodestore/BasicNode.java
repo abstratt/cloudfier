@@ -20,33 +20,44 @@ public class BasicNode implements INode, Serializable {
     private Map<String, Object> properties;
     private Map<String, Collection<NodeReference>> related;
     private INode parent;
+    private String storeName;
 
     public BasicNode(INode source) {
         setKey(source.getKey());
         setProperties(source.getProperties());
         setChildren(source.getChildren());
         setRelated(source.getRelated());
+        setStoreName(source.getStoreName());
     }
 
-    public BasicNode(INodeKey key) {
-        this();
+    private void setStoreName(String storeName) {
+    	this.storeName = storeName;
+	}
+    
+    @Override
+    public String getStoreName() {
+    	return storeName;
+    }
+
+	public BasicNode(String storeName, INodeKey key) {
+        this(storeName);
         setKey(key);
     }
 
-    public BasicNode(INodeKey key, Map<String, Object> map) {
-        this(key);
+    public BasicNode(String storeName, INodeKey key, Map<String, Object> map) {
+        this(storeName, key);
         setProperties(map);
     }
 
-    public BasicNode(Long key) {
-        this();
-        setKey(new IntegerKey(key));
+    public BasicNode(String storeName, Long key) {
+        this(storeName, new IntegerKey(key));
     }
 
-    private BasicNode() {
+    private BasicNode(String storeName) {
         children = new HashMap<String, Collection<INode>>();
         properties = new HashMap<String, Object>();
         related = new HashMap<String, Collection<NodeReference>>();
+        setStoreName(storeName);
     }
 
     @Override

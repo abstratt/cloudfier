@@ -151,9 +151,18 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
         return nodeStore;
     }
 
-    private String getNodeStoreName() {
-        return getModelClassifier().getQualifiedName().replaceAll(NamedElement.SEPARATOR, ".");
+    String getNodeStoreName() {
+        String classifierName = getModelClassifier().getQualifiedName();
+		return fromClassifierNameToStoreName(classifierName);
     }
+
+	public static String fromClassifierNameToStoreName(String classifierName) {
+		return classifierName.replaceAll(NamedElement.SEPARATOR, ".");
+	}
+	
+	public static String fromStoreNameToClassifierName(String storeName) {
+		return storeName.replaceAll("\\.", NamedElement.SEPARATOR);
+	}
 
     public Collection<RuntimeObject> getParameterDomain(String externalId, Parameter parameter,
             Classifier parameterType) {

@@ -162,7 +162,7 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     @Override
     public INode newNode(String nodeStoreName) {
-        return new BasicNode(generateKey(nodeStoreName));
+        return new BasicNode(nodeStoreName, generateKey(nodeStoreName));
     }
 
     @Override

@@ -82,7 +82,7 @@ public class JDBCNodeStore implements INodeStore {
                                 Collections.singleton(new NodeReference(relationship.getTypeRef().getFullName(), idToKey(id))));
                 }
             }
-            BasicNode loadedNode = new BasicNode(idToKey(rs.getLong("id")));
+            BasicNode loadedNode = new BasicNode(getName(), idToKey(rs.getLong("id")));
             loadedNode.setProperties(properties);
             loadedNode.setRelated(related);
             return loadedNode;
@@ -414,4 +414,11 @@ public class JDBCNodeStore implements INodeStore {
     private List<INodeKey> perform(List<String> statements, boolean returnKeys, boolean changeExpected) {
         return JDBCNodeStore.perform(connectionProvider, statements, returnKeys, changeExpected);
     }
+
+	@Override
+	public Collection<NodeReference> getRelatedNodeReferences(INodeKey key, String relationship,
+			String relatedNodeStoreName) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

@@ -3,6 +3,7 @@ package com.abstratt.nodestore;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Storage for hierarchical nodes. Services:
@@ -68,6 +69,12 @@ public interface INodeStore {
      */
     public Collection<INodeKey> getRelatedNodeKeys(INodeKey key, String relationship, String relatedNodeStoreName);
 
+    public default Collection<NodeReference> getRelatedNodeReferences(INodeKey key, String relationship, String relatedNodeStoreName) {
+		Collection<INode> relatedNodes = getRelatedNodes(key, relationship, relatedNodeStoreName);
+		return relatedNodes.stream().map(it -> it.getReference()).collect(Collectors.toList());
+    }
+
+    
     /**
      * Returns all related nodes.
      */
