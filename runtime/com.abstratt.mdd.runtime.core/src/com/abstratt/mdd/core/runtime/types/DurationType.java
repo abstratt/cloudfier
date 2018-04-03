@@ -3,22 +3,26 @@ package com.abstratt.mdd.core.runtime.types;
 import com.abstratt.mdd.core.runtime.ExecutionContext;
 
 public class DurationType extends PrimitiveType<Long> {
-    private static final long serialVersionUID = 1L;
+    public static final int SECOND = 1000;
+    public static final int MINUTE = 60 * SECOND;
+    public static final int HOUR = 60 * MINUTE;
+    public static final int DAY = 24 * HOUR;
+	private static final long serialVersionUID = 1L;
 
     public static DurationType days(ExecutionContext context, NumberType<?> literal) {
-        return milliseconds(literal, 24 * 60 * 60 * 1000);
+        return milliseconds(literal, DAY);
     }
     
     public static DurationType hours(ExecutionContext context, NumberType<?> literal) {
-        return milliseconds(literal, 60 * 60 * 1000);
+        return milliseconds(literal, HOUR);
     }
     
     public static DurationType minutes(ExecutionContext context, NumberType<?> literal) {
-        return milliseconds(literal, 60 * 1000);
+        return milliseconds(literal, MINUTE);
     }
     
     public static DurationType seconds(ExecutionContext context, NumberType<?> literal) {
-        return milliseconds(literal, 1000);
+        return milliseconds(literal, SECOND);
     }
     
     public static DurationType milliseconds(ExecutionContext context, NumberType<?> literal) {

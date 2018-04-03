@@ -3,6 +3,7 @@ package com.abstratt.mdd.core.runtime.types;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -51,7 +52,13 @@ public class TimeType extends PrimitiveType<LocalTime> {
     }
     
     public DurationType difference(@SuppressWarnings("unused") ExecutionContext context, TimeType end) {
-        return DurationType.fromValue(ChronoUnit.MILLIS.between(this.value, end.value));
+    	long result; 
+    	if (this.value.isAfter(end.value)) {
+    		result = ChronoUnit.MILLIS.between(this.value.atDate(LocalDate.now()), end.value.atDate(LocalDate.now().plusDays(1)));
+    	} else {
+    		result = ChronoUnit.MILLIS.between(this.value, end.value);
+    	}
+		return DurationType.fromValue(result);
     }
 
     @Override
@@ -65,7 +72,7 @@ public class TimeType extends PrimitiveType<LocalTime> {
     }
     
     public IntegerType hour(@SuppressWarnings("unused") ExecutionContext context) {
-        return IntegerType.fromValue(this.primitiveValue().get(ChronoField.HOUR_OF_DAY));
+        return IntegerType.fromValue(this.primitiveValue().get(ChronoField.CLOCK_HOUR_OF_DAY));
     }
 
     public IntegerType minute(@SuppressWarnings("unused") ExecutionContext context) {
@@ -83,7 +90,7 @@ public class TimeType extends PrimitiveType<LocalTime> {
 
     @Override
     public StringType toString(ExecutionContext context) {
-    	String asString = DateTimeFormatter.ofPattern("hh:mm:ss.SSS").format(this.primitiveValue());
+    	String asString = DateTimeFormatter.ofPattern("hh:mm").format(this.primitiveValue());
         return new StringType(asString);
     }
 
