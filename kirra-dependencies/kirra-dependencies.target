@@ -27,7 +27,8 @@
             <unit id="org.apache.commons.fileupload" version="0.0.0" />
             <unit id="org.apache.commons.collections" version="0.0.0" />
             <unit id="org.apache.commons.httpclient" version="0.0.0" />
-            <repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20160520211859/repository/" />
+			<unit id="org.slf4j.api" version="0.0.0" />
+			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="org.restlet" version="0.0.0" />
@@ -43,6 +44,15 @@
             <unit id="com.fasterxml.jackson.core.jackson-annotations" version="0.0.0" />
             <unit id="com.fasterxml.jackson.core.jackson-core" version="0.0.0" />
             <unit id="com.fasterxml.jackson.core.jackson-databind" version="0.0.0" />
+<!--
+            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile"  version="0.0.0"/>
+            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml"  version="0.0.0"/>
+            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-xml"  version="0.0.0"/>
+            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv"  version="0.0.0"/>
+            <unit id="org.yaml.snakeyaml" version="0.0.0"/>
+			<unit id="com.fasterxml.jackson.module.jackson-module-jaxb-annotations" version="0.0.0"/>
+			<unit id="stax2-api" version="0.0.0"/>
+-->			
             <repository location="http://p2.restlet.com/2.2/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
