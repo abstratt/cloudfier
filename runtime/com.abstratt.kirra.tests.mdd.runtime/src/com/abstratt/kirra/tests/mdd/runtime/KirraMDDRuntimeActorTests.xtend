@@ -84,7 +84,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val Instance newProfile0 = new Instance()
         newProfile0.setEntityName("UserProfile")
         newProfile0.setEntityNamespace("userprofile")
-        newProfile0.setValue("username", "admin@abstratt.com")
+        newProfile0.setValue("username", "admin1@abstratt.com")
         newProfile0.setValue("password", "pass")
         val createdProfile0 = kirra.createInstance(newProfile0)
         

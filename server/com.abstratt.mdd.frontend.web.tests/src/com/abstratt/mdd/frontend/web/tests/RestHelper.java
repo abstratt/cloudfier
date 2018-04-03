@@ -6,16 +6,16 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -34,6 +34,8 @@ public class RestHelper {
 
     private HttpClient httpClient;
     private String workspaceName;
+	private String username;
+	private String password;
 
     public RestHelper(String name) {
         httpClient = new HttpClient();
@@ -41,10 +43,12 @@ public class RestHelper {
     }
     
 	public void setCredentials(String username, String password, String realm, URI uri) {
-		httpClient.getState().setCredentials(
-			new AuthScope(uri.getHost(), uri.getPort(), realm),
-			new UsernamePasswordCredentials(username, password)
-		);
+		this.username = username;
+		this.password = password;
+//		httpClient.getState().setCredentials(
+//			new AuthScope(uri.getHost(), uri.getPort(), realm),
+//			new UsernamePasswordCredentials(username, password)
+//		);
 	}
 
     public HttpMethod buildGetRequest(URI location) throws HttpException, IOException {
@@ -95,6 +99,10 @@ public class RestHelper {
 
     public byte[] executeMethod(HttpClient httpClient, int expectedStatus, HttpMethod method) throws IOException, HttpException {
         try {
+        	if (username != null) {
+        		String encodedCredentials = new String(Base64.getEncoder().encodeToString((username + ":" + password + "\n").getBytes("UTF-8")));
+        		method.addRequestHeader(new Header("Authorization", "Basic " + encodedCredentials));
+        	}
             int response = httpClient.executeMethod(method);
             byte[] body = method.getResponseBody();
             Assert.assertEquals("Method: " + method.getName() + " - URI: " + method.getURI() + "\n"

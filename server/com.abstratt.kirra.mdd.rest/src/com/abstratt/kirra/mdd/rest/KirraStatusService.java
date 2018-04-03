@@ -13,6 +13,7 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.service.StatusService;
 
 import com.abstratt.kirra.KirraException;
+import com.abstratt.kirra.rest.resources.KirraRestException;
 import com.abstratt.nodestore.NodeStoreException;
 import com.abstratt.pluginutils.UserFacingException;
 
@@ -48,6 +49,6 @@ public class KirraStatusService extends StatusService {
     }
 
     private boolean isUserFacing(Throwable throwable) {
-        return throwable instanceof UserFacingException || throwable instanceof KirraException;
+        return throwable instanceof UserFacingException || throwable instanceof KirraException || throwable instanceof KirraRestException;
     }
 }

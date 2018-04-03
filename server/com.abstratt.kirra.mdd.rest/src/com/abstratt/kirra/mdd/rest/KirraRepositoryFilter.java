@@ -29,6 +29,7 @@ import com.abstratt.kirra.rest.common.KirraContext;
 import com.abstratt.kirra.rest.resources.KirraRestException;
 import com.abstratt.mdd.core.IRepository;
 import com.abstratt.mdd.core.RepositoryService;
+import com.abstratt.mdd.frontend.web.Paths;
 import com.abstratt.pluginutils.ISharedContextRunnable;
 import com.abstratt.pluginutils.LogUtils;
 

@@ -16,6 +16,7 @@ import org.restlet.engine.header.Header;
 import org.restlet.ext.crypto.CookieAuthenticator;
 import org.restlet.util.Series;
 
+import com.abstratt.kirra.rest.common.Paths;
 import com.abstratt.kirra.rest.resources.ResourceHelper;
 
 public class KirraCookieAuthenticator extends CookieAuthenticator implements KirraAuthenticationContext {
@@ -36,12 +37,12 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
 
     @Override
     public String getLoginPath() {
-        return "/" + WORKSPACE_NAME.get() + "/session/login";
+        return Paths.LOGIN_PATH.replaceFirst("{application}", WORKSPACE_NAME.get());
     }
 
     @Override
     public String getLogoutPath() {
-        return "/" + WORKSPACE_NAME.get() + "/session/logout";
+        return Paths.LOGOUT_PATH.replaceFirst("{application}", WORKSPACE_NAME.get());
     }
     
     @Override
@@ -91,13 +92,13 @@ public class KirraCookieAuthenticator extends CookieAuthenticator implements Kir
     
     @Override
     protected boolean isLoggingIn(Request request, Response response) {
-        return isInterceptingLogin() && Method.POST.equals(request.getMethod()) && request.getResourceRef().toString().endsWith("/login");
+        return isInterceptingLogin() && Method.POST.equals(request.getMethod()) && request.getResourceRef().toString().endsWith(Paths.LOGIN);
     }
 
     @Override
     protected boolean isLoggingOut(Request request, Response response) {
         return isInterceptingLogout() && (Method.GET.equals(request.getMethod()) || Method.POST.equals(request.getMethod()))
-                        && request.getResourceRef().toString().endsWith("/logout");
+                        && request.getResourceRef().toString().endsWith(Paths.LOGOUT);
     }
 
     @Override

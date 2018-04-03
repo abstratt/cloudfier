@@ -41,8 +41,10 @@ public class KirraRESTUtils {
         if (request == null)
             return null;
         User user = request.getClientInfo().getUser();
-        if (user != null)
-            return user.getIdentifier();
+        if (user != null) {
+			String currentUsername = user.getIdentifier();
+			return currentUsername;
+		}
         return null;
     }
 
