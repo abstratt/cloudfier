@@ -258,7 +258,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("actions/«action.name»")
-            «accessControlGenerator.generateEndpointAnnotation(AccessCapability.StaticCall, allRoleClasses, #[entity, action])»
+            «accessControlGenerator.generateEndpointAnnotation(AccessCapability.Call, allRoleClasses, #[entity, action])»
             public Response execute«action.name.toFirstUpper»(Map<String, Object> representation) {
                 «action.generateArgumentMatching»
                 service.«action.name»(«action.parameters.map[name].join(', ')»);
@@ -268,7 +268,7 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             «FOR parameter : action.parameters.filter[type.entity]»
             @GET
             @Path("instances/undefined/actions/«action.name»/parameters/«parameter.name»/domain")
-            «accessControlGenerator.generateEndpointAnnotation(AccessCapability.StaticCall, allRoleClasses, #[entity, action])»
+            «accessControlGenerator.generateEndpointAnnotation(AccessCapability.Call, allRoleClasses, #[entity, action])»
             public Response list«action.name.toFirstUpper»_«parameter.name»Domain() {
                 Collection<«parameter.type.name»> domain = «if (parameter.hasParameterConstraints)
                     '''service.getParameterDomainFor«parameter.name.toFirstUpper»To«action.name.toFirstUpper»()'''
@@ -283,8 +283,8 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
             @POST
             @Consumes(MediaType.APPLICATION_JSON)
             @Path("finders/«query.name»")
-            «accessControlGenerator.generateEndpointAnnotation(AccessCapability.StaticCall, allRoleClasses, #[entity, query])»
-            public Response execute«query.name.toFirstUpper»(«accessControlGenerator.generateSecurityContextParameter(allRoleClasses, AccessCapability.StaticCall, #[entity, query], ", ")»Map<String, Object> representation) {
+            «accessControlGenerator.generateEndpointAnnotation(AccessCapability.Call, allRoleClasses, #[entity, query])»
+            public Response execute«query.name.toFirstUpper»(«accessControlGenerator.generateSecurityContextParameter(allRoleClasses, AccessCapability.Call, #[entity, query], ", ")»Map<String, Object> representation) {
                 «query.generateArgumentMatching»
                 Collection<«entity.name»> models = service.«query.name»(«query.parameters.map[name].join(', ')»);
                 return toExternalList(uri, models).build();
@@ -305,26 +305,26 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                 result.put("entity", entityCapabilities);
                 «
                 if (findAccessConstraint(#[entity], null, null) == null) 
-	                #[AccessCapability.Create, AccessCapability.StaticCall, AccessCapability.List].map[ capability |
+	                #[AccessCapability.Create, AccessCapability.Call, AccessCapability.List].map[ capability |
 	                    '''entityCapabilities.add("«capability.name()»");'''	
 	                ].join()
                 »
                 «entity.entityActions.filter[action | findAccessConstraint(#[action, entity], null, null) == null].map[ action |
                 	// unconstrained actions
                 	'''
-                	actions.put("«action.name»", Arrays.asList("StaticCall"));
+                	actions.put("«action.name»", Arrays.asList("Call"));
                 	'''
                 ].join»
                 «entity.queries.filter[static].filter[query | findAccessConstraint(#[query, entity], null, null) == null].map[ query |
                 	// unconstrained queries
                 	'''
-                	queries.put("«query.name»", Arrays.asList("StaticCall"));
+                	queries.put("«query.name»", Arrays.asList("Call"));
                 	'''
                 ].join»                
                 «allRoleClasses.map[ roleClass |
                 '''
                 if (securityContext.isUserInRole(«roleClass.name».ROLE_ID)) {
-                    «#[AccessCapability.Create, AccessCapability.StaticCall, AccessCapability.List].map[ capability |
+                    «#[AccessCapability.Create, AccessCapability.Call, AccessCapability.List].map[ capability |
                     val accessConstraint = findAccessConstraint(#[entity], capability, roleClass)
                     if (accessConstraint != null && MDDExtensionUtils.getAllowedCapabilities(accessConstraint).contains(capability))
                     '''
@@ -334,20 +334,20 @@ class JAXRSResourceGenerator extends BehaviorlessClassGenerator {
                     ''
                     ].join»
                     «entity.entityActions.map[ action |
-                	val accessConstraint = findAccessConstraint(#[action, entity], AccessCapability.StaticCall, roleClass)
+                	val accessConstraint = findAccessConstraint(#[action, entity], AccessCapability.Call, roleClass)
                 	
-                	if (accessConstraint != null && MDDExtensionUtils.getAllowedCapabilities(accessConstraint).contains(AccessCapability.StaticCall))
+                	if (accessConstraint != null && MDDExtensionUtils.getAllowedCapabilities(accessConstraint).contains(AccessCapability.Call))
                     '''
-                    actions.put("«action.name»", Arrays.asList("StaticCall"));
+                    actions.put("«action.name»", Arrays.asList("Call"));
                     '''
                     else 
                     ''
                     ].join»
                     «entity.queries.filter[static].map[ query |
-                	val accessConstraint = findAccessConstraint(#[query, entity], AccessCapability.StaticCall, roleClass)
-                	if (accessConstraint != null && MDDExtensionUtils.getAllowedCapabilities(accessConstraint).contains(AccessCapability.StaticCall))
+                	val accessConstraint = findAccessConstraint(#[query, entity], AccessCapability.Call, roleClass)
+                	if (accessConstraint != null && MDDExtensionUtils.getAllowedCapabilities(accessConstraint).contains(AccessCapability.Call))
                     '''
-                    queries.put("«query.name»", Arrays.asList("StaticCall"));
+                    queries.put("«query.name»", Arrays.asList("Call"));
                     '''
                     else 
                     ''

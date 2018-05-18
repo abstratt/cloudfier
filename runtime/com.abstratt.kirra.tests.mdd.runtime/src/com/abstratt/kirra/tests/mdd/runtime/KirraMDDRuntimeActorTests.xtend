@@ -58,13 +58,13 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
             static query openTasks() : Task[*];
                 
             static operation deleteTasksFor(creator : User)
-                allow Admin static call;
+                allow Admin call;
         end;
         
         class AnonymousComment
             allow User extent, read;
             allow Admin all;
-            allow create, read, call, static call;
+            allow create, read, call;
             attribute comment : Memo;
             operation reply(text : Memo);
             static operation newComment(text : Memo) : AnonymousComment;
@@ -358,7 +358,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 
         assertEquals(#{AccessCapability.Create.name(), AccessCapability.List.name() }, entityCapabilities.entity.toSet)
         
-        assertEquals(#[AccessCapability.StaticCall.name()], entityCapabilities.actions.get('deleteTasksFor'))
+        assertEquals(#[AccessCapability.Call.name()], entityCapabilities.actions.get('deleteTasksFor'))
     }
 
     def testEntityCapabilities_Anonymous() {
@@ -369,14 +369,14 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val entityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousComment", TypeKind.Entity))
 
         assertEquals(#{AccessCapability.Create.name() }.toSet, entityCapabilities.entity.toSet)
-        assertEquals(#[AccessCapability.StaticCall.name()], entityCapabilities.actions.get('newComment'))
+        assertEquals(#[AccessCapability.Call.name()], entityCapabilities.actions.get('newComment'))
         
         loginAs("peter.jones");
         
         val entityCapabilities2 = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousComment", TypeKind.Entity))
 
         assertEquals(#{AccessCapability.Create.name(), AccessCapability.List.name() }, entityCapabilities2.entity.toSet)
-        assertEquals(#[AccessCapability.StaticCall.name()], entityCapabilities2.actions.get('newComment'))
+        assertEquals(#[AccessCapability.Call.name()], entityCapabilities2.actions.get('newComment'))
     }
     
     def testEntityCapabilities_Anonymous_RestrictedEntity() {
@@ -398,14 +398,14 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         val entityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousPost", TypeKind.Entity))
 
         assertEquals(#{AccessCapability.Create.name(), AccessCapability.List.name() }, entityCapabilities.entity.toSet)
-        assertEquals(#[AccessCapability.StaticCall.name()], entityCapabilities.actions.get('writeAndPublish'))
+        assertEquals(#[AccessCapability.Call.name()], entityCapabilities.actions.get('writeAndPublish'))
         
         loginAs("peter.jones");
         
         val entityCapabilities2 = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousPost", TypeKind.Entity))
 
         assertEquals(#{AccessCapability.Create.name(), AccessCapability.List.name() }, entityCapabilities2.entity.toSet)
-        assertEquals(#[AccessCapability.StaticCall.name()], entityCapabilities2.actions.get('writeAndPublish'))
+        assertEquals(#[AccessCapability.Call.name()], entityCapabilities2.actions.get('writeAndPublish'))
         
     }
     

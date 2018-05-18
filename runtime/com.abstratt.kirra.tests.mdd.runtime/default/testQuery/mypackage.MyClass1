@@ -1,0 +1,39 @@
+{
+  "nodes": {
+    "4": {
+      "key": 4,
+      "storeName": "mypackage.MyClass1",
+      "properties": {
+        "attr1": 10
+      },
+      "related": {},
+      "children": {}
+    },
+    "5": {
+      "key": 5,
+      "storeName": "mypackage.MyClass1",
+      "properties": {
+        "attr1": 20
+      },
+      "related": {},
+      "children": {}
+    },
+    "6": {
+      "key": 6,
+      "storeName": "mypackage.MyClass1",
+      "properties": {
+        "attr1": 30
+      },
+      "related": {},
+      "children": {}
+    }
+  },
+  "keys": {
+    "value": 6
+  },
+  "entityName": {
+    "entityNamespace": "mypackage",
+    "kind": "Entity",
+    "typeName": "MyClass1"
+  }
+}

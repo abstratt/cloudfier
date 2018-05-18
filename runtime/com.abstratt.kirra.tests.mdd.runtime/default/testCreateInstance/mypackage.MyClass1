@@ -1,0 +1,23 @@
+{
+  "nodes": {
+    "2": {
+      "key": 2,
+      "storeName": "mypackage.MyClass1",
+      "properties": {
+        "attr2": 5,
+        "attr3": 100,
+        "attr1": "foo"
+      },
+      "related": {},
+      "children": {}
+    }
+  },
+  "keys": {
+    "value": 2
+  },
+  "entityName": {
+    "entityNamespace": "mypackage",
+    "kind": "Entity",
+    "typeName": "MyClass1"
+  }
+}

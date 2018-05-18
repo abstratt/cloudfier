@@ -314,6 +314,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
             final Parameter operationParameter = new Parameter();
             operationParameter.setOwner(basicOperation.getOwner());
             setName(parameter, operationParameter);
+            operationParameter.setUserVisible(true);
             operationParameter.setRequired(KirraHelper.isRequired(parameter));
             operationParameter.setHasDefault(KirraHelper.hasDefault(parameter));
             operationParameter.setMultiple(KirraHelper.isMultiple(parameter));

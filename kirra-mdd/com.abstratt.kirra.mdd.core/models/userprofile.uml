@@ -2,7 +2,7 @@
 <xmi:XMI xmi:version="20131001" xmlns:xmi="http://www.omg.org/spec/XMI/20131001" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore" xmlns:mdd_extensions="profiles/mdd_extensions" xmlns:uml="http://www.eclipse.org/uml2/5.0.0/UML" xsi:schemaLocation="profiles/mdd_extensions pathmap://MDD_PROFILES/mdd_extensions.uml#_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML-mdd_extensions">
   <uml:Package xmi:id="_0" name="userprofile" URI="models/userprofile">
     <eAnnotations xmi:id="_com.abstratt2Fmdd2F" source="com.abstratt/mdd/">
-      <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2017/09/22 03:29:12 832 -0300"/>
+      <details xmi:id="_com.abstratt2Fmdd2F-_details.0" key="dateCreated" value="2018/04/24 09:41:12 517 -0300"/>
     </eAnnotations>
     <packageImport xmi:id="_packageImport.0">
       <importedPackage xmi:type="uml:Model" href="pathmap://MDD_LIBRARIES/mdd_types.uml#_0"/>
@@ -77,6 +77,237 @@
           </node>
         </structuredNode>
       </ownedBehavior>
+      <ownedOperation xmi:id="UserProfile-findByUsername" name="findByUsername" visibility="private" isStatic="true" method="UserProfile-__activity_findByUsername" isQuery="true">
+        <ownedParameter xmi:id="UserProfile-findByUsername-username" name="username">
+          <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#String"/>
+          <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-findByUsername-username-_lowerValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </lowerValue>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-findByUsername-username-_upperValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </upperValue>
+        </ownedParameter>
+        <ownedParameter xmi:id="UserProfile-findByUsername-_ownedParameter.1" type="UserProfile" direction="return">
+          <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-findByUsername-_ownedParameter.1-_lowerValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </lowerValue>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-findByUsername-_ownedParameter.1-_upperValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </upperValue>
+        </ownedParameter>
+      </ownedOperation>
+      <nestedClassifier xmi:type="uml:Activity" xmi:id="UserProfile-__activity_findByUsername" name="__activity_findByUsername" specification="UserProfile-findByUsername" node="UserProfile-__activity_findByUsername-body" group="UserProfile-__activity_findByUsername-body" isReadOnly="true">
+        <ownedBehavior xmi:type="uml:Activity" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0" node="UserProfile-__activity_findByUsername-_ownedBehavior.0-body" group="UserProfile-__activity_findByUsername-_ownedBehavior.0-body" isReadOnly="true">
+          <ownedParameter xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-u" name="u" type="UserProfile">
+            <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-u-_lowerValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </lowerValue>
+            <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-u-_upperValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </upperValue>
+          </ownedParameter>
+          <ownedParameter xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-_ownedParameter.1" direction="return">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Boolean"/>
+            <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-_ownedParameter.1-_lowerValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </lowerValue>
+            <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-_ownedParameter.1-_upperValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </upperValue>
+          </ownedParameter>
+          <structuredNode xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body" name="body" mustIsolate="true">
+            <variable xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-u" name="u" type="UserProfile">
+              <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-u-_lowerValue" value="1">
+                <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+              </lowerValue>
+              <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-u-_upperValue" value="1">
+                <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+              </upperValue>
+            </variable>
+            <variable xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_variable.1" name="">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Boolean"/>
+              <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_variable.1-_lowerValue" value="1">
+                <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+              </lowerValue>
+              <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_variable.1-_upperValue" value="1">
+                <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+              </upperValue>
+            </variable>
+            <node xmi:type="uml:StructuredActivityNode" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0">
+              <node xmi:type="uml:StructuredActivityNode" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0">
+                <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.0" target="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_object" source="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.3-_result"/>
+                <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.1" target="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_target" source="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_result"/>
+                <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.2" target="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_argument.0" source="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.4-_result"/>
+                <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.3" target="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0-_value" source="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_result.0"/>
+                <edge xmi:type="uml:ControlFlow" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.4" target="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.5" source="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0"/>
+                <node xmi:type="uml:AddVariableValueAction" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0" outgoing="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.4" variable="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_variable.1">
+                  <value xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0-_value" incoming="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.3">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Boolean"/>
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0-_value-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0-_value-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </value>
+                </node>
+                <node xmi:type="uml:CallOperationAction" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1">
+                  <argument xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_argument.0" incoming="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.2">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#String"/>
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_argument.0-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_argument.0-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </argument>
+                  <result xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_result.0" outgoing="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.3">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Boolean"/>
+                  </result>
+                  <operation href="pathmap://MDD_LIBRARIES/mdd_types.uml#ComparableBasic-equals"/>
+                  <target xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_target" incoming="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.1">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Email"/>
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_target-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_target-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </target>
+                </node>
+                <node xmi:type="uml:ReadStructuralFeatureAction" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2" structuralFeature="UserProfile-username">
+                  <object xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_object" incoming="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.0" type="UserProfile">
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_object-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_object-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </object>
+                  <result xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_result" outgoing="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.1">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Email"/>
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_result-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2-_result-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </result>
+                </node>
+                <node xmi:type="uml:ReadVariableAction" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.3" variable="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-u">
+                  <result xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.3-_result" outgoing="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.0" type="UserProfile">
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.3-_result-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.3-_result-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </result>
+                </node>
+                <node xmi:type="uml:ReadVariableAction" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.4" variable="UserProfile-__activity_findByUsername-body-username">
+                  <result xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.4-_result" outgoing="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.2">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#String"/>
+                    <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.4-_result-_lowerValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </lowerValue>
+                    <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.4-_result-_upperValue" value="1">
+                      <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                    </upperValue>
+                  </result>
+                </node>
+                <node xmi:type="uml:ActivityFinalNode" xmi:id="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.5" incoming="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_edge.4"/>
+              </node>
+            </node>
+          </structuredNode>
+        </ownedBehavior>
+        <ownedParameter xmi:id="UserProfile-__activity_findByUsername-username" name="username">
+          <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#String"/>
+          <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-username-_lowerValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </lowerValue>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-username-_upperValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </upperValue>
+        </ownedParameter>
+        <ownedParameter xmi:id="UserProfile-__activity_findByUsername-_ownedParameter.1" type="UserProfile" direction="return">
+          <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedParameter.1-_lowerValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </lowerValue>
+          <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-_ownedParameter.1-_upperValue" value="1">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+          </upperValue>
+        </ownedParameter>
+        <structuredNode xmi:id="UserProfile-__activity_findByUsername-body" name="body" mustIsolate="true">
+          <variable xmi:id="UserProfile-__activity_findByUsername-body-username" name="username">
+            <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#String"/>
+            <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-username-_lowerValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </lowerValue>
+            <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-username-_upperValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </upperValue>
+          </variable>
+          <variable xmi:id="UserProfile-__activity_findByUsername-body-_variable.1" name="" type="UserProfile">
+            <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_variable.1-_lowerValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </lowerValue>
+            <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_variable.1-_upperValue" value="1">
+              <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+            </upperValue>
+          </variable>
+          <node xmi:type="uml:StructuredActivityNode" xmi:id="UserProfile-__activity_findByUsername-body-_node.0">
+            <node xmi:type="uml:StructuredActivityNode" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0">
+              <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.0" target="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_target" source="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.2-_result"/>
+              <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.1" target="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-predicate" source="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.3-_result"/>
+              <edge xmi:type="uml:ObjectFlow" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.2" target="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0-_value" source="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_result.0"/>
+              <edge xmi:type="uml:ControlFlow" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.3" target="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.4" source="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0"/>
+              <node xmi:type="uml:AddVariableValueAction" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0" outgoing="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.3" variable="UserProfile-__activity_findByUsername-body-_variable.1">
+                <value xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0-_value" incoming="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.2" type="UserProfile">
+                  <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0-_value-_lowerValue" value="1">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                  </lowerValue>
+                  <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0-_value-_upperValue" value="1">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                  </upperValue>
+                </value>
+              </node>
+              <node xmi:type="uml:CallOperationAction" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1">
+                <argument xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-predicate" name="predicate" incoming="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.1">
+                  <type xmi:type="uml:Interface" href="pathmap://MDD_LIBRARIES/mdd_collections.uml#_7B20mdd_collectionsCollectionT2020mdd_typesBoolean7D.3"/>
+                  <lowerValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-predicate-_lowerValue" value="1">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                  </lowerValue>
+                  <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-predicate-_upperValue" value="1">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                  </upperValue>
+                </argument>
+                <result xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_result.0" outgoing="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.2" type="UserProfile">
+                  <lowerValue xmi:type="uml:LiteralInteger" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_result.0-_lowerValue"/>
+                  <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_result.0-_upperValue" value="1"/>
+                </result>
+                <operation href="pathmap://MDD_LIBRARIES/mdd_collections.uml#Collection-any"/>
+                <target xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_target" incoming="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.0" type="UserProfile">
+                  <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1-_target-_upperValue" value="*">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                  </upperValue>
+                </target>
+              </node>
+              <node xmi:type="uml:ReadExtentAction" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.2" classifier="UserProfile">
+                <result xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.2-_result" outgoing="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.0" type="UserProfile">
+                  <upperValue xmi:type="uml:LiteralUnlimitedNatural" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.2-_result-_upperValue" value="*">
+                    <type xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Integer"/>
+                  </upperValue>
+                </result>
+              </node>
+              <node xmi:type="uml:ValueSpecificationAction" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.3">
+                <result xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.3-_result" outgoing="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.1" type="UserProfile-__activity_findByUsername-_ownedBehavior.0"/>
+                <value xmi:type="uml:OpaqueExpression" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.3-_value" type="UserProfile-__activity_findByUsername-_ownedBehavior.0" behavior="UserProfile-__activity_findByUsername-_ownedBehavior.0"/>
+              </node>
+              <node xmi:type="uml:ActivityFinalNode" xmi:id="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.4" incoming="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_edge.3"/>
+            </node>
+          </node>
+        </structuredNode>
+      </nestedClassifier>
     </packagedElement>
     <packagedElement xmi:type="uml:Class" xmi:id="Anonymous" name="Anonymous">
       <eAnnotations xmi:id="Anonymous-_com.abstratt2Fmdd2Funit" source="com.abstratt/mdd/unit">
@@ -85,6 +316,14 @@
       <generalization xmi:id="Anonymous-_generalization.0">
         <general xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Object"/>
       </generalization>
+    </packagedElement>
+    <packagedElement xmi:type="uml:Class" xmi:id="Set3CUserProfile3E" name="Set&lt;UserProfile>">
+      <templateBinding xmi:id="Set3CUserProfile3E-_templateBinding.0">
+        <parameterSubstitution xmi:id="Set3CUserProfile3E-_templateBinding.0-_parameterSubstitution.0" actual="UserProfile">
+          <formal xmi:type="uml:ClassifierTemplateParameter" href="pathmap://MDD_LIBRARIES/mdd_collections.uml#Set-_ownedTemplateSignature-_ownedParameter.0"/>
+        </parameterSubstitution>
+        <signature xmi:type="uml:RedefinableTemplateSignature" href="pathmap://MDD_LIBRARIES/mdd_collections.uml#Set-_ownedTemplateSignature"/>
+      </templateBinding>
     </packagedElement>
     <profileApplication xmi:id="_profileApplication.0">
       <eAnnotations xmi:id="_profileApplication.0-_http2F2Fwww.eclipse.org2Fuml22F2.0.02FUML" source="http://www.eclipse.org/uml2/2.0.0/UML">
@@ -102,15 +341,27 @@
   <mdd_extensions:Debuggable xmi:id="_1" lineNumber="7" source="userprofile.tuml" base_Element="UserProfile"/>
   <mdd_extensions:Debuggable xmi:id="_2" lineNumber="10" source="userprofile.tuml" base_Element="UserProfile-username"/>
   <mdd_extensions:Debuggable xmi:id="_3" lineNumber="11" source="userprofile.tuml" base_Element="UserProfile-password"/>
-  <mdd_extensions:Debuggable xmi:id="_4" lineNumber="20" source="userprofile.tuml" base_Element="Anonymous"/>
-  <mdd_extensions:Role xmi:id="_5" base_Class="Anonymous"/>
-  <mdd_extensions:Application xmi:id="_6" base_Package="_0"/>
-  <mdd_extensions:Access xmi:id="_7" base_Constraint="UserProfile-_ownedRule.0"/>
-  <mdd_extensions:Debuggable xmi:id="_8" lineNumber="8" source="userprofile.tuml" base_Element="UserProfile-_ownedRule.0"/>
-  <mdd_extensions:ConstraintBehavior xmi:id="_9" constraint="UserProfile-_ownedRule.0" base_Activity="UserProfile-_ownedBehavior.0"/>
-  <mdd_extensions:BasicValue xmi:id="_10" base_LiteralString="UserProfile-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_value">
+  <mdd_extensions:Debuggable xmi:id="_4" lineNumber="13" source="userprofile.tuml" base_Element="UserProfile-findByUsername"/>
+  <mdd_extensions:Debuggable xmi:id="_5" lineNumber="26" source="userprofile.tuml" base_Element="Anonymous"/>
+  <mdd_extensions:Role xmi:id="_6" base_Class="Anonymous"/>
+  <mdd_extensions:Application xmi:id="_7" base_Package="_0"/>
+  <mdd_extensions:Access xmi:id="_8" base_Constraint="UserProfile-_ownedRule.0"/>
+  <mdd_extensions:Debuggable xmi:id="_9" lineNumber="8" source="userprofile.tuml" base_Element="UserProfile-_ownedRule.0"/>
+  <mdd_extensions:ConstraintBehavior xmi:id="_10" constraint="UserProfile-_ownedRule.0" base_Activity="UserProfile-_ownedBehavior.0"/>
+  <mdd_extensions:BasicValue xmi:id="_11" base_LiteralString="UserProfile-_ownedBehavior.0-body-_node.0-_node.0-_node.1-_value">
     <basicType xmi:type="uml:Class" href="pathmap://MDD_LIBRARIES/mdd_types.uml#Boolean"/>
   </mdd_extensions:BasicValue>
-  <mdd_extensions:Debuggable xmi:id="_11" source="userprofile.tuml" base_Element="UserProfile-_ownedBehavior.0-body-_node.0-_node.0-_node.1"/>
-  <mdd_extensions:Debuggable xmi:id="_12" source="userprofile.tuml" base_Element="UserProfile-_ownedBehavior.0-body-_node.0-_node.0-_node.0"/>
+  <mdd_extensions:Debuggable xmi:id="_12" source="userprofile.tuml" base_Element="UserProfile-_ownedBehavior.0-body-_node.0-_node.0-_node.1"/>
+  <mdd_extensions:Debuggable xmi:id="_13" source="userprofile.tuml" base_Element="UserProfile-_ownedBehavior.0-body-_node.0-_node.0-_node.0"/>
+  <mdd_extensions:Debuggable xmi:id="_14" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-body-_node.0-_node.0"/>
+  <mdd_extensions:Debuggable xmi:id="_15" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.2"/>
+  <mdd_extensions:Closure xmi:id="_16" context="UserProfile-__activity_findByUsername-body-_node.0-_node.0" base_Activity="UserProfile-__activity_findByUsername-_ownedBehavior.0"/>
+  <mdd_extensions:Debuggable xmi:id="_17" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.3"/>
+  <mdd_extensions:Debuggable xmi:id="_18" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.1"/>
+  <mdd_extensions:Debuggable xmi:id="_19" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-body-_node.0-_node.0-_node.0"/>
+  <mdd_extensions:Debuggable xmi:id="_20" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.3"/>
+  <mdd_extensions:Debuggable xmi:id="_21" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.2"/>
+  <mdd_extensions:Debuggable xmi:id="_22" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.4"/>
+  <mdd_extensions:Debuggable xmi:id="_23" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.1"/>
+  <mdd_extensions:Debuggable xmi:id="_24" lineNumber="15" source="userprofile.tuml" base_Element="UserProfile-__activity_findByUsername-_ownedBehavior.0-body-_node.0-_node.0-_node.0"/>
 </xmi:XMI>

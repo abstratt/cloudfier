@@ -9,6 +9,12 @@ class UserProfile specializes SystemUser
     (* Username is an email *)
     readonly id attribute username : Email;
     private attribute password : String;
+
+    private static query findByUsername(username : String) : UserProfile;
+    begin
+        return UserProfile extent.\any((u : UserProfile) : Boolean { (u.username = username) });
+    end;
+
 /*
     private static query findByUsernameAndPassword(username : String, password : String) : Profile[*];
     begin

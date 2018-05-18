@@ -634,7 +634,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         }'''
     }
     def generateActionPermitted(Class entity, Operation actionOperation, Class roleClass) {
-    	val requiredCapability = if (actionOperation.static) AccessCapability.StaticCall else AccessCapability.Call
+    	val requiredCapability = if (actionOperation.static) AccessCapability.Call else AccessCapability.Call
     	val accessConstraint = findAccessConstraint(#[actionOperation, actionOperation.class_], requiredCapability, roleClass)
     	if (accessConstraint == null)
     		return ''

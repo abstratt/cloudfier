@@ -1,0 +1,22 @@
+{
+  "nodes": {
+    "1": {
+      "key": 1,
+      "storeName": "userprofile.UserProfile",
+      "properties": {
+        "username": "testSignup@foo.com",
+        "password": "pass"
+      },
+      "related": {},
+      "children": {}
+    }
+  },
+  "keys": {
+    "value": 1
+  },
+  "entityName": {
+    "entityNamespace": "userprofile",
+    "kind": "Entity",
+    "typeName": "UserProfile"
+  }
+}

@@ -1031,7 +1031,7 @@ public class KirraHelper {
     }
 
 	public static boolean hasDefault(Property umlAttribute) {
-		return umlAttribute.getDefaultValue() != null;
+		return !isDerived(umlAttribute) && umlAttribute.getDefaultValue() != null;
 	}
 	
 	public static boolean hasDefault(Parameter umlParameter) {
