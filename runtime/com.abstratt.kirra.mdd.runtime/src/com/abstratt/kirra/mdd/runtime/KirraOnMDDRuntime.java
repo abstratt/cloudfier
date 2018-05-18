@@ -424,8 +424,8 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 					allCapabilities,
 					asList(runtimeClass.getModelClassifier(), action)
 				);
-    		boolean isCallAvailable = isCapabilityAvailable(runtimeClass.getClassObject(), AccessCapability.StaticCall, actualRoleClasses, actionConstraintsPerRole);
-    		return isCallAvailable ? asList(AccessCapability.StaticCall.name()) : emptyList();
+    		boolean isCallAvailable = isCapabilityAvailable(runtimeClass.getClassObject(), AccessCapability.Call, actualRoleClasses, actionConstraintsPerRole);
+    		return isCallAvailable ? asList(AccessCapability.Call.name()) : emptyList();
     	})); 
     	
     	capabilities.setActions(computeOperationCapabilities.apply(allStaticActions));
@@ -499,9 +499,12 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 			return true;
 		if (actualRoleClasses.isEmpty())
 			actualRoleClasses = Arrays.asList((Class) null);
-		return actualRoleClasses.stream().anyMatch(roleClass ->
-			isConstraintSatisfied(targetObject, explicitConstraintsPerRole.getOrDefault(roleClass, Collections.emptyMap()).get(capability), defaultValue)
+		boolean isAvailable = actualRoleClasses.stream().anyMatch(roleClass ->
+			isConstraintSatisfied(targetObject, explicitConstraintsPerRole
+				.getOrDefault(roleClass, Collections.emptyMap()
+			).get(capability), defaultValue)
 		);
+		return isAvailable;
 	}
 
 	private boolean isConstraintSatisfied(RuntimeObject targetObject, Constraint constraint, boolean defaultValue) {
