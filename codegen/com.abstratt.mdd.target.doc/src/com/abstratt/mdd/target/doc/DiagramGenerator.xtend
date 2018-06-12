@@ -18,6 +18,7 @@ import org.eclipse.core.runtime.Path
 import org.eclipse.uml2.uml.Package
 import org.eclipse.core.runtime.CoreException
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import com.abstratt.mdd.core.util.MDDUtil
 
 class DiagramGenerator extends AbstractGenerator {
 	
@@ -32,8 +33,9 @@ class DiagramGenerator extends AbstractGenerator {
         // project settings win
         loadDiagramSettings(diagramSettings, new File(repositoryLocation, IRepository.MDD_PROPERTIES));
         val RenderingSettings settings = new RenderingSettings(new MapBackedSettingsSource(diagramSettings));
-        val URI packageUri = URI.create(packageToRender.getURI());
-    	return UML2DOT.generateDOTFromModel(packageUri, Arrays.asList(packageToRender), settings);
+        // need to support top-level and child packages as well
+        val packageUri = packageToRender.eResource().getURI();
+    	return UML2DOT.generateDOTFromModel(MDDUtil.fromEMFToJava(packageUri), Arrays.asList(packageToRender), settings);
     }
     
     def byte[] generateDiagramAsImage(Map<String, String> diagramSettings, Package packageToRender) throws CoreException {
