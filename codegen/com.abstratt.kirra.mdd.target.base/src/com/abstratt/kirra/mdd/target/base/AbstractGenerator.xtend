@@ -13,6 +13,13 @@ import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import com.abstratt.kirra.mdd.core.KirraHelper
+import java.util.List
+import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.emf.ecore.EClass
+import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.UMLPackage
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -22,12 +29,17 @@ abstract class AbstractGenerator {
     protected Iterable<Class> entities
     
     protected Collection<Package> appPackages
+	
+	protected Iterable<Enumeration> enumerations
+	protected Iterable<StateMachine> stateMachines
     
     new(IRepository repository) {
         this.repository = repository
         if (repository != null) {
             this.appPackages = repository.getTopLevelPackages(null).applicationPackages
-            this.entities = appPackages.entities.filter[topLevel]
+            this.entities = appPackages.entities
+            this.enumerations = appPackages.getTypes(UMLPackage.Literals.ENUMERATION)
+            this.stateMachines = appPackages.getTypes(UMLPackage.Literals.STATE_MACHINE)
             this.applicationName = KirraHelper.getApplicationName(repository)
         }
     }
@@ -42,6 +54,18 @@ abstract class AbstractGenerator {
             return toCheck.target != null && toCheck.target.multivalued
         return false
     }
+    
+    def <T extends Type> List<T> getTypes(Collection<Package> packages, EClass type) {
+        val List<T> result = newArrayList()
+        for (Package current : packages) {
+            for (Type it : current.getOwnedTypes())
+                if (it.eClass == type)
+                    result.add(it as T)
+            result.addAll(getTypes(current.getNestedPackages(), type))
+        }
+        return result
+    }
+    
     
     def boolean isOperation(Action toCheck, String typeName, String... operationNames) {
         if (toCheck instanceof CallOperationAction)
@@ -61,10 +85,10 @@ abstract class AbstractGenerator {
     }
     
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper) {
-        return items.generateMany(mapper, '\n')
+        items.generateMany(mapper, '\n')
     }
 
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper, String separator) {
-        return items.map[mapper.apply(it)].join(separator)
+        return items.map[mapper.apply(it).toString.trim].join(separator)
     }
 }

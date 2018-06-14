@@ -620,8 +620,6 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
 
     @Override
     public List<Instance> getParameterDomain(Entity entity, String externalId, com.abstratt.kirra.Operation action, Parameter parameter) {
-        if (!action.isInstanceOperation())
-            return getInstances(parameter.getTypeRef().getNamespace(), parameter.getTypeRef().getTypeName(), false);
         Class umlClass = (Class) getModelElement(entity.getNamespace(), entity.getName(), Literals.CLASS);
         org.eclipse.uml2.uml.Operation operation = FeatureUtils.findOperation(getRepository(), umlClass, action.getName(), null);
         org.eclipse.uml2.uml.Parameter umlParameter = operation.getOwnedParameter(parameter.getName(), null);
@@ -1332,7 +1330,7 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
                     continue;
                 DataElement entityProperty = entity.getProperty(property.getName());
                 BasicType value = this.convertToBasicType(kirraInstance.getValue(KirraHelper.getName(property)), property);
-                if (value == null || value.isEmpty())
+                if ((value == null || value.isEmpty()) && !KirraHelper.hasDefault(property))
                     throw new KirraException("A value is required for " + entityProperty.getLabel(), null, Kind.VALIDATION);
             } else {
                 // ensure provided links are to preexisting instances

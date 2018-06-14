@@ -1,17 +1,24 @@
 package com.abstratt.mdd.target.doc
 
 import com.abstratt.kirra.mdd.core.KirraHelper
+import com.abstratt.mdd.core.util.MDDExtensionUtils
+import com.abstratt.mdd.core.util.StateMachineUtils
 import com.abstratt.mdd.target.base.IBasicBehaviorGenerator
 import java.util.List
+import java.util.concurrent.atomic.AtomicInteger
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.AddStructuralFeatureValueAction
 import org.eclipse.uml2.uml.AddVariableValueAction
+import org.eclipse.uml2.uml.AttributeOwner
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Clause
 import org.eclipse.uml2.uml.ConditionalNode
+import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.DataType
+import org.eclipse.uml2.uml.DestroyLinkAction
 import org.eclipse.uml2.uml.DestroyObjectAction
 import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.Feature
@@ -22,30 +29,23 @@ import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.ReadExtentAction
+import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadSelfAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
 import org.eclipse.uml2.uml.ReadVariableAction
 import org.eclipse.uml2.uml.SendSignalAction
 import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.StructuredActivityNode
+import org.eclipse.uml2.uml.TestIdentityAction
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.ValueSpecification
 import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import org.eclipse.uml2.uml.Clause
-import org.eclipse.uml2.uml.CreateLinkAction
-import org.eclipse.uml2.uml.DestroyLinkAction
-import org.eclipse.uml2.uml.TestIdentityAction
-import org.eclipse.uml2.uml.ReadExtentAction
-import org.eclipse.uml2.uml.ReadLinkAction
-import com.abstratt.mdd.core.util.MDDExtensionUtils
-import com.abstratt.mdd.core.util.StateMachineUtils
-import java.util.concurrent.atomic.AtomicInteger
-import org.eclipse.uml2.uml.AttributeOwner
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 
 class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
 
@@ -296,17 +296,18 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
     }
 
     def generateAsSpecialAction(CallOperationAction action) {
-        if (action.operation.name == 'user' && action.operation.class_.name == 'System') {
+        val featuringClassifier = action.operation.featuringClassifiers.findFirst[true]
+        if (action.operation.name == 'user' && featuringClassifier.name == 'System') {
             return 'current user'
         }
-        if (action.operation.class_.name == 'Memo') {
+		if (featuringClassifier.name == 'Memo') {
             return switch (action.operation.name) {
                 case 'fromString':
                     '''«action.arguments.head.generateAction»'''
                 default: '''TBD: «action.operation.name»'''
             }
         }
-        if (action.operation.class_.name == 'Date') {
+        if (featuringClassifier.name == 'Date') {
             return switch (action.operation.name) {
                 case 'today':
                     "today's date"
@@ -316,7 +317,7 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                 default: '''TBD: «action.operation.name»'''
             }
         }
-        if (action.operation.class_.name == 'Assert') {
+        if (featuringClassifier.name == 'Assert') {
             return switch (action.operation.name) {
                 case 'isTrue':
                     '''Ensure that «action.arguments.head.generateAction»'''
@@ -332,7 +333,7 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
             }
         }
         
-        if (action.operation.class_.name == 'Duration') {
+        if (featuringClassifier.name == 'Duration') {
             return switch (action.operation.name) {
                 case 'toDays':
                     '''«action.target.generateAction» (in days)'''

@@ -1,15 +1,15 @@
 package com.abstratt.mdd.target.doc
 
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-
 import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.target.ITopLevelMapper
+import com.abstratt.mdd.core.target.OutputHolder
 import java.io.IOException
 import java.io.InputStream
 import java.util.LinkedHashMap
 import org.eclipse.uml2.uml.Class
-import com.abstratt.mdd.core.target.OutputHolder
+
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 
 class DataDictionaryMapper implements ITopLevelMapper<Class> {
 
@@ -30,7 +30,8 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		
 		val applicationName = getApplicationName(repository)
 		val applicationDescription = getApplicationLabel(repository)
-		val appPackages = repository.getTopLevelPackages(null).applicationPackages
+		val allPackages = repository.getOwnPackages(null).map [ it.nestedPackages ].flatten()
+		val appPackages = allPackages.applicationPackages
 		val replacements = newLinkedHashMap(
 			'applicationName' -> KirraHelper.getApplicationName(repository),
 			'applicationDescription' -> applicationDescription,
@@ -42,11 +43,12 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		repository.properties.forEach[key, value|replacements.put(key.toString(), value.toString)]
 		val result = new LinkedHashMap<String, OutputHolder<?>>()
 		result.put('data-dictionary.html', new TextHolder(new DataDictionaryGenerator(repository).generate()))
+		val diagramGenerator = new DiagramGenerator(repository)
 		appPackages.forEach [ appPackage |
-			result.put(appPackage.name + '-classes.png',
-				new BinaryHolder(new DiagramGenerator(repository).generateDiagramAsImage(classDiagramSettings, appPackage)))
-			result.put(appPackage.name + '-state.png',
-				new BinaryHolder(new DiagramGenerator(repository).generateDiagramAsImage(stateDiagramSettings, appPackage)))
+			result.put(diagramGenerator.toJavaPackage(appPackage) + '-classes.png',
+				new BinaryHolder(diagramGenerator.generateDiagramAsImage(classDiagramSettings, appPackage)))
+			result.put(diagramGenerator.toJavaPackage(appPackage) + '-state.png',
+				new BinaryHolder(diagramGenerator.generateDiagramAsImage(stateDiagramSettings, appPackage)))
 		]
 		return result
 	}

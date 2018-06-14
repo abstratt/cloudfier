@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -145,7 +146,7 @@ public class KirraHelper {
     }
     
     private static void addApplications(org.eclipse.uml2.uml.Package target, Set<Package> collected) {
-        if (isApplication(target)) {
+        if (isApplication(target) || Optional.ofNullable(target.eContainer()).map(it -> isApplication((Package) it)).orElse(false)) {
             collected.add(target);
             for (Package it : target.getImportedPackages())
                 if (!collected.contains(it))
@@ -323,7 +324,7 @@ public class KirraHelper {
     }
     
     /**
-     * 
+     * A property is required if it is marked as required.
      * @param property
      * @param creation 
      * @return
@@ -908,10 +909,12 @@ public class KirraHelper {
     
     public static List<Class> getEntities(Collection<Package> applicationPackages) {
         List<Class> result = new ArrayList<Class>();
-        for (Package current : applicationPackages)
+        for (Package current : applicationPackages) {
             for (Type type : current.getOwnedTypes())
                 if (KirraHelper.isEntity(type))
                     result.add((Class) type);
+            result.addAll(getEntities(current.getNestedPackages()));
+        }
         return result;
     }
     

@@ -1,8 +1,9 @@
 package com.abstratt.mdd.target.doc
 
 import com.abstratt.kirra.mdd.core.KirraHelper
-import com.abstratt.mdd.core.IRepository
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import com.abstratt.mdd.core.IRepository
 import com.google.common.base.Function
 import java.util.Set
 import org.apache.commons.lang3.StringUtils
@@ -16,11 +17,15 @@ import org.eclipse.uml2.uml.StateMachine
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
-import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.Type
 
 class DataDictionaryGenerator extends AbstractGenerator {
+	private static final String YES = "\u2714"
+	private static final String NO = "-"
     
     new(IRepository repository) {
         super(repository)
@@ -50,6 +55,22 @@ class DataDictionaryGenerator extends AbstractGenerator {
             «generateRow[generateEntity(entity)]»
             '''
         ]»
+        «IF !enumerations.isEmpty»
+        <h2>Enumerations</h2>
+        «enumerations.generateMany[ enumeration |
+            '''
+            «generateRow[generateEnumeration(enumeration)]»
+            '''
+        ]»
+        «ENDIF»
+        «IF !stateMachines.isEmpty»
+        <h2>State machines</h2>
+        «stateMachines.generateMany[ stateMachine |
+            '''
+            «generateRow[generateStateMachine(stateMachine)]»
+            '''
+        ]»
+        «ENDIF»
         «IF !testClasses.empty»
         <h2>Scenarios</h2>
         «testClasses.generateMany[ testClass |
@@ -74,15 +95,21 @@ class DataDictionaryGenerator extends AbstractGenerator {
                 <tr>
                     <th>Namespace</th>
                     <th>Entities</th>
+                    <th>Description</th>
                 </tr>
             </thead>
             <tbody>
                 «packages.generateMany[package_ | '''
                 <tr>
-                    <td><a href="#«package_.qualifiedName»">«package_.qualifiedName»</a></td>
-                    <td>«package_.ownedTypes.filter[entity].generateMany([ entity |
-                        '''<a href="#«entity.qualifiedName»">«entity.name»</a>'''
-                    ], ', ')»
+                    <td>«generateLink(package_)»</a></td>
+                    <td>
+                    «package_.ownedTypes.filter[entity].sortBy[it.name].generateMany([ type | 
+                    	'''
+                    	«type.generateLink»
+                    	'''
+                    ],', ')»
+                    </td>
+                    <td>«IF package_.description.empty»-«ELSE»«package_.description»«ENDIF»</td>
                 </tr>
                 ''']»
             </tbody>
@@ -90,6 +117,17 @@ class DataDictionaryGenerator extends AbstractGenerator {
         </div>
         '''
     }
+	def CharSequence generateLink(NamedElement element) {
+		generateLink(element, false)
+	}
+	def CharSequence generateLink(NamedElement element, boolean qualified) {
+		if (element.nearestPackage.isLibrary) {
+			element.name
+		} else
+			'''
+				<a href="#«element.qualifiedName»">«getLabel(element)» «if (qualified) ''' («element.qualifiedName»)'''»</a>
+			'''.toString.trim
+	}
     
     def CharSequence generateRow(Function<Void, CharSequence> wrapped) {
         '''
@@ -118,7 +156,11 @@ class DataDictionaryGenerator extends AbstractGenerator {
         val entities = appPackage.ownedTypes.filter[entity]
         '''
         <div>
-        <h3>Package: «appPackage.qualifiedName»</h3>
+        <a name="«appPackage.qualifiedName»"></a>
+        <h3>Package: «getLabel(appPackage)»</h3>
+        <h5>(«appPackage.qualifiedName»)</h5>
+        
+        «IF !appPackage.description.empty»<blockquote>«appPackage.description»</blockquote>«ENDIF»
         <table class="table">
             <thead class="thead-inverse">
                 <tr>
@@ -129,7 +171,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
             <tbody>
                 «entities.generateMany[entity | '''
                 <tr>
-                    <td><a href="#«entity.qualifiedName»">«entity.name»</a></td>
+                    <td>«entity.generateLink»</a></td>
                     <td>«entity.description»</td>
                 </tr>
                 ''']»
@@ -143,6 +185,51 @@ class DataDictionaryGenerator extends AbstractGenerator {
         '''
     }
     
+    def CharSequence generateEnumeration(Enumeration enumeration) {
+    	'''
+        «generateSectionHeader("Enumeration", enumeration)»
+        <table class="table">
+            <thead class="thead-inverse">
+                <tr>
+                    <th width="20%">Name</th>
+                    <th width="80%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                «enumeration.ownedLiterals.generateMany[literal | '''
+                <tr>
+                    <td>«literal.asLabel»</td>
+                    <td>«IF literal.description.empty»-«ELSE»«literal.description»«ENDIF»</td>
+                </tr>
+                ''']»
+            </tbody>
+        </table>
+    	'''
+    }
+
+    def CharSequence generateStateMachine(StateMachine stateMachine) {
+    	'''
+        «generateSectionHeader("State machine", stateMachine)»
+        <table class="table">
+            <thead class="thead-inverse">
+                <tr>
+                    <th width="20%">Name</th>
+                    <th width="80%">Description</th>
+                </tr>
+            </thead>
+            <tbody>
+                «stateMachine.states.generateMany[state | '''
+                <tr>
+                    <td>«state.asLabel»</td>
+                    <td>«IF state.description.empty»-«ELSE»«state.description»«ENDIF»</td>
+                </tr>
+                ''']»
+            </tbody>
+        </table>
+    	'''
+    }
+
+
     def CharSequence generateEntity(Class entity) {
     	val entityRelationships = entity.entityRelationships
     	val entityProperties = entity.properties
@@ -151,9 +238,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
     	val stateMachine = entity.findStateProperties().head?.type as StateMachine
     	
         '''
-        <a name="«entity.qualifiedName»"></a>
-        <h3>Entity: «entity.name» (from «entity.package.name»)</h3>
-        «IF !StringUtils.isBlank(entity.description)»<blockquote>«entity.description»</blockquote>«ENDIF»
+        «generateSectionHeader("Entity", entity)»
         «IF !entityProperties.empty»
         <h4>Properties</h4>
         <table class="table">
@@ -171,14 +256,15 @@ class DataDictionaryGenerator extends AbstractGenerator {
                 «entityProperties.generateMany[property | '''
                 <tr>
                     <td>«property.asLabel»</td>
-                    <td>«property.type.name»</a></td>
-                    <td>«if (property.required) 'yes' else 'no'»</a></td>
-                    <td>«if (property.initializable) 'yes' else 'no'»</a></td>
-                    <td>«if (property.editable) 'yes' else 'no'»</a></td>
+                    <td>«property.type.generateLink»</a></td>
+                    <td>«if (property.required) YES else NO»</a></td>
+                    <td>«if (property.initializable) YES else NO»</a></td>
+                    <td>«if (property.editable) YES else NO»</a></td>
                     <td>
                     <table>
                     <tr><td>
                     «property.generateDescription»
+                    «property.type.enumerateLiterals»
                     </td></tr>
                     «IF property.derived»
                     <tr><th>
@@ -200,20 +286,20 @@ class DataDictionaryGenerator extends AbstractGenerator {
         <table class="table">
             <thead class="thead-inverse">
                 <tr>
-                    <th width="10%">Relationhip</th>
-                    <th width="5%">Related Entity</th>
+                    <th width="10%">Relationship</th>
+                    <th width="20%">Related Entity</th>
                     <th width="5%">Required</th>
                     <th width="5%">Multiple</th>
-                    <th width="75%">Description</th>
+                    <th width="60%">Description</th>
                 </tr>
             </thead>
             <tbody>
                 «entityRelationships.generateMany[relationship | '''
                 <tr>
                     <td>«relationship.asLabel»</td>
-                    <td><a href="#«relationship.type.qualifiedName»">«relationship.type.name»</a></td>
-                    <td>«if (relationship.required) 'yes' else 'no'»</a></td>
-                    <td>«if (relationship.multiple) 'yes' else 'no'»</a></td>
+                    <td>«relationship.type.generateLink»</a></td>
+                    <td>«if (relationship.required) YES else NO»</a></td>
+                    <td>«if (relationship.multiple) YES else NO»</a></td>
                     <td>
                     «relationship.generateDescription»
                     </td>
@@ -307,17 +393,23 @@ class DataDictionaryGenerator extends AbstractGenerator {
                 ''']»
             </tbody>
         </table>
-        «ENDIF»        
+        «ENDIF»
+        «IF entityProperties.empty && entityRelationships.empty && entityActions.empty && entityQueries.empty»-«ENDIF»
         '''
     }
+	
+	def dispatch CharSequence enumerateLiterals(Enumeration enumeration) 
+	''''''
+	
+	def dispatch CharSequence enumerateLiterals(Type enumeration) {
+		''
+	}
     
     def CharSequence generateTestClass(Class testClass) {
     	val testCases = testClass.operations.filter[testCase]
         '''
         «IF !testCases.empty»
-        <a name="«testClass.qualifiedName»"></a>
-        <h3>Test class: «testClass.name» (from «testClass.package.name»)</h3>
-        «IF !StringUtils.isBlank(testClass.description)»<blockquote>«testClass.description»</blockquote>«ENDIF»
+        «generateSectionHeader("Test class", testClass)»
         <table class="table">
             <thead class="thead-inverse">
                 <tr>
@@ -355,6 +447,16 @@ class DataDictionaryGenerator extends AbstractGenerator {
         «ENDIF»
         '''
     }
+	
+	
+	protected def CharSequence generateSectionHeader(String sectionName, Classifier classifier)
+		'''
+        <a name="«classifier.qualifiedName»"></a>
+        <h3>«getLabel(classifier)»</h3>
+        <h5>«sectionName» from <strong>«generateLink(classifier.package, true)»</strong></h5>
+        <hr>
+        «IF !StringUtils.isBlank(classifier.description)»<blockquote>«classifier.description»</blockquote>«ENDIF»
+        '''
     
     def CharSequence generateDescription(Element element) {
         val description = element.description
