@@ -1,25 +1,25 @@
 package com.abstratt.kirra.mdd.target.base
 
+import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.mdd.core.IRepository
 import java.util.Collection
+import java.util.List
+import org.eclipse.emf.ecore.EClass
 import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.ReadLinkAction
 import org.eclipse.uml2.uml.ReadStructuralFeatureAction
+import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.UMLPackage
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import com.abstratt.kirra.mdd.core.KirraHelper
-import java.util.List
-import org.eclipse.uml2.uml.Classifier
-import org.eclipse.uml2.uml.Enumeration
-import org.eclipse.uml2.uml.StateMachine
-import org.eclipse.emf.ecore.EClass
-import org.eclipse.uml2.uml.Type
-import org.eclipse.uml2.uml.UMLPackage
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -36,10 +36,11 @@ abstract class AbstractGenerator {
     new(IRepository repository) {
         this.repository = repository
         if (repository != null) {
-            this.appPackages = repository.getTopLevelPackages(null).applicationPackages
+            val topLevelPackages = repository.getTopLevelPackages(null)
+			this.appPackages = topLevelPackages.applicationPackages
             this.entities = appPackages.entities
             this.enumerations = appPackages.getTypes(UMLPackage.Literals.ENUMERATION)
-            this.stateMachines = appPackages.getTypes(UMLPackage.Literals.STATE_MACHINE)
+            this.stateMachines = appPackages.getTypes(UMLPackage.Literals.CLASS).map[it as Class].map[it.ownedBehaviors.filter(StateMachine)].flatten
             this.applicationName = KirraHelper.getApplicationName(repository)
         }
     }

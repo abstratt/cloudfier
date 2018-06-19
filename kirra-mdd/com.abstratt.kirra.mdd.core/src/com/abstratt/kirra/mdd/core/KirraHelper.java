@@ -145,12 +145,16 @@ public class KirraHelper {
         });
     }
     
-    private static void addApplications(org.eclipse.uml2.uml.Package target, Set<Package> collected) {
+    private static void addApplications(Collection<Package> targets, Set<Package> collected) {
+    	targets.stream().forEach(it -> addApplications(it, collected));
+    }
+    
+    private static void addApplications(Package target, Set<Package> collected) {
         if (isApplication(target) || Optional.ofNullable(target.eContainer()).map(it -> isApplication((Package) it)).orElse(false)) {
-            collected.add(target);
-            for (Package it : target.getImportedPackages())
-                if (!collected.contains(it))
-                    addApplications(it, collected);
+            if (collected.add(target)) {
+	            addApplications(target.getImportedPackages(), collected);
+	            addApplications(target.getNestedPackages(), collected);
+            }
         }
     }
 

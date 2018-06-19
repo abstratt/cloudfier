@@ -122,7 +122,9 @@ class DataDictionaryGenerator extends AbstractGenerator {
 		generateLink(element, false)
 	}
 	def CharSequence generateLink(NamedElement element, boolean qualified) {
-		if (element.nearestPackage.isLibrary) {
+		if (element == null)
+			'null'
+		else if (element.nearestPackage.isLibrary) {
 			element.name
 		} else
 			'''
@@ -133,7 +135,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
     def CharSequence generateRow(Function<Void, CharSequence> wrapped) {
         '''
         <div class="row">
-        <div class="col-sm-9 col-md-12 main">        
+        <div class="col-sm-9 col-md-12 main">
         «wrapped.apply(null)»
         </div>
         </div>
@@ -211,7 +213,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
 
     def CharSequence generateStateMachine(StateMachine stateMachine) {
     	'''
-        «generateSectionHeader("State machine", stateMachine)»
+        «generateSectionHeader('''State machine in <b>«stateMachine.context.asLabel»</b>''', stateMachine)»
         <table class="table">
             <thead class="thead-inverse">
                 <tr>
@@ -324,7 +326,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                 «entityActions.generateMany[action | '''
                 <tr>
                     <td>«action.asLabel»</td>
-                    <td>«IF action.parameters.inputParameters.empty»-«ELSE»«action.parameters.inputParameters.generateMany(['''<p>«name» («type.name»)</p>'''])»«ENDIF»</td>
+                    <td>«IF action.parameters.inputParameters.empty»-«ELSE»«action.parameters.inputParameters.generateMany(['''<p>«it.asLabel» («type.name»)</p>'''])»«ENDIF»</td>
                     <td>
                     <table>
                     <tr><td>
@@ -455,7 +457,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
 		'''
         <a name="«classifier.qualifiedName»"></a>
         <h3>«getLabel(classifier)»</h3>
-        <h5>«sectionName» from <strong>«generateLink(classifier.package, true)»</strong></h5>
+        <h5>«sectionName» from <strong>«generateLink(classifier.nearestPackage, true)»</strong></h5>
         <hr>
         «IF !StringUtils.isBlank(classifier.description)»<blockquote>«classifier.description»</blockquote>«ENDIF»
         '''
