@@ -402,8 +402,12 @@ class DataDictionaryGenerator extends AbstractGenerator {
         '''
     }
 	
-	def dispatch CharSequence enumerateLiterals(Enumeration enumeration) 
-	''''''
+	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
+	'''
+	<p>
+	«enumeration.ownedLiterals.generateMany([it.asLabel], ", ")»
+	</p>
+	'''
 	
 	def dispatch CharSequence enumerateLiterals(Type enumeration) {
 		''
