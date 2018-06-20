@@ -46,6 +46,7 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import org.eclipse.uml2.uml.Constraint
 
 class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
 
@@ -220,6 +221,10 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
 
         val base = generateFeatureActionBase(action.structuralFeature, action.object)
         '''«base»'''
+    }
+
+    def generateConstraint(Constraint constraint) {
+        (constraint.specification.resolveBehaviorReference as Activity).generateActivity
     }
 
     def generateDerivation(Property attribute) {

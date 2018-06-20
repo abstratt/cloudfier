@@ -235,10 +235,10 @@ class DataDictionaryGenerator extends AbstractGenerator {
 
 
     def CharSequence generateEntity(Class entity) {
-    	val entityRelationships = entity.entityRelationships
-    	val entityProperties = entity.properties
-    	val entityActions = entity.actions
-    	val entityQueries = entity.queries
+    	val entityRelationships = entity.entityRelationships.filter[it.public]
+    	val entityProperties = entity.properties.filter[it.public]
+    	val entityActions = entity.actions.filter[it.public]
+    	val entityQueries = entity.queries.filter[it.public]
     	val stateMachine = entity.findStateProperties().head?.type as StateMachine
     	
         '''
@@ -278,6 +278,14 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <pre>«new PseudoCodeActivityGenerator().generateDerivation(property)»</pre>
                     </td></tr>
                     «ENDIF»
+                    «FOR constraint : property.findInvariantConstraints»
+                    <tr><th>
+                    Invariant
+                    </th></tr>
+                    <tr><td>
+                    <pre>«new PseudoCodeActivityGenerator().generateConstraint(constraint)»</pre>
+                    </td></tr>
+                    «ENDFOR»
                     </table>
                     </td>
                 </tr>
@@ -294,7 +302,8 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <th width="20%">Related Entity</th>
                     <th width="5%">Required</th>
                     <th width="5%">Multiple</th>
-                    <th width="60%">Description</th>
+                    <th width="5%">Navigable</th>
+                    <th width="55%">Description</th>
                 </tr>
             </thead>
             <tbody>
@@ -304,6 +313,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <td>«relationship.type.generateLink»</a></td>
                     <td>«if (relationship.required) YES else NO»</a></td>
                     <td>«if (relationship.multiple) YES else NO»</a></td>
+                    <td>«if (relationship.navigable) YES else NO»</a></td>
                     <td>
                     «relationship.generateDescription»
                     </td>
@@ -352,6 +362,16 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     </pre>
                     </td></tr>
                     «ENDIF»
+                    «FOR constraint : action.preconditions»
+                    <tr><th>
+                    Pre-condition
+                    </th></tr>
+                    <tr><td>
+                    «constraint.description»
+                    <pre>«new PseudoCodeActivityGenerator().generateConstraint(constraint)»</pre>
+                    </td></tr>
+                    «ENDFOR»
+                    
                     </table>
                     </td>
                 </tr>
