@@ -22,6 +22,8 @@ import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import org.eclipse.uml2.uml.Classifier
 import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.Type
+import org.eclipse.emf.common.util.EList
+import org.eclipse.uml2.uml.Constraint
 
 class DataDictionaryGenerator extends AbstractGenerator {
 	private static final String YES = "\u2714"
@@ -278,14 +280,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <pre>«new PseudoCodeActivityGenerator().generateDerivation(property)»</pre>
                     </td></tr>
                     «ENDIF»
-                    «FOR constraint : property.findInvariantConstraints»
-                    <tr><th>
-                    Invariant
-                    </th></tr>
-                    <tr><td>
-                    <pre>«new PseudoCodeActivityGenerator().generateConstraint(constraint)»</pre>
-                    </td></tr>
-                    «ENDFOR»
+                    «generateConstraints("Invariants", property.findInvariantConstraints)»
                     </table>
                     </td>
                 </tr>
@@ -315,7 +310,12 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <td>«if (relationship.multiple) YES else NO»</a></td>
                     <td>«if (relationship.navigable) YES else NO»</a></td>
                     <td>
+                    <table>
+                    <tr><td>
                     «relationship.generateDescription»
+                    </td</tr>
+                    «generateConstraints("Invariants", relationship.findInvariantConstraints)»
+                    </table>
                     </td>
                 </tr>
                 ''']»
@@ -362,16 +362,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     </pre>
                     </td></tr>
                     «ENDIF»
-                    «FOR constraint : action.preconditions»
-                    <tr><th>
-                    Pre-condition
-                    </th></tr>
-                    <tr><td>
-                    «constraint.description»
-                    <pre>«new PseudoCodeActivityGenerator().generateConstraint(constraint)»</pre>
-                    </td></tr>
-                    «ENDFOR»
-                    
+                    «generateConstraints("Preconditions", action.preconditions)»
                     </table>
                     </td>
                 </tr>
@@ -421,6 +412,19 @@ class DataDictionaryGenerator extends AbstractGenerator {
         «IF entityProperties.empty && entityRelationships.empty && entityActions.empty && entityQueries.empty»-«ENDIF»
         '''
     }
+	
+	def CharSequence generateConstraints(String title, Iterable<Constraint> constraints)
+	'''
+    «FOR constraint : constraints»
+    <tr><th>
+    «title»
+    </th></tr>
+    <tr><td>
+    «constraint.description»
+    <pre>«new PseudoCodeActivityGenerator().generateConstraint(constraint)»</pre>
+    </td></tr>
+    «ENDFOR»
+    '''
 	
 	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
 	'''
