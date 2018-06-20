@@ -130,7 +130,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
 			element.name
 		} else
 			'''
-				<a href="#«element.qualifiedName»">«getLabel(element)» «if (qualified) ''' («element.qualifiedName»)'''»</a>
+				<a href="#«element.qualifiedName»">«getLabel(element)»«if (qualified) ''' («element.qualifiedName»)'''»</a>
 			'''.toString.trim
 	}
     
