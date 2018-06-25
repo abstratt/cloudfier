@@ -42,8 +42,8 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		)
 		repository.properties.forEach[key, value|replacements.put(key.toString(), value.toString)]
 		val result = new LinkedHashMap<String, OutputHolder<?>>()
-		result.put('data-dictionary.html', new TextHolder(new DataDictionaryGenerator(repository).generate()))
 		val showDiagrams = Boolean.valueOf(repository.properties.getProperty('mdd.doc.showDiagrams', Boolean.TRUE.toString))
+		result.put('data-dictionary.html', new TextHolder(new DataDictionaryGenerator(repository, showDiagrams).generate()))
 		if (showDiagrams) {
 			val diagramGenerator = new DiagramGenerator(repository)
 			appPackages.forEach [ appPackage |

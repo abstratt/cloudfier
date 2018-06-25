@@ -28,10 +28,18 @@ import org.eclipse.uml2.uml.Constraint
 class DataDictionaryGenerator extends AbstractGenerator {
 	private static final String YES = "\u2714"
 	private static final String NO = "-"
+	
+	private boolean showDiagrams
     
-    new(IRepository repository) {
+    new(IRepository repository, boolean showDiagrams) {
         super(repository)
+        this.showDiagrams = showDiagrams
     }
+
+    new(IRepository repository) {
+        this(repository, false)
+    }
+
     
     def CharSequence generate() {
         val entities = this.entities
@@ -183,10 +191,12 @@ class DataDictionaryGenerator extends AbstractGenerator {
                 ''']»
             </tbody>
         </table>
+        «IF showDiagrams»
         <h4>Class diagram</h4>
         <img src="«appPackage.toJavaPackage»-classes.png"></img>
         <h4>State diagram</h4>
         <img src="«appPackage.toJavaPackage»-state.png"></img>
+        «ENDIF»
         </div>
         '''
     }
