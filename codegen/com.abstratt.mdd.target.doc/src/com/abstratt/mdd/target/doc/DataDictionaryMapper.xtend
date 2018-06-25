@@ -30,7 +30,7 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		
 		val applicationName = getApplicationName(repository)
 		val applicationDescription = getApplicationLabel(repository)
-		val allPackages = repository.getOwnPackages(null).map [ it.nestedPackages ].flatten()
+		val allPackages = repository.getOwnPackages(null).map [ #[it] + it.nestedPackages ].flatten()
 		val appPackages = allPackages.applicationPackages
 		val replacements = newLinkedHashMap(
 			'applicationName' -> KirraHelper.getApplicationName(repository),
@@ -43,13 +43,16 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		repository.properties.forEach[key, value|replacements.put(key.toString(), value.toString)]
 		val result = new LinkedHashMap<String, OutputHolder<?>>()
 		result.put('data-dictionary.html', new TextHolder(new DataDictionaryGenerator(repository).generate()))
-		val diagramGenerator = new DiagramGenerator(repository)
-		appPackages.forEach [ appPackage |
-			result.put(diagramGenerator.toJavaPackage(appPackage) + '-classes.png',
-				new BinaryHolder(diagramGenerator.generateDiagramAsImage(classDiagramSettings, appPackage)))
-			result.put(diagramGenerator.toJavaPackage(appPackage) + '-state.png',
-				new BinaryHolder(diagramGenerator.generateDiagramAsImage(stateDiagramSettings, appPackage)))
-		]
+		val showDiagrams = Boolean.valueOf(repository.properties.getProperty('mdd.doc.showDiagrams', Boolean.TRUE.toString))
+		if (showDiagrams) {
+			val diagramGenerator = new DiagramGenerator(repository)
+			appPackages.forEach [ appPackage |
+				result.put(diagramGenerator.toJavaPackage(appPackage) + '-classes.png',
+					new BinaryHolder(diagramGenerator.generateDiagramAsImage(classDiagramSettings, appPackage)))
+				result.put(diagramGenerator.toJavaPackage(appPackage) + '-state.png',
+					new BinaryHolder(diagramGenerator.generateDiagramAsImage(stateDiagramSettings, appPackage)))
+			]
+		}
 		return result
 	}
 
