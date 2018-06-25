@@ -194,15 +194,15 @@ public class ResourceUtils {
     
 	public static Representation buildMultiFileResult(Request request, final String zipFileName,
 			SortedMap<String, byte[]> result) throws IOException {
-		String expectedContentType = ((HttpRequest) request).getHttpCall()
-		.getRequestHeaders().getValues(
+		String expectedContentType = ((HttpRequest) request).getHttpCall().getRequestHeaders().getValues(
 				HeaderConstants.HEADER_ACCEPT);
 		boolean zipFormat = (MediaType.ALL.getName().equals(expectedContentType) && result.size() > 1) 
 		        || MediaType.APPLICATION_OCTET_STREAM.getName()
 				    .equals(expectedContentType)
 				|| MediaType.APPLICATION_ZIP.getName().equals(
 						expectedContentType)
-				|| (expectedContentType == null && result.size() > 1);
+				|| expectedContentType == null
+				|| result.size() > 1;
 
 		if (zipFormat) {
             return ResourceUtils.createZip(result, zipFileName);
