@@ -30,6 +30,11 @@
               <goals>
                 <goal>archive-products</goal>
               </goals>
+              <configuration>
+                  <formats>
+                      <linux>tar.gz</linux>
+                  </formats>
+              </configuration>
           </execution>
         </executions>
       </plugin>
