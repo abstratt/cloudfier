@@ -249,11 +249,13 @@ class DataDictionaryGenerator extends AbstractGenerator {
                         <ul>
                     «FOR o : state.outgoings»
                     	<li>
-                    	<p>«o.target.asLabel»</p>
-                    	<strong>When: </strong>«o.triggers.generateMany[generateTrigger(it)]»
+                    	<p><em>To:</em> <strong>«o.target.asLabel»</strong></p>
+                    	<p>
+                    	<em>When: </em>«o.triggers.generateMany[generateTrigger(it)]»
+                    	</p>
                     	«IF o.guard != null»
                     	<p>
-                    	<strong>If: </strong>«o.guard.generateConstraint»
+                    	<em>If: </em>«o.guard.generateConstraint»
                     	</p>
                     	«ENDIF»
                     «ENDFOR»
