@@ -777,7 +777,7 @@ public class KirraHelper {
         if (explicitLabel != null)
             return explicitLabel;
         String symbol = sourceElement.getName();
-        return getLabelFromSymbol(symbol);
+        return getLabelFromSymbol(StringUtils.trimToEmpty(symbol));
     }
 
     public static String getLabelFromSymbol(String symbol) {
