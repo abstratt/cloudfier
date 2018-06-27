@@ -15,6 +15,7 @@ import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Clause
 import org.eclipse.uml2.uml.ConditionalNode
+import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.CreateLinkAction
 import org.eclipse.uml2.uml.CreateObjectAction
 import org.eclipse.uml2.uml.DataType
@@ -28,6 +29,7 @@ import org.eclipse.uml2.uml.LiteralString
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Parameter
+import org.eclipse.uml2.uml.ParameterDirectionKind
 import org.eclipse.uml2.uml.Property
 import org.eclipse.uml2.uml.ReadExtentAction
 import org.eclipse.uml2.uml.ReadLinkAction
@@ -46,7 +48,6 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.Constraint
 
 class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
 
@@ -54,11 +55,12 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
         val generated = activity.rootAction.generateAction
         return generated
     }
-
+    
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
         val singleStatement = toGenerate.rootAction.findSingleStatement
         val sourceAction = singleStatement.sourceAction
-        return sourceAction.generateAction
+        val sourceActionAsExpression = sourceAction.generateAction
+        return sourceActionAsExpression
     }
 
     override generateAction(Action action, boolean delegate) {
@@ -223,16 +225,19 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
         '''«base»'''
     }
 
-    def generateConstraint(Constraint constraint) {
+    def CharSequence generateConstraint(Constraint constraint) {
+    	if (constraint == null)
+    		return ''
         (constraint.specification.resolveBehaviorReference as Activity).generateActivity
     }
 
     def generateDerivation(Property attribute) {
-        if (attribute.defaultValue != null)
+        val baseValue = if (attribute.defaultValue != null)
             if (attribute.defaultValue.behaviorReference)
                 (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivity
             else '''«attribute.defaultValue.generateValue»'''
         else '''«attribute.type.generateDefaultValue»'''
+        return baseValue
     }
 
     private def indefiniteArticle(String expression) {
@@ -263,6 +268,13 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
         val asSpecialAction = generateAsSpecialAction(action)
         if (asSpecialAction != null)
             return asSpecialAction
+        val operation = action.operation
+        val isQuery = operation.isQuery
+        val nonReturnParameters = operation.ownedParameters.filter[it.direction != ParameterDirectionKind.RETURN]
+		val hasParameter = !nonReturnParameters.isEmpty
+		if (isQuery && !hasParameter) {
+        	return (operation.methods.findFirst[true] as Activity).generateActivityAsExpression
+        }
         val base = generateFeatureActionBase(action.operation, action.target)
         val isFunction = action.results.head?.targetAction != null
         val arguments = if (action.arguments.empty) 
@@ -305,6 +317,20 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
         if (action.operation.name == 'user' && featuringClassifier.name == 'System') {
             return 'current user'
         }
+		if (featuringClassifier.name == 'Boolean') {
+            return switch (action.operation.name) {
+                case 'not': '''
+                    («action.target.generateAction») is false
+                '''
+                default:
+                    '''
+                    («generateAction(action.target).toString.trim»)
+                    «action.operation.name»
+                    («generateAction(action.arguments.head).toString.trim»)
+                    '''
+            }
+        }
+        
 		if (featuringClassifier.name == 'Memo') {
             return switch (action.operation.name) {
                 case 'fromString':
@@ -356,6 +382,9 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
         }
         if (action.target != null && action.target.multivalued) {
             return switch (action.operation.name) {
+                case 'not': '''
+                    «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity» is not true
+                '''
                 case 'forEach': '''
                     for each «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.type.name» '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»' in «action.target.generateAction» do:
                         «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity»
@@ -364,6 +393,7 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                     the sum of «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity»
                     	where «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.type.name» '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»' is «action.target.generateAction»
                 '''
+                
                 case 'select': '''
                     «IF !(action.results.get(0).targetAction instanceof CallOperationAction)»select from «ENDIF»«action.target.generateAction» '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»'
                         where «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toFirstLower»
@@ -401,15 +431,7 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                 case 0:
                     '''«operator» «generateAction(action.target)»'''
                 case 1:
-                	switch (action.operationTarget.name) {
-                		case 'Boolean':
-	                    '''
-	                    «generateAction(action.target)»
-	                        «operator»
-	                    «generateAction(action.arguments.head)»
-	                    '''
-	                    default: '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
-                	}
+                    '''«generateAction(action.target)» «operator» «generateAction(action.arguments.head)»'''
             }
         }
     }
@@ -434,12 +456,6 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                 '/'
             case 'minus':
                 '-'
-            case 'and':
-                'and'
-            case 'or':
-                'or'
-            case 'not':
-                'not'
             case 'lowerThan':
                 '<'
             case 'greaterThan':

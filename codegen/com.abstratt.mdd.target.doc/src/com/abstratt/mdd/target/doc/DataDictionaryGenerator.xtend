@@ -7,23 +7,29 @@ import com.abstratt.mdd.core.IRepository
 import com.google.common.base.Function
 import java.util.Set
 import org.apache.commons.lang3.StringUtils
+import org.eclipse.emf.common.util.EList
 import org.eclipse.uml2.uml.Activity
+import org.eclipse.uml2.uml.Behavior
+import org.eclipse.uml2.uml.CallEvent
 import org.eclipse.uml2.uml.Class
+import org.eclipse.uml2.uml.Classifier
+import org.eclipse.uml2.uml.Constraint
 import org.eclipse.uml2.uml.Element
+import org.eclipse.uml2.uml.Enumeration
+import org.eclipse.uml2.uml.Event
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Package
+import org.eclipse.uml2.uml.Property
+import org.eclipse.uml2.uml.SignalEvent
 import org.eclipse.uml2.uml.StateMachine
+import org.eclipse.uml2.uml.Trigger
+import org.eclipse.uml2.uml.Type
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import org.eclipse.uml2.uml.Classifier
-import org.eclipse.uml2.uml.Enumeration
-import org.eclipse.uml2.uml.Type
-import org.eclipse.emf.common.util.EList
-import org.eclipse.uml2.uml.Constraint
 
 class DataDictionaryGenerator extends AbstractGenerator {
 	private static final String YES = "\u2714"
@@ -229,8 +235,9 @@ class DataDictionaryGenerator extends AbstractGenerator {
         <table class="table">
             <thead class="thead-inverse">
                 <tr>
-                    <th width="20%">Name</th>
-                    <th width="80%">Description</th>
+                    <th width="10%">Name</th>
+                    <th width="40%">Description</th>
+                    <th width="50%">Transitions</th>                    
                 </tr>
             </thead>
             <tbody>
@@ -238,12 +245,41 @@ class DataDictionaryGenerator extends AbstractGenerator {
                 <tr>
                     <td>«state.asLabel»</td>
                     <td>«IF state.description.empty»-«ELSE»«state.description»«ENDIF»</td>
+                    <td>
+                        <ul>
+                    «FOR o : state.outgoings»
+                    	<li>
+                    	<p>«o.target.asLabel»</p>
+                    	<strong>When: </strong>«o.triggers.generateMany[generateTrigger(it)]»
+                    	«IF o.guard != null»
+                    	<p>
+                    	<strong>If: </strong>«o.guard.generateConstraint»
+                    	</p>
+                    	«ENDIF»
+                    «ENDFOR»
+                        </ul>
+                    </td>
                 </tr>
                 ''']»
             </tbody>
         </table>
     	'''
     }
+	
+	def CharSequence generateTrigger(Trigger trigger) {
+		'''«generateEvent(trigger.event)»'''
+	}
+	
+	def dispatch CharSequence generateEvent(Event event) {
+		'''Unexpected event type'«event.eClass.name»' '''
+	}
+	def dispatch CharSequence generateEvent(CallEvent event) {
+		'''action '«event.operation.asLabel»' is called'''
+	}
+	def dispatch CharSequence generateEvent(SignalEvent event) {
+		'''signal '«event.signal.asLabel»' is received'''
+	}
+	
 
 
     def CharSequence generateEntity(Class entity) {
@@ -287,7 +323,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     Computed value
                     </th></tr>
                     <tr><td>
-                    <pre>«new PseudoCodeActivityGenerator().generateDerivation(property)»</pre>
+                    <pre>«generateDerivation(property)»</pre>
                     </td></tr>
                     «ENDIF»
                     «generateConstraints("Invariants", property.findInvariantConstraints)»
@@ -367,7 +403,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <tr><td>
                     <pre>
                     «action.methods.generateMany[ behavior |
-                        new PseudoCodeActivityGenerator().generateActivity(behavior as Activity)
+                        generateActivity(behavior)
                     ].toString.trim()»
                     </pre>
                     </td></tr>
@@ -407,7 +443,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <tr><td>
                     <pre>
                     «query.methods.generateMany[ behavior |
-                        new PseudoCodeActivityGenerator().generateActivity(behavior as Activity)
+                        generateActivity(behavior)
                     ].toString.trim()»
                     </pre>
                     </td></tr>
@@ -422,6 +458,18 @@ class DataDictionaryGenerator extends AbstractGenerator {
         «IF entityProperties.empty && entityRelationships.empty && entityActions.empty && entityQueries.empty»-«ENDIF»
         '''
     }
+				
+	protected def CharSequence generateActivity(Behavior behavior) {
+		new PseudoCodeActivityGenerator().generateActivity(behavior as Activity)
+	}
+	
+	protected def CharSequence generateDerivation(Property property) {
+		new PseudoCodeActivityGenerator().generateDerivation(property)
+	}
+
+	protected def CharSequence generateConstraint(Constraint constraint) {
+		new PseudoCodeActivityGenerator().generateConstraint(constraint)
+	}
 	
 	def CharSequence generateConstraints(String title, Iterable<Constraint> constraints)
 	'''
@@ -431,11 +479,11 @@ class DataDictionaryGenerator extends AbstractGenerator {
     </th></tr>
     <tr><td>
     «constraint.description»
-    <pre>«new PseudoCodeActivityGenerator().generateConstraint(constraint)»</pre>
+    <pre>«generateConstraint(constraint)»</pre>
     </td></tr>
     «ENDFOR»
     '''
-	
+				
 	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
 	'''
 	<p>
@@ -475,7 +523,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <tr><td>
                     <pre>
                     «testCase.methods.generateMany[ behavior |
-                        new PseudoCodeActivityGenerator().generateActivity(behavior as Activity)
+                        generateActivity(behavior)
                     ].toString.trim()»
                     </pre>
                     </td></tr>
