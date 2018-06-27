@@ -1,7 +1,9 @@
 package com.abstratt.mdd.frontend.web;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,9 +75,20 @@ public class DiagramRendererResource extends AbstractWorkspaceResource {
 	                byte[] imageContents = diagramGenerator.generateDiagramAsImage(diagramSettings, packageToRender);
 	                return new InputRepresentation(new ByteArrayInputStream(imageContents), MediaType.IMAGE_PNG);
                 } catch (CoreException e) {
-                    ResourceUtils.fail(e, null);
-                    // never runs
-                    return null;
+                	setStatus(Status.SERVER_ERROR_INTERNAL);
+                	ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+                	PrintStream output = new PrintStream(errorStream);
+					e.printStackTrace(output);
+                	if (textOutputExpected) {
+            			return new StringRepresentation(new String(errorStream.toByteArray()));
+                	}
+                	try {
+	                	byte[] imageContents = diagramGenerator.generateTextAsImage(new String(errorStream.toByteArray()));
+		                InputRepresentation errorRepresentation = new InputRepresentation(new ByteArrayInputStream(imageContents), MediaType.IMAGE_PNG);
+						return errorRepresentation;
+                	} catch (CoreException e2) {
+                		return new StringRepresentation(new String(errorStream.toByteArray()));
+                	}
                 }
             }
 		});

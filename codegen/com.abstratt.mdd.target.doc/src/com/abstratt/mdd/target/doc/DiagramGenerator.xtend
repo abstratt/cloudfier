@@ -42,6 +42,10 @@ class DiagramGenerator extends AbstractGenerator {
     	val asDot = generateDiagramAsDot(diagramSettings, packageToRender)
     	return convertDotToImageUsingGraphviz(asDot)    	 
     }
+    
+    def byte[] generateTextAsImage(String message) throws CoreException {
+    	return convertDotToImageUsingGraphviz("NIL [ label=\"«message»\"]".bytes);
+    }
 
     private def void loadDiagramSettings(Map<String, String> diagramSettings, File propertiesFile) {
         if (propertiesFile.isFile()) {
