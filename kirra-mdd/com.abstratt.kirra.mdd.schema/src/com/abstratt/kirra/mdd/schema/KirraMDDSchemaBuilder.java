@@ -93,7 +93,7 @@ public class KirraMDDSchemaBuilder implements SchemaBuildingOnUML, SchemaBuilder
 	}
 
     private Namespace buildNamespace(Package umlPackage, List<Entity> entities, List<Service> services, List<TupleType> tupleTypes) {
-        Namespace namespace = new Namespace(KirraHelper.getName(umlPackage));
+        Namespace namespace = new Namespace(KirraHelper.getNamespaceName(umlPackage));
         namespace.setLabel(KirraHelper.getLabel(umlPackage));
         namespace.setDescription(KirraHelper.getDescription(umlPackage));
         namespace.setTimestamp(MDDUtil.getGeneratedTimestamp(umlPackage));

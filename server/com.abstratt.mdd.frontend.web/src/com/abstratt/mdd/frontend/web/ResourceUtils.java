@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -194,25 +195,34 @@ public class ResourceUtils {
     
 	public static Representation buildMultiFileResult(Request request, final String zipFileName,
 			SortedMap<String, byte[]> result) throws IOException {
-		String expectedContentType = ((HttpRequest) request).getHttpCall().getRequestHeaders().getValues(
-				HeaderConstants.HEADER_ACCEPT);
-		boolean zipFormat = (MediaType.ALL.getName().equals(expectedContentType) && result.size() > 1) 
-		        || MediaType.APPLICATION_OCTET_STREAM.getName()
-				    .equals(expectedContentType)
-				|| MediaType.APPLICATION_ZIP.getName().equals(
-						expectedContentType)
-				|| expectedContentType == null
+		String[] acceptHeaderValues = StringUtils.trimToEmpty(((HttpRequest) request)
+			.getHttpCall()
+			.getRequestHeaders()
+			.getValues(HeaderConstants.HEADER_ACCEPT)).split(",");
+		List<MediaType> acceptedContentTypes = Arrays
+				.stream(acceptHeaderValues)
+				.filter(it -> it != null)
+				.map(it -> MediaType.valueOf(it.split(";")[0]))
+				.collect(Collectors.toList());
+		boolean zipFormat = 
+				(acceptedContentTypes.contains(MediaType.ALL) && result.size() > 1) 
+		        || acceptedContentTypes.contains(MediaType.APPLICATION_OCTET_STREAM)
+				|| acceptedContentTypes.contains(MediaType.APPLICATION_ZIP)
 				|| result.size() > 1;
-
 		if (zipFormat) {
             return ResourceUtils.createZip(result, zipFileName);
 		}
+		// return as text
 		StringBuffer resultString = new StringBuffer();
 		for (byte[] each : result.values()) {
 			resultString.append("\n");
 			resultString.append(new String(each));
 		}
-		return new StringRepresentation(resultString.toString());
+		MediaType contentType = acceptedContentTypes
+				.stream()
+				.filter(it -> it.isCompatible(MediaType.TEXT_ALL))
+				.findFirst().orElse(MediaType.TEXT_PLAIN);
+		return new StringRepresentation(resultString.toString(), contentType);
 	}
     
 

@@ -20,6 +20,7 @@ import org.eclipse.uml2.uml.UMLPackage
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import com.abstratt.mdd.target.base.GeneratorUtils
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -86,10 +87,10 @@ abstract class AbstractGenerator {
     }
     
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper) {
-        items.generateMany(mapper, '\n')
+        GeneratorUtils.generateMany(items, mapper, '\n')
     }
 
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper, String separator) {
-        return items.map[mapper.apply(it).toString.trim].join(separator)
+    	GeneratorUtils.generateMany(items, mapper, separator)
     }
 }

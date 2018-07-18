@@ -1,24 +1,36 @@
 package com.abstratt.mdd.target.doc
 
 import com.abstratt.graphviz.GraphViz
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.core.util.MDDUtil
 import com.abstratt.mdd.modelrenderer.MapBackedSettingsSource
 import com.abstratt.mdd.modelrenderer.RenderingSettings
 import com.abstratt.mdd.modelrenderer.uml2dot.UML2DOT
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
+import java.awt.Color
+import java.awt.Font
+import java.awt.FontMetrics
+import java.awt.Graphics2D
+import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.net.URI
 import java.nio.file.Files
 import java.util.Arrays
 import java.util.Map
 import java.util.Properties
+import javax.imageio.ImageIO
 import org.apache.commons.io.FileUtils
+import org.apache.commons.lang3.StringUtils
+import org.apache.commons.lang3.text.WordUtils
+import org.eclipse.core.runtime.CoreException
 import org.eclipse.core.runtime.Path
 import org.eclipse.uml2.uml.Package
-import org.eclipse.core.runtime.CoreException
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
-import com.abstratt.mdd.core.util.MDDUtil
+import java.awt.Graphics
+import java.awt.font.FontRenderContext
+import java.awt.font.LineMetrics
 
 class DiagramGenerator extends AbstractGenerator {
 	
@@ -44,8 +56,30 @@ class DiagramGenerator extends AbstractGenerator {
     }
     
     def byte[] generateTextAsImage(String message) throws CoreException {
-    	return convertDotToImageUsingGraphviz("NIL [ label=\"«message»\"]".bytes);
-    }
+    	val lines = message.split("\\n").map[WordUtils.wrap(it, 60).split("\\n").toList].flatten()
+		val fontSize = 14
+		val longestLine = lines.reduce[a, b | if (a.length > b.length) a else b]
+		val Font font = new Font(Font.MONOSPACED, 0, fontSize)
+		val lineMetrics = font.getStringBounds(longestLine, new FontRenderContext(null, false, false))
+		val lineWidth = lineMetrics.bounds.width
+		val lineHeight = lineMetrics.bounds.height
+		
+		val width = lineWidth + 20
+		val height = (lines.size) * lineHeight + 20
+		val BufferedImage bi = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+		val Graphics2D ig2 = bi.createGraphics()
+		
+		ig2.setFont(font)
+		ig2.background = Color.white
+		ig2.fillRect(0, 0, width, height)
+		ig2.setPaint(Color.black)
+		lines.forEach[ line, index |
+			ig2.drawString(line, 10, 10 + ((1 + index) * (lineHeight)).intValue)
+		]
+		val byteArrayStream = new ByteArrayOutputStream
+		ImageIO.write(bi, "PNG", byteArrayStream)
+		return byteArrayStream.toByteArray
+	}
 
     private def void loadDiagramSettings(Map<String, String> diagramSettings, File propertiesFile) {
         if (propertiesFile.isFile()) {

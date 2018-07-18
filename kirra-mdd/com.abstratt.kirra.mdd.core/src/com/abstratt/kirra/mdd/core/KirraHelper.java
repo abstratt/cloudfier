@@ -33,6 +33,7 @@ import org.eclipse.uml2.uml.Enumeration;
 import org.eclipse.uml2.uml.Feature;
 import org.eclipse.uml2.uml.Interface;
 import org.eclipse.uml2.uml.NamedElement;
+import org.eclipse.uml2.uml.Namespace;
 import org.eclipse.uml2.uml.Operation;
 import org.eclipse.uml2.uml.Package;
 import org.eclipse.uml2.uml.Parameter;
@@ -787,7 +788,7 @@ public class KirraHelper {
     public static String getName(org.eclipse.uml2.uml.NamedElement sourceElement) {
         return sourceElement.getName();
     }
-
+    
     public static boolean isServiceOperation(
             final BehavioralFeature operation) {
         return get(operation, "isPrimary", () -> {
@@ -1062,8 +1063,13 @@ public class KirraHelper {
 	}
 	
     public static String getNamespace(org.eclipse.uml2.uml.NamedElement umlClass) {
-        return umlClass.getNamespace().getQualifiedName().replace(org.eclipse.uml2.uml.NamedElement.SEPARATOR, ".");
+        Namespace namespace = umlClass.getNamespace();
+		return getNamespaceName(namespace);
     }
+
+	public static String getNamespaceName(Namespace namespace) {
+		return namespace.getQualifiedName().replace(org.eclipse.uml2.uml.NamedElement.SEPARATOR, ".");
+	}
 
 
 	public static Style getRelationshipStyle(org.eclipse.uml2.uml.Property umlAttribute) {

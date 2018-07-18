@@ -4,7 +4,11 @@ import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.frontend.textuml.renderer.ActivityRenderer
+import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderer
+import com.abstratt.mdd.modelrenderer.IndentedPrintWriter
 import com.google.common.base.Function
+import java.io.ByteArrayOutputStream
 import java.util.Set
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.emf.common.util.EList
@@ -30,6 +34,11 @@ import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Supplier
+import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderingUtils
+import org.eclipse.uml2.uml.ValueSpecification
 
 class DataDictionaryGenerator extends AbstractGenerator {
 	private static final String YES = "\u2714"
@@ -248,16 +257,17 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     <td>
                         <ul>
                     «FOR o : state.outgoings»
-                    	<li>
-                    	<p><em>To:</em> <strong>«o.target.asLabel»</strong></p>
-                    	<p>
-                    	<em>When: </em>«o.triggers.generateMany[generateTrigger(it)]»
-                    	</p>
-                    	«IF o.guard != null»
-                    	<p>
-                    	<em>If: </em>«o.guard.generateConstraint»
-                    	</p>
-                    	«ENDIF»
+                        <li>
+                        <p><em>To:</em> <strong>«o.target.asLabel»</strong></p>
+                        <p>
+                        <em>When: </em>«o.triggers.generateMany[generateTrigger(it)]»
+                        </p>
+                        «IF o.guard != null»
+                        <p>
+                        <em>If: </em>
+                        «generateConstraints("", #[o.guard])»
+                        </p>
+                        «ENDIF»
                     «ENDFOR»
                         </ul>
                     </td>
@@ -325,7 +335,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     Computed value
                     </th></tr>
                     <tr><td>
-                    <pre>«generateDerivation(property)»</pre>
+                    «generateBehavior([generateDerivationAsPseudoCode(property)], [generateDerivationAsTextUML(property)])»
                     </td></tr>
                     «ENDIF»
                     «generateConstraints("Invariants", property.findInvariantConstraints)»
@@ -403,11 +413,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     Behavior
                     </th></tr>
                     <tr><td>
-                    <pre>
-                    «action.methods.generateMany[ behavior |
-                        generateActivity(behavior)
-                    ].toString.trim()»
-                    </pre>
+                    «generateBehavior([generateActivityAsPseudoCode(action.methods.filter(Activity).head)], [generateActivityAsTextUML(action.methods.filter(Activity).head)])»
                     </td></tr>
                     «ENDIF»
                     «generateConstraints("Preconditions", action.preconditions)»
@@ -444,9 +450,9 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     </th></tr>
                     <tr><td>
                     <pre>
-                    «query.methods.generateMany[ behavior |
-                        generateActivity(behavior)
-                    ].toString.trim()»
+«query.methods.generateMany[ behavior |
+    generateActivityAsPseudoCode(behavior)
+].toString.trim()»
                     </pre>
                     </td></tr>
                     «ENDIF»
@@ -461,30 +467,110 @@ class DataDictionaryGenerator extends AbstractGenerator {
         '''
     }
 				
-	protected def CharSequence generateActivity(Behavior behavior) {
+	protected def CharSequence generateActivityAsPseudoCode(Behavior behavior) {
 		new PseudoCodeActivityGenerator().generateActivity(behavior as Activity)
 	}
 	
-	protected def CharSequence generateDerivation(Property property) {
+	protected def CharSequence generateDerivationAsPseudoCode(Property property) {
 		new PseudoCodeActivityGenerator().generateDerivation(property)
 	}
+	
+	protected def CharSequence generateDerivationAsTextUML(Property attribute) {
+        val baseValue = if (attribute.defaultValue != null)
+            if (attribute.defaultValue.behaviorReference)
+                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsTextUML
+            else '''«attribute.defaultValue.generateValueAsTextUML»'''
+        else '''«TextUMLRenderingUtils.generateDefaultValue(attribute.type)»'''
+        return baseValue
+    }
+		
+	protected def CharSequence generateActivityAsTextUML(Behavior behavior) {
+		val contents = new ByteArrayOutputStream
+		val renderer = new TextUMLRenderer()
+		renderer.render(behavior as Activity, contents)
+		return new String(contents.toByteArray)
+	}
+	
+	protected def CharSequence generateValueAsTextUML(ValueSpecification value) {
+		return TextUMLRenderingUtils.renderValue(value)
+	}
 
-	protected def CharSequence generateConstraint(Constraint constraint) {
+	protected def CharSequence generateConstraintAsPseudoCode(Constraint constraint) {
 		new PseudoCodeActivityGenerator().generateConstraint(constraint)
 	}
 	
-	def CharSequence generateConstraints(String title, Iterable<Constraint> constraints)
+	def CharSequence generateConstraints(String title, Iterable<Constraint> constraints) {
+		var index = new AtomicInteger()
+		var prefix = UUID.randomUUID.toString
 	'''
-    «FOR constraint : constraints»
-    <tr><th>
-    «title»
-    </th></tr>
-    <tr><td>
-    «constraint.description»
-    <pre>«generateConstraint(constraint)»</pre>
-    </td></tr>
-    «ENDFOR»
-    '''
+	«FOR constraint : constraints»
+	<tr><th>
+	«title»
+	</th></tr>
+	<tr><td>
+	«constraint.description»
+	«generateBehavior([generateConstraintAsPseudoCode(constraint)], [generateConstraintAsTextUML(constraint)])»
+	</td></tr>
+	«ENDFOR»
+	'''
+    }
+    
+    def CharSequence generateActivity(String title, Iterable<Behavior> activities) {
+		var index = new AtomicInteger()
+		var prefix = UUID.randomUUID.toString
+	'''
+	«FOR activity : activities»
+	<tr><th>
+	«title»
+	</th></tr>
+	<tr><td>
+	«activity.description»
+	«generateBehavior([generateActivityAsPseudoCode(activity)], [generateActivityAsTextUML(activity)])»
+	</td></tr>
+	«ENDFOR»
+	'''
+    }
+    
+    def CharSequence generateBehavior(Supplier<CharSequence> pseudocode, Supplier<CharSequence> textuml) {
+    	val String prefix = UUID.randomUUID.toString
+    	'''
+	<div data-example-id="togglable-tabs">
+		<ul class="nav nav-tabs" id="myTabs" role="tablist">
+<!--
+			<li role="presentation" class="active">
+				<a href="#«prefix»-pseudocode" id="«prefix»-pseudocode-tab" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Pseudocode</a>
+			</li>
+-->
+			<li role="presentation" class="">
+				<a href="#«prefix»-textuml" role="tab" id="«prefix»-textuml-tab" data-toggle="tab" aria-controls="profile" aria-expanded="false">TextUML</a>
+			</li>
+		</ul>
+		<div class="tab-content" id="myTabContent">
+<!--		
+			<div class="tab-pane fade" role="tabpanel" id="«prefix»-pseudocode" aria-labelledby="«prefix»-pseudocode-tab">
+				<pre>
+«pseudocode.get»
+				</pre>
+			</div>
+-->
+			<div class="tab-pane fade" role="tabpanel" id="«prefix»-textuml" aria-labelledby="«prefix»-textuml-tab">
+				<pre>
+«textuml.get»
+				</pre>
+			</div>
+			
+		</div>
+	</div>    	
+    	'''
+    }
+	
+	def generateConstraintAsTextUML(Constraint constraint) {
+		val contents = new ByteArrayOutputStream
+        val activity = constraint.specification.resolveBehaviorReference as Activity
+		val renderer = new TextUMLRenderer()
+		renderer.render(activity, contents)
+		return new String(contents.toByteArray)
+	}
 				
 	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
 	'''
@@ -523,11 +609,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
                     Behavior
                     </th></tr>
                     <tr><td>
-                    <pre>
-                    «testCase.methods.generateMany[ behavior |
-                        generateActivity(behavior)
-                    ].toString.trim()»
-                    </pre>
+                    «generateBehavior([generateActivityAsPseudoCode(testCase.methods.head)], [generateActivityAsTextUML(testCase.methods.head as Activity)])»
                     </td></tr>
                     «ENDIF»
                     </table>

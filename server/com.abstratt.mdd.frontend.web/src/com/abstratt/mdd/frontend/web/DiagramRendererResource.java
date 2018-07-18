@@ -11,6 +11,7 @@ import java.util.Optional;
 
 import org.apache.commons.io.FilenameUtils;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.uml2.uml.Package;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
@@ -76,18 +77,16 @@ public class DiagramRendererResource extends AbstractWorkspaceResource {
 	                return new InputRepresentation(new ByteArrayInputStream(imageContents), MediaType.IMAGE_PNG);
                 } catch (CoreException e) {
                 	setStatus(Status.SERVER_ERROR_INTERNAL);
-                	ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
-                	PrintStream output = new PrintStream(errorStream);
-					e.printStackTrace(output);
+					String message = (e.getStatus().isMultiStatus() ? ((MultiStatus) (e.getStatus())).getChildren()[0] : e.getStatus()).getMessage();
                 	if (textOutputExpected) {
-            			return new StringRepresentation(new String(errorStream.toByteArray()));
+            			return new StringRepresentation(message);
                 	}
                 	try {
-	                	byte[] imageContents = diagramGenerator.generateTextAsImage(new String(errorStream.toByteArray()));
+	                	byte[] imageContents = diagramGenerator.generateTextAsImage(message);
 		                InputRepresentation errorRepresentation = new InputRepresentation(new ByteArrayInputStream(imageContents), MediaType.IMAGE_PNG);
 						return errorRepresentation;
                 	} catch (CoreException e2) {
-                		return new StringRepresentation(new String(errorStream.toByteArray()));
+                		return new StringRepresentation(message);
                 	}
                 }
             }
