@@ -5,7 +5,6 @@ import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.frontend.textuml.renderer.ActivityRenderer
-import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderer
 import com.abstratt.mdd.modelrenderer.IndentedPrintWriter
 import com.google.common.base.Function
 import java.io.ByteArrayOutputStream
@@ -39,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Supplier
 import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderingUtils
 import org.eclipse.uml2.uml.ValueSpecification
+import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator
 
 class DataDictionaryGenerator extends AbstractGenerator {
 	private static final String YES = "\u2714"
@@ -486,9 +486,8 @@ class DataDictionaryGenerator extends AbstractGenerator {
 		
 	protected def CharSequence generateActivityAsTextUML(Behavior behavior) {
 		val contents = new ByteArrayOutputStream
-		val renderer = new TextUMLRenderer()
-		renderer.render(behavior as Activity, contents)
-		return new String(contents.toByteArray)
+		val renderer = new ActivityGenerator()
+		return renderer.generateActivity(behavior as Activity)
 	}
 	
 	protected def CharSequence generateValueAsTextUML(ValueSpecification value) {
@@ -534,42 +533,47 @@ class DataDictionaryGenerator extends AbstractGenerator {
     def CharSequence generateBehavior(Supplier<CharSequence> pseudocode, Supplier<CharSequence> textuml) {
     	val String prefix = UUID.randomUUID.toString
     	'''
-	<div data-example-id="togglable-tabs">
-		<ul class="nav nav-tabs" id="myTabs" role="tablist">
-<!--
-			<li role="presentation" class="active">
-				<a href="#«prefix»-pseudocode" id="«prefix»-pseudocode-tab" role="tab" data-toggle="tab" aria-controls="home" aria-expanded="true">Pseudocode</a>
-			</li>
--->
-			<li role="presentation" class="">
-				<a href="#«prefix»-textuml" role="tab" id="«prefix»-textuml-tab" data-toggle="tab" aria-controls="profile" aria-expanded="false">TextUML</a>
-			</li>
-		</ul>
-		<div class="tab-content" id="myTabContent">
-<!--		
-			<div class="tab-pane fade" role="tabpanel" id="«prefix»-pseudocode" aria-labelledby="«prefix»-pseudocode-tab">
-				<pre>
-«pseudocode.get»
-				</pre>
-			</div>
--->
-			<div class="tab-pane fade" role="tabpanel" id="«prefix»-textuml" aria-labelledby="«prefix»-textuml-tab">
-				<pre>
+    <div class="panel-group" id="«prefix»-accordion" role="tablist" aria-multiselectable="true">
+      <div class="panel panel-default">
+        <div class="panel-heading" role="tab" id="«prefix»-textuml-heading">
+          <h4 class="panel-title">
+            <a role="button" data-toggle="collapse" data-parent="#«prefix»-accordion" href="#«prefix»-textuml-content" aria-expanded="true">
+            Specification
+            </a>
+          </h4>
+        </div>
+        <div id="«prefix»-textuml-content" class="panel-collapse collapse in" role="tabpanel">
+          <div class="panel-body">
+              <pre>
 «textuml.get»
-				</pre>
-			</div>
-			
-		</div>
-	</div>    	
-    	'''
+              </pre>              
+          </div>
+        </div>
+        <div class="panel-heading" role="tab" id="«prefix»-pseudocode-heading">
+          <h4 class="panel-title">
+            <a role="button" data-toggle="collapse" data-parent="#«prefix»-accordion" href="#«prefix»-pseudocode-content">
+            Pseudocode (experimental)
+            </a>
+          </h4>
+          </div>
+          <div id="«prefix»-pseudocode-content" class="panel-collapse collapse" role="tabpanel">
+            <div class="panel-body">
+                <pre>
+  «pseudocode.get»
+                </pre>              
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+        '''
     }
 	
 	def generateConstraintAsTextUML(Constraint constraint) {
 		val contents = new ByteArrayOutputStream
         val activity = constraint.specification.resolveBehaviorReference as Activity
-		val renderer = new TextUMLRenderer()
-		renderer.render(activity, contents)
-		return new String(contents.toByteArray)
+		val renderer = new ActivityGenerator()
+		return renderer.generateActivityAsExpression(activity)
 	}
 				
 	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
