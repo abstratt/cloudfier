@@ -478,16 +478,21 @@ class DataDictionaryGenerator extends AbstractGenerator {
 	protected def CharSequence generateDerivationAsTextUML(Property attribute) {
         val baseValue = if (attribute.defaultValue != null)
             if (attribute.defaultValue.behaviorReference)
-                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsTextUML
+                (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsTextUML(true)
             else '''«attribute.defaultValue.generateValueAsTextUML»'''
         else '''«TextUMLRenderingUtils.generateDefaultValue(attribute.type)»'''
         return baseValue
     }
 		
-	protected def CharSequence generateActivityAsTextUML(Behavior behavior) {
-		val contents = new ByteArrayOutputStream
-		val renderer = new ActivityGenerator()
-		return renderer.generateActivity(behavior as Activity)
+    protected def CharSequence generateActivityAsTextUML(Behavior behavior) {
+    	behavior.generateActivityAsTextUML(false)
+    }
+	protected def CharSequence generateActivityAsTextUML(Behavior behavior, boolean asExpression) {
+		val generator = new ActivityGenerator()
+		return if (asExpression) 
+			generator.generateActivityAsExpression(behavior as Activity)
+		else
+			generator.generateActivity(behavior as Activity)
 	}
 	
 	protected def CharSequence generateValueAsTextUML(ValueSpecification value) {
@@ -570,10 +575,9 @@ class DataDictionaryGenerator extends AbstractGenerator {
     }
 	
 	def generateConstraintAsTextUML(Constraint constraint) {
-		val contents = new ByteArrayOutputStream
         val activity = constraint.specification.resolveBehaviorReference as Activity
-		val renderer = new ActivityGenerator()
-		return renderer.generateActivityAsExpression(activity)
+		val generator = new ActivityGenerator()
+		return generator.generateActivityAsExpression(activity)
 	}
 				
 	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
