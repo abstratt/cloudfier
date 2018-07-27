@@ -10,6 +10,10 @@ import java.util.LinkedHashMap
 import org.eclipse.uml2.uml.Class
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import org.eclipse.uml2.uml.NamedElement
+import java.util.Map
+import java.util.Collection
+import org.eclipse.uml2.uml.Package
 
 class DataDictionaryMapper implements ITopLevelMapper<Class> {
 
@@ -21,7 +25,7 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		return templateContents
 	}
 
-	override mapMultiple(IRepository repository) {
+	override Map<String, OutputHolder<?>> mapMultiple(IRepository repository) {
 		val classDiagramSettings = new LinkedHashMap(#{
 			'showClasses' -> true.toString,
 			'showAttributes' -> true.toString
@@ -43,7 +47,10 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		repository.properties.forEach[key, value|replacements.put(key.toString(), value.toString)]
 		val result = new LinkedHashMap<String, OutputHolder<?>>()
 		val showDiagrams = Boolean.valueOf(repository.properties.getProperty('mdd.doc.showDiagrams', Boolean.TRUE.toString))
-		result.put('data-dictionary.html', new TextHolder(new DataDictionaryGenerator(repository, showDiagrams).generate()))
+		appPackages.forEach[ package_ |
+			result.put('''«package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")».html''', new TextHolder(new DataDictionaryGenerator(repository, showDiagrams).generatePackage(package_)))	
+		]
+		result.put('data-dictionary.html', new TextHolder(new DataDictionaryGenerator(repository, showDiagrams).generatePackageIndex(appPackages)))
 		if (showDiagrams) {
 			val diagramGenerator = new DiagramGenerator(repository)
 			appPackages.forEach [ appPackage |
@@ -55,7 +62,7 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 		}
 		return result
 	}
-
+	
 	override getKind() {
 		return Kind.Binary
 	}

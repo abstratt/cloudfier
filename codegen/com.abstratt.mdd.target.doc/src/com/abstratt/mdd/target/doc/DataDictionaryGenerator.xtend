@@ -4,11 +4,16 @@ import com.abstratt.kirra.mdd.core.KirraHelper
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
+import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator
 import com.abstratt.mdd.frontend.textuml.renderer.ActivityRenderer
+import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderingUtils
 import com.abstratt.mdd.modelrenderer.IndentedPrintWriter
 import com.google.common.base.Function
 import java.io.ByteArrayOutputStream
 import java.util.Set
+import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
+import java.util.function.Supplier
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.emf.common.util.EList
 import org.eclipse.uml2.uml.Activity
@@ -27,54 +32,63 @@ import org.eclipse.uml2.uml.SignalEvent
 import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.Trigger
 import org.eclipse.uml2.uml.Type
+import org.eclipse.uml2.uml.ValueSpecification
 
+import static extension com.abstratt.kirra.mdd.target.base.JavaGeneratorUtils.*
+import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
+import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import java.util.UUID
-import java.util.concurrent.atomic.AtomicInteger
-import java.util.function.Supplier
-import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderingUtils
-import org.eclipse.uml2.uml.ValueSpecification
-import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator
+import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
+import java.util.Collection
 
-class DataDictionaryGenerator extends AbstractGenerator {
+class DataDictionaryGenerator {
 	private static final String YES = "\u2714"
 	private static final String NO = "-"
 	
 	private boolean showDiagrams
+	
+	IRepository repository
     
     new(IRepository repository, boolean showDiagrams) {
-        super(repository)
+    	this.repository = repository
         this.showDiagrams = showDiagrams
     }
 
-    new(IRepository repository) {
-        this(repository, false)
-    }
-
-    
-    def CharSequence generate() {
-        val entities = this.entities
-        val testClasses = repository.getTopLevelPackages(null).map[ownedTypes.filter[it.testClass]].flatten().map[it as Class].toSet
-        val entityPackages = entities.map[package].toSet
-        val applicationLabel = KirraHelper.getApplicationLabel(repository)
+    def CharSequence generatePage(String title, Supplier<CharSequence> generator) {
         val localStyle = Boolean.parseBoolean(repository.properties.computeIfAbsent("mdd.doc.localStylesheet", ["false"]).toString)
         '''
         <!doctype html>
         <html lang="en">
         <head>
-          <meta charset="utf-8">
-          «generateBootstrapLinks(localStyle)»
-          <title>«applicationLabel» - Data Dictionary</title>
+            <meta charset="utf-8">
+            «generateBootstrapLinks(localStyle)»
+            <title>«title» - Data Dictionary</title>
         </head>
         <body>
-        <div class="container-fluid">
-        <h1>«applicationLabel»</h1>
-        «generateRow[entityPackages.generatePackageIndex()]»
-        «entityPackages.generateMany[ appPackage | generateRow[generateEntityIndex(appPackage)]]»
+            <div class="container-fluid">
+            <h1>«title»</h1>
+            «generator.get()»
+        </body>
+        </html>
+
+		'''
+    }
+
+    def CharSequence generatePackage(Package umlPackage) {
+        val packageAsList = #{umlPackage}
+		val entities = packageAsList.entities
+		val enumerations = packageAsList.enumerations
+		val stateMachines = packageAsList.stateMachines
+        val testClasses = #[umlPackage].map[ownedTypes.filter[it.testClass]].flatten().map[it as Class].toSet
+        
+        generatePage('''Package: «getLabel(umlPackage)»''') [ 
+        '''
+        (<a href="data-dictionary.html">Back to «repository.applicationLabel»</a>)
+        «packageAsList.generateMany[ appPackage | generateRow[generateEntityIndex(appPackage)]]»
         <h2>Entities</h2>
         «entities.generateMany[ entity |
             '''
@@ -105,15 +119,13 @@ class DataDictionaryGenerator extends AbstractGenerator {
             '''
         ]»
         «ENDIF»
-        </div>
-        </body>
-        </html>
         '''
+        ]
     }
     
-    def CharSequence generatePackageIndex(Set<Package> packages) {
+    def CharSequence generatePackageIndex(Iterable<Package> packages) {
+        generatePage(repository.applicationLabel) [ 
         '''
-        
         <div>
         <h2>Packages</h2>
         <table class="table">
@@ -127,33 +139,50 @@ class DataDictionaryGenerator extends AbstractGenerator {
             <tbody>
                 «packages.generateMany[package_ | '''
                 <tr>
-                    <td>«generateLink(package_)»</a></td>
+                    <td>«generatePackageLink(package_)»</td>
                     <td>
                     «package_.ownedTypes.filter[entity].sortBy[it.name].generateMany([ type | 
                     	'''
-                    	«type.generateLink»
+                    	«type.generateExternalLink»
                     	'''
                     ],', ')»
                     </td>
-                    <td>«IF package_.description.empty»-«ELSE»«package_.description»«ENDIF»</td>
+                    <td width='60%'>«IF package_.description.empty»-«ELSE»«package_.description»«ENDIF»</td>
                 </tr>
                 ''']»
             </tbody>
         </table>
         </div>
-        '''
+        ''']
     }
-	def CharSequence generateLink(NamedElement element) {
-		generateLink(element, false)
+	
+	def generatePackageLink(Package package_) {
+		val docLink = package_.generateDocLink
+		'''
+			<a href="«docLink»">«getLabel(package_)»</a>
+		'''.toString.trim
 	}
-	def CharSequence generateLink(NamedElement element, boolean qualified) {
+	
+	def generateDocLink(Package package_) {
+		'''«package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")».html'''.toString
+	}
+	
+	def generateExternalLink(NamedElement element) {
+		val packageLink = generateDocLink(element.nearestPackage)
+		return generateLink(packageLink, element, true)
+	}
+	
+	def CharSequence generateLink(NamedElement element) {
+		generateLink(generateDocLink(element.nearestPackage), element, false)
+	}
+	def CharSequence generateLink(String docLink, NamedElement element, boolean qualified) {
 		if (element == null)
 			'null'
 		else if (element.nearestPackage.isLibrary) {
 			element.name
 		} else
 			'''
-				<a href="#«element.qualifiedName»">«getLabel(element)»«if (qualified) ''' («element.qualifiedName»)'''»</a>
+				<a href="«docLink»#«element.qualifiedName»">«getLabel(element)»«if (qualified) ''' («element.qualifiedName»)'''»</a>
 			'''.toString.trim
 	}
     
@@ -186,7 +215,6 @@ class DataDictionaryGenerator extends AbstractGenerator {
         '''
         <div>
         <a name="«appPackage.qualifiedName»"></a>
-        <h3>Package: «getLabel(appPackage)»</h3>
         <h5>(«appPackage.qualifiedName»)</h5>
         
         «IF !appPackage.description.empty»<blockquote>«appPackage.description»</blockquote>«ENDIF»
@@ -200,7 +228,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
             <tbody>
                 «entities.generateMany[entity | '''
                 <tr>
-                    <td>«entity.generateLink»</a></td>
+                    <td>«entity.generateLink»</td>
                     <td>«entity.description»</td>
                 </tr>
                 ''']»
@@ -635,7 +663,7 @@ class DataDictionaryGenerator extends AbstractGenerator {
 		'''
         <a name="«classifier.qualifiedName»"></a>
         <h3>«getLabel(classifier)»</h3>
-        <h5>«sectionName» from <strong>«generateLink(classifier.nearestPackage, true)»</strong></h5>
+        <h5>«sectionName» from <strong>«generateLink('', classifier.nearestPackage, true)»</strong></h5>
         <hr>
         «IF !StringUtils.isBlank(classifier.description)»<blockquote>«classifier.description»</blockquote>«ENDIF»
         '''

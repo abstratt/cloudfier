@@ -20,6 +20,7 @@ import org.eclipse.uml2.uml.UMLPackage
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import com.abstratt.mdd.target.base.GeneratorUtils
 
 abstract class AbstractGenerator {
@@ -40,14 +41,14 @@ abstract class AbstractGenerator {
             val topLevelPackages = repository.getTopLevelPackages(null)
 			this.appPackages = topLevelPackages.applicationPackages
             this.entities = appPackages.entities
-            this.enumerations = appPackages.getTypes(UMLPackage.Literals.ENUMERATION)
+            this.enumerations = GeneratorUtils.getEnumerations(topLevelPackages)
             this.stateMachines = appPackages.getTypes(UMLPackage.Literals.CLASS).map[it as Class].map[it.ownedBehaviors.filter(StateMachine)].flatten
             this.applicationName = KirraHelper.getApplicationName(repository)
         }
     }
     
     def String toJavaPackage(Package package_) {
-        package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")
+        JavaGeneratorUtils.toJavaPackage(package_)
     }
     
     
@@ -87,10 +88,10 @@ abstract class AbstractGenerator {
     }
     
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper) {
-        GeneratorUtils.generateMany(items, mapper, '\n')
+        generateMany(items, mapper, '\n')
     }
 
     def static <I> CharSequence generateMany(Iterable<I> items, (I)=>CharSequence mapper, String separator) {
-    	GeneratorUtils.generateMany(items, mapper, separator)
+    	generateMany(items, mapper, separator)
     }
 }
