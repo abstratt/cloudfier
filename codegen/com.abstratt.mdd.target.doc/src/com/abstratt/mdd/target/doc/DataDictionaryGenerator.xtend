@@ -90,7 +90,7 @@ class DataDictionaryGenerator {
         (<a href="data-dictionary.html">Back to «repository.applicationLabel»</a>)
         «packageAsList.generateMany[ appPackage | generateRow[generateEntityIndex(appPackage)]]»
         <h2>Entities</h2>
-        «entities.generateMany[ entity |
+        «entities.filter[!abstract].generateMany[ entity |
             '''
             «generateRow[generateEntity(entity)]»
             '''
@@ -143,7 +143,7 @@ class DataDictionaryGenerator {
                     <td>
                     «package_.ownedTypes.filter[entity].sortBy[it.name].generateMany([ type | 
                     	'''
-                    	«type.generateExternalLink»
+                    	«generateExternalLink(package_, type, false)»
                     	'''
                     ],', ')»
                     </td>
@@ -167,22 +167,22 @@ class DataDictionaryGenerator {
 		'''«package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")».html'''.toString
 	}
 	
-	def generateExternalLink(NamedElement element) {
+	def generateExternalLink(Package current, NamedElement element, boolean qualified) {
 		val packageLink = generateDocLink(element.nearestPackage)
-		return generateLink(packageLink, element, true)
+		return generateLink(current, packageLink, element, qualified)
 	}
 	
-	def CharSequence generateLink(NamedElement element) {
-		generateLink(generateDocLink(element.nearestPackage), element, false)
+	def CharSequence generateLink(Package current, NamedElement element) {
+		generateLink(current, generateDocLink(element.nearestPackage), element, false)
 	}
-	def CharSequence generateLink(String docLink, NamedElement element, boolean qualified) {
+	def CharSequence generateLink(Package current, String docLink, NamedElement element, boolean qualified) {
 		if (element == null)
 			'null'
 		else if (element.nearestPackage.isLibrary) {
 			element.name
 		} else
 			'''
-				<a href="«docLink»#«element.qualifiedName»">«getLabel(element)»«if (qualified) ''' («element.qualifiedName»)'''»</a>
+				<a href="«docLink»#«element.qualifiedName»">«getLabel(element)»«if (qualified && current != element.nearestPackage) ''' («element.qualifiedName»)'''»</a>
 			'''.toString.trim
 	}
     
@@ -228,7 +228,7 @@ class DataDictionaryGenerator {
             <tbody>
                 «entities.generateMany[entity | '''
                 <tr>
-                    <td>«entity.generateLink»</td>
+                    <td>«generateLink(appPackage, entity)»</td>
                     <td>«entity.description»</td>
                 </tr>
                 ''']»
@@ -328,7 +328,7 @@ class DataDictionaryGenerator {
     	val entityActions = entity.actions.filter[it.public]
     	val entityQueries = entity.queries.filter[it.public]
     	val stateMachine = entity.findStateProperties().head?.type as StateMachine
-    	
+    	val currentPackage = entity.nearestPackage
         '''
         «generateSectionHeader("Entity", entity)»
         «IF !entityProperties.empty»
@@ -348,7 +348,7 @@ class DataDictionaryGenerator {
                 «entityProperties.generateMany[property | '''
                 <tr>
                     <td>«property.asLabel»</td>
-                    <td>«property.type.generateLink»</a></td>
+                    <td>«generateLink(currentPackage, property.type)»</a></td>
                     <td>«if (property.required) YES else NO»</a></td>
                     <td>«if (property.initializable) YES else NO»</a></td>
                     <td>«if (property.editable) YES else NO»</a></td>
@@ -391,7 +391,7 @@ class DataDictionaryGenerator {
                 «entityRelationships.generateMany[relationship | '''
                 <tr>
                     <td>«relationship.asLabel»</td>
-                    <td>«relationship.type.generateLink»</a></td>
+                    <td>«generateLink(currentPackage, relationship.type)»</a></td>
                     <td>«if (relationship.required) YES else NO»</a></td>
                     <td>«if (relationship.multiple) YES else NO»</a></td>
                     <td>«if (relationship.navigable) YES else NO»</a></td>
@@ -663,7 +663,7 @@ class DataDictionaryGenerator {
 		'''
         <a name="«classifier.qualifiedName»"></a>
         <h3>«getLabel(classifier)»</h3>
-        <h5>«sectionName» from <strong>«generateLink('', classifier.nearestPackage, true)»</strong></h5>
+        <h5>«sectionName» from <strong>«generateLink(classifier.nearestPackage, '', classifier.nearestPackage, true)»</strong></h5>
         <hr>
         «IF !StringUtils.isBlank(classifier.description)»<blockquote>«classifier.description»</blockquote>«ENDIF»
         '''
