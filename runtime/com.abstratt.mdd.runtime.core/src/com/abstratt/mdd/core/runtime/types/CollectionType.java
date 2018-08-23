@@ -327,8 +327,16 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     }
     
     public CollectionType intersection(ExecutionContext context, CollectionType another) {
-    	List<BasicType> commonElements = this.getBackEnd().stream().filter(it -> another.getBackEnd().contains(it)).collect(Collectors.toList());
+    	List<BasicType> commonElements = new ArrayList<>(this.getBackEnd());
+    	commonElements.retainAll(another.getBackEnd());
     	CollectionType result = createCollection(getBaseType(), isUnique(), isOrdered(), commonElements);
+        return result;
+    }
+    
+    public CollectionType subtract(ExecutionContext context, CollectionType another) {
+    	List<BasicType> exclusiveElements = new ArrayList<>(this.getBackEnd());
+    	exclusiveElements.removeAll(another.getBackEnd());
+    	CollectionType result = createCollection(getBaseType(), isUnique(), isOrdered(), exclusiveElements);
         return result;
     }
 
