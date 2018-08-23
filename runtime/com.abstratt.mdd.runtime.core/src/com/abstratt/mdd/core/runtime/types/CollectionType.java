@@ -6,7 +6,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
@@ -318,8 +321,14 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
     }
 
     public CollectionType union(ExecutionContext context, CollectionType another) {
-        CollectionType result = CollectionType.createCollection(getBaseType(), isUnique(), isOrdered(), this.getBackEnd());
+        CollectionType result = createCollection(getBaseType(), isUnique(), isOrdered(), this.getBackEnd());
         result.getBackEnd().addAll(another.backEnd);
+        return result;
+    }
+    
+    public CollectionType intersection(ExecutionContext context, CollectionType another) {
+    	List<BasicType> commonElements = this.getBackEnd().stream().filter(it -> another.getBackEnd().contains(it)).collect(Collectors.toList());
+    	CollectionType result = createCollection(getBaseType(), isUnique(), isOrdered(), commonElements);
         return result;
     }
 
