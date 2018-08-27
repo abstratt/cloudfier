@@ -90,7 +90,7 @@ class DataDictionaryGenerator {
         (<a href="data-dictionary.html">Back to «repository.applicationLabel»</a>)
         «packageAsList.generateMany[ appPackage | generateRow[generateEntityIndex(appPackage)]]»
         <h2>Entities</h2>
-        «entities.filter[!abstract].generateMany[ entity |
+        «entities.generateMany[ entity |
             '''
             «generateRow[generateEntity(entity)]»
             '''
