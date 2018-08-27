@@ -92,7 +92,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         backEnd.add(value);
     }
 
-    public CollectionType add(ExecutionContext context, BasicType toAdd) {
+    public CollectionType extend(ExecutionContext context, BasicType toAdd) {
         CollectionType result = CollectionType.createCollection(baseType, isUnique(), isOrdered());
         result.backEnd.addAll(this.backEnd);
         result.backEnd.add(toAdd);
@@ -333,7 +333,7 @@ public abstract class CollectionType extends BuiltInClass implements Serializabl
         return result;
     }
     
-    public CollectionType subtract(ExecutionContext context, CollectionType another) {
+    public CollectionType reject(ExecutionContext context, CollectionType another) {
     	List<BasicType> exclusiveElements = new ArrayList<>(this.getBackEnd());
     	exclusiveElements.removeAll(another.getBackEnd());
     	CollectionType result = createCollection(getBaseType(), isUnique(), isOrdered(), exclusiveElements);

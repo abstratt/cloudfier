@@ -477,11 +477,7 @@ class DataDictionaryGenerator {
                     Behavior
                     </th></tr>
                     <tr><td>
-                    <pre>
-«query.methods.generateMany[ behavior |
-    generateActivityAsPseudoCode(behavior)
-].toString.trim()»
-                    </pre>
+                    «generateBehavior([generateActivityAsPseudoCode(query.methods.filter(Activity).head)], [generateActivityAsTextUML(query.methods.filter(Activity).head, true)])»
                     </td></tr>
                     «ENDIF»
                     </table>

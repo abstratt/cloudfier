@@ -304,6 +304,8 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                 LiteralNull: switch (valueSpec) {
                     case StateMachineUtils.isVertexLiteral(valueSpec) : 
                         '''"«StateMachineUtils.resolveVertexLiteral(valueSpec).name»"'''
+                    case MDDExtensionUtils.isEmptySet(valueSpec) :
+                        '''a collection of «valueSpec.type.name»'''
                     default : 'null'
                 }
                 LiteralString: if (valueSpec.type.name == 'String') '''"«valueSpec.value»"''' else valueSpec.value 
@@ -398,7 +400,8 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                     «IF !(action.results.get(0).targetAction instanceof CallOperationAction)»select from «ENDIF»«action.target.generateAction» '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»'
                         where «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toFirstLower»
                 '''
-                case 'collect': '''
+                case 'collect',
+                case 'collectMany': '''
                     collect from «action.target.generateAction» '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»'
                         «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toFirstLower»
                 '''
@@ -420,7 +423,10 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                     	by «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toLowerCase» 
                 '''
                 case 'isEmpty': '''«action.target.generateAction» is empty'''
-                
+                case 'intersection': '''the intersection between «action.target.generateAction» and «action.arguments.head.generateAction»'''
+                case 'union': '''the union between «action.target.generateAction» and «action.arguments.head.generateAction»'''
+                case 'reject': '''all elements in «action.target.generateAction» that are not in «action.arguments.head.generateAction»'''
+                case 'extend': '''«action.target.generateAction» including «action.arguments.head.generateAction»'''
                 default: '''TBD: «action.operation.name»'''
             }
         }
