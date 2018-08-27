@@ -411,7 +411,13 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
                 '''
                 case 'exists': '''
                     for «action.target.generateAction» '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»'
-                        does exist «indefiniteArticle('''«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»''')» such that «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toFirstLower.trim»?
+                        does exist 
+                            «indefiniteArticle('''«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»''')» such that «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toFirstLower.trim»?
+                '''
+                case 'forAll': '''
+                    In «action.target.generateAction»,
+                        is it true that for every '«(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).activityInputParameters.head.name»'
+                            «(action.arguments.head.sourceAction.resolveBehaviorReference as Activity).generateActivity.toString.toFirstLower.trim»?
                 '''
                 case 'size': '''the count of «action.target.generateAction»'''
                 case 'one': '''«action.target.generateAction» (any)'''
