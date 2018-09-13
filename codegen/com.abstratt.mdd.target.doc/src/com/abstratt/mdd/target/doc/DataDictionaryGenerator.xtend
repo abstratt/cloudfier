@@ -477,7 +477,7 @@ class DataDictionaryGenerator {
                     Behavior
                     </th></tr>
                     <tr><td>
-                    «generateBehavior([generateActivityAsPseudoCode(query.methods.filter(Activity).head)], [generateActivityAsTextUML(query.methods.filter(Activity).head, true)])»
+                    «generateBehavior([generateActivityAsPseudoCode(query.methods.filter(Activity).head)], [generateActivityAsTextUML(query.methods.filter(Activity).head, false)])»
                     </td></tr>
                     «ENDIF»
                     </table>
@@ -514,7 +514,7 @@ class DataDictionaryGenerator {
 	protected def CharSequence generateActivityAsTextUML(Behavior behavior, boolean asExpression) {
 		val generator = new ActivityGenerator()
 		return if (asExpression) 
-			generator.generateActivityAsExpression(behavior as Activity)
+			generator.generateActivityAsExpressionIfPossible(behavior as Activity)
 		else
 			generator.generateActivity(behavior as Activity)
 	}
@@ -601,7 +601,7 @@ class DataDictionaryGenerator {
 	def generateConstraintAsTextUML(Constraint constraint) {
         val activity = constraint.specification.resolveBehaviorReference as Activity
 		val generator = new ActivityGenerator()
-		return generator.generateActivityAsExpression(activity)
+		return generator.generateActivityAsExpressionIfPossible(activity)
 	}
 				
 	def dispatch CharSequence enumerateLiterals(Enumeration enumeration)  
