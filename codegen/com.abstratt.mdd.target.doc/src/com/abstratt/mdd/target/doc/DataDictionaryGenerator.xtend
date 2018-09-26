@@ -89,12 +89,14 @@ class DataDictionaryGenerator {
         '''
         (<a href="data-dictionary.html">Back to «repository.applicationLabel»</a>)
         «packageAsList.generateMany[ appPackage | generateRow[generateEntityIndex(appPackage)]]»
+        «IF !entities.isEmpty»
         <h2>Entities</h2>
         «entities.generateMany[ entity |
             '''
             «generateRow[generateEntity(entity)]»
             '''
         ]»
+        «ENDIF»
         «IF !enumerations.isEmpty»
         <h2>Enumerations</h2>
         «enumerations.generateMany[ enumeration |
