@@ -22,6 +22,12 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.emf.common.util.EList;
+import org.eclipse.emf.ecore.EObject;
+import org.eclipse.emf.query.conditions.eobjects.EObjectCondition;
+import org.eclipse.emf.query.statements.FROM;
+import org.eclipse.emf.query.statements.IQueryResult;
+import org.eclipse.emf.query.statements.SELECT;
+import org.eclipse.emf.query.statements.WHERE;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.Association;
 import org.eclipse.uml2.uml.BehavioralFeature;
@@ -170,7 +176,34 @@ public class KirraHelper {
     	return Arrays.stream(packages).filter(it -> isApplication(it)).findAny().orElse(null);
     }
     
-    public static Collection<Package> getEntityPackages(Package... packages) {
+    public static Collection<Package> getTestPackages(Package... packages) {
+        Set<Package> testPackages = new LinkedHashSet<Package>();
+        for (Package it : packages)
+        	if (isTestPackage(it))
+        		testPackages.add(it);
+        	
+        return testPackages;
+    }
+    
+    private static boolean isTestPackage(Package package_) {
+		EObjectCondition condition = new EObjectCondition() {
+			@Override
+			public boolean isSatisfied(EObject eObject) {
+				return eObject instanceof Class && 
+						MDDExtensionUtils.isTestClass((Class) eObject);
+			}
+		};
+		IQueryResult partial = new SELECT(
+				1, 
+				new FROM(package_), 
+				new WHERE(
+					condition
+				)
+		).execute();
+        return !partial.isEmpty();
+	}
+
+	public static Collection<Package> getEntityPackages(Package... packages) {
         Set<Package> applicationPackages = new LinkedHashSet<Package>();
         for (Package it : packages)
             KirraHelper.addApplications(it, applicationPackages);
