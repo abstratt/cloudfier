@@ -65,7 +65,7 @@
 						<environment>
 							<os>linux</os>
 							<ws>gtk</ws>
-							<arch>x86</arch>
+							<arch>i686</arch>
 						</environment>
 						<environment>
 							<os>linux</os>
