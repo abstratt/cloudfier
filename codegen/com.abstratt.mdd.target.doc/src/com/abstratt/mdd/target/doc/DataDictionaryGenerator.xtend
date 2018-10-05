@@ -1,21 +1,14 @@
 package com.abstratt.mdd.target.doc
 
 import com.abstratt.kirra.mdd.core.KirraHelper
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
-import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator
-import com.abstratt.mdd.frontend.textuml.renderer.ActivityRenderer
 import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderingUtils
-import com.abstratt.mdd.modelrenderer.IndentedPrintWriter
 import com.google.common.base.Function
-import java.io.ByteArrayOutputStream
-import java.util.Set
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Supplier
 import org.apache.commons.lang3.StringUtils
-import org.eclipse.emf.common.util.EList
 import org.eclipse.uml2.uml.Activity
 import org.eclipse.uml2.uml.Behavior
 import org.eclipse.uml2.uml.CallEvent
@@ -43,7 +36,11 @@ import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
-import java.util.Collection
+import org.eclipse.uml2.uml.Feature
+import org.eclipse.uml2.uml.InstanceSpecification
+import org.eclipse.uml2.uml.Comment
+import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator.ElementFormatter
+import org.eclipse.uml2.uml.InstanceValue
 
 class DataDictionaryGenerator {
 	private static final String YES = "\u2714"
@@ -97,14 +94,6 @@ class DataDictionaryGenerator {
             '''
         ]»
         «ENDIF»
-        «IF !enumerations.isEmpty»
-        <h2>Enumerations</h2>
-        «enumerations.generateMany[ enumeration |
-            '''
-            «generateRow[generateEnumeration(enumeration)]»
-            '''
-        ]»
-        «ENDIF»
         «IF !stateMachines.isEmpty»
         <h2>State machines</h2>
         «stateMachines.generateMany[ stateMachine |
@@ -113,6 +102,15 @@ class DataDictionaryGenerator {
             '''
         ]»
         «ENDIF»
+        «IF !enumerations.isEmpty»
+        <h2>Enumerations</h2>
+        «enumerations.generateMany[ enumeration |
+            '''
+            «generateRow[generateEnumeration(enumeration)]»
+            '''
+        ]»
+        «ENDIF»
+        
         «IF !testClasses.empty»
         <h2>Scenarios</h2>
         «testClasses.generateMany[ testClass |
@@ -158,14 +156,14 @@ class DataDictionaryGenerator {
         ''']
     }
 	
-	def generatePackageLink(Package package_) {
+	def static generatePackageLink(Package package_) {
 		val docLink = package_.generateDocLink
 		'''
 			<a href="«docLink»">«getLabel(package_)»</a>
 		'''.toString.trim
 	}
 	
-	def generateDocLink(Package package_) {
+	def static generateDocLink(Package package_) {
 		'''«package_.qualifiedName.replace(NamedElement.SEPARATOR, ".")».html'''.toString
 	}
 	
@@ -174,17 +172,25 @@ class DataDictionaryGenerator {
 		return generateLink(current, packageLink, element, qualified)
 	}
 	
-	def CharSequence generateLink(Package current, NamedElement element) {
-		generateLink(current, generateDocLink(element.nearestPackage), element, false)
+	def static CharSequence generateLink(Package current, NamedElement element) {
+		generateLink(current, element, if (element == null) 'null' else element.name)
 	}
-	def CharSequence generateLink(Package current, String docLink, NamedElement element, boolean qualified) {
+	def static CharSequence generateLink(Package current, NamedElement element, CharSequence elementText) {
+		generateLink(current, generateDocLink(element.nearestPackage), element, elementText, false)
+	}
+	def static CharSequence generateLink(Package current, String docLink, NamedElement element, boolean qualified) {
+		generateLink(current, docLink, element, getLabel(element), qualified)
+	}
+
+	def static CharSequence generateLink(Package current, String docLink, NamedElement element, CharSequence elementText, boolean qualified) {
 		if (element == null)
 			'null'
 		else if (element.nearestPackage.isLibrary) {
-			element.name
+			elementText
 		} else
+		//«if (qualified && current != element.nearestPackage) ''' («element.qualifiedName»)'''»
 			'''
-				<a href="«docLink»#«element.qualifiedName»">«getLabel(element)»«if (qualified && current != element.nearestPackage) ''' («element.qualifiedName»)'''»</a>
+				<a href="«docLink»#«element.qualifiedName»">«elementText»</a>
 			'''.toString.trim
 	}
     
@@ -259,7 +265,7 @@ class DataDictionaryGenerator {
             <tbody>
                 «enumeration.ownedLiterals.generateMany[literal | '''
                 <tr>
-                    <td>«literal.asLabel»</td>
+                    <td>«generateAnchor(literal)»«literal.asLabel»</td>
                     <td>«IF literal.description.empty»-«ELSE»«literal.description»«ENDIF»</td>
                 </tr>
                 ''']»
@@ -327,8 +333,10 @@ class DataDictionaryGenerator {
     def CharSequence generateEntity(Class entity) {
     	val entityRelationships = entity.entityRelationships.filter[it.public]
     	val entityProperties = entity.properties.filter[it.public]
-    	val entityActions = entity.actions.filter[it.public]
-    	val entityQueries = entity.queries.filter[it.public]
+    	val entityActions = entity.actions
+    	val entityQueries = entity.queries
+    	entityActions.sortInplaceBy[it.visibility.ordinal + it.name]
+    	entityQueries.sortInplaceBy[it.visibility.ordinal + it.name]
     	val stateMachine = entity.findStateProperties().head?.type as StateMachine
     	val currentPackage = entity.nearestPackage
         '''
@@ -349,7 +357,7 @@ class DataDictionaryGenerator {
             <tbody>
                 «entityProperties.generateMany[property | '''
                 <tr>
-                    <td>«property.asLabel»</td>
+                    <td>«generateAnchor(property)»«property.asLabel»</a></td>
                     <td>«generateLink(currentPackage, property.type)»</a></td>
                     <td>«if (property.required) YES else NO»</a></td>
                     <td>«if (property.initializable) YES else NO»</a></td>
@@ -392,7 +400,7 @@ class DataDictionaryGenerator {
             <tbody>
                 «entityRelationships.generateMany[relationship | '''
                 <tr>
-                    <td>«relationship.asLabel»</td>
+                    <td>«generateAnchor(relationship)»«relationship.asLabel»</td>
                     <td>«generateLink(currentPackage, relationship.type)»</a></td>
                     <td>«if (relationship.required) YES else NO»</a></td>
                     <td>«if (relationship.multiple) YES else NO»</a></td>
@@ -423,7 +431,7 @@ class DataDictionaryGenerator {
             <tbody>
                 «entityActions.generateMany[action | '''
                 <tr>
-                    <td>«action.asLabel»</td>
+                    <td>«generateAnchor(action)»«action.asLabel» («action.visibility.getName()»)</td>
                     <td>«IF action.parameters.inputParameters.empty»-«ELSE»«action.parameters.inputParameters.generateMany(['''<p>«it.asLabel» («type.name»)</p>'''])»«ENDIF»</td>
                     <td>
                     <table>
@@ -467,7 +475,7 @@ class DataDictionaryGenerator {
             <tbody>
                 «entityQueries.generateMany[query | '''
                 <tr>
-                    <td>«query.asLabel»</td>
+                    <td>«generateAnchor(query)»«query.asLabel» («query.visibility.getName()»)</td>
                     <td>«IF query.parameters.inputParameters.empty»-«ELSE»«query.parameters.inputParameters.generateMany(['''<p>«name» («type.name»)</p>'''])»«ENDIF»</td>
                     <td>
                     <table>
@@ -514,11 +522,16 @@ class DataDictionaryGenerator {
     	behavior.generateActivityAsTextUML(false)
     }
 	protected def CharSequence generateActivityAsTextUML(Behavior behavior, boolean asExpression) {
-		val generator = new ActivityGenerator()
+		val generator = newTextUMLActivityGenerator(behavior as Activity)
 		return if (asExpression) 
 			generator.generateActivityAsExpressionIfPossible(behavior as Activity)
 		else
 			generator.generateActivity(behavior as Activity)
+	}
+	
+	def newTextUMLActivityGenerator(Activity activity) {
+		val currentPackage = activity.nearestPackage
+		new ActivityGenerator(new HTMLLinkGenerator(currentPackage))
 	}
 	
 	protected def CharSequence generateValueAsTextUML(ValueSpecification value) {
@@ -602,7 +615,7 @@ class DataDictionaryGenerator {
 	
 	def generateConstraintAsTextUML(Constraint constraint) {
         val activity = constraint.specification.resolveBehaviorReference as Activity
-		val generator = new ActivityGenerator()
+		val generator = newTextUMLActivityGenerator(activity)
 		return generator.generateActivityAsExpressionIfPossible(activity)
 	}
 				
@@ -659,12 +672,16 @@ class DataDictionaryGenerator {
 	
 	protected def CharSequence generateSectionHeader(String sectionName, Classifier classifier)
 		'''
-        <a name="«classifier.qualifiedName»"></a>
+        «generateAnchor(classifier)»
         <h3>«getLabel(classifier)»</h3>
         <h5>«sectionName» from <strong>«generateLink(classifier.nearestPackage, '', classifier.nearestPackage, true)»</strong></h5>
         <hr>
         «IF !StringUtils.isBlank(classifier.description)»<blockquote>«classifier.description»</blockquote>«ENDIF»
         '''
+	
+	def generateAnchor(NamedElement classifier) {
+		'''<a name="«classifier.qualifiedName»"></a>'''
+	}
     
     def CharSequence generateDescription(Element element) {
         val description = element.description
@@ -674,5 +691,48 @@ class DataDictionaryGenerator {
     def String asLabel(NamedElement element) {
         KirraHelper.getLabel(element)
     }
-    
+
+    static class HTMLLinkGenerator implements ElementFormatter {
+    	
+    	private Package currentPackage
+    	
+    	new(Package currentPackage) {
+    		this.currentPackage = currentPackage
+    	}
+    	
+		override generateLink(NamedElement element, CharSequence referenceText) {
+			generateSpecificLink(element, referenceText)
+		}
+		
+		override formatElement(Element element, CharSequence elementText) {
+			formatSpecificElement(element, elementText)
+		}
+		
+		def dispatch CharSequence generateSpecificLink(Feature element, CharSequence referenceText) {
+			DataDictionaryGenerator.generateLink(currentPackage, element, referenceText)
+		}
+		
+		
+		def dispatch CharSequence generateSpecificLink(ValueSpecification element, CharSequence referenceText) {
+			referenceText
+		}
+		
+		def dispatch CharSequence generateSpecificLink(InstanceValue element, CharSequence referenceText) {
+			generateSpecificLink(element.instance, referenceText)
+		}
+		
+		def dispatch CharSequence generateSpecificLink(NamedElement element, CharSequence referenceText) {
+			if (element.name !== null)
+				DataDictionaryGenerator.generateLink(currentPackage, element, referenceText)
+			else
+				referenceText
+		}
+		def dispatch CharSequence formatSpecificElement(Comment element, CharSequence referenceText) {
+			'''<em>«referenceText»</em>'''
+		}
+		def dispatch CharSequence formatSpecificElement(Element element, CharSequence elementText) {
+			elementText
+		}					
+    }    
+
 }
