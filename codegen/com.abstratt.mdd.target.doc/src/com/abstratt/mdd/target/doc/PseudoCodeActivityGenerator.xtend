@@ -302,8 +302,8 @@ class PseudoCodeActivityGenerator implements IBasicBehaviorGenerator {
         } else
             switch (valueSpec) {
                 LiteralNull: switch (valueSpec) {
-                    case StateMachineUtils.isVertexLiteral(valueSpec) : 
-                        '''"«StateMachineUtils.resolveVertexLiteral(valueSpec).name»"'''
+                    case MDDExtensionUtils.isVertexLiteral(valueSpec) : 
+                        '''"«MDDExtensionUtils.resolveVertexLiteral(valueSpec).name»"'''
                     case MDDExtensionUtils.isEmptySet(valueSpec) :
                         '''a collection of «valueSpec.type.name»'''
                     default : 'null'
