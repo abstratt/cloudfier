@@ -51,6 +51,8 @@ import static extension com.abstratt.mdd.core.util.StereotypeUtils.*
 import static extension org.apache.commons.lang3.text.WordUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static com.abstratt.mdd.core.util.MDDExtensionUtils.isCast
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.resolveVertexLiteral
+import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.isVertexLiteral
 
 /** 
  * A UML-to-Javascript code generator.
