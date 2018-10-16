@@ -28,9 +28,13 @@ class DataDictionaryMapper implements ITopLevelMapper<Class> {
 	override Map<String, OutputHolder<?>> mapMultiple(IRepository repository) {
 		val classDiagramSettings = new LinkedHashMap(#{
 			'showClasses' -> true.toString,
-			'showAttributes' -> true.toString
+			'showAttributes' -> true.toString,
+			'showEnumerations' -> true.toString
 		})
-		val stateDiagramSettings = new LinkedHashMap(#{'showStateMachines' -> true.toString})
+		val stateDiagramSettings = new LinkedHashMap(#{
+			'showStateMachines' -> true.toString, 
+			'showEnumerations' -> false.toString
+		})
 		
 		val applicationName = getApplicationName(repository)
 		val applicationDescription = getApplicationLabel(repository)
