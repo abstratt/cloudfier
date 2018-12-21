@@ -19,8 +19,8 @@ package util;
 import java.util.List;
 import java.util.ArrayList;
 
-import userprofile.Profile;
-import userprofile.ProfileService;
+import userprofile.UserProfile;
+import userprofile.UserProfileService;
 «roleClasses.map[
 	'''
 	import «it.package.name».«it.name»;
@@ -31,8 +31,8 @@ import userprofile.ProfileService;
 public class SecurityHelper {
     public static ThreadLocal<String> currentUsername = new ThreadLocal<>();
     
-    public static Profile getCurrentProfile() {
-        return new ProfileService().findByUsername(getCurrentUsername());
+    public static UserProfile getCurrentProfile() {
+        return new UserProfileService().findByUsername(getCurrentUsername());
     }
 
     public static String getCurrentUsername() {
@@ -43,7 +43,7 @@ public class SecurityHelper {
     	currentUsername.set(username);
     }
     
-    public static List<String> getRoles(Profile user) {
+    public static List<String> getRoles(UserProfile user) {
 		List<String> roles = new ArrayList<>();
 		«roleClasses.map[ roleClass |
 			'''
@@ -57,7 +57,7 @@ public class SecurityHelper {
     
     «roleClasses.map[ roleClass |
     '''
-    public static «roleClass.name» as«roleClass.name»(Profile userProfile) {
+    public static «roleClass.name» as«roleClass.name»(UserProfile userProfile) {
     	if (userProfile == null) {
     		return null;
         }

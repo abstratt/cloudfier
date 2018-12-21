@@ -28,8 +28,8 @@ import {applicationName}.*;
 
 import resource.{applicationName}.EntityResource;
 import resource.{applicationName}.IndexResource;
-import userprofile.Profile;
-import userprofile.ProfileService;
+import userprofile.UserProfile;
+import userprofile.UserProfileService;
 import util.PersistenceHelper;
 import util.SecurityHelper;
 
@@ -93,7 +93,7 @@ public class StandaloneRequestResponseFilter implements ContainerRequestFilter, 
 			password = tokenizer.hasMoreTokens() ? tokenizer.nextToken() : null;
 		}
 
-		Profile user = new ProfileService().findByUsername(username);
+		UserProfile user = new UserProfileService().findByUsername(username);
 		if (user == null)
 			return false;
 		if (password != null && !password.equals(user.getPassword()))

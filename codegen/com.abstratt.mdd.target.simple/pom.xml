@@ -3,11 +3,12 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <modelVersion>4.0.0</modelVersion>
   <artifactId>com.abstratt.mdd.target.mean</artifactId>
+  <version>2.5.201812</version>
   <packaging>eclipse-plugin</packaging>
 	<parent>
 		<artifactId>codegen</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
-		<version>2.2.201606-SNAPSHOT</version>
+		<version>2.5.201812</version>
 		<relativePath>..</relativePath>
 	</parent>
 	

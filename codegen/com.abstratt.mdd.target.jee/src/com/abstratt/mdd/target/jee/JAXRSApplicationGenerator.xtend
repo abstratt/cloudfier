@@ -20,7 +20,7 @@ class JAXRSApplicationGenerator extends AbstractGenerator {
         import java.util.HashSet;
         import java.util.Set;
         
-        import resource.userprofile.ProfileResource;
+        import resource.userprofile.UserProfileResource;
         import resource.util.LoginLogoutResource;
         
         «entityPackages.map[ appPackage |

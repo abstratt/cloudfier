@@ -17,7 +17,7 @@ public class Authenticator {
 			return false;
 		if (password == null)
 			return false;
-		Profile user = new ProfileService().findByUsername(username);
+		UserProfile user = new UserProfileService().findByUsername(username);
 		if (user == null)
 			return false;
 		if (!user.getPassword().equals(password))

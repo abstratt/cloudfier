@@ -46,7 +46,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 			// no roles allowed to do anything here
 			return '''@DenyAll'''
 		'''
-			@RolesAllowed({«capableRoles.map['''"«it.name»"'''].join(', ')»})
+			@RolesAllowed({«capableRoles.filter[it != null].map['''"«it.name»"'''].join(', ')»})
 		'''
 	}
 	
@@ -84,7 +84,7 @@ class JAXRSAccessControlGenerator extends AbstractGenerator {
 		
 		val constraintsPerRole = if (exhaustive) allRoleClasses.toInvertedMap[ explicitConstraintsPerRole.getOrDefault(it, #{})] else explicitConstraintsPerRole 
 		println('''«accessConstraintContexts.map[name].join(", ")» - can «requiredCapability»?''')
-		constraintsPerRole.forEach[roleClass, constraints| println('''«roleClass.name» -> «constraints.keySet»''')]
+		constraintsPerRole.filter[k, v | k != null].forEach[roleClass, constraints| println('''«roleClass.name» -> «constraints.keySet»''')]
 		if (constraintsPerRole.isAllTautologies(requiredCapability))
 			return '''/*«requiredCapability»: allTautologies*/'''
 		

@@ -47,7 +47,10 @@ public class StringType extends PrimitiveType<String> {
     }
 
     public StringType substring(ExecutionContext context, IntegerType lower, IntegerType upper) {
-        return newInstance(this.value.substring(lower.primitiveValue().intValue(), upper.primitiveValue().intValue()));
+    	int length = this.value.length();
+        int beginIndex = lower.primitiveValue().intValue();
+		int endIndex = Math.min(length, upper.primitiveValue().intValue());
+		return newInstance(this.value.substring(beginIndex, endIndex));
     }
 
     protected StringType newInstance(String primitiveValue) {

@@ -48,7 +48,7 @@
   {
     "APPLICATION"  : "kirra",
     "APPLICATION_PATH" : "kirra",
-    "APPLICATION_CSS" : "${APPLICATION_PATH}/css/styles.css",  // resource id of custom css
+    "APPLICATION_CSS" : "${APPLICATION_PATH}/css/styles.css",
     "QOOXDOO_PATH" : "../../qooxdoo",
     "LOCALES"      : [ "en" ],
     "CACHE"        : "${TMPDIR}/qx${QOOXDOO_VERSION}/cache",

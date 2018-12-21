@@ -1,5 +1,6 @@
 package com.abstratt.kirra.mdd.core;
 
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -801,12 +802,22 @@ public class KirraHelper {
     }
 
     public static String getSymbol(org.eclipse.uml2.uml.NamedElement sourceElement) {
-        Assert.isNotNull(sourceElement.getName());
-        String mangled = sourceElement.getName().replaceAll("[\\W]", "_");
+    	return getSymbol(sourceElement.getName());
+    }
+    
+    public static String getSymbol(String name) {
+        Assert.isNotNull(name);
+        String accentStripped = Normalizer.normalize(
+    		StringUtils.uncapitalize(name),
+    		Normalizer.Form.NFD
+		).replaceAll("\\p{M}", "");
+        String mangled = accentStripped.replaceAll("[\\W]", "_");
         return mangled;
     }
     
     public static String getLabel(org.eclipse.uml2.uml.NamedElement sourceElement) {
+    	if (sourceElement == null)
+    		return null;
         String explicitLabel = (String) StereotypeUtils.getValue(sourceElement, "kirra::Property", "label");
         if (explicitLabel != null)
             return explicitLabel;

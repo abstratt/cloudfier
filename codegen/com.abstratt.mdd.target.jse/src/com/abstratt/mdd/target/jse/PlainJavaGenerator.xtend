@@ -233,6 +233,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
                     case 'Date': 'Date'
                     case 'String': 'String'
                     case 'Memo': 'String'
+                    case 'Email': 'String'
                     case 'Boolean': if (nullable) 'Boolean' else 'boolean'
                     default: '''String'''
                 }
@@ -407,6 +408,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
                 case 'Date' : 'new Date()'
                 case 'String' : '""'
                 case 'Memo' : '""'
+                case 'Email' : '""'
             }
             default : 'null'
         }
@@ -423,6 +425,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
                 case 'Date' : 'new Date(new Date().getTime() + 24 * 60 * 60 * 1000L)'
                 case 'String' : '"A string value"'
                 case 'Memo' : '"A memo value"'
+                case 'Email' : '"simpleemail@acme.com"'
             }
             default : null
         }

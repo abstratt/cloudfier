@@ -5,5 +5,7 @@
          point="com.abstratt.mdd.target.core.targetPlatform" id="doc" name="Doc Platform">
          <mapper artifactType="dataDictionary"
                class="com.abstratt.mdd.target.doc.DataDictionaryMapper"/>
+         <mapper artifactType="openAPI"
+               class="com.abstratt.mdd.target.doc.OpenAPIMapper"/>
    </extension>
 </plugin>

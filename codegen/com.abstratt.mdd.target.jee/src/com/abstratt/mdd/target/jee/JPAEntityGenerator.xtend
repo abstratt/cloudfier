@@ -46,7 +46,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
                 return super.generateActivity(activity)
             }
             // delegate query performing operations to the service
-            '''return «operation.class_.name.toFirstLower»Service».«operation.name»(this);'''
+            '''return «operation.class_.name.toFirstLower»Service.«operation.name»(this);'''
         }
         
     }

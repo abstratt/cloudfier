@@ -77,9 +77,11 @@ public abstract class PrimitiveType<T> extends BuiltInClass implements Comparabl
      */
     @Override
     public final boolean equals(Object another) {
-        if (!(another instanceof PrimitiveType))
-            return false;
-        boolean result = another != null && primitiveValue().equals(((PrimitiveType) another).primitiveValue());
+        boolean result;
+		if (!(another instanceof PrimitiveType))
+            result = false;
+        else
+        	result = another != null && primitiveValue().equals(((PrimitiveType) another).primitiveValue());
 		return result;
     }
 

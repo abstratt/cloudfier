@@ -15,7 +15,7 @@ import com.abstratt.mdd.core.runtime.ExecutionContext;
 public class DateTimeType extends PrimitiveType<LocalDateTime> {
     public static DateTimeType fromString(@SuppressWarnings("unused") ExecutionContext context, StringType literal) {
         try {
-            return new DateTimeType(new SimpleDateFormat("yyyy/MM/dd").parse(literal.primitiveValue()));
+            return new DateTimeType(new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ").parse(literal.primitiveValue()));
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -96,7 +96,7 @@ public class DateTimeType extends PrimitiveType<LocalDateTime> {
 
     @Override
     public StringType toString(ExecutionContext context) {
-    	String asString = DateTimeFormatter.ofPattern("yyyy/MM/dd").format(this.primitiveValue());
+    	String asString = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS").format(this.primitiveValue());
         return new StringType(asString);
     }
 

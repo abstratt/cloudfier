@@ -11,7 +11,10 @@ import com.abstratt.pluginutils.LogUtils;
 
 public class Activator implements BundleActivator {
 
-    @Override
+    private static final String JETTY_HTTP_PORT = "org.eclipse.equinox.http.jetty.http.port";
+	private static final String CLOUDFIER_API_PORT = "cloudfier.api.port";
+
+	@Override
     public void start(BundleContext context) {
         decidePort();
         
@@ -27,20 +30,20 @@ public class Activator implements BundleActivator {
 
     private void decidePort() {
         String defaultPort = "8081";
-        String cloudfierAPIPort = System.getProperty("cloudfier.api.port");
-        String equinoxHttpPort = System.getProperty("org.eclipse.equinox.http.jetty.http.port");
+        String cloudfierAPIPort = System.getProperty(CLOUDFIER_API_PORT);
+        String equinoxHttpPort = System.getProperty(JETTY_HTTP_PORT);
         if (cloudfierAPIPort != null)
-            System.setProperty("org.eclipse.equinox.http.jetty.http.port", cloudfierAPIPort);
+            System.setProperty(JETTY_HTTP_PORT, cloudfierAPIPort);
         else
             if (equinoxHttpPort != null)
-                System.setProperty("cloudfier.api.port", equinoxHttpPort);
+                System.setProperty(CLOUDFIER_API_PORT, equinoxHttpPort);
             else {
-                System.setProperty("cloudfier.api.port", defaultPort);
-                System.setProperty("org.eclipse.equinox.http.jetty.http.port", defaultPort);
+                System.setProperty(CLOUDFIER_API_PORT, defaultPort);
+                System.setProperty(JETTY_HTTP_PORT, defaultPort);
             }
         LogUtils.logInfo(getClass().getPackage().getName(), "Instance location: " + Platform.getInstanceLocation().getURL(), null);
         LogUtils.logInfo(getClass().getPackage().getName(), 
-                "Internal port: " + System.getProperty("cloudfier.api.port"), null);
+                "Internal port: " + System.getProperty(CLOUDFIER_API_PORT), null);
         
     }
 

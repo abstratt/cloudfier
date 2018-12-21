@@ -14,8 +14,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.SecurityContext;
 
-import userprofile.Profile;
-import userprofile.ProfileService;
+import userprofile.UserProfile;
+import userprofile.UserProfileService;
 
 @Path("/")
 @Produces("application/json")
@@ -28,7 +28,7 @@ public class IndexResource {
     	URI currentUserURI = null;
     	Principal principal = securityContext.getUserPrincipal();
     	if (principal != null && principal.getName() != null) {
-    		Profile user = new ProfileService().findByUsername(securityContext.getUserPrincipal().getName());
+    		UserProfile user = new UserProfileService().findByUsername(securityContext.getUserPrincipal().getName());
     		if (user != null) {
     			currentUserURI = uri.getBaseUriBuilder().segment("entities", "userprofile.Profile", "instances", user.getId().toString()).build(); 
     		}

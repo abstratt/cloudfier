@@ -30,14 +30,12 @@ import org.eclipse.uml2.uml.ValueSpecification
 import static extension com.abstratt.kirra.mdd.target.base.JavaGeneratorUtils.*
 import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
 import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import org.eclipse.uml2.uml.Feature
-import org.eclipse.uml2.uml.InstanceSpecification
 import org.eclipse.uml2.uml.Comment
 import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator.ElementFormatter
 import org.eclipse.uml2.uml.InstanceValue

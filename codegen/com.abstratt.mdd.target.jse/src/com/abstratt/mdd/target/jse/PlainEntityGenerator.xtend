@@ -548,30 +548,30 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
         val stateMachine = stateProperty?.type as StateMachine
         
         val sourceStates = if (stateMachine != null) stateMachine.findStatesForCalling(actionOperation) else #[]
-		'''
-		public boolean is«actionOperation.name.toFirstUpper»ActionEnabled() {
-			«IF sourceStates.size > 1»
-			if (!EnumSet.of(«sourceStates.generateMany([ '''«stateProperty.type.toJavaType».«name»''' ], ', ')»).contains(«stateProperty.generateAccessorName»())) {
-				return false;
-			}
-			«ELSEIF sourceStates.size == 1»
-			if («stateProperty.generateAccessorName»() != «stateProperty.type.toJavaType».«sourceStates.head.name») {
-				return false;
-			}
-			«ENDIF»
-		    «preconditions.generateMany[ constraint |
-            	val predicateActivity = constraint.specification.resolveBehaviorReference as Activity
-            	val parameterless = predicateActivity.constraintParameterless
-            	if (!parameterless) return ''
-            	'''
-            	if («generatePredicate(constraint, true)») {
-            	    return false;
-            	}
+        '''
+        public boolean is«actionOperation.name.toFirstUpper»ActionEnabled() {
+            «IF sourceStates.size > 1»
+            if (!EnumSet.of(«sourceStates.generateMany([ '''«stateProperty.type.toJavaType».«name»''' ], ', ')»).contains(«stateProperty.generateAccessorName»())) {
+                return false;
+            }
+            «ELSEIF sourceStates.size == 1»
+            if («stateProperty.generateAccessorName»() != «stateProperty.type.toJavaType».«sourceStates.head.name») {
+                return false;
+            }
+            «ENDIF»
+            «preconditions.generateMany[ constraint |
+                val predicateActivity = constraint.specification.resolveBehaviorReference as Activity
+                val parameterless = predicateActivity.constraintParameterless
+                if (!parameterless) return ''
+                '''
+                if («generatePredicate(constraint, true)») {
+                    return false;
+                }
                 '''
             ]»
-		    return true;
-		}
-		'''
+            return true;
+        }
+        '''
     }
     
     def generatePermissions(Class entity) {

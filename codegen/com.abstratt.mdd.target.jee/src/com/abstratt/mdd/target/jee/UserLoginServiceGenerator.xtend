@@ -45,7 +45,7 @@ public class UserLoginService extends MappedLoginService {
 	protected UserIdentity loadUser(String username) {
 		Context jettyContext = ContextHandler.getCurrentContext();
 		ServletContext servletContext = jettyContext.getContext(jettyContext.getServletContextName());
-		Profile user = new ProfileService().findByUsername(username);
+		UserProfile user = new UserProfileService().findByUsername(username);
 		if (user == null)
 			return null;
 		List<String> roles = SecurityHelper.getRoles(user);

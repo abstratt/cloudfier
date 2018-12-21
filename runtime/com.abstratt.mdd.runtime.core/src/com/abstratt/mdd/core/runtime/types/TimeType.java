@@ -6,6 +6,8 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -21,9 +23,13 @@ public class TimeType extends PrimitiveType<LocalTime> {
             throw new RuntimeException(e);
         }
     }
+
+    private TimeType(ZonedDateTime value) {
+        this(value.toLocalTime());
+    }
     
     private TimeType(Date value) {
-        super(value.toInstant().atZone(ZoneId.systemDefault()).toLocalTime());
+        this(value.toInstant().atZone(ZoneId.systemDefault()));
     }
 
     public static TimeType fromValue(Date original) {
@@ -39,7 +45,7 @@ public class TimeType extends PrimitiveType<LocalTime> {
     }
 
     public static TimeType now(@SuppressWarnings("unused") ExecutionContext context) {
-        return new TimeType(LocalTime.now());
+        return new TimeType(LocalTime.now(ZoneOffset.UTC));
     }
     
     /**
@@ -90,7 +96,7 @@ public class TimeType extends PrimitiveType<LocalTime> {
 
     @Override
     public StringType toString(ExecutionContext context) {
-    	String asString = DateTimeFormatter.ofPattern("hh:mm").format(this.primitiveValue());
+    	String asString = DateTimeFormatter.ofPattern("hh:mmZ").format(this.primitiveValue());
         return new StringType(asString);
     }
 

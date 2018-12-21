@@ -166,10 +166,13 @@ public class RuntimeClass implements MetaClass<RuntimeObject> {
 
     public Collection<RuntimeObject> getParameterDomain(String externalId, Parameter parameter,
             Classifier parameterType) {
-        IntegerKey key = objectIdToKey(externalId);
-        if (!getNodeStore().containsNode(key))
-            return Collections.emptySet();
-        return getOrLoadInstance(key, this::createRuntimeObject).getParameterDomain(parameter, parameterType);
+    	
+        IntegerKey key = externalId != null ? objectIdToKey(externalId) : new IntegerKey(-1);
+        RuntimeObject instance = getOrLoadInstance(key, this::createRuntimeObject);
+        if (instance == null) {
+        	instance = createRuntimeObject(key);
+        }
+		return instance.getParameterDomain(parameter, parameterType);
     }
 
     public Collection<RuntimeObject> getPropertyDomain(String objectId, Property property, Classifier propertyType) {
