@@ -22,6 +22,8 @@ import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import com.abstratt.mdd.target.base.GeneratorUtils
+import org.eclipse.uml2.uml.Namespace
+import java.util.Properties
 
 abstract class AbstractGenerator {
     protected IRepository repository
@@ -32,23 +34,30 @@ abstract class AbstractGenerator {
     
     protected Collection<Package> appPackages
 	
-	protected Iterable<Enumeration> enumerations
+	protected Iterable<Classifier> enumerations
 	protected Iterable<StateMachine> stateMachines
+	
+	protected Properties repositoryProperties
     
     new(IRepository repository) {
         this.repository = repository
+        this.repositoryProperties = repository.properties
         if (repository != null) {
             val topLevelPackages = repository.getTopLevelPackages(null)
 			this.appPackages = topLevelPackages.applicationPackages
             this.entities = appPackages.entities
-            this.enumerations = GeneratorUtils.getEnumerations(topLevelPackages)
+            this.enumerations = getEnumerations(topLevelPackages)
             this.stateMachines = appPackages.getTypes(UMLPackage.Literals.CLASS).map[it as Class].map[it.ownedBehaviors.filter(StateMachine)].flatten
             this.applicationName = KirraHelper.getApplicationName(repository)
         }
     }
     
-    def String toJavaPackage(Package package_) {
+    def String toJavaPackage(NamedElement package_) {
         JavaGeneratorUtils.toJavaPackage(package_)
+    }
+    
+    def String toJavaQName(NamedElement package_) {
+        JavaGeneratorUtils.toJavaQName(package_)
     }
     
     

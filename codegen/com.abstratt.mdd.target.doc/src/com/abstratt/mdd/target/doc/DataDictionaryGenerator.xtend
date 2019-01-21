@@ -6,7 +6,6 @@ import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator
 import com.abstratt.mdd.frontend.textuml.renderer.TextUMLRenderingUtils
 import com.google.common.base.Function
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicInteger
 import java.util.function.Supplier
 import org.apache.commons.lang3.StringUtils
 import org.eclipse.uml2.uml.Activity
@@ -27,34 +26,31 @@ import org.eclipse.uml2.uml.Trigger
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.ValueSpecification
 
-import static extension com.abstratt.kirra.mdd.target.base.JavaGeneratorUtils.*
 import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
-import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import org.eclipse.uml2.uml.Feature
 import org.eclipse.uml2.uml.Comment
 import com.abstratt.mdd.frontend.textuml.renderer.ActivityGenerator.ElementFormatter
 import org.eclipse.uml2.uml.InstanceValue
+import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 
-class DataDictionaryGenerator {
-	private static final String YES = "\u2714"
-	private static final String NO = "-"
+class DataDictionaryGenerator extends AbstractGenerator {
+	static final String YES = "\u2714"
+	static final String NO = "-"
 	
-	private boolean showDiagrams
+	boolean showDiagrams
 	
-	IRepository repository
-    
     new(IRepository repository, boolean showDiagrams) {
-    	this.repository = repository
+    	super(repository)
         this.showDiagrams = showDiagrams
     }
 
     def CharSequence generatePage(String title, Supplier<CharSequence> generator) {
-        val localStyle = Boolean.parseBoolean(repository.properties.computeIfAbsent("mdd.doc.localStylesheet", ["false"]).toString)
+        val localStyle = Boolean.parseBoolean(repositoryProperties.computeIfAbsent("mdd.doc.localStylesheet", ["false"]).toString)
         '''
         <!doctype html>
         <html lang="en">
@@ -76,7 +72,7 @@ class DataDictionaryGenerator {
     def CharSequence generatePackage(Package umlPackage) {
         val packageAsList = #{umlPackage}
 		val entities = packageAsList.entities
-		val enumerations = packageAsList.enumerations
+		val enumerations = KirraHelper.getEnumerations(packageAsList)
 		val stateMachines = packageAsList.stateMachines
         val testClasses = #[umlPackage].map[ownedTypes.filter[it.testClass]].flatten().map[it as Class].toSet
         
@@ -171,7 +167,7 @@ class DataDictionaryGenerator {
 	}
 	
 	def static CharSequence generateLink(Package current, NamedElement element) {
-		generateLink(current, element, if (element == null) 'null' else element.name)
+		generateLink(current, element, if (element === null) 'null' else element.name)
 	}
 	def static CharSequence generateLink(Package current, NamedElement element, CharSequence elementText) {
 		generateLink(current, generateDocLink(element.nearestPackage), element, elementText, false)
@@ -181,7 +177,7 @@ class DataDictionaryGenerator {
 	}
 
 	def static CharSequence generateLink(Package current, String docLink, NamedElement element, CharSequence elementText, boolean qualified) {
-		if (element == null)
+		if (element === null)
 			'null'
 		else if (element.nearestPackage.isLibrary) {
 			elementText
@@ -250,7 +246,7 @@ class DataDictionaryGenerator {
         '''
     }
     
-    def CharSequence generateEnumeration(Enumeration enumeration) {
+    def CharSequence generateEnumeration(Classifier enumeration) {
     	'''
         «generateSectionHeader("Enumeration", enumeration)»
         <table class="table">
@@ -261,7 +257,7 @@ class DataDictionaryGenerator {
                 </tr>
             </thead>
             <tbody>
-                «enumeration.ownedLiterals.generateMany[literal | '''
+                «enumeration.enumerationLiterals.generateMany[literal | '''
                 <tr>
                     <td>«generateAnchor(literal)»«literal.asLabel»</td>
                     <td>«IF literal.description.empty»-«ELSE»«literal.description»«ENDIF»</td>
@@ -296,7 +292,7 @@ class DataDictionaryGenerator {
                         <p>
                         <em>When: </em>«o.triggers.generateMany[generateTrigger(it)]»
                         </p>
-                        «IF o.guard != null»
+                        «IF o.guard !== null»
                         <p>
                         <em>If: </em>
                         «generateConstraints("", #[o.guard])»
@@ -436,7 +432,7 @@ class DataDictionaryGenerator {
                     <tr><td>
                     «action.generateDescription»
                     </td></tr>
-                    «IF stateMachine != null && !stateMachine.findStatesForCalling(action).empty»
+                    «IF stateMachine !== null && !stateMachine.findStatesForCalling(action).empty»
                     <tr><th>
                     Valid state(s)
                     </th></tr>
@@ -508,7 +504,7 @@ class DataDictionaryGenerator {
 	}
 	
 	protected def CharSequence generateDerivationAsTextUML(Property attribute) {
-        val baseValue = if (attribute.defaultValue != null)
+        val baseValue = if (attribute.defaultValue !== null)
             if (attribute.defaultValue.behaviorReference)
                 (attribute.defaultValue.resolveBehaviorReference as Activity).generateActivityAsTextUML(true)
             else '''«attribute.defaultValue.generateValueAsTextUML»'''
@@ -541,8 +537,6 @@ class DataDictionaryGenerator {
 	}
 	
 	def CharSequence generateConstraints(String title, Iterable<Constraint> constraints) {
-		var index = new AtomicInteger()
-		var prefix = UUID.randomUUID.toString
 	'''
 	«FOR constraint : constraints»
 	<tr><th>
@@ -557,8 +551,6 @@ class DataDictionaryGenerator {
     }
     
     def CharSequence generateActivity(String title, Iterable<Behavior> activities) {
-		var index = new AtomicInteger()
-		var prefix = UUID.randomUUID.toString
 	'''
 	«FOR activity : activities»
 	<tr><th>
@@ -683,7 +675,7 @@ class DataDictionaryGenerator {
     
     def CharSequence generateDescription(Element element) {
         val description = element.description
-        if (description?.length > 0) description else '-' 
+        return if (description?.length > 0) description else '-' 
     }
     
     def String asLabel(NamedElement element) {
@@ -692,7 +684,7 @@ class DataDictionaryGenerator {
 
     static class HTMLLinkGenerator implements ElementFormatter {
     	
-    	private Package currentPackage
+    	Package currentPackage
     	
     	new(Package currentPackage) {
     		this.currentPackage = currentPackage

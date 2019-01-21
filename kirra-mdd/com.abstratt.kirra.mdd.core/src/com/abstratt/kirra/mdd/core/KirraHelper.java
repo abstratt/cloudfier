@@ -18,6 +18,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.function.BinaryOperator;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -31,6 +32,7 @@ import org.eclipse.emf.query.statements.SELECT;
 import org.eclipse.emf.query.statements.WHERE;
 import org.eclipse.uml2.uml.AggregationKind;
 import org.eclipse.uml2.uml.Association;
+import org.eclipse.uml2.uml.Behavior;
 import org.eclipse.uml2.uml.BehavioralFeature;
 import org.eclipse.uml2.uml.BehavioredClassifier;
 import org.eclipse.uml2.uml.Class;
@@ -956,15 +958,40 @@ public class KirraHelper {
         return applicationLogo;
     }
     
-    public static List<Class> getEntities(Collection<Package> applicationPackages) {
-        List<Class> result = new ArrayList<Class>();
+    public static <C extends Classifier> List<C> getClassifiers(Collection<Package> applicationPackages, Predicate<Classifier> filter) {
+        List<C> result = new ArrayList<C>();
         for (Package current : applicationPackages) {
-            for (Type type : current.getOwnedTypes())
-                if (KirraHelper.isEntity(type))
-                    result.add((Class) type);
-            result.addAll(getEntities(current.getNestedPackages()));
+            EList<Type> classifiers = current.getOwnedTypes();
+			collectMatchingClassifiers(filter, result, classifiers);
+            result.addAll(getClassifiers(current.getNestedPackages(), filter));
         }
         return result;
+    }
+
+	private static <C extends Classifier> void collectMatchingClassifiers(Predicate<Classifier> filter, List<C> result,
+			List<? extends Type> classifiers) {
+		for (Type type : classifiers) {
+		    if (type instanceof Classifier && filter.test((Classifier) type))
+		        result.add((C) type);
+		    if (type instanceof BehavioredClassifier) {
+		    	EList<Behavior> nestedBehaviors = ((BehavioredClassifier) type).getOwnedBehaviors();
+				collectMatchingClassifiers(filter, result, nestedBehaviors);
+		    }
+
+		    if (type instanceof Class) {
+		    	EList<Classifier> nestedClassifiers = ((Class) type).getNestedClassifiers();
+				collectMatchingClassifiers(filter, result, nestedClassifiers);
+		    }
+		}
+	}
+
+    
+    public static List<Class> getEntities(Collection<Package> applicationPackages) {
+    	return getClassifiers(applicationPackages, KirraHelper::isEntity);
+    }
+    
+    public static List<Classifier> getEnumerations(Collection<Package> applicationPackages) {
+    	return getClassifiers(applicationPackages, KirraHelper::isEnumeration);
     }
     
     public static List<Class> getRoleEntities(Collection<Package> applicationPackages) {
@@ -972,27 +999,23 @@ public class KirraHelper {
     }
     
     public static List<Class> getServices(Collection<Package> applicationPackages) {
-        List<Class> result = new ArrayList<Class>();
-        for (Package current : applicationPackages)
-            for (Type type : current.getOwnedTypes())
-                if (KirraHelper.isService(type))
-                    result.add((Class) type);
-        return result;
+    	return getClassifiers(applicationPackages, KirraHelper::isService);
     }
     
     public static List<Classifier> getTupleTypes(Collection<Package> applicationPackages) {
-        List<Classifier> result = new ArrayList<Classifier>();
-        for (Package current : applicationPackages)
-            for (Type type : current.getOwnedTypes())
-                if (KirraHelper.isTupleType(type))
-                    result.add((Classifier) type);
-        return result;
+    	return getClassifiers(applicationPackages, KirraHelper::isTupleType);
     }
 
     public static boolean isEnumeration(final Type umlType) {
-        return get(umlType, "isEnumeration", () ->
-            umlType instanceof Enumeration || umlType instanceof StateMachine);
+        return get(umlType, "isEnumeration", () -> checkIsEnumeration(umlType));
     }
+
+	private static boolean checkIsEnumeration(final Type umlType) {
+		boolean isEnum = umlType instanceof Enumeration;
+		boolean isStateMachine = umlType instanceof StateMachine;
+		System.out.println(umlType.getQualifiedName() + " = " + (isEnum || isStateMachine));
+		return isEnum || isStateMachine;
+	}
 
     public static Collection<? extends NamedElement> getEnumerationLiterals(final Type enumOrStateMachine) {
         return get(enumOrStateMachine, "getEnumerationLiterals", () -> {
