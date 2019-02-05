@@ -18,7 +18,6 @@ import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.TypedElement
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
 import java.util.Map
 
 /**
