@@ -9,7 +9,6 @@ import org.eclipse.uml2.uml.Action
 import org.eclipse.uml2.uml.CallOperationAction
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
-import org.eclipse.uml2.uml.Enumeration
 import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.ReadLinkAction
@@ -20,9 +19,6 @@ import org.eclipse.uml2.uml.UMLPackage
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
-import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
-import com.abstratt.mdd.target.base.GeneratorUtils
-import org.eclipse.uml2.uml.Namespace
 import java.util.Properties
 
 abstract class AbstractGenerator {
