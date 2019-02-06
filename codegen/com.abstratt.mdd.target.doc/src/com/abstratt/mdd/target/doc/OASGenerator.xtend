@@ -4,6 +4,7 @@ import com.abstratt.kirra.mdd.target.base.AbstractGenerator
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.ParsedProperties
 import java.util.Collection
+import java.util.Map
 import java.util.function.Supplier
 import org.eclipse.uml2.uml.Class
 import org.eclipse.uml2.uml.Classifier
@@ -13,13 +14,10 @@ import org.eclipse.uml2.uml.NamedElement
 import org.eclipse.uml2.uml.Operation
 import org.eclipse.uml2.uml.Package
 import org.eclipse.uml2.uml.Property
-import org.eclipse.uml2.uml.StateMachine
 import org.eclipse.uml2.uml.Type
 import org.eclipse.uml2.uml.TypedElement
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
-import static extension com.abstratt.mdd.target.base.GeneratorUtils.*
-import java.util.Map
 
 /**
  * Generates API specification that is compatible with OpenAPI.
@@ -36,7 +34,7 @@ class OASGenerator extends AbstractGenerator {
 
     def generatePackages(Collection<Package> packages) {
         val enumerations = getEnumerations(packages).toSet
-        val entities = getEntities(packages).toSet
+        val entities = getEntities(packages).filter[!it.abstract].toSet
         val entityComponents = entities.map[generateEntityDefinition]
         val enumerationComponents = enumerations.map[generateEnumerationAsComponent]
         '''
@@ -69,21 +67,29 @@ class OASGenerator extends AbstractGenerator {
                     		.map [generatePropertyDefinition(false)]
         '''
             {
+            	"description": "«toGenerate.description»",
                 "type": "object",
                 "properties": {
                     «
-                    	(generatedProperties + generateBuiltInProperties()).join(",\n")
+                    	(generatedProperties + generateSingleBuiltInProperties()).join(",\n")
                     »
                 }
             }
         '''
     }
 
-	def Iterable<CharSequence> generateBuiltInProperties() {
+	def Iterable<CharSequence> generateSingleBuiltInProperties() {
+		return generateBuiltInProperties("single")
+	}
+	def Iterable<CharSequence> generateListBuiltInProperties() {
+		return generateBuiltInProperties("list")
+	}
+
+	def Iterable<CharSequence> generateBuiltInProperties(String kind) {
 		val customPropertyNames = customProperties.keySet.map[it.split("\\.").get(0)].toSet
 		
 		val Iterable<CharSequence> builtInProperties = customPropertyNames
-			.filter[Boolean.FALSE.toString != customProperties.get(it + ".enabled")]
+			.filter[isOptionEnabled(it, kind)]
 			.map[
 				'''
 				"«it»" : {
@@ -93,6 +99,14 @@ class OASGenerator extends AbstractGenerator {
 			    ''']
 		
 		return builtInProperties
+	}
+	
+	protected def boolean isOptionEnabled(String propertyName, String kind) {
+		val enabledOption = propertyName + ".enabled"
+		val optionValue = customProperties.get(enabledOption)
+		if (Boolean.FALSE.toString == optionValue) return false
+		if (Boolean.TRUE.toString == optionValue) return true
+		return kind == optionValue
 	}
 		
     def CharSequence generateEntityDefinition(Class toGenerate) {
@@ -108,9 +122,6 @@ class OASGenerator extends AbstractGenerator {
 
     def CharSequence generateEntityPaths(Class toGenerate) {
         var basePath = getBasePath(toGenerate)
-        // generateEntityRetrieval(toGenerate),
-        // generateEntityUpdate(toGenerate),
-        // generateEntityDeletion(toGenerate)
         return 
             (
                 #[generateDefaultEndpoints(basePath, toGenerate)] +
@@ -126,6 +137,14 @@ class OASGenerator extends AbstractGenerator {
                           toGenerate.generateEntityList,
                           toGenerate.generateEntityCreation
                       ].generateMany(",\n")[it]»
+            },
+            "«basePath»/{id}" : {
+                «
+                      #[
+                          toGenerate.generateEntityRetrieval,
+                          toGenerate.generateEntityUpdate,
+                          toGenerate.generateEntityDeletion
+                      ].generateMany(",\n")[it]»
             }
         '''
     
@@ -135,14 +154,18 @@ class OASGenerator extends AbstractGenerator {
     }
     
     def CharSequence generateEntityOperationEndpoint(CharSequence basePath, Class classToGenerate, Operation operationToGenerate) {
+    	val pathSuffix = if (operationToGenerate.static) 
+    		operationToGenerate.symbol
+		else 
+    		'{id}/' + operationToGenerate.symbol
         '''
-            "«basePath»/«operationToGenerate.symbol»" : {
+            "«basePath»/«pathSuffix»" : {
                 «generateEntityOperation(classToGenerate, operationToGenerate)»
             }
         '''
     }
     
-    def CharSequence generateResponseContent(Supplier<CharSequence> core) {
+    def CharSequence generateEntityBody(Supplier<CharSequence> core) {
       '''
       "content": {
           "application/json": {
@@ -156,7 +179,7 @@ class OASGenerator extends AbstractGenerator {
     	val hasResult = !operationToGenerate.returnResult().isEmpty
         var responseDetails = if (hasResult) {
             #[
-              generateResponseContent['''
+              generateEntityBody['''
                   "schema": «operationToGenerate.returnResult().get(0).generateDataElementDefinition»                  	
               '''],
               '''"description": "«operationToGenerate.returnResult().get(0).label»"'''
@@ -177,6 +200,62 @@ class OASGenerator extends AbstractGenerator {
             }
         '''
     }
+    
+    def CharSequence generateEntityRetrieval(Class toGenerate) {
+        '''
+            "get" : {
+                "operationId": "«toGenerate.qualifiedName.symbol»_Get",
+                "summary": "Single object GET endpoint for «toGenerate.label»",
+                "tags": ["«toGenerate.qualifiedName»"],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        «generateEntityBody[
+                        	'''
+                                "schema": «toGenerate.generateDefinitionReference»
+                        	'''
+                        ]»
+                    }
+                }
+            }
+        '''
+    }    
+
+    def CharSequence generateEntityUpdate(Class toGenerate) {
+        '''
+            "put" : {
+                "operationId": "«toGenerate.qualifiedName.symbol»_Put",
+                "summary": "Single object PUT endpoint for «toGenerate.label»",
+                "tags": ["«toGenerate.qualifiedName»"],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        «generateEntityBody[
+                        	'''
+                                "schema": «toGenerate.generateDefinitionReference»
+                        	'''
+                        ]»
+                    }
+                }
+            }
+        '''
+    }
+
+
+	def CharSequence generateEntityDeletion(Class toGenerate) {
+        '''
+            "delete" : {
+                "operationId": "«toGenerate.qualifiedName.symbol»_Put",
+                "summary": "Single object DELETE endpoint for «toGenerate.label»",
+                "tags": ["«toGenerate.qualifiedName»"],
+                "responses": {
+                    "202": {
+                        "description": "NO CONTENT"
+                    }
+                }
+            }
+        '''
+    }
 
     def CharSequence generateEntityList(Class toGenerate) {
         '''
@@ -187,14 +266,9 @@ class OASGenerator extends AbstractGenerator {
                 "responses": {
                     "200": {
                         "description": "OK",
-                        «generateResponseContent[
+                        «generateEntityBody[
                         	'''
-                                "schema": {
-                                    "type": "array",
-                                    "items": {
-                                        "$ref": "#/components/schemas/«toGenerate.toJavaQName»"
-                                    }
-                                }
+                                "schema": «generateDefinitionReferenceAsList(toGenerate)»
                         	'''
                         ]»
                     }
@@ -209,14 +283,22 @@ class OASGenerator extends AbstractGenerator {
                 "operationId": "«toGenerate.qualifiedName.symbol»_Creation",
                 "tags": ["«toGenerate.qualifiedName»"],
                 "summary": "Creation endpoint for «toGenerate.label»",
+                "requestBody": {
+                    «generateEntityBody[
+                    	'''
+                            "schema": {
+                                "type": "array",
+                                "items": «toGenerate.generateDefinitionReference»
+                            }
+                    	'''
+                    ]»
+                },
                 "responses": {
-                    "204": {
+                    "201": {
                         "description": "Created",
-                        «generateResponseContent[
+                        «generateEntityBody[
                         	'''
-                                "schema": {
-                                    "$ref": "#/components/schemas/«toGenerate.toJavaQName»"
-                                }
+                                "schema": «toGenerate.generateDefinitionReference»
                             '''
                     	]»
                     }
@@ -228,6 +310,7 @@ class OASGenerator extends AbstractGenerator {
     def CharSequence generatePrimitivePropertyDefinition(TypedElement toGenerate) {
         '''
             {
+            	"description": "«toGenerate.description»",
                 «toGenerate.type.toOASType»
             }
         '''
@@ -236,6 +319,7 @@ class OASGenerator extends AbstractGenerator {
     def CharSequence generateEnumerationObject(Classifier toGenerate) {
         '''
             {
+            	"description": "«toGenerate.description»",
                 "type": "string",
                 "enum": [
                     «toGenerate.enumerationLiterals.generateMany(",\n")['''"«it.name»"''']»
@@ -252,11 +336,29 @@ class OASGenerator extends AbstractGenerator {
         generateObjectDefinition(toGenerate.type as Class)
     }
 
-    def CharSequence generateDefinitionReference(TypedElement toGenerate) {
-    	val path = '''components/schemas/«toGenerate.type.toJavaQName»''' 
+    def CharSequence generateDefinitionReference(Type toGenerate) {
+    	val path = '''components/schemas/«toGenerate.toJavaQName»''' 
         '''
             {
                 "$ref": "#/«path»"
+            }
+        '''
+    }
+    
+    def CharSequence generateDefinitionReferenceAsList(Type toGenerate) {
+    	val path = '''components/schemas/«toGenerate.toJavaQName»'''
+    	val builtInProperties = generateListBuiltInProperties()
+        '''
+            {
+                "properties": {
+                	"content": {
+                		"type": "array",
+                		"items": {
+                		    "$ref": "#/«path»"
+                		}
+                	},
+        		    «builtInProperties.join(",\n")»
+            	}  
             }
         '''
     }
@@ -307,15 +409,20 @@ class OASGenerator extends AbstractGenerator {
 
     def CharSequence generateDataElementDefinition(TypedElement toGenerate, boolean inline) {
         if (toGenerate instanceof MultiplicityElement && (toGenerate as MultiplicityElement).multivalued)
-            '''
-            {
-                "type": "array",
-                "items" : «toGenerate.generateSingleDataElementDefinition(inline)»
-            }
-            '''
+        	toGenerate.generateMultipleDataElementDefinition(inline)
         else
             toGenerate.generateSingleDataElementDefinition(inline)
     }
+		
+	def CharSequence generateMultipleDataElementDefinition(TypedElement toGenerate, boolean inline) {
+		'''
+            {
+                "description": "«toGenerate.description»",
+                "type": "array",
+                "items" : «toGenerate.generateSingleDataElementDefinition(inline)»
+            }
+        '''
+	} 
 
     def CharSequence generateSingleDataElementDefinition(TypedElement toGenerate, boolean inline) {
         if (toGenerate.type.isPrimitive)
@@ -326,6 +433,6 @@ class OASGenerator extends AbstractGenerator {
             else
                 toGenerate.generateRelationshipPropertyDefinition
         } else
-            toGenerate.generateDefinitionReference
+            toGenerate.type.generateDefinitionReference
     }
 }
