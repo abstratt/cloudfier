@@ -96,10 +96,8 @@ TBD
 
 ###  Continuous builds
 
-Continuous builds run on [Jenkins at
-CloudBees](http://textuml.ci.cloudbees.com/). Artifact repository is also
-available at [CloudBees Forge](http://repository-
-textuml.forge.cloudbees.com/snapshot/).
+Continuous builds run on [TravisCI](https://travis-ci.org/abstratt/cloudfier?branch=master). Artifact repository is
+available at [Bintray](https://dl.bintray.com/abstratt-oss/abstratt-oss/).
 
 ### Developing Cloudfier in the IDE
 
