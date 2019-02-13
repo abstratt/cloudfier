@@ -655,7 +655,7 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         model += "end;\n";
         model += "end.";
         buildProjectAndLoadRepository(Collections.singletonMap("test.tuml", model.getBytes()), true);
-
+        
         String userEntityName = "mypackage.User";
 		String templateUri = resolveApplicationURI(Paths.INSTANCE_PATH.replace("{objectId}", "_template").replace("{entityName}", userEntityName));
 		GetMethod getTemplateInstance = new GetMethod(templateUri);
@@ -663,21 +663,31 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
         String fullName = getName() + " Chaves";
 		((ObjectNode) template.get("values")).put("fullName", fullName);
         final String username = getName() + "@foo.com-" + UUID.randomUUID().toString();
-        ObjectNode createdRole = signUp(template, userEntityName, username, "pass", 201);
+
+        // cannot login yet
+        tryToLogIn(username, "pass", 401);
+        
+        // cannot get current user yet
+        ObjectNode indexBeforeSignUp = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
+        assertNull(indexBeforeSignUp.get("currentUser"));
+
+        // sign up
+        signUp(template, userEntityName, username, "pass", 201);
+        
+        // can get current user
+        ObjectNode indexAfterSignup = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
+        assertNotNull(indexAfterSignup.get("currentUser"));
 
         // double sign up should fail
         signUp(template, userEntityName, username, "pass", 400);
         
-        ObjectNode index = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
-        assertNull(index.get("currentUser"));
-
-        // can login
-        login(username, "pass");
+        // can login now
+        tryToLogIn(username, "pass", 200);
         
-        index = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
-        JsonNode currentUserUri = index.get("currentUser");
+        indexAfterSignup = executeJsonMethod(200, new GetMethod(resolveApplicationURI(Paths.ROOT_PATH)));
+        JsonNode currentUserUri = indexAfterSignup.get("currentUser");
 		assertNotNull(currentUserUri);
-        JsonNode roleLinkUri = index.get("currentUserRoles").get(userEntityName);
+        JsonNode roleLinkUri = indexAfterSignup.get("currentUserRoles").get(userEntityName);
         assertNotNull(roleLinkUri);
         ObjectNode currentRole = executeJsonMethod(200, new GetMethod(roleLinkUri.asText()));
         assertEquals(fullName, currentRole.get("values").get("fullName").textValue());
@@ -709,11 +719,15 @@ public class KirraMDDRuntimeRest2Tests extends AbstractKirraRestTests {
     
     @Override
     protected void login(String username, String password) throws HttpException, IOException {
-        String loginURI = resolveApplicationURI(Paths.LOGIN_PATH);
+        tryToLogIn(username, password, 200);
+    }
+
+	private void tryToLogIn(String username, String password, int expectedStatus) throws IOException, HttpException {
+		String loginURI = resolveApplicationURI(Paths.LOGIN_PATH);
 		PostMethod loginMethod = new PostMethod(loginURI);
 		restHelper.setCredentials(username, password, getName() + "-realm", URI.create(loginURI));
-        restHelper.executeMethod(204, loginMethod);
-    }
+        restHelper.executeMethod(expectedStatus, loginMethod);
+	}
 
 	private String resolveApplicationURI(String toResolve) throws IOException, HttpException {
 		URI workspaceURI = getWorkspaceBaseURI();
