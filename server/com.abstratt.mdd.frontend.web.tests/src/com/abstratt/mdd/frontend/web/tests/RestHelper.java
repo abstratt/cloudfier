@@ -100,7 +100,7 @@ public class RestHelper {
     public byte[] executeMethod(HttpClient httpClient, int expectedStatus, HttpMethod method) throws IOException, HttpException {
         try {
         	if (username != null) {
-        		String encodedCredentials = new String(Base64.getEncoder().encodeToString((username + ":" + password + "\n").getBytes("UTF-8")));
+        		String encodedCredentials = new String(Base64.getEncoder().encodeToString((username + ":" + password).getBytes("UTF-8")));
         		method.addRequestHeader(new Header("Authorization", "Basic " + encodedCredentials));
         	}
             int response = httpClient.executeMethod(method);
