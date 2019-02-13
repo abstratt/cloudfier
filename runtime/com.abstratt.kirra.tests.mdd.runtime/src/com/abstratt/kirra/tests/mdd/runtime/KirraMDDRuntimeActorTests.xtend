@@ -172,7 +172,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
     def testCurrentUser_Roles_AdvancedUser() {
         parseAndCheck(model)
         
-        loginAs("mary.jones")
+        loginAs("mary.jones@abstratt.com")
         val expectedUserRole = findUserByName("Mary", "AdvancedUser")
         val actualRoles = kirra.currentUserRoles.map[it.reference]
         
@@ -213,7 +213,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 
         assertEquals(#{AccessCapability.Read.name(), AccessCapability.Update.name()}, instanceCapabilities.instance.toSet)
         
-        loginAs("john.ford")
+        loginAs("john.ford@abstratt.com")
         val instanceCapabilities2 = kirra.getInstanceCapabilities(newTask.typeRef, createdTask.objectId)
         
         assertEquals(#{AccessCapability.Read.name() }, instanceCapabilities2.instance.toSet)
@@ -257,7 +257,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         assertEquals(#[AccessCapability.Call.name()], instanceCapabilities.actions.get('close'))
         assertEquals(#[AccessCapability.Call.name()], instanceCapabilities.actions.get('assignTo'))
         
-        loginAs("john.ford")
+        loginAs("john.ford@abstratt.com")
         
         val instanceCapabilities2 = kirra.getInstanceCapabilities(newTask.typeRef, createdTask.objectId)
         assertEquals(#[], instanceCapabilities2.actions.get('close'))
@@ -273,7 +273,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         newTask.setValue("description", "something to do")
         val Instance createdTask = kirra.createInstance(newTask)
         
-        loginAs("admin")
+        loginAs("admin1@abstratt.com")
         
         val instanceCapabilities = kirra.getInstanceCapabilities(newTask.typeRef, createdTask.objectId)
 
@@ -312,6 +312,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
 
     
     protected def void loginAs(String username) {
+        assertTrue("Unexpected username format: " + username, username == null || username.contains("@"));
         runtime.actorSelector = new KirraActorSelector() {
             override getUserMnemonic() {
                 username
@@ -333,7 +334,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
     def testEntityCapabilities_PowerlessUser() {
         parseAndCheck(model)
 
-        loginAs("powerless")
+        loginAs("powerless@abstratt.com")
         
         val taskEntityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "Task", TypeKind.Entity))
         assertEquals(#[], taskEntityCapabilities.entity)
@@ -342,8 +343,8 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         ]
         
         val bugEntityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "Bug", TypeKind.Entity))
-        assertEquals(#[], taskEntityCapabilities.entity)
-        taskEntityCapabilities.actions.forEach [ name, capabilities |
+        assertEquals(#[], bugEntityCapabilities.entity)
+        bugEntityCapabilities.actions.forEach [ name, capabilities |
             assertEquals(#[], capabilities)
         ]
     }    
@@ -352,7 +353,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
     def testEntityCapabilities_Admin() {
         parseAndCheck(model)
 
-        loginAs("admin")
+        loginAs("admin1@abstratt.com")
         
         val entityCapabilities = kirra.getEntityCapabilities(new TypeRef("todo", "Task", TypeKind.Entity))
 
@@ -371,7 +372,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         assertEquals(#{AccessCapability.Create.name() }.toSet, entityCapabilities.entity.toSet)
         assertEquals(#[AccessCapability.Call.name()], entityCapabilities.actions.get('newComment'))
         
-        loginAs("peter.jones");
+        loginAs("peter.jones@abstratt.com");
         
         val entityCapabilities2 = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousComment", TypeKind.Entity))
 
@@ -400,7 +401,7 @@ class KirraMDDRuntimeActorTests extends AbstractKirraMDDRuntimeTests {
         assertEquals(#{AccessCapability.Create.name(), AccessCapability.List.name() }, entityCapabilities.entity.toSet)
         assertEquals(#[AccessCapability.Call.name()], entityCapabilities.actions.get('writeAndPublish'))
         
-        loginAs("peter.jones");
+        loginAs("peter.jones@abstratt.com");
         
         val entityCapabilities2 = kirra.getEntityCapabilities(new TypeRef("todo", "AnonymousPost", TypeKind.Entity))
 
