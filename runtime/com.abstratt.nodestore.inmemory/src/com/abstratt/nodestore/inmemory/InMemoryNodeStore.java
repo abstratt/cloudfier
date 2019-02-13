@@ -405,16 +405,24 @@ public class InMemoryNodeStore implements INodeStore, Cloneable {
 		return values.stream().filter(node -> {
 			Map<String, Object> properties = node.getProperties();
 			Map<String, Collection<NodeReference>> relationships = node.getRelated();
-			return nodeCriteria.entrySet().stream().allMatch(criteria -> (
-    			properties.containsKey(criteria.getKey()) 
-    				&& 
-				criteria.getValue().contains(properties.get(criteria.getKey()))
-			) || (
-    			relationships.containsKey(criteria.getKey()) 
-    				&& 
-				criteria.getValue().containsAll(relationships.get(criteria.getKey()))
-			));
+			return nodeCriteria.entrySet().stream().allMatch(criteria -> {
+				String criteriaKey = criteria.getKey();
+				Collection<Object> criteriaValue = criteria.getValue();
+				return doesPropertyMatch(properties, criteriaKey, criteriaValue) || doesRelationshipMatch(relationships, criteriaKey, criteriaValue);
+			});
 		}).map(it -> it.getKey()).collect(Collectors.toList());
+	}
+
+	private boolean doesRelationshipMatch(Map<String, Collection<NodeReference>> relationships, String criteriaKey,
+			Collection<Object> criteriaValue) {
+		return relationships.containsKey(criteriaKey) && criteriaValue.containsAll(relationships.get(criteriaKey));
+	}
+
+	private boolean doesPropertyMatch(Map<String, Object> properties, String criteriaKey,
+			Collection<Object> criteriaValue) {
+		Object propertyValue = properties.get(criteriaKey);
+		boolean matchesProperty = properties.containsKey(criteriaKey) && criteriaValue.contains(propertyValue);
+		return matchesProperty;
 	}
 	
 	@Override
