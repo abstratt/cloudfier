@@ -938,6 +938,10 @@ public class SQLGeneratorTests extends AbstractRepositoryBuildingTests {
         return "\"" + getName() + "\".\"" + packageName + "_" + tableName + "\"";
     }
 
+    /**
+     * Provisions the schema into a database to check for correctness of the generated DDL. 
+     * Requires a valid database connection. 
+     */
     private void validateSchemaCreation() throws SQLException {
         ConnectionProvider connectionProvider = new ConnectionProvider();
         Connection connection = connectionProvider.acquireConnection();

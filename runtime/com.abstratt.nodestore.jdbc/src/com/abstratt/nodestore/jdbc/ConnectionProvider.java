@@ -33,6 +33,8 @@ public class ConnectionProvider {
         pgDataSource.setDatabaseName(databaseName);
         String username = ConfigUtils.get("KIRRA_DATABASE_USERNAME", "cloudfier");
         pgDataSource.setUser(username);
+        String password = ConfigUtils.get("KIRRA_DATABASE_PASSWORD", "cloudfier");
+		pgDataSource.setPassword(password);
         this.dataSource = pgDataSource;
     }
 
