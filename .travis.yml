@@ -1,8 +1,8 @@
 language: java
 jdk:
 - oraclejdk8
-install: mvn clean install -Dmaven.test.skip=true
-after_success: mvn clean deploy --settings deploy.settings.xml -DdeployAtEnd=true
+install: mvn clean install
+after_success: mvn clean deploy --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true
 notifications:
   email:
     on_success: change
@@ -11,3 +11,10 @@ env:
   global:
   - secure: GySGZ4IewzcnvVlB2KTMT9x2qPOjbePojmTvNKASKeAeRINJqKBwao+qmzw/2fB/XUKGYNMnkDiQl6wNudqyC0HEgLCzqoZQDztnOL0wcIY0gCbpluAJYbEXzCTrMLa4T1gs1jA3onuqZYjlP+dM1mi+W4s4cK5rhRSMQKS9gPk=
   - secure: fseB3+AoImPAxINfE6yFsy51MT3u2mJ4yXTmvOmelqbK5ekX9dANyAHztmfIar3Ei/qBDbL57ctLY9CXyQtXDjAAcVeB6Xz0By5PXJ5joC5Bf5ZtkwcqEJI7BUDswWnFJb1Q/DP2KJR3XGwJr6QUAhIp4LVekKHCLJOPpHt7USo=
+
+services:
+  - postgresql
+
+before_script:
+  - psql -c "CREATE DATABASE cloudfier;"  -U postgres
+  - psql -c "CREATE USER cloudfier;" -U postgres
