@@ -16,6 +16,7 @@ services:
 before_script:
   - psql -c "CREATE DATABASE cloudfier;"  -U postgres
   - psql -c "CREATE USER cloudfier;" -U postgres
+  - psql -c "GRANT ALL PRIVILEGES ON cloudfier TO cloudfier;" -U postgres
 
 cache:
   directories:
