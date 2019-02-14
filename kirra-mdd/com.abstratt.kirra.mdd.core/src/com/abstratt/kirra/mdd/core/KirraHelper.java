@@ -1013,7 +1013,6 @@ public class KirraHelper {
 	private static boolean checkIsEnumeration(final Type umlType) {
 		boolean isEnum = umlType instanceof Enumeration;
 		boolean isStateMachine = umlType instanceof StateMachine;
-		System.out.println(umlType.getQualifiedName() + " = " + (isEnum || isStateMachine));
 		return isEnum || isStateMachine;
 	}
 
