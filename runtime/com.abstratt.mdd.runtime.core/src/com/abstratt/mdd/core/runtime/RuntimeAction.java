@@ -208,12 +208,29 @@ public abstract class RuntimeAction {
     }
 
     protected void createObjectNodes() {
-        for (Element current : instance.getOwnedElements())
-            if (current instanceof Pin)
-                objectNodes.add(createRuntimeObjectNode((ObjectNode) current));
+        for (InputPin current : getInputPins())
+            objectNodes.add(createRuntimeObjectNode(current));
+        for (OutputPin current : getOutputPins())
+            objectNodes.add(createRuntimeObjectNode(current));
     }
 
-    protected RuntimeObjectNode createRuntimeObjectNode(ObjectNode node) {
+    protected Iterable<InputPin> getInputPins() {
+		return ActivityUtils.getActionInputs(getInstance());
+	}
+    
+    protected Iterable<OutputPin> getOutputPins() {
+		return ActivityUtils.getActionOutputs(getInstance());
+	}
+    
+    protected RuntimeInputPin createRuntimeObjectNode(InputPin node) {
+        return new RuntimeInputPin(this, node);
+    }
+    
+    protected RuntimeOutputPin createRuntimeObjectNode(OutputPin node) {
+        return new RuntimeOutputPin(this, node);
+    }
+    
+	protected RuntimeObjectNode createRuntimeObjectNode(ObjectNode node) {
         assert node instanceof Pin : node.getClass();
         return node instanceof InputPin ? new RuntimeInputPin(this, (InputPin) node) : new RuntimeOutputPin(this, (OutputPin) node);
     }

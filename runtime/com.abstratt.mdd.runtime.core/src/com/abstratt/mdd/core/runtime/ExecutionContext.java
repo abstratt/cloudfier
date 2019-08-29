@@ -19,6 +19,7 @@ import com.abstratt.mdd.core.runtime.types.BasicType;
 import com.abstratt.mdd.core.util.ActivityUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.nodestore.NodeReference;
+import com.abstratt.pluginutils.LogUtils;
 
 /**
  * An execution context is a thread.
@@ -334,7 +335,7 @@ public class ExecutionContext {
         } else {
             Assert.isTrue(readOnly || !this.readOnly, "Attempt to change the context from R/O to R/W");
         }
-        System.out.println("entered context level: " + level);
+        LogUtils.debug(Runtime.ID, () -> "entered context level: " + level);
         if (newTransaction)
             // even for read-only contexts we use transactions, for consistent reads
             runtime.getNodeStoreCatalog().beginTransaction();
@@ -397,7 +398,7 @@ public class ExecutionContext {
     }
 
     public void leave(boolean operationSucceeded) {
-        System.out.println("left context level: " + level);
+    	LogUtils.debug(Runtime.ID, () -> "left context level: " + level);
         boolean success = false;
         try {
             if (operationSucceeded) {

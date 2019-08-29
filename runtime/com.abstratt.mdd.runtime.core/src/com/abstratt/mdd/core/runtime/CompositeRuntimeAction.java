@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.uml2.uml.Action;
+import org.eclipse.uml2.uml.ActivityNode;
 import org.eclipse.uml2.uml.Element;
 import org.eclipse.uml2.uml.ObjectNode;
 import org.eclipse.uml2.uml.StructuredActivityNode;
@@ -90,7 +91,7 @@ public abstract class CompositeRuntimeAction extends RuntimeAction {
     @Override
     protected void createObjectNodes() {
         super.createObjectNodes();
-        List ownedElements = ((StructuredActivityNode) getInstance()).getNodes();
+        List<ActivityNode> ownedElements = ((StructuredActivityNode) getInstance()).getNodes();
         for (Iterator i = ownedElements.iterator(); i.hasNext();) {
             Element current = (Element) i.next();
             if (current instanceof ObjectNode)
@@ -103,7 +104,7 @@ public abstract class CompositeRuntimeAction extends RuntimeAction {
      * instance.
      */
     @Override
-    protected RuntimeAction getRuntimeAction(Action action) {
+    public RuntimeAction getRuntimeAction(Action action) {
         RuntimeAction localResult = subActions.get(action);
         return localResult != null ? localResult : super.getRuntimeAction(action);
     }

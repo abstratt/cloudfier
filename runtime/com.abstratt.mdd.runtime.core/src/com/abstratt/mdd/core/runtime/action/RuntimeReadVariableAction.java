@@ -12,7 +12,6 @@ public class RuntimeReadVariableAction extends RuntimeAction implements Constant
 
     public RuntimeReadVariableAction(Action instance, CompositeRuntimeAction parent) {
         super(instance, parent);
-        // TODO Auto-generated constructor stub
     }
 
     @Override

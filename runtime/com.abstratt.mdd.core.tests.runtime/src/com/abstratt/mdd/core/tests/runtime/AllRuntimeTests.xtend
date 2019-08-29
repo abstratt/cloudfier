@@ -13,6 +13,7 @@ public class AllRuntimeTests {
         suite.addTest(RuntimeDateAndTimeTests.suite());
         suite.addTest(RuntimeObjectTests.suite());
         suite.addTest(RuntimeEnumerationTests.suite());
+        suite.addTest(RuntimeControlTests.suite());
         suite.addTest(RuntimeCollectionTests.suite());
         suite.addTest(RuntimeAssociationTests.suite());
         suite.addTest(RuntimeStateMachineTests.suite());

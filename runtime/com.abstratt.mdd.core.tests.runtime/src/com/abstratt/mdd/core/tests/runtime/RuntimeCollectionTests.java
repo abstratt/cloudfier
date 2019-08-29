@@ -40,7 +40,7 @@ public class RuntimeCollectionTests extends AbstractRuntimeTests {
         RuntimeCollectionTests.simpleModel += "model simple;\n";
         RuntimeCollectionTests.simpleModel += "import base;\n";
         RuntimeCollectionTests.simpleModel += "  class Account\n";
-        RuntimeCollectionTests.simpleModel += "    attribute balance : Integer[0,1];\n";
+        RuntimeCollectionTests.simpleModel += "    attribute balance : Integer;\n";
         RuntimeCollectionTests.simpleModel += "    operation deposit(valor : Integer);\n";
         RuntimeCollectionTests.simpleModel += "    begin\n";
         RuntimeCollectionTests.simpleModel += "      self.balance := self.balance + valor;\n";

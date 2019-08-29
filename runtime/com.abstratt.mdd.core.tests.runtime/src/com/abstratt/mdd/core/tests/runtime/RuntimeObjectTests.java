@@ -46,14 +46,14 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "  end;\n";
         RuntimeObjectTests.model += "  abstract class Party implements Named\n";
         RuntimeObjectTests.model += "    attribute name : String[0,1];\n";
-        RuntimeObjectTests.model += "    operation getName() : String;\n";
+        RuntimeObjectTests.model += "    operation getName() : String[0,1];\n";
         RuntimeObjectTests.model += "    begin\n";
         RuntimeObjectTests.model += "      return self.name;\n";
         RuntimeObjectTests.model += "    end;\n";        
         RuntimeObjectTests.model += "  end;\n";
         RuntimeObjectTests.model += "  class Thing implements Named\n";
         RuntimeObjectTests.model += "    attribute name : String[0,1];\n";        
-        RuntimeObjectTests.model += "    operation getName() : String;\n";
+        RuntimeObjectTests.model += "    operation getName() : String[0,1];\n";
         RuntimeObjectTests.model += "    begin\n";
         RuntimeObjectTests.model += "      return self.name;\n";
         RuntimeObjectTests.model += "    end;\n";
