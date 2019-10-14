@@ -464,9 +464,9 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
                 begin
                     return Customer extent.groupBy((c : Customer) : String {
                         c.title
-                    }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
+                    }).groupCollect((group : Customer[1, *]) : {title:String, customerCount : Integer} {
                         { 
-                            title := group.one().title,
+                            title := (!!group.one()).title,
                             customerCount := group.size()
                         }   
                     }).select((counted : {title:String, customerCount : Integer}) : Boolean {
@@ -499,9 +499,9 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
                 begin
                     return Customer extent.groupBy((c : Customer) : String {
                         c.title
-                    }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
+                    }).groupCollect((group : Customer[1,*]) : {title:String, customerCount : Integer} {
                         { 
-                            title := group.one().title,
+                            title := (!!group.one()).title,
                             customerCount := group.size()
                         }   
                     });
@@ -533,9 +533,9 @@ class CriteriaQueryActionGeneratorTests extends AbstractGeneratorTest {
                 begin
                     return Customer extent.groupBy((c : Customer) : String {
                         c.title
-                    }).groupCollect((grouped : Customer[*]) : {title : String, totalSalary : Double} {
+                    }).groupCollect((grouped : Customer[1,*]) : {title : String, totalSalary : Double} {
                         { 
-                            title := grouped.one().title,
+                            title := (!!grouped.one()).title,
                             totalSalary := grouped.sum((c : Customer) : Double {
                                 c.salary
                             })

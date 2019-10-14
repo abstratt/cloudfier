@@ -38,7 +38,7 @@ public class RuntimeAssociationTests extends AbstractRuntimeTests {
         model += "class Referrer\n";
         model += "  attribute attrib1 : String[0,1];\n";
         model += "  attribute numbers : MyNumber[*];\n";
-        model += "  derived attribute positiveNumbers : MyNumber[*] :=  { self->numbers.select((n : MyNumber) : Boolean {n.value > 0}) };\n";
+        model += "  derived attribute positiveNumbers : MyNumber[*] :=  { self->numbers.select((n : MyNumber) : Boolean {!!n.value > 0}) };\n";
         model += "end;\n";
         model += "composition role Referrer.numbers; role owner : Referrer; end;\n";
         model += "end.\n";

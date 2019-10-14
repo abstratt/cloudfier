@@ -59,7 +59,7 @@ public class RuntimeObjectTests extends AbstractRuntimeTests {
         RuntimeObjectTests.model += "    end;\n";
         RuntimeObjectTests.model += "  end;\n";        
         RuntimeObjectTests.model += "  class Company specializes Party\n";
-        RuntimeObjectTests.model += "    attribute founder : Person[0,1] invariant { self.founder == null or self.founder.personRole == Role#OWNER };\n";
+        RuntimeObjectTests.model += "    attribute founder : Person[0,1] invariant { self.founder == null or self.founder?.personRole == Role#OWNER };\n";
         RuntimeObjectTests.model += "  end;\n";
         RuntimeObjectTests.model += "  class Person specializes Party\n";
         RuntimeObjectTests.model += "    attribute active : Boolean := true;\n";

@@ -21,7 +21,7 @@ public class KirraMDDRuntimeActionTests extends AbstractKirraMDDRuntimeTests {
         KirraMDDRuntimeActionTests.accountModel += "import base;\n";
         KirraMDDRuntimeActionTests.accountModel += "class Account\n";
         KirraMDDRuntimeActionTests.accountModel += "  attribute number : String[0,1];\n";
-        KirraMDDRuntimeActionTests.accountModel += "  attribute balance : Double[0,1];\n";
+        KirraMDDRuntimeActionTests.accountModel += "  attribute balance : Double[1] := 0;\n";
         KirraMDDRuntimeActionTests.accountModel += "  operation deposit(amount : Double)\n";
         KirraMDDRuntimeActionTests.accountModel += "  precondition (amount) {amount > 0};\n";
         KirraMDDRuntimeActionTests.accountModel += "  begin\n";

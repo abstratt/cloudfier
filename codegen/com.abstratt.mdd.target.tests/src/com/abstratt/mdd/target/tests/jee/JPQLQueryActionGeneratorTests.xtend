@@ -584,7 +584,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                         c.title
                     }).groupCollect((grouped : Customer[*]) : {title : String, totalSalary : Double} {
                         { 
-                            title := grouped.one().title,
+                            title := grouped.one()?.title ?: "",
                             totalSalary := grouped.sum((c : Customer) : Double {
                                 c.salary
                             })
@@ -617,7 +617,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                         c.title
                     }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
                         { 
-                            title := group.one().title,
+                            title := group.one()?.title ?: "",
                             customerCount := group.size()
                         }   
                     });
@@ -648,7 +648,7 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                         c.title
                     }).groupCollect((group : Customer[*]) : {title:String, customerCount : Integer} {
                         { 
-                            title := group.one().title,
+                            title := group.one()?.title ?: "",
                             customerCount := group.size()
                         }   
                     }).select((counted : {title:String, customerCount : Integer}) : Boolean {
@@ -722,9 +722,9 @@ class JPQLQueryActionGeneratorTests extends AbstractGeneratorTest {
                 begin
                     return City extent.groupBy((c : City) : State {
                         c.cityState
-                    }).groupCollect((cities : City[*]) : StatePopulation {
+                    }).groupCollect((cities : City[1,*]) : StatePopulation {
                         {
-                            abbreviation := cities.one().cityState.abbreviation, 
+                            abbreviation := !!cities.one()?.cityState?.abbreviation, 
                             population := cities.sum((c : City) : Integer { c.population })
                         }
                     });

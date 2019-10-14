@@ -21,7 +21,7 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
             attribute attr1 : String := "value 1";
             attribute attr2 : StateMachine1;
             attribute attr3 : Integer invariant { (self.attr3 > 0) };
-            attribute attr4 : Integer[0,1] invariant { (self.attr4 > 0) };
+            attribute attr4 : Integer[0,1] invariant { (self.attr4 == null) or (!!self.attr4 > 0) };
             operation op1();
             private operation op2();
             statemachine StateMachine1
@@ -99,11 +99,9 @@ class JPAEntityGeneratorTests extends AbstractGeneratorTest {
         AssertHelper.assertStringsEqual(
         '''
         public void setAttr4(Long newAttr4) {
-            if (newAttr4 != null) {
-                if (!(newAttr4 != null && newAttr4.compareTo(0L) > 0)) {
-                    //invariant violated                 
-                    throw new ConstraintViolationException("");
-                }
+            if (!(newAttr4 != null && newAttr4.compareTo(0L) > 0)) {
+                //invariant violated                 
+                throw new ConstraintViolationException("");
             }
             this.attr4 = newAttr4;
         }

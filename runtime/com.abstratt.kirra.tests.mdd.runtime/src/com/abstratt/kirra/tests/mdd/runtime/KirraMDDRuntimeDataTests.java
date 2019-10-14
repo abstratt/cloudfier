@@ -27,7 +27,7 @@ public class KirraMDDRuntimeDataTests extends AbstractKirraMDDRuntimeTests {
         KirraMDDRuntimeDataTests.model += "[Entity] class MyClass1\n";
         KirraMDDRuntimeDataTests.model += "attribute attr1 : Integer[0,1] := 5;\n";
         KirraMDDRuntimeDataTests.model += "attribute attr2 : String[0,1];\n";
-        KirraMDDRuntimeDataTests.model += "derived attribute attr6 : Boolean := { self.attr1 > 0 };\n";
+        KirraMDDRuntimeDataTests.model += "derived attribute attr6 : Boolean := { !(self.attr1 == null) and (!!self.attr1 > 0) };\n";
         KirraMDDRuntimeDataTests.model += "end;\n";
         KirraMDDRuntimeDataTests.model += "[Entity] class MyClass2\n";
         KirraMDDRuntimeDataTests.model += "attribute attr3 : Boolean[0,1];\n";

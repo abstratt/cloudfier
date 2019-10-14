@@ -4,6 +4,7 @@ import com.abstratt.mdd.core.tests.harness.AssertHelper
 import com.abstratt.mdd.target.jse.PlainEntityGenerator
 import com.abstratt.mdd.target.tests.AbstractGeneratorTest
 
+
 class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
     new(String name) {
         super(name)
@@ -26,7 +27,7 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
                 class MyClass2
                     attribute related1A : MyClass1[*];
                     attribute related1B : MyClass1[*];
-                    attribute related1C : MyClass1[1];
+                    attribute related1C : MyClass1[0,1];
                 end;
             
                 class MyClass1
@@ -84,12 +85,12 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
     def testPrecondition_OptionalParameter() {
         testBodyGeneration('''
             operation op1(par1 : Integer[0,1])
-                precondition (par1) { par1 >= 0 };
+                precondition (par1) { (par1 ?: 0) >= 0 };
             ''',
             '''
             if (par1 != null) {
-                if (!((par1 != null && par1.compareTo(0L) >= 0))) {
-                    // precondition violated 
+                if (!(Optional.ofNullable(par1).orElse(0L)>=0L)) {
+                    //precondition violated
                     throw new ConstraintViolationException();
                 }
             }
@@ -165,10 +166,10 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             operation op1(val1 : Integer[0,1], val2 : Integer[0,1]);
             begin 
                 var result;
-                result := val1 + val2;
+                result := !!val1 + !!val2;
             end;
             ''',
-            '''long result = (val1 == null ? 0 : val1) + (val2 == null ? 0 : val2);'''
+            '''long result = Objects.requireNonNull(val1) + Objects.requireNonNull(val2);'''
         )
     }
     def testIntegerMultiplyOptionalValues() {
@@ -176,10 +177,10 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             operation op1(val1 : Integer[0,1], val2 : Integer[0,1]);
             begin 
                 var result;
-                result := val1 * val2;
+                result := !!val1 * !!val2;
             end;
             ''',
-            '''long result = (val1 == null ? 0 : val1) * (val2 == null ? 0 : val2);'''
+            '''long result = Objects.requireNonNull(val1) * Objects.requireNonNull(val2);'''
         )
     }
     def testIntegerDivideOptionalValues() {
@@ -187,10 +188,10 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             operation op1(val1 : Integer[0,1], val2 : Integer[0,1]);
             begin 
                 var result;
-                result := val1 / val2;
+                result := !!val1 / !!val2;
             end;
             ''',
-            '''long result = (val1 == null ? 0 : val1) / (val2 == null ? 1 : val2);'''
+            '''long result = Objects.requireNonNull(val1) / Objects.requireNonNull(val2);'''
         )
     }
     def testDoubleAdd() {
@@ -209,21 +210,32 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
            operation op1(val1 : Double[0,1], val2 : Double[0,1]);
            begin
                var result;
-               result := val1 + val2;
+               result := !!val1 + !!val2;
            end;
            ''',
-            '''double result = (val1 == null ? 0 : val1) + (val2 == null ? 0 : val2);'''
+           '''double result = Objects.requireNonNull(val1) + Objects.requireNonNull(val2);'''
         )
     }
-    def testDoubleMultiplyOptionalValues() {
+    def testDoubleMultiplyOptionalValues_argumentCastAsRequired() {
         testBodyGeneration('''
             operation op1(val1 : Double[0,1], val2 : Double[0,1]);
             begin
                 var result;
-                result := val1 * val2;
+                result := (val1 ?: 0) * !!val2;
             end;
             ''',
-            '''double result = (val1 == null ? 0 : val1) * (val2 == null ? 0 : val2);'''
+            '''double result = Optional.ofNullable(val1).orElse(0L) * Objects.requireNonNull(val2);'''
+        )
+    }
+    def testDoubleMultiplyOptionalValueByRequired() {
+        testBodyGeneration('''
+            operation op1(val1 : Double[0,1], val2 : Double);
+            begin
+                var result;
+                result := !!val1 * val2;
+            end;
+            ''',
+            '''double result = Objects.requireNonNull(val1) * val2;'''
         )
     }
     def testDoubleDivideOptionalValues() {
@@ -231,32 +243,32 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             operation op1(val1 : Double[0,1], val2 : Double[0,1]);
             begin
                 var result;
-                result := val1 / val2;
+                result := (val1 ?: 0) / val2 ?: 1;
             end;
             ''',
-            '''double result = (val1 == null ? 0 : val1) / (val2 == null ? 1 : val2);'''
+            '''double result = Optional.ofNullable(val1).orElse(0L) / Optional.ofNullable(val2).orElse(1L);'''
         )
     }
-    def testBooleanSafeAnd() {
+    def testBooleanSafeAnd_optionalResult() {
         testBodyGeneration('''
             operation op1(val1 : Boolean[0,1], val2 : Boolean[0,1]);
             begin
-                var result;
-                result := val1 and val2;
+                var result : Boolean[0,1];
+                result := !!val1 and !!val2;
             end;
             ''',
-            '''boolean result = (val1 == null ? false : val1) && (val2 == null ? false : val2);'''
+            '''Boolean result = Objects.requireNonNull(val1) && Objects.requireNonNull(val2);'''
         )
     }
-    def testBooleanSafeOr() {
+    def testBooleanSafeAnd_requiredResult() {
         testBodyGeneration('''
-            operation op1(val1 : Boolean[0,1], val2 : Boolean[0,1]);
+            operation op1(val1 : Boolean[0,1], val2 : Boolean[1]);
             begin
-                var result;
-                result := val1 or val2;
+                var result : Boolean[1];
+                result := !!val1 and val2;
             end;
             ''',
-            '''boolean result = (val1 == null ? false : val1) || (val2 == null ? false : val2);'''
+            '''boolean result = Objects.requireNonNull(val1) && val2;'''
         )
     }
     def testComparison() {
@@ -270,36 +282,49 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             '''boolean result = val1 >= val2;'''
         )
     }
-    def testSafeComparisonBothOptional() {
+    def testSafeComparisonBothOptional_castAsRequired() {
         testBodyGeneration('''
             operation op1(val1 : Integer[0,1], val2 : Integer[0,1]);
             begin
                 var result;
-                result := val1 >= val2;
+                result := !!val1 >= !!val2;
             end;
             ''',
-            '''boolean result = (val1 != null && val2 != null && val1.compareTo(val2) >= 0);'''
+            '''boolean result = Objects.requireNonNull(val1) >= Objects.requireNonNull(val2);'''
         )
-    }    
+    }
+    
+    def testSafeComparisonBothOptional_nullSafe() {
+        testBodyGeneration('''
+            operation op1(val1 : Integer[0,1], val2 : Integer[0,1]);
+            begin
+                var result;
+                result := val1 ?: 0 >= val2 ?: 1;
+            end;
+            ''',
+            '''boolean result = Optional.ofNullable(val1).orElse(0L) >= Optional.ofNullable(val2).orElse(1L);'''
+        )
+    }
+    
     def testSafeComparisonTargetIsOptional() {
         testBodyGeneration('''
             operation op1(val1 : Integer[0,1], val2 : Integer);
             begin 
                 var result;
-                result := val1 >= val2;
+                result := !!val1 >= val2;
             end;''',
-            '''boolean result = (val1 != null && val1.compareTo(val2) >= 0);'''
+            '''boolean result = Objects.requireNonNull(val1) >= val2;'''
         )
     }
-    def testSafeComparisonArgumentIsOptional() {
+    def testSafeComparisonArgumentIsOptional_castAsRequired() {
         testBodyGeneration('''
             operation op1(val1 : Integer, val2 : Integer[0,1]); 
             begin
                 var result;
-                result := val1 >= val2;
+                result := val1 >= !!val2;
             end;
             ''',
-            '''boolean result = (val2 != null && val1.compareTo(val2) >= 0);'''
+            '''boolean result=val1>=Objects.requireNonNull(val2);'''
         )
     }
     
@@ -354,22 +379,36 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
         )
     }
 
+    def testReplace_RequiredGiven() {
+        testBodyGeneration('''
+            operation op1(given : MyClass2);
+            begin
+                unlink ManyMyClass2OneMyClass1(related1C := self, optionalRelated2 := given);
+            end;
+            ''', 
+            '''
+            this.removeFromOptionalRelated2(given);
+            given.setRelated1C(null);
+            '''
+        )
+    }
+
       
     def testSafeQueryInvocation() {
         testBodyGeneration('''
             operation op1(val1 : MyClass1[0,1]);
             begin 
-                var result;
-                result := val1.aQuery();
+                var result : Integer[0,1];
+                result := val1?.aQuery();
             end;''',
-            '''long result = (val1 == null ? 0L : val1.aQuery());'''
+            '''Long result = Optional.ofNullable(val1).map(it -> val1.aQuery()).orElse(null);'''
         )
     }
     def testSafeActionInvocation() {
         testBodyGeneration('''
             operation op1(val1 : MyClass1[0,1]);
             begin
-                val1.anAction();
+                val1?.anAction();
             end;
             ''', 
             '''
@@ -395,10 +434,10 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             operation op1(val1 : MyClass1);
             begin
                 var result : Integer;
-                result := val1.anOptionalAttribute;
+                result := (val1.anOptionalAttribute as Integer);
             end;
             ''',
-            '''long result = (val1.getAnOptionalAttribute() == null ? 0L : val1.getAnOptionalAttribute());'''
+            '''long result = Objects.requireNonNull(val1.getAnOptionalAttribute());'''
         )
     }
     def testAttributeRead_OptionalSink() {
@@ -433,25 +472,39 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             '''val1.setAnAttribute(1L);'''
         )
     }
-    def testAttributeWriteOptionalValue() {
+    def testAttributeWriteOptionalValue_castAsRequired() {
         testBodyGeneration('''
             operation op1(val1 : MyClass1);
             begin
-                val1.anAttribute := val1.anOptionalAttribute;
+                val1.anAttribute := !!val1.anOptionalAttribute;
             end;
             ''',
-            '''val1.setAnAttribute((val1.getAnOptionalAttribute() == null ? 0L : val1.getAnOptionalAttribute()));'''
+            '''val1.setAnAttribute(Objects.requireNonNull(val1.getAnOptionalAttribute()));'''
         )
     }
+    
+    
     def testSafeAttributeReadOptionalValue() {
         testBodyGeneration('''
             operation op1(val1 : MyClass1[0,1]);
             begin
                 var result : Integer;
-                result := val1.anOptionalAttribute;
+                result := (val1?.anOptionalAttribute as Integer);
             end;
             ''',
-            '''long result = ((val1 == null || val1.getAnOptionalAttribute() == null) ? 0L : val1.getAnOptionalAttribute());'''
+            '''long result = Objects.requireNonNull(Optional.ofNullable(val1).map(it->it.getAnOptionalAttribute()).orElse(null));'''
+        )
+    }
+    
+    def testSafeAttributeReadOptionalValue_elvis() {
+        testBodyGeneration('''
+            operation op1(val1 : MyClass1[0,1]);
+            begin
+                var result : Integer;
+                result := val1?.anOptionalAttribute ?: 33;
+            end;
+            ''',
+            '''long result = Optional.ofNullable(val1).map(it -> it.getAnOptionalAttribute()).orElse(33L);'''
         )
     }
     def testSafeAttributeReadRequiredValue() {
@@ -459,22 +512,22 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
             operation op1(val1 : MyClass1[0,1]);
             begin
                 var result : Integer;
-                result := val1.anAttribute;
+                result := (val1?.anAttribute as Integer);
             end;
             ''',
-            '''long result = (val1 == null ? 0L : val1.getAnAttribute());'''
+            '''long result = Objects.requireNonNull(Optional.ofNullable(val1).map(it->it.getAnAttribute()).orElse(null));'''
         )
     }
     def testSafeAttributeWriteOptionalValue() {
         testBodyGeneration('''
             operation op1(val1 : MyClass1[0,1]);
             begin
-                val1.anAttribute := val1.anOptionalAttribute;
+                val1?.anAttribute := ((val1 as MyClass1).anOptionalAttribute as Integer);
             end;
             ''',
             '''
-            if (val1 != null) {
-                val1.setAnAttribute(((val1 == null || val1.getAnOptionalAttribute() == null) ? 0L : val1.getAnOptionalAttribute()));
+            if(val1!=null) {
+                val1.setAnAttribute(Objects.requireNonNull(Objects.requireNonNull(val1).getAnOptionalAttribute()));
             }
             '''
         )
@@ -484,7 +537,7 @@ class PlainEntityBehaviorGenerationTests extends AbstractGeneratorTest {
         testBodyGeneration('''
             operation op1(val1 : MyClass1[0,1]);
             begin
-                val1.anAttribute := 1;
+                val1?.anAttribute := 1;
             end;
             ''',
             '''
