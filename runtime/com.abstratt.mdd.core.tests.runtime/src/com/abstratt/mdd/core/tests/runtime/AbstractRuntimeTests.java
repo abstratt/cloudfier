@@ -26,7 +26,7 @@ import com.abstratt.nodestore.INodeStoreCatalog;
 
 import junit.framework.TestCase;
 
-public class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
+public abstract class AbstractRuntimeTests extends AbstractRepositoryBuildingTests {
 
     interface FallibleRunnable<T extends Throwable> {
         public void run() throws T;

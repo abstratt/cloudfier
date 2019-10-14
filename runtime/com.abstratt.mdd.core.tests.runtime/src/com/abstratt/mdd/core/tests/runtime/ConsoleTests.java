@@ -42,7 +42,7 @@ public class ConsoleTests extends AbstractRuntimeTests {
         List<String> output = capture.collect(new Runnable() {
             @Override
             public void run() {
-                getRuntime().runOperation(null, runtimeClass.getClassObject(), operation);
+                getRuntime().runOperation(null, null, operation);
             }
         });
         TestCase.assertEquals(output.toString(), 1, output.size());

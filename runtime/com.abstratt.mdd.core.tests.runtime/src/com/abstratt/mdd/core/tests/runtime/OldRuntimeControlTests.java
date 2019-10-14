@@ -12,7 +12,8 @@ import com.abstratt.mdd.core.runtime.types.BooleanType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.StringType;
 
-public class OldRuntimeControlTests extends AbstractRuntimeTests {
+// abstract to prevent it being picked up for running
+public abstract class OldRuntimeControlTests extends AbstractRuntimeTests {
 
     public static Test suite() {
         return new TestSuite(OldRuntimeControlTests.class);
