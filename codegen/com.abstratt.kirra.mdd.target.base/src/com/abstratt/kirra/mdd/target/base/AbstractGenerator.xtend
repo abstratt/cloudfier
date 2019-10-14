@@ -101,6 +101,6 @@ abstract class AbstractGenerator {
     	GeneratorUtils.generateMany(items, mapper, separator)
     }
     def static <I> CharSequence generateMany(Iterable<I> items, String separator, (I)=>CharSequence mapper) {
-    	generateMany(items, separator, mapper)
+    	generateMany(items, mapper, separator)
     }    
 }

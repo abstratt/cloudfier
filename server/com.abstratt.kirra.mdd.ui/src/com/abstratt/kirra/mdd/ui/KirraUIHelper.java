@@ -133,7 +133,7 @@ public class KirraUIHelper extends KirraHelper {
             public List<Class> call() throws Exception {
                 List<Class> entities = new ArrayList<Class>();
                 for (Type type : namespace.getOwnedTypes())
-                    if ((type instanceof Class) && KirraHelper.isRole((Class) type))
+                    if ((type instanceof Class) && KirraHelper.isRole((Class) type, true))
                         entities.add((Class) type);
                 return entities;
             }

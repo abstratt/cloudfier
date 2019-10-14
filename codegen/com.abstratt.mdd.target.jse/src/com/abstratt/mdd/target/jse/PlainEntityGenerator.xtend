@@ -575,7 +575,7 @@ class PlainEntityGenerator extends BehaviorlessClassGenerator {
     }
     
     def generatePermissions(Class entity) {
-    	val allRoleClasses = appPackages.entities.filter[ role ]
+    	val allRoleClasses = appPackages.entities.filter[ isRole(true) ]
     	val instanceActions = entity.instanceActions
     	val delegate = new DelegatingBehaviorGenerator(behaviorGenerator) {
             override generateAction(Action action, boolean delegate) {

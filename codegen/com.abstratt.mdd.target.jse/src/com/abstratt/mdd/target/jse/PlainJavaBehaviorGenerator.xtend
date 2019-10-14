@@ -2,6 +2,7 @@ package com.abstratt.mdd.target.jse
 
 import com.abstratt.mdd.core.IRepository
 import com.abstratt.mdd.core.util.MDDExtensionUtils
+import com.abstratt.mdd.core.util.TypeUtils
 import java.util.Arrays
 import java.util.List
 import java.util.concurrent.atomic.AtomicInteger
@@ -22,6 +23,7 @@ import org.eclipse.uml2.uml.InputPin
 import org.eclipse.uml2.uml.LinkEndData
 import org.eclipse.uml2.uml.LiteralBoolean
 import org.eclipse.uml2.uml.Operation
+import org.eclipse.uml2.uml.OutputPin
 import org.eclipse.uml2.uml.Parameter
 import org.eclipse.uml2.uml.Pin
 import org.eclipse.uml2.uml.Property
@@ -37,10 +39,13 @@ import org.eclipse.uml2.uml.Variable
 import org.eclipse.uml2.uml.VariableAction
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
+import static extension com.abstratt.kirra.mdd.target.base.JavaGeneratorUtils.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
 import static extension com.abstratt.mdd.core.util.FeatureUtils.*
 import static extension com.abstratt.mdd.core.util.MDDExtensionUtils.*
 import static extension com.abstratt.mdd.core.util.StateMachineUtils.*
+import static extension com.abstratt.mdd.core.util.TypeUtils.*
+import org.eclipse.uml2.uml.ObjectNode
 
 class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     
@@ -69,7 +74,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val generated = generateAction(statementAction)?.toString?.trim
         if (generated == null || generated.length == 0)
             return ''
-        val needsSemicolon = !generated.endsWith('}') && !generated.endsWith(';')
+        val needsSemicolon = !statementAction.hasOutputs && (!generated.endsWith('}') && !generated.endsWith(';'))
         if (!needsSemicolon)
             return generated
         return '''«generated.toString.trim»;'''
@@ -135,11 +140,10 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     	«ENDIF»
     	'''
     	
-    	val guardCondition = otherEndAction
-    	
     	wrapAsSafeStatement(
-            guardCondition,
-            '''«core.trim»;'''
+            '''«core.trim»;''',
+            thisEndAction, 
+            otherEndAction
         )
     }
     
@@ -223,26 +227,22 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
 
     def generateOperationCall(CharSequence target, CallOperationAction action) {
         val returnParameter = action.operation.ownedParameters.returnParameter
-        val hasResult = (returnParameter != null)
+        val hasResult = (returnParameter !== null)
         val core = '''«target».«action.operation.name»(«action.arguments.map[generateAction].join(', ')»)'''
-        if (action.target == null)
+        if (action.operation.static)
             return core
         val optionalTarget = action.target.lower == 0
-        if (!optionalTarget) return core
-        if (hasResult) {
-            val defaultValue = returnParameter.generateDefaultValue
-            '''(«target» == null ? «defaultValue» : «core»)''' 
-        }
-        else 
-            wrapAsSafeStatement(target, '''«core»;''')
+        if (optionalTarget && !hasResult) 
+            return core
+        return wrapAsSafeStatement('''«core»;''', target)
     }
     
-    def CharSequence wrapAsSafeStatement(CharSequence guardCondition, CharSequence guardedRegion) {
-        '''
-        if («guardCondition» != null) {
-            «guardedRegion»
-        }
-        '''
+    def String wrapAsOptional(CharSequence sequence) {
+        return sequence.toString.wrapAsOptional
+    }
+    
+    def String wrapAsOptional(String sequence) {
+        return sequence
     }
     
     def OperatorFamily findOperatorFamily(Operation operation) {
@@ -336,52 +336,30 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def private CharSequence generateSafeUnaryOperatorExpression(CharSequence operator, CharSequence op, boolean opOptional, CharSequence defaultValue) {
-        val safeOp = if (opOptional) '''«op» == null ? «defaultValue» : «op»''' else op
+        val safeOp = if (opOptional) '''«op.wrapAsOptional»''' else op
         return '''«operator» «safeOp»'''
     }    
     
     def private CharSequence generateSafeBinaryOperatorExpression(CharSequence operator, CharSequence op1, CharSequence op2, boolean op1Optional, boolean op2Optional, CharSequence defaultValue1, CharSequence defaultValue2) {
-        val safeOp1 = if (op1Optional) '''(«op1» == null ? «defaultValue1» : «op1»)''' else op1
-        val safeOp2 = if (op2Optional) '''(«op2» == null ? «defaultValue2» : «op2»)''' else op2
-        return '''«safeOp1» «operator» «safeOp2»'''
+         val safeOp1 = if (op1Optional) '''«op1.wrapAsOptional»''' else op1
+         return '''«safeOp1» «operator» «op2»'''
     }    
     
     def private CharSequence generateSafeComparison(CharSequence op1, CharSequence op2, boolean op1Optional, boolean op2Optional, boolean javaPrimitives, CharSequence primitiveComparisonOp) {
-        if (javaPrimitives && !op1Optional && !op2Optional)
-            return '''«op1» «primitiveComparisonOp» «op2»''' 
-        val core = '''«op1».compareTo(«op2») «primitiveComparisonOp» 0'''
-        if (op1Optional && op2Optional) {
-            '''(«op1» != null && «op2» != null && «core»)'''
-        } else if (op1Optional) {
-            '''(«op1» != null && «core»)'''
-        } else if (op2Optional) {
-            '''(«op2» != null && «core»)'''
-        } else 
-            core    
+        //TODO-RC null safety
+        // if (javaPrimitives && !op1Optional && !op2Optional)
+        //     return '''«op1» «primitiveComparisonOp» «op2»''' 
+        // val core = '''«op1».compareTo(«op2») «primitiveComparisonOp» 0'''
+        // if (op1Optional && op2Optional) {
+        //     '''(«op1» != null && «op2» != null && «core»)'''
+        // } else if (op1Optional) {
+        //     '''(«op1» != null && «core»)'''
+        // } else if (op2Optional) {
+        //     '''(«op2» != null && «core»)'''
+        // } else 
+        //     core    
+        return '''«op1» «primitiveComparisonOp» «op2»'''
     }
-    
-    def private JavaExpression generateSafeComparisonExpression(JavaExpression op1, JavaExpression op2, boolean op1Optional, boolean op2Optional, boolean javaPrimitives, CharSequence primitiveComparisonOp) {
-        if (javaPrimitives && !op1Optional && !op2Optional)
-            return new BinaryOperatorExpression(op1, primitiveComparisonOp.toString(), op2) 
-        val core = '''«op1».compareTo(«op2») «primitiveComparisonOp» 0'''
-        if (op1Optional && op2Optional) {
-            new MultipleOperandExpression('&&', #[new BinaryOperatorExpression(op1, '!=', new OpaqueExpression('null')), new OpaqueExpression(core)])
-        } else if (op1Optional) {
-            new BinaryOperatorExpression(
-                new BinaryOperatorExpression(op1, '!=', new OpaqueExpression('null')),
-                '&&',
-                new OpaqueExpression(core)                
-            )
-        } else if (op2Optional) {
-            new BinaryOperatorExpression(
-                new BinaryOperatorExpression(op2, '!=', new OpaqueExpression('null')),
-                '&&',
-                new OpaqueExpression(core)                
-            )
-        } else 
-            new OpaqueExpression(core)
-    }
-    
 
     def CharSequence generateBasicTypeOperationCall(CallOperationAction action) {
         val targetType = action.operationTarget
@@ -699,7 +677,17 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         '''«action.target.generateAction».values().stream().map(«closure.generateActivityAsExpression(true)»).collect(Collectors.toList())'''
     }
 
-    def override generateConditionalNode(ConditionalNode node) {
+    override generateConditionalNode(ConditionalNode node) {
+        if (node.hasOutputs)
+            return 
+                if (node.isDefaultValueExpression)
+            '''
+            «node.clauses.get(0).bodies.head.generateAction.wrapAsOptional».orElse(«node.clauses.get(1).bodies.head.generateAction»)
+            '''
+                else
+            '''
+            («node.clauses.get(0).tests.head.generateAction» ? «node.clauses.get(0).bodies.head.generateAction» : «node.clauses.get(1).bodies.head.generateAction»)
+            '''
         val clauses = node.clauses
         val clauseCount = clauses.size()
         val current = new AtomicInteger(0)
@@ -740,9 +728,20 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     }
 
     def generateStructuredActivityNodeAsCast(StructuredActivityNode node) {
-        '''(«node.outputs.head.toJavaType») «node.sourceAction.generateAction»'''.parenthesize(node)
+        val output = node.outputs.head
+        val input = node.inputs.head
+        val castAsRequired = output.requiredPin && !input.requiredPin
+        val castToType = input.type !== output.type
+        val source = node.sourceAction.generateAction
+        val core1 = if (castToType) '''(«output.toJavaType») «source»''' else source
+        val core2 = if (castAsRequired)
+            (
+                '''Objects.requireNonNull(«core1»)'''
+            )
+        else 
+            core1.parenthesize(node)
+        return core2
     }
-    
     
     def generateStructuredActivityNodeAsBlock(StructuredActivityNode node) {
         val terminals = node.findTerminals
@@ -813,31 +812,32 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val clazz = feature.owningClassifier
         val targetExpression = if(target == null) clazz.name else generateAction(target)
         val featureAccess = '''«feature.generateAccessorName»()'''
-        val core = '''«targetExpression».«featureAccess»'''
-        if (target == null)
-            return core
         val optionalObject = target.lower == 0
+        if (target == null || !optionalObject)
+            return '''«targetExpression».«featureAccess»'''
         val optionalResult = feature.lower == 0
         val targetOwningAction = target.owningAction
         val targetOwningActionOutput = targetOwningAction.outputs.head
         val optionalResultSink = targetOwningActionOutput.targetInput?.lower == 0
-        val typeDefaultValue = feature.type.generateDefaultValue
-        return if (optionalObject) {
-            if (optionalResult)
-                if (optionalResultSink)
-                    '''(«targetExpression» == null ? «typeDefaultValue» : «core»)'''
-                else 
-                    '''((«targetExpression» == null || «core» == null) ? «typeDefaultValue» : «core»)'''
-            else
-                '''(«targetExpression» == null ? «typeDefaultValue» : «core»)'''
-        } else
-            if (optionalResult)
-                if (optionalResultSink)
-                    core
-                else
-                    '''(«core» == null ? «typeDefaultValue» : «core»)'''
-            else
-                core 
+        val typeDefaultValue = if (optionalResultSink) 'null' else feature.type.generateDefaultValue
+// TODO-RC null safety
+//        return if (optionalObject) {
+//            if (optionalResult)
+//                if (optionalResultSink)
+//                    '''(«targetExpression» == null ? «typeDefaultValue» : «core»)'''
+//                else 
+//                    '''((«targetExpression» == null || «core» == null) ? «typeDefaultValue» : «core»)'''
+//            else
+//                '''(«targetExpression» == null ? «typeDefaultValue» : «core»)'''
+//        } else
+//            if (optionalResult)
+//                if (optionalResultSink)
+//                    core
+//                else
+//                    '''(«core» == null ? «typeDefaultValue» : «core»)'''
+//            else
+//                core 
+         '''«targetExpression.wrapAsOptional».map(it -> it.«featureAccess»)'''
     }
 
     def override generateAddStructuralFeatureValueAction(AddStructuralFeatureValueAction action) {
@@ -854,7 +854,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
         val core = '''«targetExpression».set«featureName.toFirstUpper»(«generateAction(value)»)'''
         val optionalTarget = target.lower == 0
         return if (optionalTarget)
-                wrapAsSafeStatement(targetExpression, '''«core»;''')
+                wrapAsSafeStatement('''«core»;''', targetExpression)
             else
                 core 
         
@@ -910,7 +910,7 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure) {
         generateActivityAsExpression(toGenerate, asClosure, toGenerate.closureInputParameters)
     }
-
+    
     override generateActivityAsExpression(Activity toGenerate, boolean asClosure, List<Parameter> parameters) {
         val singleStatement  = toGenerate.rootAction.findSingleStatement
         val isReturnValue = singleStatement instanceof AddVariableValueAction &&
@@ -924,6 +924,79 @@ class PlainJavaBehaviorGenerator extends AbstractJavaBehaviorGenerator {
             «IF !isReturnValue»}«ENDIF»'''
         }
         expressionRoot.generateAction
+    }
+    
+    def static boolean isObjectAction(Action toCheck) {
+        return if (toCheck instanceof CallOperationAction)
+            !toCheck.operation.static
+        else if (toCheck instanceof ReadStructuralFeatureAction)
+            !toCheck.structuralFeature.static
+        else 
+            false 
+    }
+    
+    
+    def static InputPin getObject(Action toCheck) {
+        return if (toCheck instanceof CallOperationAction)
+            toCheck.target
+        else if (toCheck instanceof ReadStructuralFeatureAction)
+            toCheck.object
+        else 
+            null
+    }
+    
+    /**
+     * Produces the output for a given input.
+     * 
+     * Takes care of producing a new optional if required, or resolving an existing one, if needed.
+     */
+    override generateAction(InputPin input) {
+        val inputCore = super.generateAction(input)
+        if (input.doesInputRequireNewOptional())
+            return '''Optional.ofNullable(«inputCore»)'''
+        if (input.doesInputRequireOptionalResolution())
+            return '''«inputCore».get()'''
+        return inputCore
+        
+//        val sourcePin = input.source
+//        val sourceAction = sourcePin.owningAction
+//        val isSourceTerminal = sourceAction.isDataSink
+//        val thisAction = input.owningAction
+//        val thisIsObjectAction = thisAction.objectAction
+//        val sourcePinIsOptional = !sourcePin.requiredPin
+//        val doesSourcePinProduceOptional = false
+//        val doesThisRequireOptional = false
+//        val sourceIsObjectAction = sourceAction.objectAction
+//        val sourceCore = super.generateAction(input)
+//        val core = sourceCore
+//        return if (doesSourcePinProduceOptional)
+//            if (doesThisRequireOptional)
+//                '''«core».map(it -> )'''
+//            else 
+//                core
+//        else
+//            if (sourcePinIsOptional)
+//                // upstream produces optional, should resolve optional
+//                '''«core».get()'''
+//            else core
+    }
+    
+    def boolean doesInputRequireOptionalResolution(InputPin pin) {
+        return false   
+    }
+    
+    def boolean doesInputRequireNewOptional(InputPin pin) {
+        return false
+    }
+    
+    def boolean isJavaOptionalConsumer(InputPin node) {
+        val asObject = node.sourceAction.object
+        return asObject?.requiredPin
+    }
+    
+    def boolean isJavaOptionalResolver(InputPin node) {
+        val asObject = node.sourceAction.object
+        return asObject?.requiredPin
     }
 
 }

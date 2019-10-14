@@ -72,7 +72,7 @@ abstract class PlainJavaGenerator extends com.abstratt.kirra.mdd.target.base.Abs
     def generateImports(Namespace namespaceContext) {
         val modelImports = namespaceContext.nearestPackage.packageImports.filter[importedPackage?.kirraPackage].generateMany(['''import «importedPackage.toJavaPackage».*;'''])
         
-        val roleClassesToImport = appPackages.entities.filter[ role ].filter[it.package != namespaceContext]
+        val roleClassesToImport = appPackages.entities.filter[ isRole(true)].filter[it.package != namespaceContext]
         
         '''
         import «applicationName».*;

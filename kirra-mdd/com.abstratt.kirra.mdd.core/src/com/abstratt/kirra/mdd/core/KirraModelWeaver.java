@@ -35,6 +35,7 @@ import com.abstratt.mdd.core.util.ConnectorUtils;
 import com.abstratt.mdd.core.util.MDDExtensionUtils;
 import com.abstratt.mdd.core.util.PackageUtils;
 import com.abstratt.mdd.core.util.StereotypeUtils;
+import com.abstratt.pluginutils.LogUtils;
 
 /**
  * A model weaver for turning plain UML models into Kirra-compatible models.
@@ -146,7 +147,7 @@ public class KirraModelWeaver implements IModelWeaver {
 		}
 
 		private void enhanceUserEntities() {
-			List<Class> roleEntities = entities.stream().filter(it -> KirraHelper.isRole(it)).collect(Collectors.toList());
+			List<Class> roleEntities = entities.stream().filter(it -> KirraHelper.isRole(it, true)).collect(Collectors.toList());
 			if (roleEntities.isEmpty())
 				return;
 			Package kirraProfilePackage = repository.findPackage(KirraMDDConstants.USER_PROFILE_MODEL, null);
@@ -220,15 +221,15 @@ public class KirraModelWeaver implements IModelWeaver {
 			String stereotypeName = stereotype.getQualifiedName();
 			Stereotype stereotypeCopy = StereotypeUtils.findStereotype(stereotypeName);
 			copy.applyStereotype(stereotypeCopy);
-			System.out.println("Applying " + stereotypeName + " to " + copy.eClass().getName());
-			System.out.println("Source: " + source);
-			System.out.println("Target: " + copy);
+			LogUtils.debug(KirraMDDCore.PLUGIN_ID, () -> "Applying " + stereotypeName + " to " + copy.eClass().getName());
+			LogUtils.debug(KirraMDDCore.PLUGIN_ID, () -> "Source: " + source);
+			LogUtils.debug(KirraMDDCore.PLUGIN_ID, () -> "Target: " + copy);
 			stereotype.getAllAttributes().forEach(stereotypeProperty -> {
 				String propertyName = stereotypeProperty.getName();
 				Object value = source.getValue(stereotype, propertyName);
 				copy.setValue(stereotypeCopy, propertyName, value);
 			});
-			System.out.println("Stereotype applied: " + copy.isStereotypeApplied(stereotypeCopy));
+			LogUtils.debug(KirraMDDCore.PLUGIN_ID, () -> "Stereotype applied: " + copy.isStereotypeApplied(stereotypeCopy));
 		});
 		EList<Element> sourceChildren = source.getOwnedElements();
 		EList<Element> copyChildren = copy.getOwnedElements();

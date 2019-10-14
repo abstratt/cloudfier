@@ -19,4 +19,8 @@ Require-Bundle: com.abstratt.mdd.core.tests.harness,
  org.apache.commons.io,
  com.abstratt.kirra.mdd.core,
  com.abstratt.wrapped.schemacrawler
-Export-Package: com.abstratt.mdd.target.tests
+Export-Package: com.abstratt.mdd.target.tests, 
+ com.abstratt.mdd.target.tests.jse,
+ com.abstratt.mdd.target.tests.jee,
+ com.abstratt.mdd.importer.tests.jdbc,
+ com.abstratt.mdd.target.tests.mean

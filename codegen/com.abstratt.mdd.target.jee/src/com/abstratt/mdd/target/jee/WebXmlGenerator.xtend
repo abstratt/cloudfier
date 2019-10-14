@@ -12,7 +12,7 @@ class WebXmlGenerator extends AbstractGenerator {
     }
     
     def CharSequence generateWebXml() {
-    	val roles = entities.filter[role]
+    	val roles = entities.filter[isRole(true)]
         val applicationName = KirraHelper.getApplicationName(repository)
     	'''
     	<?xml version="1.0" encoding="UTF-8"?>

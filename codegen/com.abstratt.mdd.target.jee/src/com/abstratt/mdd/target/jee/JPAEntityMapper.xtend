@@ -28,7 +28,7 @@ class JPAEntityMapper extends com.abstratt.mdd.target.jse.EntityMapper {
         val allResourceEntities = entities.filter[userVisible]
         val allRepresentationEntities = entities.filter[userVisible && concrete]
         val persistentEntities = entities
-        val roleEntities = entities.filter[role && concrete]
+        val roleEntities = entities.filter[isRole(true)]
         val applicationName = KirraHelper.getApplicationName(repository)
         val applicationLabel = KirraHelper.getApplicationLabel(repository)
         val crudTestGenerator = new CRUDTestGenerator(repository)

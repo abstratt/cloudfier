@@ -41,7 +41,6 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
                 derived attribute totalPurchases : Double := { 0.0 };
                 reference customer : Customer opposite accounts;
                 attribute comments : String
-                    allow Admin read
                     allow Representative
                     allow Customer none;
                 operation block()
@@ -58,7 +57,8 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
     private def CharSequence generateAnnotation(List<String> contextNames, AccessCapability requiredCapability) {
         parseAndCheck(source)
         val contexts = contextNames.map[repository.findNamedElement(it, null, null)]
-        val allRoleClasses = repository.findInAnyPackage(it | it instanceof Class && (it as Class).role)
+        val appPackages = repository.getTopLevelPackages(null).applicationPackages
+        val allRoleClasses = appPackages.entities.filter[ isRole(true) ].toList
 		val generated = new JAXRSAccessControlGenerator(repository).generateEndpointAnnotation(requiredCapability, allRoleClasses, contexts)
 		return generated
     } 
@@ -79,8 +79,6 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
 		if (securityContext.isUserInRole("Admin")) {
 			//no further checks
 		} else if (securityContext.isUserInRole("Representative")){
-			//no further checks
-		} else if (securityContext.isUserInRole("Personnel")) {
 			//no further checks
 		} else if(securityContext.isUserInRole("Customer")) {
 			Customer asCustomer = SecurityHelper.getCurrentCustomer();
@@ -121,12 +119,11 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
         val requiredCapability = AccessCapability.Read
         val allRoleClasses = repository.findInAnyPackage(it | it instanceof Class && (it as Class).role)
 		val actual = new JAXRSAccessControlGenerator(repository).generateInstanceAccessChecks('self', requiredCapability, allRoleClasses, contexts, 'throw new Error();')
+		// only concrete role classes checked for here, as abstract role classes will not be set in the security context
 		val expected = '''
 		if (securityContext.isUserInRole("Admin")) {
 			//no further checks
 		} else if (securityContext.isUserInRole("Representative")) {
-			//no further checks
-		} else if (securityContext.isUserInRole("Personnel")) {
 			//no further checks
 		} else if (securityContext.isUserInRole("Customer")) {
 			Customer asCustomer = SecurityHelper.getCurrentCustomer();
@@ -192,7 +189,7 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
     def void testOperation() throws CoreException {
     	checkAnnotation(#['crm::Account', 'crm::Account::close'], AccessCapability.Call,
             '''
-                @RolesAllowed({"Admin", "Personnel", "Customer"})
+                @RolesAllowed({"Admin", "Representative", "Customer"})
             '''
 		)
     }
@@ -206,9 +203,10 @@ class JAXRSAccessControlGeneratorTests extends AbstractGeneratorTest {
     }
     
     def void testAttribute_Update() throws CoreException {
+        // at this time, it is not possible to remove capabilities specified at the top level
     	checkAnnotation(#['crm::Account', 'crm::Account::comments'], AccessCapability.Update,
             '''
-                @RolesAllowed({"Representative"})
+                @RolesAllowed({"Admin", "Representative"})
             '''
 		)
     }

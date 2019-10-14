@@ -337,8 +337,13 @@ public class KirraHelper {
     }
 
     public static boolean isRole(final Classifier classifier) {
-        return get(classifier, "isRole", () -> {
-            boolean isRole = !classifier.isAbstract() && MDDExtensionUtils.isRoleClass(classifier);
+    	// why would we ignore abstract classes by default? 
+    	return isRole(classifier, false);
+    }
+    
+    public static boolean isRole(final Classifier classifier, boolean ignoreAbstract) {
+        return get(classifier, "isRole_ignoreAbstract=" + ignoreAbstract, () -> {
+            boolean isRole = (!classifier.isAbstract() || !ignoreAbstract) && MDDExtensionUtils.isRoleClass(classifier);
 			return isRole;
         });
     }
@@ -995,7 +1000,7 @@ public class KirraHelper {
     }
     
     public static List<Class> getRoleEntities(Collection<Package> applicationPackages) {
-        return getEntities(applicationPackages).stream().filter(e -> isRole(e)).collect(Collectors.toList());
+        return getEntities(applicationPackages).stream().filter(e -> isRole(e, true)).collect(Collectors.toList());
     }
     
     public static List<Class> getServices(Collection<Package> applicationPackages) {

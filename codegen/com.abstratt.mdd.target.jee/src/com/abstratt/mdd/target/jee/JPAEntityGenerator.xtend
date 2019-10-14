@@ -63,7 +63,7 @@ class JPAEntityGenerator extends PlainEntityGenerator {
     
 	override generatePrefix(Class entity) {
 		'''
-		«IF entity.role»
+		«IF entity.isRole(false)»
 		public static final String ROLE_ID = "«entity.name»";
 		«ENDIF»
 		«super.generatePrefix(entity)»

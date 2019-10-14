@@ -30,6 +30,7 @@ import org.eclipse.uml2.uml.ValueSpecificationAction
 
 import static extension com.abstratt.kirra.mdd.core.KirraHelper.*
 import static extension com.abstratt.mdd.core.util.ActivityUtils.*
+import org.eclipse.uml2.uml.ExecutableNode
 
 class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehaviorGenerator {
 
@@ -40,6 +41,7 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
         throw new NullPointerException
     }
 
+    /** Produces the output for a given input. */
     def dispatch CharSequence generateAction(InputPin input) {
         generateAction(input.sourceAction, true)
     }
@@ -61,8 +63,8 @@ class AbstractJavaBehaviorGenerator extends PlainJavaGenerator implements IBehav
         unsupported(action.eClass.name)
     }
 
-    def dispatch generateAction(ActivityNode action) {
-        throw new UnsupportedOperationException("TODO: auto-generated method stub")
+    def dispatch generateAction(ExecutableNode action) {
+        return generateAction(action as Action)
     }
 
     def dispatch CharSequence doGenerateAction(ReadExtentAction action) {

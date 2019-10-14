@@ -34,7 +34,7 @@ class KirraAPIResourceGenerator extends AbstractGenerator {
             "instantiable": «entity.instantiable»,
             "standalone": «entity.standalone»,
             "topLevel": «entity.topLevel»,
-            "role": «entity.isRole»,
+            "role": «entity.isRole(false)»,
             "namespace": "«typeRef.namespace»",
             «entity.namedElementFragment»,
             "uri": "${baseUri}entities/«typeRef.fullName»",
