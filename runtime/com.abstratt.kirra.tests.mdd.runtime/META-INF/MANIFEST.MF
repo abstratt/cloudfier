@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Kirra MDD Runtime tests
 Bundle-SymbolicName: com.abstratt.kirra.tests.mdd.runtime
-Bundle-Version: 2.5.201812
+Bundle-Version: 2.6.201911.cloudfier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: com.abstratt.kirra.tests.mdd.runtime.Activator

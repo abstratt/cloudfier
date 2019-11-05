@@ -4,12 +4,12 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.abstratt.mdd.kirra</groupId>
   <artifactId>com.abstratt.kirra.mdd.runtime</artifactId>
-  <version>2.5.201812</version>
+  <version>2.6.201911.cloudfier</version>
   <packaging>eclipse-plugin</packaging>
 	<parent>
 		<artifactId>runtime</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
-		<version>2.5.201812</version>
+		<version>2.6.201911.cloudfier</version>
 		<relativePath>..</relativePath>
 	</parent>
 </project>

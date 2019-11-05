@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Simple Blob Store
 Bundle-SymbolicName: com.abstratt.simpleblobstore;singleton:=true
-Bundle-Version: 2.5.201812
+Bundle-Version: 2.6.201911.cloudfier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: com.abstratt.simpleblobstore.SimpleBlobStoreActivator
