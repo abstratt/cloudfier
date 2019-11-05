@@ -25,7 +25,7 @@ cache:
 
 jobs:
   include:
-    - stage: compile_and_test
-      script: mvn clean install
     - stage: deploy
       script: mvn clean deploy --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true
+    - stage: compile_and_test
+      script: mvn clean install
