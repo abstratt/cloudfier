@@ -70,6 +70,7 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
 
     @Override
     public void commitTransaction() {
+        System.out.println("commitTransaction: " + getCatalogPath());
 		getStoreSet().values().forEach(it -> it.save());
     }
     
@@ -92,6 +93,7 @@ public class InMemoryNodeStoreCatalog implements INodeStoreCatalog {
     
     @Override
     public void abortTransaction() {
+        System.out.println("abortTransaction: " + getCatalogPath());
     	getStoreSet().clear();
     }
 
