@@ -3,20 +3,20 @@ package com.abstratt.mdd.frontend.web;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.time.Instant;
-import java.util.Date;
 import java.util.Optional;
 
 import org.eclipse.core.runtime.Platform;
 import org.osgi.framework.Bundle;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
-import org.restlet.representation.EmptyRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
 public class StatusResource extends ServerResource {
+    private static final String X_BUILD_TIMESTAMP = "X-Build-Timestamp";
+
     @Get
     public Representation getServiceStatus() {
         double allocationThreshold = 0.95;
@@ -48,7 +48,7 @@ public class StatusResource extends ServerResource {
         String allocatedPercentage = percentageFmt.format(allocated);
         String availablePercentage = percentageFmt.format(available);
         Optional<Bundle> bundle = Optional.ofNullable(Platform.getBundle(Activator.ID));
-        Optional<String> versionStamp = bundle.map(b -> b.getVersion() + " - " + Instant.ofEpochMilli(b.getLastModified()) + " - " + Optional.ofNullable(b.getHeaders().get("X-Build-Timestamp")).orElseGet(() -> "(no build timestamp"));
+            Optional<String> versionStamp = bundle.map(b -> b.getVersion() + " - " + Instant.ofEpochMilli(b.getLastModified()) + " - " + Optional.ofNullable(b.getHeaders().get(X_BUILD_TIMESTAMP)).orElseGet(() -> "(no build timestamp"));
 
         StringBuffer result = new StringBuffer();
         result.append("<html><body>");
