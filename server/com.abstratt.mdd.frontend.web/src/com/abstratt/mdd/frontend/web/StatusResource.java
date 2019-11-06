@@ -2,7 +2,12 @@ package com.abstratt.mdd.frontend.web;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.time.Instant;
+import java.util.Date;
+import java.util.Optional;
 
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.EmptyRepresentation;
@@ -42,18 +47,19 @@ public class StatusResource extends ServerResource {
 
         String allocatedPercentage = percentageFmt.format(allocated);
         String availablePercentage = percentageFmt.format(available);
+        Optional<Bundle> bundle = Optional.ofNullable(Platform.getBundle(Activator.ID));
+        Optional<String> versionStamp = bundle.map(b -> b.getVersion() + " - " + Instant.ofEpochMilli(b.getLastModified()) + " - " + Optional.ofNullable(b.getHeaders().get("X-Build-Timestamp")).orElseGet(() -> "(no build timestamp"));
 
-        if (allocated > allocationThreshold && available < availabilityThreshold) {
-            setStatus(Status.SERVER_ERROR_INTERNAL, "allocation: " + allocatedPercentage + " - available: " + availablePercentage);
-            return new EmptyRepresentation();
-        }
         StringBuffer result = new StringBuffer();
         result.append("<html><body>");
         result.append("<p>Max memory: " + memoryFmt.format(maxMemory / megaByte) + "</p>");
         result.append("<p>Total memory: " + memoryFmt.format(totalMemory / megaByte) + "</p>");
         result.append("<p>Free memory: " + memoryFmt.format(freeMemory / megaByte) + "</p>");
         result.append("<p>Allocated: " + allocatedPercentage + "</p>");
-        result.append("<p>Available: " + availablePercentage + "</p>");
+        versionStamp.ifPresent(stamp -> result.append("<p>Version: " + stamp + "</p>"));
+        if (allocated > allocationThreshold && available < availabilityThreshold) {
+            setStatus(Status.SERVER_ERROR_INTERNAL, "allocation: " + allocatedPercentage + " - available: " + availablePercentage);
+        }
         return new StringRepresentation(result.toString(), MediaType.TEXT_HTML);
     }
 }

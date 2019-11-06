@@ -7,6 +7,8 @@ import com.abstratt.pluginutils.LogUtils;
 
 public class Activator implements BundleActivator {
 
+    public static final String ID = WebFrontEnd.ID;
+
     @Override
     public void start(BundleContext context) throws Exception {
         LogUtils.logInfo(WebFrontEnd.ID, 
