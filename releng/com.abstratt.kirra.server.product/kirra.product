@@ -43,7 +43,7 @@
       <plugin id="com.abstratt.graphviz"/>
       <plugin id="com.abstratt.kirra.api"/>
       <plugin id="com.abstratt.kirra.auth"/>
-      <plugin id="com.abstratt.kirra.auth.ldap"/>
+      <!--<plugin id="com.abstratt.kirra.auth.ldap"/>-->
       <plugin id="com.abstratt.kirra.mdd.core"/>
       <plugin id="com.abstratt.kirra.mdd.rest"/>
       <plugin id="com.abstratt.kirra.mdd.rest.impl.v1"/>
