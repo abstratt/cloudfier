@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.abstratt.mdd.kirra</groupId>
 	<artifactId>plugins</artifactId>
-	<version>2.6.201911.cloudfier</version>
+	<version>2.7.201911</version>
 	<packaging>pom</packaging>
         <parent>
                 <artifactId>master</artifactId>
