@@ -725,12 +725,15 @@ public class KirraOnMDDRuntime implements KirraMDDConstants, Repository, Externa
             throw new KirraException("Attribute " + attribute.getQualifiedName() + " is not an association end", null, Kind.SCHEMA);
         if (KirraHelper.isDerived(attribute)) 
         	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is derived", null, Kind.SCHEMA);
-        if (KirraHelper.isReadOnly(attribute)) 
-        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is read-only", null, Kind.SCHEMA);
-        if (otherEnd != null && KirraHelper.isReadOnly(otherEnd)) 
-        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, the other end ("+ otherEnd.getQualifiedName() + ") is read-only", null, Kind.SCHEMA);
-        if (!attribute.isNavigable()) 
-        	throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is not navigable", null, Kind.SCHEMA);
+        // apply read-only restrictions only when not populating
+        if (!isPopulating()) {
+            if (KirraHelper.isReadOnly(attribute)) 
+                throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is read-only", null, Kind.SCHEMA);
+            if (otherEnd != null && KirraHelper.isReadOnly(otherEnd)) 
+                throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, the other end ("+ otherEnd.getQualifiedName() + ") is read-only", null, Kind.SCHEMA);
+            if (!attribute.isNavigable()) 
+                throw new KirraException("Relationship " + attribute.getQualifiedName() + " cannot be modified, it is not navigable", null, Kind.SCHEMA);
+        }
     	source.link(attribute, destination);
     }
 

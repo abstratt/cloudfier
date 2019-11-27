@@ -62,7 +62,7 @@ class OASGenerator extends AbstractGenerator {
         '''
     }
 
-    def CharSequence generateObjectDefinition(Class toGenerate) {
+    def CharSequence generateObjectDefinition(Classifier toGenerate) {
     	val generatedProperties = (toGenerate.properties + toGenerate.entityRelationships)
                     		.map [generatePropertyDefinition(false)]
         '''
@@ -333,7 +333,7 @@ class OASGenerator extends AbstractGenerator {
     }
 
     def CharSequence generateRelationshipPropertyDefinition(TypedElement toGenerate) {
-        generateObjectDefinition(toGenerate.type as Class)
+        generateObjectDefinition(toGenerate.type as Classifier)
     }
 
     def CharSequence generateDefinitionReference(Type toGenerate) {
