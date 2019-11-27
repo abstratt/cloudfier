@@ -514,7 +514,7 @@ public class ExecutionContext {
         return getName();
     }
 
-    private List<RuntimeEvent> clearEventQueue() {
+    public List<RuntimeEvent> clearEventQueue() {
         return this.events = new ArrayList<RuntimeEvent>();
     }
 

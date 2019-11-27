@@ -370,6 +370,8 @@ public class Runtime {
 
     public void zap() {
     	getCurrentContext().clearWorkingSet();
+    	// or else we may process events for objects that have been zapped
+    	getCurrentContext().clearEventQueue();
         nodeStoreCatalog.zap();
         blobStoreCatalog.zap();
     }
