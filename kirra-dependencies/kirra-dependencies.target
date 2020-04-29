@@ -53,7 +53,7 @@
 			<unit id="com.fasterxml.jackson.module.jackson-module-jaxb-annotations" version="0.0.0"/>
 			<unit id="stax2-api" version="0.0.0"/>
 -->			
-            <repository location="http://p2.restlet.com/2.2/" />
+            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/dependencies/com.abstratt.restlet.repository/1.0.0/com.abstratt.restlet.repository-1.0.0.zip!/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="org.eclipse.jetty.client" version="0.0.0" />
@@ -74,22 +74,22 @@
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.7.201911/com.abstratt.eclipsegraphviz.repository-2.7.201911.zip!/" />
+            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.8.202004/com.abstratt.eclipsegraphviz.repository-2.8.202004.zip!/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.mdd.frontend.core.feature.feature.group" version="0.0.0" />
             <unit id="com.abstratt.mdd.frontend.ui.feature.feature.group" version="0.0.0" />
             <unit id="com.abstratt.mdd.frontend.ui.diagram.feature.feature.group" version="0.0.0" />
             <unit id="com.abstratt.mdd.importer.jdbc.feature.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.7.201911/com.abstratt.mdd.oss.repository-2.7.201911.zip!/" />
+            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.8.202004/com.abstratt.mdd.oss.repository-2.8.202004.zip!/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.mdd.tests.feature.source.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/mdd/com.abstratt.mdd.source.repository/2.7.201911/com.abstratt.mdd.source.repository-2.7.201911.zip!/" />
+            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/mdd/com.abstratt.mdd.source.repository/2.8.202004/com.abstratt.mdd.source.repository-2.8.202004.zip!/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.kirra.feature.source.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/kirra/com.abstratt.kirra.repository/2.7.201911/com.abstratt.kirra.repository-2.7.201911.zip!/" />
+            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/kirra/com.abstratt.kirra.repository/2.8.202004/com.abstratt.kirra.repository-2.8.202004.zip!/" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.wrapped.postgresql" version="0.0.0" />

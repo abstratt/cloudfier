@@ -49,7 +49,8 @@
 <unit id="org.restlet.ext.jaxrs" version="0.0.0"/>
 <unit id="org.restlet.ext.servlet" version="0.0.0"/>
 <unit id="org.restlet.ext.xml" version="0.0.0"/>
-<repository location="http://p2.restlet.com/2.2/"/>
+<repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/dependencies/com.abstratt.restlet.repository/1.0.0/com.abstratt.restlet.repository-1.0.0.zip!/" />
+
 </location>
 <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="planner" includeSource="true" type="InstallableUnit">
 <unit id="org.eclipse.jetty.client" version="0.0.0"/>
