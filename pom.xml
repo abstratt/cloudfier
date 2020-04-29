@@ -35,7 +35,6 @@
 		<module>runtime</module>
 		<module>codegen</module>
 		<module>server</module>
-		<module>releng</module>
 	</modules>
 	<build>
 		<plugins>
