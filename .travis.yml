@@ -26,6 +26,6 @@ cache:
 jobs:
   include:
     - stage: compile_and_test
-      script: mvn clean install
+      script: mvn clean install -DskipTests=true
     - stage: deploy
       script: mvn org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true -f releng/com.abstratt.kirra.server.product
