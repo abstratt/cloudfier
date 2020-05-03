@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" version="2.9.2.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" version="2.11.1.qualifier" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
