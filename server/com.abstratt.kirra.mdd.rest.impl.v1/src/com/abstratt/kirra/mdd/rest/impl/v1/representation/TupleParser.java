@@ -17,7 +17,6 @@ import java.util.StringTokenizer;
 import com.abstratt.kirra.DataElement;
 import com.abstratt.kirra.DataScope;
 import com.abstratt.kirra.Entity;
-import com.abstratt.kirra.Helper;
 import com.abstratt.kirra.Instance;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Relationship;
@@ -191,7 +190,7 @@ public class TupleParser {
     }
 
     protected void setProperty(Tuple record, String fieldName, JsonNode fieldValueNode) {
-        DataScope dataScope = Helper.resolveDataScope(schemaManagement, record.getTypeRef());
+        DataScope dataScope = schemaManagement.getDataScope(record.getTypeRef());
         DataElement property = dataScope.getProperty(fieldName);
         if (property != null)
             record.setValue(fieldName, convertSlotValue(property.getTypeRef(), fieldValueNode));

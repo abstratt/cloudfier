@@ -6,26 +6,25 @@ notifications:
   email:
     on_success: change
     on_failure: change
-env:
-  global:
-  - secure: GySGZ4IewzcnvVlB2KTMT9x2qPOjbePojmTvNKASKeAeRINJqKBwao+qmzw/2fB/XUKGYNMnkDiQl6wNudqyC0HEgLCzqoZQDztnOL0wcIY0gCbpluAJYbEXzCTrMLa4T1gs1jA3onuqZYjlP+dM1mi+W4s4cK5rhRSMQKS9gPk=
-  - secure: fseB3+AoImPAxINfE6yFsy51MT3u2mJ4yXTmvOmelqbK5ekX9dANyAHztmfIar3Ei/qBDbL57ctLY9CXyQtXDjAAcVeB6Xz0By5PXJ5joC5Bf5ZtkwcqEJI7BUDswWnFJb1Q/DP2KJR3XGwJr6QUAhIp4LVekKHCLJOPpHt7USo=
-
 services:
-  - postgresql
-
+- postgresql
 before_script:
-  - psql -c "CREATE DATABASE cloudfier;"  -U postgres
-  - psql -c "CREATE USER cloudfier;" -U postgres
-  - psql -c "GRANT ALL PRIVILEGES ON DATABASE cloudfier TO cloudfier;" -U postgres
-
+- psql -c "CREATE DATABASE cloudfier;"  -U postgres
+- psql -c "CREATE USER cloudfier;" -U postgres
+- psql -c "GRANT ALL PRIVILEGES ON DATABASE cloudfier TO cloudfier;" -U postgres
 cache:
   directories:
-  - $HOME/.m2
-
-jobs:
-  include:
-    - stage: compile_and_test
-      script: mvn clean install -DskipTests=true
-    - stage: deploy
-      script: mvn package org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true -f releng/com.abstratt.kirra.server.product
+  - "$HOME/.m2"
+install:
+- mvn clean test
+deploy:
+  provider: script
+  script: mvn package org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy
+    --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true -f releng/com.abstratt.kirra.server.product
+  skip_cleanup: true
+  on:
+    tags: true
+env:
+  global:
+  - secure: Yl881XIByGWeA1+bwer9Sr3KdeseUtGAKeI969lY7mS+NY21e39ydMEUPMC+ZFV3fvvVJTY9+tsluhuRzkrbSZBWhwwx9jp53iFevDQqmQANx/FFEqV6K0LWeVSi77c8+8mCrW0goZgm4IkNQyflW42sxjGMZHQ4Soy4jcMjbWc=
+  - secure: gSNOm6TGpAbfiYub9dtszOBNlF3ixIwauOgZ1MP0AD/xsYmPcXYwJfgoYaKFY9R9lONd6HeEyGibopR773Fu1V01aH6QT+9DiMrs5IBkAYf/UVBTdwTV4eMRc2C3wsr0fQNEM7EtWA/2Qr82N7y4w+WX2/vRniFbGEzmwrvNefc=
