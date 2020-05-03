@@ -5,12 +5,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.abstratt.mdd.kirra</groupId>
 	<artifactId>com.abstratt.kirra.server</artifactId>
-	<version>2.12.1</version>
+	<version>2.12.2-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 	<parent>
 		<artifactId>server</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
-		<version>2.12.1</version>
+		<version>2.12.2-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 </project>
