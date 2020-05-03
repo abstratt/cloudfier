@@ -14,5 +14,15 @@
 		<module>com.abstratt.kirra.server.product</module>
 		<module>com.abstratt.kirra.mdd.repository</module>
 	</modules>
+
+	<profiles>
+	    <profile>
+			<id>deploy</id>
+			<modules>
+				<module>com.abstratt.kirra.mdd.repository</module>
+			</modules>
+		</profile>
+	</profiles>
+
 </project>
 
