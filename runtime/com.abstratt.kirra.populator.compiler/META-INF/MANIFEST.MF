@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Data Populator Compiler
 Bundle-SymbolicName: com.abstratt.kirra.populator.compiler;singleton:=true
-Bundle-Version: 2.11.1.qualifier
+Bundle-Version: 2.12.0.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Import-Package: com.abstratt.kirra.populator,
