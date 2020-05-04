@@ -20,7 +20,7 @@ install:
 deploy:
   provider: script
   script: mvn package org.apache.maven.plugins:maven-deploy-plugin:3.0.0-M1:deploy
-    --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true -Pdeploy
+    --settings deploy.settings.xml -DdeployAtEnd=true -Dmaven.test.skip=true -Ddeploy
   skip_cleanup: true
   on:
     tags: true

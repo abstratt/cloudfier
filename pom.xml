@@ -32,15 +32,6 @@
         <developerConnection>scm:git:https://github.com/abstratt/cloudfier.git</developerConnection>
     </scm>	
 
-	<modules>
-	    <!-- first so target gets updated/rebuilt first -->
-    	<module>kirra-dependencies</module>
-    	<module>kirra-mdd</module>    	
-		<module>runtime</module>
-		<module>codegen</module>
-		<module>server</module>
-		<module>releng</module>
-	</modules>
 	<build>
 		<plugins>
 			<plugin>
@@ -126,8 +117,30 @@
     <profiles>
 	    <profile>
 			<id>deploy</id>
+			<activation>
+				<property>
+					<name>deploy</name>
+				</property>
+			</activation>			
 			<modules>
 				<module>kirra-dependencies</module>
+				<module>releng</module>
+			</modules>
+		</profile>
+	    <profile>
+			<id>default</id>
+			<activation>
+				<property>
+					<name>!deploy</name>
+				</property>
+			</activation>			
+			<modules>
+				<!-- first so target gets updated/rebuilt first -->
+				<module>kirra-dependencies</module>
+				<module>kirra-mdd</module>    	
+				<module>runtime</module>
+				<module>codegen</module>
+				<module>server</module>
 				<module>releng</module>
 			</modules>
 		</profile>
