@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Runtime Tests Plug-in
 Bundle-SymbolicName: com.abstratt.mdd.core.tests.runtime
-Bundle-Version: 2.12.5.qualifier
+Bundle-Version: 2.12.5
 Require-Bundle: com.abstratt.mdd.runtime.core;visibility:=reexport,
  com.abstratt.mdd.frontend.textuml.core,
  com.abstratt.mdd.core.tests.harness;visibility:=reexport,
