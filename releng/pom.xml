@@ -3,29 +3,18 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.abstratt.mdd.kirra</groupId>
 	<artifactId>releng</artifactId>
-	<version>2.12.5-SNAPSHOT</version>
+	<version>2.12.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
 		<artifactId>plugins</artifactId>
     	<groupId>com.abstratt.mdd.kirra</groupId>
-		<version>2.12.5-SNAPSHOT</version>
+		<version>2.12.3-SNAPSHOT</version>
 	</parent>
 
-	<profiles>
-	    <profile>
-			<id>deploy</id>
-			<modules>
-				<module>com.abstratt.kirra.mdd.repository</module>
-			</modules>
-		</profile>
-		<profile>
-			<id>default</id>		
-			<modules>
-				<module>com.abstratt.kirra.server.product</module>
-				<module>com.abstratt.kirra.mdd.repository</module>
-			</modules>
-		</profile>
-	</profiles>
+		<modules>
+			<module>com.abstratt.kirra.server.product</module>
+			<module>com.abstratt.kirra.mdd.repository</module>
+		</modules>
 
 </project>
 
