@@ -4,7 +4,6 @@ import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -13,16 +12,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.data.ChallengeResponse;
 import org.restlet.data.Status;
 import org.restlet.resource.ResourceException;
 import org.restlet.routing.Filter;
-import org.restlet.security.User;
 
 import com.abstratt.kirra.KirraApplication;
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
-import com.abstratt.kirra.mdd.core.KirraHelper;
 import com.abstratt.kirra.mdd.core.KirraMDDConstants;
 import com.abstratt.kirra.mdd.runtime.KirraOnMDDRuntime;
 import com.abstratt.kirra.rest.common.KirraContext;

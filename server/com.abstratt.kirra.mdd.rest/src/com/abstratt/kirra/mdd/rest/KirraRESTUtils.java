@@ -11,12 +11,9 @@ import org.restlet.Response;
 import org.restlet.data.MediaType;
 import org.restlet.data.Method;
 import org.restlet.data.Status;
-import org.restlet.engine.header.HeaderConstants;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.security.User;
-import org.restlet.util.NamedValue;
-import org.restlet.util.Series;
 
 import com.abstratt.kirra.KirraException;
 import com.abstratt.kirra.Repository;
