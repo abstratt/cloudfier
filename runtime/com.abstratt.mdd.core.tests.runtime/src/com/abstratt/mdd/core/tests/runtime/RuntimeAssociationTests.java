@@ -305,10 +305,6 @@ public class RuntimeAssociationTests extends AbstractRuntimeTests {
         return structure;
     }
 
-    private void saveContext() {
-        getRuntime().saveContext(true);
-    }
-
     private void testOneToMany(String behavior) throws CoreException {
         String[] sources = { buildOneToMany(), behavior };
         parseAndCheck(sources);

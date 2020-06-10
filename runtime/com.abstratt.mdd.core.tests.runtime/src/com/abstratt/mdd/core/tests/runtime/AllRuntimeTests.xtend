@@ -1,7 +1,7 @@
 package com.abstratt.mdd.core.tests.runtime;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
+import junit.framework.Test
+import junit.framework.TestSuite
 
 public class AllRuntimeTests {
 	
@@ -12,7 +12,7 @@ public class AllRuntimeTests {
         suite.addTest(RuntimeStringTests.suite());
         suite.addTest(RuntimeDateAndTimeTests.suite());
         suite.addTest(RuntimeObjectTests.suite());
-        suite.addTest(RuntimeEnumerationTests.suite());
+        suite.addTest(RuntimeSpecialTypeTests.suite());
         suite.addTest(RuntimeControlTests.suite());
         suite.addTest(RuntimeCollectionTests.suite());
         suite.addTest(RuntimeAssociationTests.suite());

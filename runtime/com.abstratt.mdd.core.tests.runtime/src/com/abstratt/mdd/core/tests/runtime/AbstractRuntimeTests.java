@@ -33,6 +33,15 @@ public abstract class AbstractRuntimeTests extends AbstractRepositoryBuildingTes
     }
 
     protected ExternalService externalService;
+    
+
+    protected void saveContext() {
+        saveContext(true);
+    }
+    
+    protected void saveContext(boolean preserve) {
+        getRuntime().saveContext(preserve);
+    }
 
     public AbstractRuntimeTests(String name) {
         super(name);

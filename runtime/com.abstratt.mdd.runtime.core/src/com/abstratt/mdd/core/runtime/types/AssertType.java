@@ -12,9 +12,7 @@ public class AssertType extends BuiltInClass {
     }
     
     public static void areSame(ExecutionContext context, BasicType expected, BasicType actual) {
-    	RuntimeObject expectedObject = (RuntimeObject) expected;
-    	RuntimeObject actualObject = (RuntimeObject) actual;    	
-        if (expected == null || !expectedObject.same(context, actualObject).isTrue())
+        if (expected == null || !expected.same(context, actual).isTrue())
             throw new RuntimeRaisedException(new StringType((expected == null ? null : expected.toString()) + " != "
                     + (actual == null ? null : actual.toString())), null, null);
     }

@@ -4,14 +4,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
@@ -122,7 +127,7 @@ public class KirraRESTExternalService implements ExternalService {
             LogUtils.logInfo(LegacyKirraMDDRestletApplication.ID,
                     "Sending event to " + uri + " \nbody:\n" + jsonRequest, null);
             method.setRequestEntity(new StringRequestEntity(jsonRequest, "application/json", "UTF-8"));
-            int response = httpClient.executeMethod(method);
+            int response = executeHttpMethod(httpClient, method);
             if (response != 200)
                 LogUtils.logError(LegacyKirraMDDRestletApplication.ID,
                         "Unexpected status for " + uri + ": " + response + "\n" + method.getResponseBodyAsString(), null);
@@ -139,13 +144,28 @@ public class KirraRESTExternalService implements ExternalService {
         }
 	}
 
+    private int executeHttpMethod(HttpClient httpClient, HttpMethod method) throws HttpException, IOException {
+        int status = httpClient.executeMethod(method);
+//        if (status == 301 || status == 302) {
+//            Optional<String> location = Optional.ofNullable(method.getResponseHeader("Location")).map(Header::getValue);
+//            if (location.isPresent()) {
+//                org.apache.commons.httpclient.URI uri = new org.apache.commons.httpclient.URI(location.get(), false);
+//                method.recycle();
+//                method.setURI(uri);
+//                int secondStatus = httpClient.executeMethod(method);
+//                return secondStatus;
+//            }
+//        }
+        return status;
+    }
+
     private List<?> retrieveData(Repository repository, Service service, Operation operation, Map<String, Object> argumentMap) {
         URI uri = getOperationURI(service, operation, argumentMap);
         GetMethod method = new GetMethod(uri.toString());
         LogUtils.logInfo(Activator.ID, "Sending request to: " + uri, null);
         HttpClient httpClient = new HttpClient();
         try {
-            int response = httpClient.executeMethod(method);
+            int response = executeHttpMethod(httpClient, method);
             if (response != 200) {
                 LogUtils.logError(Activator.ID, "Unexpected status for " + uri + ": " + response, null);
                 return Arrays.asList();
