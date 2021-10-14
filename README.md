@@ -52,7 +52,6 @@ find target -name kirra-server
 which will show the target platforms available, for example, on a Linux box:
 
 ```
-target/products/com.abstratt.kirra.server.product/linux/gtk/x86/kirra-server
 target/products/com.abstratt.kirra.server.product/linux/gtk/x86_64/kirra-server
 ```
 
@@ -98,13 +97,23 @@ TBD
 
 Continuous builds run as GitHub actions.
 
+### Bumping the version
+
+
+Example: 
+
+```
+mvn org.eclipse.tycho:tycho-versions-plugin:2.5.0:set-version -DnewVersion=2.13.0-SNAPSHOT -DupdateVersionRangeMatchingBounds=true
+```
+
 ### Developing Cloudfier in the IDE
 
 ####  Requirements
 
-  * Eclipse Luna or newer([download](http://www.eclipse.org/downloads/)) 
-  * M2E (Maven Integration for Eclipse) 1.5.x - Maven Integration for Eclipse (with Tycho support) 
-  * Xtext SDK 2.8.x (use their own [update site](http://download.eclipse.org/modeling/tmf/xtext/updates/releases/))
+
+  * Eclipse 2021-06 or newer([download](http://www.eclipse.org/downloads/)) 
+  * M2E (Maven Integration for Eclipse) 1.7.x - Maven Integration for Eclipse (with Tycho support) 
+  * Xtext SDK 2.25.x (use their own [update site](http://download.eclipse.org/modeling/tmf/xtext/updates/releases/))
 
 You can easily obtain M2E, Xtext and EGit from the Eclipse Marketplace. If you
 don't have the Marketplace client installed (check Help &gt; Eclipse
