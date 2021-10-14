@@ -35,7 +35,7 @@ public abstract class BasicType implements Type {
             throw new ModelExecutionException("Null was dereferenced", operation, null);
         } catch (NoSuchMethodException e) {
         	LogUtils.logWarning(Runtime.ID, "Method not found", e);
-            throw new RuntimeException(e.getMessage() + "(" + StringUtils.join(arguments) + ") in " + javaClass.getName());
+            throw new RuntimeException("Unknown method " + e.getMessage() + "(" + StringUtils.join(arguments) + ") in " + javaClass.getName());
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }

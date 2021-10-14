@@ -33,7 +33,7 @@ public class DateTimeType extends PrimitiveType<LocalDateTime> {
         return new DateTimeType(new Date(year.primitiveValue().intValue() - 1900, month.primitiveValue().intValue() - 1, day.primitiveValue()
                 .intValue()));
     }
-
+    
     public static DateTimeType today(@SuppressWarnings("unused") ExecutionContext context) {
         Date value = new Date();
         value.setHours(0);

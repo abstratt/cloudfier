@@ -10,6 +10,7 @@ import java.util.TimeZone;
 import org.eclipse.core.runtime.CoreException;
 
 import com.abstratt.mdd.core.runtime.types.BooleanType;
+import com.abstratt.mdd.core.runtime.types.DateTimeType;
 import com.abstratt.mdd.core.runtime.types.DateType;
 import com.abstratt.mdd.core.runtime.types.IntegerType;
 import com.abstratt.mdd.core.runtime.types.PrimitiveType;
@@ -254,7 +255,50 @@ public class RuntimeDateAndTimeTests extends AbstractRuntimeTests {
         TestCase.assertEquals(8, created.getMonthValue());
         TestCase.assertEquals(30, created.getDayOfMonth());
     }
+    
+    public void testMakeDateTime() throws CoreException {
+        String model = "";
+        model += "model tests;\n";
+        model += "import mdd_types;\n";
+        model += "class DateUtil\n";
+        model += "static operation createDateTime() : DateTime;\n";
+        model += "begin\n";
+        model += "  return Date#make(2011, 08, 30).at(Time#make(20, 15, 30, 375));\n";
+        model += "end;\n";
+        model += "end;\n";
+        model += "end.";
 
+        parseAndCheck(model);
+        LocalDateTime created = ((DateTimeType) runStaticOperation("tests::DateUtil", "createDateTime")).primitiveValue();
+        TestCase.assertEquals(2011, created.getYear());
+        TestCase.assertEquals(8	, created.getMonthValue());
+        TestCase.assertEquals(30, created.getDayOfMonth());
+        TestCase.assertEquals(20, created.getHour());
+        TestCase.assertEquals(15, created.getMinute());
+        TestCase.assertEquals(30, created.getSecond());
+        TestCase.assertEquals(375000000, created.getNano());
+    }
+
+    public void testMakeTime() throws CoreException {
+        String model = "";
+        model += "model tests;\n";
+        model += "import mdd_types;\n";
+        model += "class DateUtil\n";
+        model += "static operation createTime() : Time;\n";
+        model += "begin\n";
+        model += "  return Time#make(20, 15, 30, 375);\n";
+        model += "end;\n";
+        model += "end;\n";
+        model += "end.";
+
+        parseAndCheck(model);
+        LocalTime created = ((TimeType) runStaticOperation("tests::DateUtil", "createTime")).primitiveValue();
+        TestCase.assertEquals(20, created.getHour());
+        TestCase.assertEquals(15, created.getMinute());
+        TestCase.assertEquals(30, created.getSecond());
+        TestCase.assertEquals(375000000, created.getNano());
+    }
+    
     public void testMakeDate() throws CoreException {
         String model = "";
         model += "model tests;\n";

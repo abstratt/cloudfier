@@ -28,6 +28,11 @@ public class DateType extends PrimitiveType<LocalDate> {
     public static DateType fromValue(LocalDate original) {
         return new DateType(original);
     }
+    
+    public DateTimeType at(@SuppressWarnings("unused") ExecutionContext context, TimeType time) {
+        return DateTimeType.fromValue(this.primitiveValue().atTime(time.primitiveValue()));
+    }
+    
 
     public static DateType make(@SuppressWarnings("unused") ExecutionContext context, IntegerType year, IntegerType month, IntegerType day) {
         return new DateType(new Date(year.primitiveValue().intValue() - 1900, month.primitiveValue().intValue() - 1, day.primitiveValue()
