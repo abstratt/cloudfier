@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: ObjectStore
 Bundle-SymbolicName: com.abstratt.nodestore;singleton:=true
-Bundle-Version: 2.12.6.qualifier
+Bundle-Version: 2.13.0.qualifier
 Bundle-Vendor: ABSTRATT
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Export-Package: com.abstratt.nodestore

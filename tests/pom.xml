@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>com.abstratt.mdd.kirra</groupId>
+	<artifactId>tests</artifactId>
+	<version>2.13.0-SNAPSHOT</version>
+	<packaging>pom</packaging>
+	<parent>
+		<artifactId>plugins</artifactId>
+    	<groupId>com.abstratt.mdd.kirra</groupId>
+		<version>2.13.0-SNAPSHOT</version>
+	</parent>
+	<modules>
+		<module>com.abstratt.nodestore.tests</module>
+		<module>com.abstratt.mdd.core.tests.runtime</module>
+		<module>com.abstratt.kirra.tests.mdd.runtime</module>
+        <module>com.abstratt.mdd.frontend.web.tests</module>
+        <module>com.abstratt.mdd.target.tests</module>
+	</modules>
+</project>
+

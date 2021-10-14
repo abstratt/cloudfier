@@ -13,4 +13,5 @@ public class KirraRESTServlet extends ServerServlet {
         KirraOnMDDRestletApplication kirraRestletApplication = new KirraOnMDDRestletApplication(getComponent());
         return kirraRestletApplication;
     }
+
 }

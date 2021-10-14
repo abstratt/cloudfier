@@ -5,7 +5,7 @@ import java.util.Map;
 import org.restlet.Request;
 import org.restlet.Response;
 import org.restlet.Restlet;
-import org.restlet.engine.header.Header;
+import org.restlet.data.Header;
 import org.restlet.routing.Filter;
 import org.restlet.util.Series;
 

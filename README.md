@@ -96,8 +96,7 @@ TBD
 
 ###  Continuous builds
 
-Continuous builds run on [TravisCI](https://travis-ci.org/abstratt/cloudfier?branch=master). Artifact repository is
-available at [Bintray](https://dl.bintray.com/abstratt-oss/abstratt-oss/).
+Continuous builds run as GitHub actions.
 
 ### Developing Cloudfier in the IDE
 

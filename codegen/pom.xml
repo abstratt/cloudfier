@@ -3,12 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.abstratt.mdd.kirra</groupId>
 	<artifactId>codegen</artifactId>
-	<version>2.12.6-SNAPSHOT</version>
+	<version>2.13.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 	<parent>
 		<artifactId>plugins</artifactId>
     	<groupId>com.abstratt.mdd.kirra</groupId>
-		<version>2.12.6-SNAPSHOT</version>
+		<version>2.13.0-SNAPSHOT</version>
 	</parent>
 	
 	<modules>
@@ -17,7 +17,6 @@
         <module>com.abstratt.mdd.target.doc</module>
         <module>com.abstratt.mdd.target.jee</module>          
         <module>com.abstratt.mdd.target.jse</module>                
-		<module>com.abstratt.mdd.target.tests</module>
 	</modules>
 </project>
 

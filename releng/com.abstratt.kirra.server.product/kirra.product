@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" version="2.12.6.qualifier" useFeatures="false" includeLaunchers="true">
+<product name="Kirra Server" uid="com.abstratt.kirra.server.product" id="com.abstratt.kirra.server.product" application="com.abstratt.kirra.server.app" version="2.13.0.qualifier" useFeatures="false" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>
@@ -82,14 +82,13 @@
       <plugin id="com.abstratt.resman"/>
       <plugin id="com.abstratt.wrapped.postgresql"/>
       <plugin id="com.abstratt.wrapped.schemacrawler"/>
+      <plugin id="com.abstratt.wrapped.restlet"/>
       <plugin id="com.fasterxml.jackson.core.jackson-annotations"/>
       <plugin id="com.fasterxml.jackson.core.jackson-core"/>
       <plugin id="com.fasterxml.jackson.core.jackson-databind"/>
       <plugin id="com.google.gson"/>
       <plugin id="com.google.guava"/>
       <plugin id="com.ibm.icu"/>
-      <plugin id="javax.servlet"/>
-      <plugin id="javax.ws.rs.jsr311-api"/>
       <plugin id="org.apache.ant"/>
       <plugin id="org.apache.commons.beanutils"/>
       <plugin id="org.apache.commons.codec"/>
@@ -103,12 +102,10 @@
       <plugin id="org.apache.felix.gogo.command"/>
       <plugin id="org.apache.felix.gogo.runtime"/>
       <plugin id="org.apache.felix.gogo.shell"/>
-      <plugin id="org.codehaus.groovy"/>
       <plugin id="org.eclipse.core.contenttype"/>
       <plugin id="org.eclipse.core.filesystem"/>
       <plugin id="org.eclipse.core.jobs"/>
       <plugin id="org.eclipse.core.runtime"/>
-      <plugin id="org.eclipse.core.runtime.compatibility.registry" fragment="true"/>
       <plugin id="org.eclipse.emf.common"/>
       <plugin id="org.eclipse.emf.ecore"/>
       <plugin id="org.eclipse.emf.ecore.xmi"/>
@@ -141,14 +138,6 @@
       <plugin id="org.eclipse.xtend.lib.macro"/>
       <plugin id="org.hamcrest.core"/>
       <plugin id="org.junit"/>
-      <plugin id="org.restlet"/>
-      <plugin id="org.restlet.ext.crypto"/>
-      <plugin id="org.restlet.ext.fileupload"/>
-      <plugin id="org.restlet.ext.jackson"/>
-      <plugin id="org.restlet.ext.jackson"/>
-      <plugin id="org.restlet.ext.jaxrs"/>
-      <plugin id="org.restlet.ext.servlet"/>
-      <plugin id="org.restlet.ext.xml"/>
    </plugins>
 
    <configurations>

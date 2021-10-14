@@ -5,8 +5,8 @@ import java.util.Properties;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.restlet.Request;
+import org.restlet.data.Header;
 import org.restlet.data.Method;
-import org.restlet.engine.header.Header;
 import org.restlet.util.Series;
 
 import com.abstratt.kirra.mdd.core.KirraMDDConstants;

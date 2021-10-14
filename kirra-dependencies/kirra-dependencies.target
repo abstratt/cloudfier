@@ -10,15 +10,9 @@
             <unit id="org.eclipse.ocl.all.sdk.feature.group" version="0.0.0" />
             <unit id="org.eclipse.uml2.sdk.feature.group" version="0.0.0" />
             <!-- Specific release to avoid Eclipse bug 430375 -->
-            <repository location="http://download.eclipse.org/releases/mars/201602261000/" />
+			<repository location="http://download.eclipse.org/releases/2021-09/202108271000" />
         </location>
-        <location includeAllPlatforms="false" includeMode="planner"
-            includeSource="true" type="InstallableUnit">
-            <unit id="org.eclipse.xtext.xbase.lib" version="0.0.0" />
-            <unit id="org.eclipse.xtend.lib" version="0.0.0" />
-            <repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.11.0/" />
-        </location>
-        
+
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="org.apache.commons.lang" version="0.0.0" />
             <unit id="org.apache.commons.lang3" version="0.0.0" />
@@ -28,33 +22,21 @@
             <unit id="org.apache.commons.collections" version="0.0.0" />
             <unit id="org.apache.commons.httpclient" version="0.0.0" />
 			<unit id="org.slf4j.api" version="0.0.0" />
-			<repository location="http://download.eclipse.org/tools/orbit/downloads/drops/R20170919201930/repository/" />
-        </location>
-        <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-            <unit id="org.restlet" version="0.0.0" />
-            <unit id="org.restlet.ext.servlet" version="0.0.0" />
-            <unit id="org.restlet.ext.xml" version="0.0.0" />
-            <unit id="org.restlet.ext.fileupload" version="0.0.0" />
-            <unit id="org.restlet.ext.crypto" version="0.0.0" />
-            <unit id="org.restlet.ext.jaxrs" version="0.0.0" />
-            <unit id="org.restlet.ext.jackson" version="0.0.0" />
-            <!-- piggybacking on Restlet's repo while we can for these. -->
-            <unit id="javax.ws.rs.jsr311-api" version="0.0.0" />
             <unit id="com.google.gson" version="0.0.0" />
+            <unit id="com.google.guava" version="0.0.0" />
             <unit id="com.fasterxml.jackson.core.jackson-annotations" version="0.0.0" />
             <unit id="com.fasterxml.jackson.core.jackson-core" version="0.0.0" />
             <unit id="com.fasterxml.jackson.core.jackson-databind" version="0.0.0" />
-<!--
-            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-smile"  version="0.0.0"/>
-            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-yaml"  version="0.0.0"/>
-            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-xml"  version="0.0.0"/>
-            <unit id="com.fasterxml.jackson.dataformat.jackson-dataformat-csv"  version="0.0.0"/>
-            <unit id="org.yaml.snakeyaml" version="0.0.0"/>
-			<unit id="com.fasterxml.jackson.module.jackson-module-jaxb-annotations" version="0.0.0"/>
-			<unit id="stax2-api" version="0.0.0"/>
--->			
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/dependencies/com.abstratt.restlet.repository/1.0.0/com.abstratt.restlet.repository-1.0.0.zip!/" />
+            <repository location="https://download.eclipse.org/tools/orbit/downloads/drops/R20210825222808/repository" />
         </location>
+
+        <location includeAllPlatforms="false" includeMode="planner"
+            includeSource="true" type="InstallableUnit">
+            <unit id="org.eclipse.xtext.xbase.lib" version="0.0.0" />
+            <unit id="org.eclipse.xtend.lib" version="0.0.0" />
+            <repository location="http://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.25.0/" />
+        </location>
+        
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="org.eclipse.jetty.client" version="0.0.0" />
             <unit id="org.eclipse.jetty.continuation" version="0.0.0" />
@@ -68,33 +50,43 @@
             <unit id="org.eclipse.jetty.security" version="0.0.0" />
             <repository location="http://download.eclipse.org/jetty/updates/jetty-bundles-8.x/8.1.14.v20131031" />
         </location>
-        <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-            <unit id="org.codehaus.groovy23.feature.feature.group" version="0.0.0" />
-            <repository location="http://dist.springsource.com/release/TOOLS/update/3.6.1.RELEASE/e4.4/" />
-        </location>
-        <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-            <unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/eclipsegraphviz/com.abstratt.eclipsegraphviz.repository/2.9.0/com.abstratt.eclipsegraphviz.repository-2.9.0.zip!/" />
-        </location>
+
+		<location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.eclipsegraphviz.feature.feature.group" version="0.0.0" />		
+			<repository location="mvn:com.abstratt.eclipsegraphviz:com.abstratt.eclipsegraphviz.repository:2.13.0:zip" />
+		</location>
+		
+        <location includeAllPlatforms="false" includeMode="planner"
+			includeSource="true" type="InstallableUnit">
+			<unit id="com.abstratt.wrapped.postgresql" version="0.0.0" />
+			<unit id="com.abstratt.wrapped.schemacrawler"
+				version="0.0.0" />
+			<unit id="com.abstratt.wrapped.restlet"
+				version="0.0.0" />                
+			<repository 
+				location="mvn:com.abstratt.wrapped:com.abstratt.wrapped.repository:5.0.0:zip" />
+		</location>
+		
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.mdd.frontend.core.feature.feature.group" version="0.0.0" />
             <unit id="com.abstratt.mdd.frontend.ui.feature.feature.group" version="0.0.0" />
             <unit id="com.abstratt.mdd.frontend.ui.diagram.feature.feature.group" version="0.0.0" />
             <unit id="com.abstratt.mdd.importer.jdbc.feature.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/mdd/com.abstratt.mdd.oss.repository/2.10.0/com.abstratt.mdd.oss.repository-2.10.0.zip!/" />
+			<repository 
+							location="mvn:com.abstratt.mdd:com.abstratt.mdd.oss.repository:2.13.0:zip" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.mdd.tests.feature.source.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/mdd/com.abstratt.mdd.source.repository/2.10.0/com.abstratt.mdd.source.repository-2.10.0.zip!/" />
+			<repository 
+							location="mvn:com.abstratt.mdd:com.abstratt.mdd.source.repository:2.13.0:zip" />
         </location>
         <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
             <unit id="com.abstratt.kirra.feature.source.feature.group" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/kirra/com.abstratt.kirra.repository/2.10.0/com.abstratt.kirra.repository-2.10.0.zip!/" />
+			<repository 
+							location="mvn:com.abstratt.kirra:com.abstratt.kirra.repository:2.11.0:zip" />
         </location>
-        <location includeAllPlatforms="false" includeMode="planner" includeSource="true" type="InstallableUnit">
-            <unit id="com.abstratt.wrapped.postgresql" version="0.0.0" />
-            <unit id="com.abstratt.wrapped.schemacrawler" version="0.0.0" />
-            <repository location="jar:https://dl.bintray.com/abstratt-oss/abstratt-oss/com/abstratt/wrapped/com.abstratt.wrapped.repository/3.3/com.abstratt.wrapped.repository-3.3.zip!/" />
-        </location>
+
+		
     </locations>
 </target>

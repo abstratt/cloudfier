@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+    postgres:
+        image: postgres:10.5
+        restart: always
+        environment:
+          - POSTGRES_USER=cloudfier
+          - POSTGRES_PASSWORD=cloudfier
+        logging:
+          options:
+            max-size: 10m
+            max-file: "3"
+        ports:
+          - '15432:5432'
+        volumes: 
+          - ./postgres-data:/var/lib/postgresql/data

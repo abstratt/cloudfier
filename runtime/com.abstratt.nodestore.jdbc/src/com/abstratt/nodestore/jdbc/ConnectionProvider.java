@@ -35,6 +35,10 @@ public class ConnectionProvider {
         pgDataSource.setUser(username);
         String password = ConfigUtils.get("KIRRA_DATABASE_PASSWORD", "cloudfier");
 		pgDataSource.setPassword(password);
+		String host = ConfigUtils.get("KIRRA_DATABASE_HOST", "localhost");
+		pgDataSource.setServerName(host);
+		int port = Integer.parseInt(ConfigUtils.get("KIRRA_DATABASE_PORT", "5432"));
+		pgDataSource.setPortNumber(port);
         this.dataSource = pgDataSource;
     }
 

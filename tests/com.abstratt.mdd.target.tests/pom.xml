@@ -3,12 +3,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
 	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>com.abstratt.mdd.frontend.web.tests</artifactId>
+	<artifactId>com.abstratt.mdd.target.tests</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 	<parent>
-		<artifactId>server</artifactId>
+		<artifactId>tests</artifactId>
 		<groupId>com.abstratt.mdd.kirra</groupId>
-		<version>2.12.6-SNAPSHOT</version>
+		<version>2.13.0-SNAPSHOT</version>
 		<relativePath>..</relativePath>
 	</parent>
 	<build>
@@ -18,14 +18,17 @@
 				<artifactId>tycho-surefire-plugin</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
-					<testSuite>com.abstratt.mdd.frontend.web.tests</testSuite>
-					<testClass>com.abstratt.mdd.frontend.web.tests.AllWebFrontEndTests</testClass>
-			        <systemProperties>
-			            <org.eclipse.equinox.http.jetty.http.port>8091</org.eclipse.equinox.http.jetty.http.port>
-                        <eclipse.consoleLog>true</eclipse.consoleLog>
-                        <org.eclipse.uml2.common.util.CacheAdapter.ThreadLocal/>
-			        </systemProperties>
+					<testSuite>com.abstratt.mdd.target.tests</testSuite>
+					<testClass>com.abstratt.mdd.target.tests.AllTargetTests</testClass>
+				        <systemProperties>
+						  <eclipse.consoleLog>true</eclipse.consoleLog>
+						  <org.eclipse.uml2.common.util.CacheAdapter.ThreadLocal/>
+			    		</systemProperties>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.xtend</groupId>
+				<artifactId>xtend-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
