@@ -60,8 +60,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<version>1.6.1</version>
+			<artifactId>slf4j-reload4j</artifactId>
+			<version>2.0.19</version>
 		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
